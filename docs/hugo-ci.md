@@ -82,11 +82,17 @@ synthetic pages, not the complete public note set.
 
 ## Status and next authority boundary
 
-The workflow and Windows local parity gate have been prepared and tested.
-No remote push or GitHub run is implied by local success. Linux execution and
-hosted-runner setup remain unverified until an explicitly approved first push
-triggers GitHub Actions. A test pass is not authorization to publish real notes
-or switch GitHub Pages.
+The first authorized technical/synthetic-only push passed both hosted jobs:
+[initial validation run](https://github.com/ladybug001/ladybug001.github.io/actions/runs/37118336518)
+at commit `19670bf4bb9d24ab2d5ebf304b2a5432fe7d1c5d`.
+Windows ran 100 tests with no skips; Linux ran the same 100-test suite with only
+the explicitly Windows-specific junction test skipped. Both jobs installed
+the checksum-pinned standard Hugo 0.167.0, validated the two-page snapshot and
+HTML, and confirmed identical repeat builds within the job.
+
+No real-note snapshot, private recovery archive or identity state was uploaded.
+There was no artifact upload or Pages deployment. A test pass is not
+authorization to publish real notes or switch GitHub Pages.
 
 The first upload has been authorized for technical code and synthetic data only.
 Before any push, recheck remote history and confirm the upload scope. Do not
