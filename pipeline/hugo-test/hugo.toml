@@ -1,0 +1,25 @@
+# Technical rendering harness only. No Theme, home/navigation/design choices.
+baseURL = 'https://sample.invalid/'
+disableKinds = ['home', 'section', 'taxonomy', 'term', 'RSS', 'sitemap', 'robotsTXT']
+enableGitInfo = false
+resourceDir = '../../.build/hugo-test-resources'
+disableHugoGeneratorInject = true
+
+[markup.goldmark.extensions]
+linkify = false
+
+[markup.goldmark.extensions.passthrough]
+enable = true
+[markup.goldmark.extensions.passthrough.delimiters]
+block = [['\[', '\]'], ['$$', '$$']]
+inline = [['\(', '\)'], ['$', '$']]
+
+[markup.goldmark.parser.attribute]
+block = true
+title = true
+
+[markup.goldmark.renderer]
+unsafe = false
+
+[markup.highlight]
+codeFences = true

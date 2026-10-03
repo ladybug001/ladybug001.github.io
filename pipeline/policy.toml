@@ -1,0 +1,9 @@
+# No Vault path or private note names belong in this public policy file.
+schema_version = 1
+note_roots = ["04-知识卡片", "03-MOCs", "02-记录", "07-工具使用"]
+attachment_roots = ["attachment"]
+exclude = []
+
+# Ordinary links to existing unpublished/out-of-scope notes become non-clickable text.
+# Embeds, missing targets and ambiguous targets remain blocking errors.
+unpublished_target = "plain_text"

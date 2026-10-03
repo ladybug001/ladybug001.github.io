@@ -1,0 +1,49 @@
+.DS_Store
+.gitignore
+node_modules
+public
+prof
+tsconfig.tsbuildinfo
+.obsidian
+.quartz-cache
+private/
+.replit
+replit.nix
+.quartz/
+quartz/cli/tui/dist/
+.turbo/
+
+.local/
+.npm-cache/
+.pnpm-store/
+pnpm-lock.yaml
+
+# Independent publisher: generated output is never a second content source.
+.generated/
+.build/
+__pycache__/
+*.py[cod]
+
+# Hugo migration repository: fail-closed root allowlist. Private local recovery
+# archives and generated real content must never be accidentally added.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/.github/
+/.github/*
+!/.github/README.md
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/hugo-ci.yml
+!/pipeline/
+# Local operating notes contain machine/Vault paths; use public CI docs instead.
+/pipeline/README.md
+!/tests/
+!/publication/
+/publication/*
+!/publication/README.md
+!/publication/fixture/
+!/docs/
+/docs/*
+!/docs/hugo-ci.md

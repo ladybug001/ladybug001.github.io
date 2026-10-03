@@ -1,0 +1,12 @@
+schema_version = 1
+python = "3.14.4"
+dependencies = "requirements.lock"
+publisher = "0.6.0"
+hugo = "0.167.0"
+hugo_windows_amd64_sha256 = "f5ed1983b4373e719434cd721bf931907dec8ad33a891a6912903e93cfdcce98"
+hugo_linux_amd64_sha256 = "4d84519b9f619e6d4c3fb45a50157abeabeb724f859c60605f44c23def6e1169"
+# Standard Hugo suffices for the technical harness. No Theme/Node/deployment.
+
+[actions]
+checkout = "de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+setup_python = "a309ff8b426b58ec0e2a45f0f869d46889d02405" # v6.2.0

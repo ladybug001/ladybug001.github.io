@@ -1,0 +1,21 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-fixture-b",
+      "kind": "heading",
+      "offset": 8
+    },
+    {
+      "id": "b-fixture-code",
+      "kind": "fence",
+      "offset": 96
+    }
+  ],
+  "body": "# 构建测试 B\n\n[第一页](/notes/fixture-a/#h-fixture-a)\n\n[代码块](/notes/fixture-b/#b-fixture-code)\n\n```text\n[[Literal]] is code, not a note link.\n```\n",
+  "id": "00000000-0000-4000-8000-000000000002",
+  "metadata": {
+    "title": "Synthetic fixture B"
+  },
+  "resources": [],
+  "url": "/notes/fixture-b/"
+}

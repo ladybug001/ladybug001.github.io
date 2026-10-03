@@ -1,0 +1,64 @@
+{
+  "deployable": false,
+  "files": {
+    "assets/7822fcef140268b3919fa8be8f5e7fd9e0ded7e0d498641872f98aecb19bf508.svg": "7822fcef140268b3919fa8be8f5e7fd9e0ded7e0d498641872f98aecb19bf508",
+    "pages/00000000-0000-4000-8000-000000000001.json": "dfd0fe852ae9f1283a2bb6e0c8dfb765572efb3ba51da65fb02ea671ca53931a",
+    "pages/00000000-0000-4000-8000-000000000002.json": "06045a20cbff41180968e2e3c7aec8fc3ae4dc3f43932d4a41df56c5d0c9b4fc"
+  },
+  "format": "portable-1",
+  "identities": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "url": "/notes/fixture-a/"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "url": "/notes/fixture-b/"
+    }
+  ],
+  "link_graph": [
+    {
+      "kind": "markdown_link",
+      "rendered": true,
+      "rendered_on_id": "00000000-0000-4000-8000-000000000001",
+      "source_id": "00000000-0000-4000-8000-000000000001",
+      "target_id": "00000000-0000-4000-8000-000000000002",
+      "url": "/notes/fixture-b/#h-fixture-b"
+    },
+    {
+      "kind": "markdown_link",
+      "rendered": true,
+      "rendered_on_id": "00000000-0000-4000-8000-000000000002",
+      "source_id": "00000000-0000-4000-8000-000000000002",
+      "target_id": "00000000-0000-4000-8000-000000000001",
+      "url": "/notes/fixture-a/#h-fixture-a"
+    },
+    {
+      "kind": "markdown_link",
+      "rendered": true,
+      "rendered_on_id": "00000000-0000-4000-8000-000000000002",
+      "source_id": "00000000-0000-4000-8000-000000000002",
+      "target_id": "00000000-0000-4000-8000-000000000002",
+      "url": "/notes/fixture-b/#b-fixture-code"
+    }
+  ],
+  "routes": [
+    {
+      "anchors": [
+        "h-fixture-a"
+      ],
+      "id": "00000000-0000-4000-8000-000000000001",
+      "url": "/notes/fixture-a/"
+    },
+    {
+      "anchors": [
+        "h-fixture-b",
+        "b-fixture-code"
+      ],
+      "id": "00000000-0000-4000-8000-000000000002",
+      "url": "/notes/fixture-b/"
+    }
+  ],
+  "schema_version": 1,
+  "validation_only": true
+}

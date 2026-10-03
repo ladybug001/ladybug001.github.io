@@ -1,0 +1,18 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-fixture-a",
+      "kind": "heading",
+      "offset": 8
+    }
+  ],
+  "body": "# 构建测试 A\n\n此内容为合成测试数据，不来自笔记库。\n\n[第二页](/notes/fixture-b/#h-fixture-b)\n\n![](/notes/fixture-a/media/7822fcef140268b3919fa8be8f5e7fd9e0ded7e0d498641872f98aecb19bf508.svg)\n\n> [!NOTE]\n> 不决定主题或页面样式。\n\n未公开笔记（不可点击）\n\n| 项目 | 内容 |\n| --- | --- |\n| 目标 | [第二页](/notes/fixture-b/#h-fixture-b) |\n\n```mermaid\ngraph LR; A-->B;\n```\n\n`[[Literal]]`\n\n$x_1$\n\n$$\nx^2\n$$\n",
+  "id": "00000000-0000-4000-8000-000000000001",
+  "metadata": {
+    "title": "Synthetic fixture A"
+  },
+  "resources": [
+    "7822fcef140268b3919fa8be8f5e7fd9e0ded7e0d498641872f98aecb19bf508.svg"
+  ],
+  "url": "/notes/fixture-a/"
+}
