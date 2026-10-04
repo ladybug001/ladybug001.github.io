@@ -220,21 +220,36 @@ def _render(note: Note, report: Report, context: Context, fragment: str = "", na
         marker = re.search(r"\^" + re.escape(block) + r"\s*$", lines[row].rstrip("\n"))
         if not marker:
             raise ValueError("Cannot prove block marker source span")
-        if included(starts[row] + marker.start(), starts[row] + marker.end()):
-            edits.append((starts[row] + marker.start(), starts[row] + marker.end(), ""))
         identifier = namespace + "b-" + block
         context.anchors.append(identifier)
         matching = [t for t in tokens if t.map == [first, last] and t.type in {"fence", "paragraph_open", "table_open", "bullet_list_open", "ordered_list_open", "blockquote_open"}]
         if not matching:
             raise ValueError("Block anchor requires an unsupported block representation")
+        marker_line = re.fullmatch(r"((?: {0,3}> ?){0,8})[ \t]*\^" + re.escape(block) + r"[ \t]*", lines[row].rstrip("\n"))
+        if marker_line and first < row < last and any(t.type == "paragraph_open" for t in matching):
+            # A marker-only continuation is part of the paragraph AST. Removing
+            # it and appending an attribute AFTER its now-blank line detaches the
+            # attribute in Goldmark. Replace this very line instead.
+            if not included(starts[row], starts[row] + len(lines[row].rstrip("\n"))):
+                raise ValueError("Block marker continuation crosses embed scope")
+            edits.append((starts[row], starts[row] + len(lines[row].rstrip("\n")), marker_line[1] + "{#" + identifier + "}"))
+            continue
+        if included(starts[row] + marker.start(), starts[row] + marker.end()):
+            edits.append((starts[row] + marker.start(), starts[row] + marker.end(), ""))
         if any(t.type == "fence" for t in matching):
             pos = starts[first] + len(lines[first].rstrip("\n"))
             edits.append((pos, pos, ' {id="' + identifier + '"}'))
         else:
+            prefix = ""
             if lines[first].lstrip().startswith(">") and not any(t.type == "blockquote_open" for t in matching):
-                raise ValueError("Nested quote block anchors require a later adapter")
+                quote_prefix = re.match(r"((?: {0,3}> ?){1,8})", lines[first])
+                if quote_prefix is None or not any(t.type == "paragraph_open" for t in matching):
+                    raise ValueError("Cannot prove nested quote paragraph anchor")
+                prefix = quote_prefix[1]
+                if any(not lines[r].startswith(prefix) for r in range(first, last)):
+                    raise ValueError("Mixed/lazy quote prefixes require explicit adapter support")
             pos = starts[last] if last < len(starts) else len(body)
-            edits.append((pos, pos, ("\n" if pos and body[pos - 1] != "\n" else "") + "{#" + identifier + "}\n"))
+            edits.append((pos, pos, ("\n" if pos and body[pos - 1] != "\n" else "") + prefix + "{#" + identifier + "}\n"))
     parts = []
     for begin, end in ranges:
         part, previous = body[begin:end], end + 1

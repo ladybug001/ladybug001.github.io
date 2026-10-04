@@ -7,23 +7,25 @@ from __future__ import annotations
 
 from collections import Counter
 import hashlib
+import html
 import json
+import os
 from pathlib import Path
 import re
 import tempfile
 import uuid
-from urllib.parse import unquote, urljoin, urlsplit
+from urllib.parse import quote, unquote, urljoin, urlsplit
 
 from .frontmatter import validate as validate_metadata
 from .htmlcheck import verify_html
 from .identity import route_key
 from .safety import within
 from .svg import validate_svg
-from .syntax import _mask_comments, inline_positions, parser
+from .syntax import _mask_comments, inline_positions, parser, safe_line_break
 
 
 VERSION = "portable-1"
-MAX_TOTAL = 128 * 1024 * 1024
+MAX_TOTAL = 512 * 1024 * 1024
 MAX_FILE = 32 * 1024 * 1024
 ASSET = r"[a-f0-9]{64}\.[a-z0-9]{1,12}"
 EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "svg", "avif", "bmp", "pdf",
@@ -81,9 +83,19 @@ def _route(value):
     return route_key(value)
 
 
+def _io_path(path):
+    """Use Windows extended paths for I/O, without changing public inventories."""
+    path = Path(path).absolute()
+    value = str(path)
+    if os.name == "nt" and not value.startswith("\\\\?\\"):
+        value = "\\\\?\\UNC\\" + value[2:] if value.startswith("\\\\") else "\\\\?\\" + value
+        return Path(value)
+    return path
+
+
 def _tree(root):
     """Read a bounded regular-file tree; never follow symlinks or junctions."""
-    root = Path(root).absolute()
+    root = _io_path(root)
     for path in (root, *root.parents):
         if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
             raise ValueError("Snapshot trees must not use symlinks/junctions")
@@ -110,7 +122,7 @@ def _tree(root):
                 if (stat.st_size, stat.st_mtime_ns) != (after.st_size, after.st_mtime_ns) or len(raw) != stat.st_size:
                     raise ValueError("Snapshot input changed during read")
                 total += len(raw)
-                if total > MAX_TOTAL or len(result) >= 4096:
+                if total > MAX_TOTAL or len(result) >= 16384:
                     raise ValueError("Snapshot tree exceeds size/file budget")
                 result[path.relative_to(root).as_posix()] = raw
             else:
@@ -159,7 +171,8 @@ def _protected(body, tokens):
 def _annotation(item):
     return {"heading": " {#" + item["id"] + "}",
             "fence": ' {id="' + item["id"] + '"}',
-            "block": "{#" + item["id"] + "}\n"}[item["kind"]]
+            "block": "{#" + item["id"] + "}\n",
+            "quote-block": item.get("prefix", "") + "{#" + item["id"] + "}\n"}[item["kind"]]
 
 
 def restore(body, insertions):
@@ -167,12 +180,14 @@ def restore(body, insertions):
         raise ValueError("Anchor insertions must be a list")
     previous, ids = -1, set()
     for item in insertions:
-        _keys(item, {"offset", "kind", "id"})
+        _keys(item, {"offset", "kind", "id"}, {"prefix"} if isinstance(item, dict) and item.get("kind") == "quote-block" else set())
         at = item["offset"]
         if type(at) is not int or not previous < at <= len(body) or at < 0:
             raise ValueError("Invalid/non-increasing anchor offset")
-        if item["kind"] not in {"heading", "fence", "block"} or not re.fullmatch(ANCHOR, item["id"]):
+        if item["kind"] not in {"heading", "fence", "block", "quote-block"} or not re.fullmatch(ANCHOR, item["id"]):
             raise ValueError("Invalid anchor kind/ID")
+        if item["kind"] == "quote-block" and (not isinstance(item.get("prefix"), str) or not re.fullmatch(r"(?: {0,3}> ?){1,8}", item["prefix"])):
+            raise ValueError("Invalid quoted-block anchor prefix")
         if item["id"] in ids:
             raise ValueError("Duplicate anchor ID")
         previous = at
@@ -198,24 +213,33 @@ def separate_anchors(body, anchors):
             row = first if last == first + 1 else last - 2
             match = re.search(r" \{#(" + ANCHOR + r")\}$", lines[row].rstrip("\n"))
             if match and match[1] in expected:
-                edits.append((starts[row] + match.start(), starts[row] + match.end(), "heading", match[1]))
+                edits.append((starts[row] + match.start(), starts[row] + match.end(), "heading", match[1], None))
         elif token.type == "fence":
             row = token.map[0]
             match = re.search(r' \{id="(' + ANCHOR + r')"\}$', lines[row].rstrip("\n"))
             if match and match[1] in expected:
-                edits.append((starts[row] + match.start(), starts[row] + match.end(), "fence", match[1]))
+                edits.append((starts[row] + match.start(), starts[row] + match.end(), "fence", match[1], None))
     for row, line in enumerate(lines):
         match = re.fullmatch(r"\{#(" + ANCHOR + r")\}\n", line)
         if match and match[1] in expected and not any(a <= starts[row] < b for a, b in protected):
-            edits.append((starts[row], starts[row] + len(line), "block", match[1]))
+            edits.append((starts[row], starts[row] + len(line), "block", match[1], None))
+        quoted = re.fullmatch(r"((?: {0,3}> ?){1,8})\{#(" + ANCHOR + r")\}\n", line)
+        if quoted and quoted[2] in expected and not any(a <= starts[row] < b for a, b in protected):
+            # Prove the generated attribute line is parsed inside a quote, not
+            # a code example; HTML verification also proves the resulting ID.
+            if not any(t.type == "blockquote_open" and t.map[0] <= row < t.map[1] for t in tokens):
+                raise ValueError("Quoted anchor outside a parsed quote")
+            edits.append((starts[row], starts[row] + len(line), "quote-block", quoted[2], quoted[1]))
     if Counter(e[3] for e in edits) != Counter(anchors):
         raise ValueError("Cannot prove every declared anchor exactly once")
     pieces, insertions, end, removed = [], [], 0, 0
-    for a, b, kind, identifier in sorted(edits):
+    for a, b, kind, identifier, prefix in sorted(edits):
         if a < end:
             raise ValueError("Overlapping anchor edits")
         pieces.append(body[end:a])
         insertions.append({"offset": a - removed, "kind": kind, "id": identifier})
+        if prefix is not None:
+            insertions[-1]["prefix"] = prefix
         removed += b - a
         end = b
     pieces.append(body[end:])
@@ -254,7 +278,7 @@ def _urls(body):
         if token.type.startswith("html_"):
             raise ValueError("Raw HTML is not admitted in snapshots")
         for child in token.children or []:
-            if child.type in {"obs_wiki", "obs_invalid", "html_inline"}:
+            if child.type in {"obs_wiki", "obs_invalid"} or (child.type == "html_inline" and not safe_line_break(child)):
                 raise ValueError("Unconverted Wiki/HTML syntax in snapshot")
             if child.type in {"link_open", "image"}:
                 result.append(child.attrGet("href") if child.type == "link_open" else child.attrGet("src"))
@@ -293,14 +317,18 @@ def _internal(raw, base):
 
 
 def validate(files):
+    if not isinstance(files, dict) or len(files) > 16384 or any(not isinstance(raw, bytes) or len(raw) > MAX_FILE for raw in files.values()) or sum(map(len, files.values())) > MAX_TOTAL:
+        raise ValueError("Snapshot exceeds size/file budget or contains invalid bytes")
     manifest = _json(files["manifest.json"])
-    _keys(manifest, {"schema_version", "format", "validation_only", "deployable", "routes", "identities", "link_graph", "files"})
-    if type(manifest["schema_version"]) is not int or manifest["schema_version"] != 1 or manifest["format"] != VERSION or manifest["validation_only"] is not True or manifest["deployable"] is not False:
-        raise ValueError("Expected non-deployable portable validation snapshot v1")
+    complete = manifest.get("format") == "portable-2"
+    extra = {"scope", "reservations", "redirects"} if complete else set()
+    _keys(manifest, {"schema_version", "format", "validation_only", "deployable", "routes", "identities", "link_graph", "files"} | extra)
+    if type(manifest["schema_version"]) is not int or manifest["schema_version"] != (2 if complete else 1) or manifest["format"] != ("portable-2" if complete else VERSION) or manifest["validation_only"] is not True or manifest["deployable"] is not False:
+        raise ValueError("Expected non-deployable portable validation snapshot v1/v2")
     _verify_files(files, manifest)
     pages, routes, assets, identities, route_keys = {}, {}, {}, {}, set()
-    if not isinstance(manifest["routes"], list) or not 1 <= len(manifest["routes"]) <= 12:
-        raise ValueError("Validation snapshots require 1–12 pages")
+    if not isinstance(manifest["routes"], list) or not (0 if complete else 1) <= len(manifest["routes"]) <= (2048 if complete else 12):
+        raise ValueError("Snapshot page count exceeds the selected profile (v1: 1–12; v2: 0–2048)")
     for route in manifest["routes"]:
         _keys(route, {"id", "url", "anchors"})
         identifier, canonical = _id(route["id"]), _route(route["url"])
@@ -320,7 +348,7 @@ def validate(files):
         restored = restore(page["body"], page["anchor_insertions"])
         neutral, checked = separate_anchors(restored, route["anchors"])
         if neutral != page["body"] or checked != page["anchor_insertions"] or route["anchors"] != [a["id"] for a in checked]:
-            raise ValueError("Anchor IR does not correspond to Markdown structure")
+            raise ValueError("Anchor IR does not correspond to Markdown structure: " + identifier)
         resources = page["resources"]
         if not isinstance(resources, list) or any(not isinstance(r, str) or not re.fullmatch(ASSET, r) or r.rsplit(".", 1)[1] not in EXTENSIONS for r in resources) or resources != sorted(set(resources)):
             raise ValueError("Invalid resource inventory")
@@ -394,7 +422,48 @@ def validate(files):
             failures.append("GRAPH_MARKDOWN_MISMATCH: " + pages[host]["url"])
     if failures:
         raise SnapshotError(failures)
+    if complete:
+        validate_route_history(manifest, pages)
     return manifest, pages
+
+
+def validate_route_history(manifest, pages):
+    if manifest["scope"] != "complete-opt-in" or not isinstance(manifest["reservations"], list) or not isinstance(manifest["redirects"], list):
+        raise ValueError("Invalid complete snapshot route history")
+    occupied, indexed, expected = {}, set(), []
+    for entry in manifest["reservations"]:
+        _keys(entry, {"id", "url", "history", "status"})
+        identifier = _id(entry["id"])
+        if identifier in indexed or entry["status"] != ("active" if identifier in pages else "withdrawn"):
+            raise ValueError("Reservation identity/status conflict")
+        indexed.add(identifier)
+        if not isinstance(entry["history"], list) or len(entry["history"]) > 100:
+            raise ValueError("Invalid reservation history")
+        for path in [entry["url"], *entry["history"]]:
+            canonical = _route(path)
+            if canonical in occupied:
+                raise ValueError("Reserved route collision, including withdrawn history")
+            occupied[canonical] = identifier
+        if identifier in pages:
+            if entry["url"] != pages[identifier]["url"]:
+                raise ValueError("Reservation/current page mismatch")
+            expected.extend({"id": identifier, "from": old, "to": entry["url"]} for old in entry["history"])
+    if not set(pages) <= indexed:
+        raise ValueError("Public pages missing route reservations")
+    if manifest["redirects"] != sorted(expected, key=lambda r: r["from"]):
+        raise ValueError("Redirects must be exactly the active history; withdrawn routes never redirect")
+
+
+def redirect_html(destination):
+    _route(destination)
+    url = quote(destination, safe="/-._~")
+    # Generated technical redirect, not authored HTML or Theme layout. Keep
+    # fragments; route validation excludes all script/attribute delimiters.
+    return ('<!doctype html><html><head><meta charset="utf-8">'
+            '<meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=' + html.escape(url, quote=True) + '">'
+            '<link rel="canonical" href="' + html.escape(url, quote=True) + '"></head><body>'
+            '<a href="' + html.escape(url, quote=True) + '">Continue</a><script>location.replace('
+            + json.dumps(url) + '+location.hash);</script></body></html>\n').encode("utf-8")
 
 
 def inspect_snapshot(root):
@@ -404,9 +473,9 @@ def inspect_snapshot(root):
 
 
 def _install(files, output_root, prefix):
-    if len(files) > 4096 or sum(len(raw) for raw in files.values()) > MAX_TOTAL or any(len(raw) > MAX_FILE for raw in files.values()):
+    if len(files) > 16384 or sum(len(raw) for raw in files.values()) > MAX_TOTAL or any(len(raw) > MAX_FILE for raw in files.values()):
         raise ValueError("Generated release exceeds snapshot size/file budget")
-    root = Path(output_root).absolute()
+    root = _io_path(output_root)
     for path in (root, *root.parents):
         if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
             raise ValueError("Output must not use symlinks/junctions")
@@ -414,7 +483,7 @@ def _install(files, output_root, prefix):
     if destination.exists():
         if _tree(destination) != files:
             raise ValueError("Immutable generated release changed; refusing overwrite")
-        return destination
+        return Path(output_root).absolute() / destination.name
     root.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".pending-" + prefix, dir=root))
     for name, raw in sorted(files.items()):
@@ -426,7 +495,7 @@ def _install(files, output_root, prefix):
     if _tree(stage) != files:
         raise ValueError("Generated staging validation failed")
     stage.rename(destination)
-    return destination
+    return Path(output_root).absolute() / destination.name
 
 
 def pack_snapshot(sample, output_root, selected=None):
@@ -497,6 +566,8 @@ def materialize_snapshot(snapshot, output_root):
         files[prefix + "index.md"] = (json.dumps(header, ensure_ascii=False, indent=2) + "\n\n" + restore(page["body"], page["anchor_insertions"])).encode("utf-8")
         for resource in page["resources"]:
             files[prefix + "media/" + resource] = source["assets/" + resource]
+    for redirect in manifest.get("redirects", []):
+        files["static/" + redirect["from"].lstrip("/") + "index.html"] = redirect_html(redirect["to"])
     # Same validator contract, but its boundary is empty and strict=True.
     harness = {"schema_version": 1, "sample_only": True, "deployable": False,
                "snapshot_sha256": sha(source["manifest.json"]), "routes": manifest["routes"],
@@ -524,6 +595,11 @@ def verify_snapshot_html(snapshot, materialized, public):
         prefix = page["url"].lstrip("/")
         expected_files.add(prefix + "index.html")
         expected_files.update(prefix + "media/" + name for name in page["resources"])
+    for redirect in manifest.get("redirects", []):
+        path = redirect["from"].lstrip("/") + "index.html"
+        expected_files.add(path)
+        if built.get(path) != redirect_html(redirect["to"]):
+            raise ValueError("Historical redirect HTML changed or target mismatched")
     if set(built) != expected_files:
         raise ValueError("Strict build contains missing/stale/unexpected files")
     result = verify_html(Path(public), expected_manifest, strict=True)

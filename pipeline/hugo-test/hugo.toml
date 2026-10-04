@@ -5,6 +5,12 @@ enableGitInfo = false
 resourceDir = '../../.build/hugo-test-resources'
 disableHugoGeneratorInject = true
 
+# Eligibility is owned by the publisher. Never invent a creation date from
+# lastmod or filesystem timestamps when the source has no reliable date.
+[frontmatter]
+date = ['date']
+lastmod = ['lastmod']
+
 [markup.goldmark.extensions]
 linkify = false
 
@@ -19,7 +25,9 @@ block = true
 title = true
 
 [markup.goldmark.renderer]
-unsafe = false
+# Every input is validated by the publisher/snapshot gate. The ONLY authored
+# HTML admitted there is an attribute-free inline <br>; other HTML fails closed.
+unsafe = true
 
 [markup.highlight]
 codeFences = true

@@ -17,6 +17,11 @@ from .identity import key
 from .model import Heading, Note, Reference, Report
 
 
+def safe_line_break(token):
+    """The sole authored HTML exception: attribute-free inline line breaks."""
+    return token.type == "html_inline" and bool(re.fullmatch(r"<br(?: ?/)?>", token.content, re.IGNORECASE))
+
+
 def _capture(rule):
     @wraps(rule)
     def wrapped(state, silent):
@@ -302,7 +307,7 @@ def inspect(note: Note, report: Report) -> None:
             if child.type.startswith("math_"):
                 features["math"] += 1
             if child.type == "html_inline":
-                features["raw_html"] += 1
+                features["html_line_break" if safe_line_break(child) else "raw_html"] += 1
     note.features = dict(sorted(features.items()))
     for block, locations in note.blocks.items():
         if len(locations) > 1:

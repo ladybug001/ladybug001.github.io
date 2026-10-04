@@ -15,7 +15,10 @@ Python/Hugo and Actions versions are pinned; Python dependencies have locked
 wheel hashes. CI has read-only permissions, no artifact upload and no Pages
 deployment.
 
-See [CI instructions](docs/hugo-ci.md) and [snapshot hand-off](publication/README.md).
+See [publication architecture and local transactions](docs/hugo-publication.md),
+[CI instructions](docs/hugo-ci.md) and [snapshot hand-off](publication/README.md).
+Technical pushes should first pass the read-only `pipeline/prepush.py` check
+described in the CI instructions; it is not an automatic Git hook.
 Private identity state and reports, the Vault, local recovery archives,
 generated real-note samples and build output must never be committed here.
 

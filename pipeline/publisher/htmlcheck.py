@@ -88,5 +88,5 @@ def verify_html(public: Path, manifest: dict, *, strict: bool = False) -> dict:
     return {"passed": not errors, "pages": len(pages), "strict": strict, "validated_internal_links_and_resources": validated,
             "outside_sample_not_verified": sorted(skipped), "errors": errors,
             "limitations": ["Every selected snapshot link must resolve; no outside-sample exemptions." if strict else "Only selected pages are rendered. Outside-sample published URLs are NOT HTML-verified.",
-                            "External URLs are not fetched. Math/Mermaid visual rendering is not tested.",
+                            "External URLs are not fetched. MathML structure is integration-tested; browser math appearance is not. Mermaid is preserved as code, not rendered as diagrams.",
                             "The technical harness is not a selected Theme or production website."]}

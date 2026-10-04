@@ -9,3 +9,9 @@ All manifests remain `validation_only:true` and `deployable:false`.
 No real note snapshot is tracked here yet. Adding a real publication snapshot
 requires explicit content/privacy approval and a reviewed repository policy
 change. Never copy `.local/` reports, private identity state or the entire Vault.
+
+Complete local releases use `portable-2`, whereas the small synthetic fixture
+remains `portable-1`. They contain framework-neutral Markdown, a separate anchor
+IR, referenced hashed assets, stable public ID/URL relations, route reservations
+and active historical redirects. Private source paths, observation state and
+the registry are outside the snapshot. See [local publication contract](../docs/hugo-publication.md).

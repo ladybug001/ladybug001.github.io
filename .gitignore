@@ -47,3 +47,4 @@ __pycache__/
 !/docs/
 /docs/*
 !/docs/hugo-ci.md
+!/docs/hugo-publication.md

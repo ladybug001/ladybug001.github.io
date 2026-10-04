@@ -30,7 +30,7 @@ class CITests(unittest.TestCase):
 
     def test_public_repository_allowlist(self):
         for name in (".gitignore", ".gitattributes", "README.md", "pipeline/publish.py", "pipeline/publisher/tooling.py",
-                     "tests/test_ci.py", "docs/hugo-ci.md", ".github/workflows/hugo-ci.yml", "publication/fixture/manifest.json"):
+                     "tests/test_ci.py", "docs/hugo-ci.md", "docs/hugo-publication.md", ".github/workflows/hugo-ci.yml", "publication/fixture/manifest.json"):
             with self.subTest(name=name):
                 self.assertTrue(ci.allowed_repository_path(name))
         for name in (".local/state/publisher/identity-registry.json", ".local/reports/publisher/check.json",

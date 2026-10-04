@@ -20,7 +20,7 @@ from publisher.tooling import PROJECT, local_hugo, runtime_check
 
 
 def allowed_repository_path(name):
-    if name in {".gitignore", ".gitattributes", "README.md", ".github/README.md", ".github/workflows/hugo-ci.yml", "docs/hugo-ci.md", "publication/README.md"}:
+    if name in {".gitignore", ".gitattributes", "README.md", ".github/README.md", ".github/workflows/hugo-ci.yml", "docs/hugo-ci.md", "docs/hugo-publication.md", "publication/README.md"}:
         return True
     if name.startswith("pipeline/"):
         return (name != "pipeline/README.md" and not any(p.startswith(".") or p == "__pycache__" for p in name.split("/"))
@@ -77,11 +77,16 @@ def run_tests():
 def build_snapshot(snapshot, hugo, work):
     """Fresh output per run; compare two builds and enforce full HTML closure."""
     generated, manifest = materialize_snapshot(snapshot, work / "generated")
+    config = work / "hugo.generated.json"
+    atomic_write(config, json.dumps({"staticDir": [str(generated / "static")]}) + "\n")
     outputs, verification = [], None
     for name in ("first", "repeat"):
         output = work / name / "public"
+        output.mkdir(parents=True)
         subprocess.run([str(hugo), "--source", str(PROJECT / "pipeline/hugo-test"),
                         "--contentDir", str(generated / "content"), "--destination", str(output),
+                        "--config", str(PROJECT / "pipeline/hugo-test/hugo.toml") + "," + str(config),
+                        "--buildFuture",
                         "--cacheDir", str(work / "cache"), "--noBuildLock", "--noChmod", "--noTimes"],
                        check=True, timeout=45)
         verification = verify_snapshot_html(snapshot, generated, output)

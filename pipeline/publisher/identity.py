@@ -11,7 +11,7 @@ import unicodedata
 import uuid
 from urllib.parse import unquote, urlsplit
 
-from .storage import atomic_write, writer_lock
+from .storage import atomic_write, writer_lock, registry_bytes
 
 
 def key(value: str) -> str:
@@ -112,7 +112,7 @@ class Registry:
 
 
 def load_private(path: Path, vault: Path) -> Registry:
-    data = json.loads(path.read_text(encoding="utf-8-sig"))
+    data = json.loads(registry_bytes(path).decode("utf-8-sig"))
     owner = data.get("vault_root")
     if owner is not None and Path(owner).resolve() != vault.resolve():
         raise ValueError("Private identity registry belongs to a different Vault")

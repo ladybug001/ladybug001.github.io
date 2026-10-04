@@ -1,0 +1,4 @@
+{{- /* Framework adapter only: native MathML, no theme/CSS/client download. */ -}}
+{{- /* CJK/math convenience forms warn; invalid syntax/commands still fail. */ -}}
+{{- $options := dict "output" "mathml" "displayMode" (eq .Type "block") "throwOnError" true "strict" "warn" -}}
+{{- transform.ToMath .Inner $options -}}
