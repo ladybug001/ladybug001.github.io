@@ -1,0 +1,60 @@
+// Keep Stack's palette; body links remain recognisable without hover.
+.article-content a:not(.header-anchor):not(.image-link) {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+}
+.article-content a.image-link {
+    box-shadow: none;
+    cursor: zoom-in;
+}
+.article-content .header-anchor:focus-visible {
+    opacity: 1;
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+// Separate tag links from the compact row's article link (no nested anchors).
+.article-list--compact article > .article-list-tags {
+    padding: var(--small-card-padding);
+    padding-top: 0;
+}
+
+// An unlimited cloud scrolls within the available viewport, not the page.
+// Keep article TOCs and limited taxonomy widgets on their stock layout.
+@include respond(lg) {
+    .right-sidebar:has(.tagCloud--scrollable) {
+        max-height: 100vh;
+        max-height: 100dvh;
+        min-height: 0;
+
+        > :not(.tagCloud--scrollable) {
+            flex-shrink: 0;
+        }
+
+        .tagCloud--scrollable {
+            flex: 1 1 auto;
+            min-height: 0;
+
+            > :not(.tagCloud-tags) {
+                flex-shrink: 0;
+            }
+
+            .tagCloud-tags {
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+                overscroll-behavior-y: contain;
+                scrollbar-width: thin;
+                scrollbar-gutter: stable;
+                align-content: flex-start;
+                padding: 4px 6px 6px 4px;
+
+                &:focus-visible {
+                    outline: 2px solid currentColor;
+                    outline-offset: 2px;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,70 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-71e2bfd0752399f18d7c",
+      "kind": "heading",
+      "offset": 39
+    },
+    {
+      "id": "h-87b090a6a21bab421682",
+      "kind": "heading",
+      "offset": 46
+    },
+    {
+      "id": "h-8d93a7d4fa4c3a5161fc",
+      "kind": "heading",
+      "offset": 294
+    },
+    {
+      "id": "h-f61937588e2dcfd6b1a0",
+      "kind": "heading",
+      "offset": 379
+    },
+    {
+      "id": "h-40ee5cd207d0409b1e7e",
+      "kind": "heading",
+      "offset": 630
+    },
+    {
+      "id": "h-de571efee780a9194f25",
+      "kind": "heading",
+      "offset": 716
+    },
+    {
+      "id": "h-348b60ede156426ca42c",
+      "kind": "heading",
+      "offset": 1141
+    },
+    {
+      "id": "h-11a014c3ab62982c7e30",
+      "kind": "heading",
+      "offset": 2044
+    },
+    {
+      "id": "h-530fa5ca7e835c9d0b20",
+      "kind": "heading",
+      "offset": 2730
+    },
+    {
+      "id": "h-e3e6e619b34d54cd2fc5",
+      "kind": "heading",
+      "offset": 3258
+    }
+  ],
+  "body": "# C、C++ 动态内存分配：malloc、free、new 与 delete\n\n## 前言\n\n在 C 和 Cpp 中，申请和释放内存的方式各不相同，它们彼此间有什么区别和联系？\n\n首先明确我们变量的存储期区域分类：\n1. 静态存储期（全局存储）：例如函数外定义的全局对象、命名空间作用域对象，以及使用 `static` 声明的对象。\n2. 自动存储期（栈）：函数内的普通局部对象通常具有自动存储期，离开作用域后自动销毁。\n3. 动态存储期（堆）：通过 `new` 表达式或其他分配接口取得存储，对象生命周期通常需要程序显式管理。\n> “堆栈”实际可以拆分为两个概念：堆与栈。\n\n## C\n\n> 相关内容：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)\n\n### `malloc` 函数\n\n`malloc()` 是 C 标准库提供的内存分配函数。它用于申请一段原始内存：只负责分配字节块，不会自动做初始化；返回的是申请内存的起始地址。\n\n`malloc()` 的调用步骤。在 `MSVC` 开发环境中，其调用链大致为：`call malloc (00401A20)` -> `_nh_malloc_dbg` -> `_heap_alloc_dbg` -> `_heap_alloc_base` -> `HeapAlloc`\n> 不同编译/开发平台会有细微差异\n\n### `free` 函数\n\n`free()` 是 C 标准库提供的释放函数。它负责回收由 `malloc()`、`calloc()`、`realloc()` 等接口返回的原始存储。\n\n## C++\n\nC++ 是面向对象语言，因此相比 C，不仅涉及内存的申请与释放，还涉及对象的创建、初始化、销毁等生命周期管理。\n> 类似的设计思想在这里也有体现，参考：[C&#12289;C&#43;&#43; 浅拷贝与深拷贝](/notes/n-ac9e4a95b1194218b94518877e92c06e/)\n\n**这里需要区分两层概念**：\n\n- `new`、`delete` 关键字是 C++ 语言层面的表达式。它们负责把“分配/释放存储”和“开始/结束对象生命周期”组织成一个完整语义流程。\n- `operator new`、`operator delete` 是分配函数/释放函数（相当于 C 中的 `free` 和 `malloc`），可以被全局或类类型重载。\n> 相关设计思想参考：[编程语言&#65306;规范与实现分离](/notes/n-dca8dc00e8664e00ab4a00c31b2a057c/)\n\n### `new` 关键词\n\n在 C++ 中，若要在动态存储区中创建对象，通常使用 `new` 表达式，并使用匹配的 `delete` 表达式释放：\n\n```cpp\nPerson* p = new Person();\n\ndelete p;\n```\n\n首先，使用 `new` 时可以观察到：它不仅会获取一块存储，还会在该存储上执行对象初始化；对于类类型，这一步通常表现为调用构造函数：\n\n![7e29f8a12a8bad2164d39345f2ae1122&#95;MD5&#46;png](/notes/n-e08b7207198d40bc84c43f94669e0df0/media/58b929d01f3ae23c7dab432bfb9800a0a668638808abcc858172a90f73a8241c.png)\n\n\n这里跟进函数调用汇编语句： `call operator new`，发现其调用链依次为：\n![b92119a7f80175bc56ba2608e974e792&#95;MD5&#46;png](/notes/n-e08b7207198d40bc84c43f94669e0df0/media/d3dac30fff3a78e24044b2b8d37a80ba7bb337865131fea861edbdcc5f751542.png)\n> 和前面 C 的 `malloc()` 调用链做对比可以知道，`operator new` 函数本质是和 `malloc` 一样的。\n\n`operator new` 函数返回后，紧接着又调用了构造函数：`call Person::Person`。\n\n\n**综上可知**：\n1. `new` 关键字是 C++ 语言表达式；它通常先调用分配函数，常见形式是 `operator new`，取得一块原始存储。\n2. 随后，会在这块存储上执行初始化；对于类类型，这一步通常会调用构造函数。\n> 对于基础类型，是否初始化取决于写法：`new int` 进行默认初始化，结果值通常未定；`new int()` 才会进行值初始化，结果为 `0`。\n\n\n### `delete` 关键字\n\n用同样的方法分析 `delete` 与 `free()` 的关系。\n\n如下图所示，可以看到 `delete` 关键字会先结束对象生命周期，再释放对应的存储：\n\n![63b207e2d6722a488ffe47de7a888cbb&#95;MD5&#46;png](/notes/n-e08b7207198d40bc84c43f94669e0df0/media/cce21c8a546c330782e90960489143c1bd4642755da0f0e0274523686cdae3ad.png)\n\n看一下 `delete` 关键字背后的汇编代码：\n![de5b1ad496997241399e8e8483a77713&#95;MD5&#46;png](/notes/n-e08b7207198d40bc84c43f94669e0df0/media/a6b0267f7c45f5e4e96af3c737c2e21565219ee33f6ab6d20ae0647f8cd7ab42.png)\n\n发现它先调用析构函数，然后又调用 `operator delete` 函数。\n> 在当前调试环境下，后续还可以继续看到 `_free_dbg`。\n\n如果跟进 `operator delete`，同样可以看到与 `free` 函数相似的调用链。\n\n**综上可知**：\n- `delete` 关键字会先结束对象生命周期；对于类类型，这一步通常会调用析构函数。\n- 然后再调用 `operator delete` 函数回收存储。\n\n### `new[]` 和 `delete[]`\n\n\n在 Cpp 中，可以使用 `new[]` 语法申请和初始化多个同类型数据：\n\n```cpp\n{\n\tPerson* p = new Person[10];\n\tdelete[] p;\n}\n```\n\nC 使用 `malloc` 只拿到足够大的内存区域，这并不等价于“创建了 10 个 `Person` 对象”。：\n```cpp\n{\n\tPerson* p = (Person*)malloc(sizeof(Person) * 10);\n\tfree(p);\n}\n```\n\n`new[]` 会为数组元素执行初始化；如果元素类型是类类型，则会逐个调用构造函数。例如，`new Person[10]` 会调用 `Person` 的构造函数 `10` 次。\n\n\n如何释放这片区域呢？\n\n使用 `delete[]` 会按元素销毁数组对象；如果元素类型是类类型，则会逐个调用析构函数，然后再释放整块存储。\n> 很多实现会在指针指向位置的前面额外保存数组元素个数等“cookie”信息，便于 `delete[]` 正确析构；\n\n`delete` 和 `delete[]` 的语义不同。使用 `new[]` 分配的对象数组，必须使用 `delete[]` 释放；\n\n## 总结\n\n- `new` 和 `delete` 关键字是对 `malloc()` 和 `free()` 的 C++ 化包装。后两者只负责原始存储的分配与释放，而前两者还同时承担对象生命周期管理：`new` 负责分配并初始化对象（调用构造函数），`delete` 负责结束对象生命周期（调用析构函数）并回收存储。\n\n- 关键词/函数的配对关系必须严格匹配：`new` 对应 `delete`，`new[]` 对应 `delete[]`，`malloc()` / `calloc()` / `realloc()` 对应 `free()`；混用会导致未定义行为（`UB`）。\n\n\n",
+  "id": "e08b7207-198d-40bc-84c4-3f94669e0df0",
+  "metadata": {
+    "tags": [
+      "lang/c",
+      "lang/cpp"
+    ],
+    "title": "C、C++ 动态内存分配：malloc、free、new 与 delete"
+  },
+  "resources": [
+    "58b929d01f3ae23c7dab432bfb9800a0a668638808abcc858172a90f73a8241c.png",
+    "a6b0267f7c45f5e4e96af3c737c2e21565219ee33f6ab6d20ae0647f8cd7ab42.png",
+    "cce21c8a546c330782e90960489143c1bd4642755da0f0e0274523686cdae3ad.png",
+    "d3dac30fff3a78e24044b2b8d37a80ba7bb337865131fea861edbdcc5f751542.png"
+  ],
+  "url": "/notes/n-e08b7207198d40bc84c43f94669e0df0/"
+}

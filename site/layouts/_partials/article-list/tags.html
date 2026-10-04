@@ -1,0 +1,8 @@
+{{ with .GetTerms "tags" }}
+  <footer class="article-meta article-list-tags">
+    <div class="article-tags inline-meta">
+      {{ partial "helper/icon" "tag" }}
+      {{ range . }}<a href="{{ .RelPermalink }}" class="link">{{ .LinkTitle }}</a>{{ end }}
+    </div>
+  </footer>
+{{ end }}

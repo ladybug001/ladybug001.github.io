@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-77f96bc669d998d70e46",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-dc87f713258c255b71cd",
+      "kind": "heading",
+      "offset": 73
+    },
+    {
+      "id": "h-224269b045cb59b6063c",
+      "kind": "heading",
+      "offset": 510
+    },
+    {
+      "id": "h-51bf3242a867e0600f07",
+      "kind": "heading",
+      "offset": 602
+    },
+    {
+      "id": "h-781ed6b4868f638a5aa5",
+      "kind": "heading",
+      "offset": 827
+    }
+  ],
+  "body": "# 计算机图形渲染 (MOC)\n\n> 计算机图形渲染技术：从数学基础、渲染管线原理，到 OpenGL 实践与图形 API 对比。\n\n## 阅读顺序\n\n1. [计算机图形渲染&#65306;坐标变换与 MVP 矩阵](/notes/n-8147e4ef0bdc4e69a769e855f66bad49/) — 线性代数与变换\n2. [计算机图形渲染&#65306;投影矩阵推导](/notes/n-d39dfa36e6764a859d2303387b8616b4/)\n3. [计算机图形渲染&#65306;深度值与深度缓冲](/notes/n-9d069318b7cc4e04a870a028c83a0e6e/) — 深度测试与 Z-Buffer\n4. [计算机图形渲染&#65306;OpenGL 编程基础](/notes/n-e2b65e14b46e43cbbb86d003e9157ccb/) — OpenGL 渲染管线与实践\n5. [计算机图形渲染&#65306;OpenGL 与 Direct3D 的区别](/notes/n-63ab4b15943a41e2a68a74c6dc678637/)\n\n## 相关笔记\n\n- [Windows GDI](/notes/n-b415a25acde7408d9926f7a5612f432c/) — Windows 2D 图形接口\n\n## 游戏逆向中的应用\n\n- [FPS 游戏逆向通用思路](/notes/n-126b8566fd6b4d268317586a51557ddb/#h-2ca5c3b61ac77fdf9691) — 将坐标变换与投影用于屏幕绘制。\n- FPS逆向记录&#65306;Assault Cube — 对照矩阵获取、投影与 OpenGL 绘制实践。\n- FPS逆向记录&#65306;CSGO — 对照 ViewMatrix、图形 API 差异与 ESP 实现。\n\n## 相关入口\n\n- [Windows 窗口与消息机制 &#40;MOC&#41;](/notes/n-8c532b91a6f94e15b533cc55499ce34f/) — 补充 OpenGL 示例依赖的窗口环境。\n- [Windows 调试与逆向分析 &#40;MOC&#41;](/notes/n-da63b3ac0bcb46c7bb4db1de80503df3/) — 进入对象、矩阵与绘制调用的分析方法。\n",
+  "id": "393b72b9-90e2-4666-9763-44a7457cf128",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "cs/graphics"
+    ],
+    "title": "计算机图形渲染 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-393b72b990e24666976344a7457cf128/"
+}

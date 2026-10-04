@@ -1,0 +1,306 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-53f202233fc057dc381b",
+      "kind": "heading",
+      "offset": 6
+    },
+    {
+      "id": "h-6a2186f71bc2ee3ff088",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-a15cf437e0b2dc73a9a9",
+      "kind": "heading",
+      "offset": 180
+    },
+    {
+      "id": "h-c979be7f2fd4119cbeba",
+      "kind": "heading",
+      "offset": 345
+    },
+    {
+      "id": "h-7a9863523cc2ed514fae",
+      "kind": "heading",
+      "offset": 509
+    },
+    {
+      "id": "h-7b403facb7f1b69b6fa8",
+      "kind": "heading",
+      "offset": 517
+    },
+    {
+      "id": "h-cff3df0db71a156b2553",
+      "kind": "heading",
+      "offset": 1124
+    },
+    {
+      "id": "h-8901d4b9d7fdc0d676d8",
+      "kind": "heading",
+      "offset": 1131
+    },
+    {
+      "id": "h-7598365d9ca903677c58",
+      "kind": "heading",
+      "offset": 1336
+    },
+    {
+      "id": "h-ce19798ae1cd1ca313e0",
+      "kind": "heading",
+      "offset": 1381
+    },
+    {
+      "id": "h-cbd876db4a1864d8b70d",
+      "kind": "heading",
+      "offset": 1428
+    },
+    {
+      "id": "h-4d8f96a0c7b64542a199",
+      "kind": "heading",
+      "offset": 1439
+    },
+    {
+      "id": "h-a763588b2ff490eedbfd",
+      "kind": "heading",
+      "offset": 1512
+    },
+    {
+      "id": "h-110c8b7adad0e50f6abd",
+      "kind": "heading",
+      "offset": 1578
+    },
+    {
+      "id": "h-7869281acf899be6575e",
+      "kind": "heading",
+      "offset": 1658
+    },
+    {
+      "id": "h-e03032454c1036046c58",
+      "kind": "heading",
+      "offset": 1712
+    },
+    {
+      "id": "h-9c95b4a66d15468ffb74",
+      "kind": "heading",
+      "offset": 1721
+    },
+    {
+      "id": "h-45e924592e46d7a7f8cb",
+      "kind": "heading",
+      "offset": 1727
+    },
+    {
+      "id": "h-20ea6d256d589b9cc909",
+      "kind": "heading",
+      "offset": 1820
+    },
+    {
+      "id": "h-5a4b4752a4a448ca3f4c",
+      "kind": "heading",
+      "offset": 1916
+    },
+    {
+      "id": "h-73de4e190902d1d6990f",
+      "kind": "heading",
+      "offset": 2046
+    },
+    {
+      "id": "h-34754fa45ae3c8e3ee9c",
+      "kind": "heading",
+      "offset": 2195
+    },
+    {
+      "id": "h-86dd634865db91edd0a6",
+      "kind": "heading",
+      "offset": 2335
+    },
+    {
+      "id": "h-4ac74189c6af7484cb75",
+      "kind": "heading",
+      "offset": 2380
+    },
+    {
+      "id": "h-1b38f2d0163cf0884571",
+      "kind": "heading",
+      "offset": 2400
+    },
+    {
+      "id": "h-62054eeaae762adc68c0",
+      "kind": "heading",
+      "offset": 2423
+    },
+    {
+      "id": "h-b7fa52a22a1970d2a7b4",
+      "kind": "heading",
+      "offset": 2455
+    },
+    {
+      "id": "h-c7af7a58184024b42e0e",
+      "kind": "heading",
+      "offset": 2478
+    },
+    {
+      "id": "h-a585f38e066fec7d9ab4",
+      "kind": "heading",
+      "offset": 2500
+    },
+    {
+      "id": "h-63a1e093f70b1c956b8e",
+      "kind": "heading",
+      "offset": 2509
+    },
+    {
+      "id": "h-45ce648d9db881bc6f54",
+      "kind": "heading",
+      "offset": 2584
+    },
+    {
+      "id": "h-03ee5f2d14cacce71f81",
+      "kind": "heading",
+      "offset": 2725
+    },
+    {
+      "id": "h-a0c8dc2277245e2ac68c",
+      "kind": "heading",
+      "offset": 2787
+    },
+    {
+      "id": "h-111f29e838bb1e8b64ec",
+      "kind": "heading",
+      "offset": 2971
+    },
+    {
+      "id": "h-510f773a3a9ef3668ea1",
+      "kind": "heading",
+      "offset": 3229
+    },
+    {
+      "id": "h-f325325322b19f18d772",
+      "kind": "heading",
+      "offset": 3362
+    },
+    {
+      "id": "h-5def101be7be03e870c9",
+      "kind": "heading",
+      "offset": 3493
+    },
+    {
+      "id": "h-746ce580c4fc51c3892e",
+      "kind": "heading",
+      "offset": 3838
+    },
+    {
+      "id": "h-3fc35af4bdb4fabd0be8",
+      "kind": "heading",
+      "offset": 4013
+    },
+    {
+      "id": "h-b53d843268c4915378e0",
+      "kind": "heading",
+      "offset": 4641
+    },
+    {
+      "id": "h-244a6722e135445bee63",
+      "kind": "heading",
+      "offset": 4800
+    },
+    {
+      "id": "h-7900236857c3956dcabe",
+      "kind": "heading",
+      "offset": 4965
+    },
+    {
+      "id": "h-2b4a059e5281bb669ae1",
+      "kind": "heading",
+      "offset": 5158
+    },
+    {
+      "id": "h-19a4b6fd2d4444d380f3",
+      "kind": "heading",
+      "offset": 5409
+    },
+    {
+      "id": "h-7bc4de6e73f9be37d147",
+      "kind": "heading",
+      "offset": 5536
+    },
+    {
+      "id": "h-4992b3afa5b3fa01e367",
+      "kind": "heading",
+      "offset": 5568
+    },
+    {
+      "id": "h-0be8b538020ef8ab846e",
+      "kind": "heading",
+      "offset": 5601
+    },
+    {
+      "id": "h-ed3c19c7a0b8f186db88",
+      "kind": "heading",
+      "offset": 5609
+    },
+    {
+      "id": "h-80ba86cc98f533ea2013",
+      "kind": "heading",
+      "offset": 5711
+    },
+    {
+      "id": "h-ec4e993a2b124ac99de3",
+      "kind": "heading",
+      "offset": 6055
+    },
+    {
+      "id": "h-6673e43d0b40e0cff788",
+      "kind": "heading",
+      "offset": 6099
+    },
+    {
+      "id": "h-30af5dd3cc6dac492236",
+      "kind": "heading",
+      "offset": 6106
+    },
+    {
+      "id": "h-6da999fc07173cd4f373",
+      "kind": "heading",
+      "offset": 6235
+    },
+    {
+      "id": "h-9d00ace5c4a79381d93f",
+      "kind": "heading",
+      "offset": 6533
+    },
+    {
+      "id": "h-b456900c0fde708afcb3",
+      "kind": "heading",
+      "offset": 6584
+    },
+    {
+      "id": "h-311b50f22524df683f01",
+      "kind": "heading",
+      "offset": 6591
+    },
+    {
+      "id": "h-d55c2a598c0de13c27d7",
+      "kind": "heading",
+      "offset": 6630
+    },
+    {
+      "id": "h-9b5fcde2f05c166f368c",
+      "kind": "heading",
+      "offset": 6878
+    }
+  ],
+  "body": "# 数据类型\n## 数值类型\n![Pasted image 20231201202347&#46;png](/notes/n-8725e8de4795456397cc6118952175f3/media/30a583ee80eeb66c7fd71c05539de7f7001f1c4376158ded1c630fed31c7c600.png)\n\n## 字符类型\n![Pasted image 20231201202619&#46;png](/notes/n-8725e8de4795456397cc6118952175f3/media/1b37e317a576da1ce83a9e26890e64c20752f820e93332695c2ce4f23c250687.png)\n## 日期类型\n![Pasted image 20231201202854&#46;png](/notes/n-8725e8de4795456397cc6118952175f3/media/04540164b8e46dbb49647af42ca6aee32f352ce972efe679abda816f61f57daf.png)\n\n# 数据表\n\n\n## 约束\n\n| 约束     | 描述                                             | 关键字        |     |\n| -------- |:------------------------------------------------ | ------------- | --- |\n| 非空约束 | 限制该字段值不能为null                           | `not null`    |     |\n| 唯一约束 | 保证字段的所有数据都是唯一、不重复的             | `unique`      |     |\n| 主键约束 | 主键是一行数据的唯一标识，要求非空且唯一         | `primary key` |     |\n| 默认约束 | 保存数据时，如果未指定该字段值，则采用默认值     | `default`     |     |\n| 外键约束 | 让两张表的数据建立连接，保证数据的一致性和完整性 | `foreign key` |     |\n|          |                                                  |               |     |\n\n\n1. `auto_increasement`:自动增长\n## 基本操作\n### 创建\n\n```sql\ncreate table tb_user(\n\tid int comment 'ID,唯一标识'，\n\tusername varchar(20) comment'用户名'，\n\tname varchar(10) comment'姓名'，\n\tage int  comment'年龄'，\n\tgender char(1) comment'性别'\n) comment'用户表'；\n```\n\n### 修改表名\n\n```sql\nrename table 表名 to 新表名；\n```\n\n### 删除表\n\n```sql \ndrop table if exists tb_emp;\n```\n# 字段\n\n\n### 添加字段\n\n```sql\nalter table 表名 add 字段名 类型(长度) [comment注释] [约束];\n```\n\n\n### 修改字段类型\n\n```sql\nalter table 表名 modify 字段名 新数据类型(长度)；\n```\n\n\n### 修改字段名和字段类型\n\n```sql\nalter table 表名 change 旧字段名  新字段名  类型(长度) [comment注释][约束];\n```\n\n### 删除字段\n\n```sql\nalter table 表名 drop column 字段名；\n\n```\n\n\n\n\n# 记录\n\n## 基本操作\n### 增\n\n1. 向`table_name`中新增一行数据\n```sql\ninsert table_name values ('data1','data2','data3')\n```\n### 删\n\n删除`table_name`中所有满足条件`condition`的数据行\n```sql\ndelete from table_name where condition \n```\n\n### 改\n更新`table_name`中所有满足条件`condition`的数据行对应的`column`列的值为`value`\n```sql\nupdate table_name set column = value where condition\n```\n\n### 查\n\n展示`table_name`中所有满足`condition`条件的数据，按照升序/降序展示出前3个。\n\n```sql\nselect * from table_name where condition order by column asc/desc limit 0,3\n```\n\n\n\n\n# 查询\n\n```sql\nselect\n字段列表\nfrom\n表名列表\nwhere\n条件列表\ngroup by\n分组字段列表\nhaving\n分组后条件列表\norder by\n排序字段列表\nlimit\n分页参数\n```\n\n**执行顺序：where>聚合语句>having**\n\n## 基本查询\n\n```sql\nselect * from tableName\n```\n\n## 条件查询\n\n\n关键字：where\n## 分组查询\n\n关键字：group by\n\n## 聚合查询\n\n关键字：count、min、max等\n\n\n\n\n## 排序查询\n\n关键字：order by\n\n## 分页查询\n\n关键字：limit\n\n\n\n# 多表设计 \n\n\n## 一对多\n\n\n**例如**：一个部门可以有多个员工，一个员工只能归属一个部门。\n**实现**：在任意多的一方加入外键，关联另外一方的主键。\n\n### 物理外键\n**概念**：使用`foreign key`定义外键关联另外一张表。\n\n**缺点：**\n- **影响**增、删、改的**效率**（需要检查外键关系）。\n- **仅用于单节点数据库**，不适用与分布式、集群场景。\n- 容易引发数据库的死锁问题，**消耗性能**。\n\n### 逻辑外键\n\n**概念**：在业务层逻辑中，解决外键关联。\n通过逻辑外键，就可以很方便的解决**物理外键**的问题。\n\n\n## 一对一\n\n**案例**：用户与身份证信息的关系，一个用户有一个身份标识，一个身份标识指定一个用户。\n**关系**：一对一关系，多用于单表拆分，**将一张表的基础字段放在一张表中，其他字段放在另一张表中，以提升操作效率**\n\n**实现**：在任意一方加入外键，关联另外一方的主键，并且设置外键为唯一的(UNIQUE)\n\n\n\n**一对一可以看作特殊的一对多。**\n\n## 多对多\n\n\n**案例**：学生与选修课程的关系\n**关系**：一个学生可以选修多门课程，一门课程也可以供多个学生选择\n**实现**：建立第三张中间表，中间表至少包含两个外键，分别关联两方主键\n\n![Pasted image 20231202135907&#46;png](/notes/n-8725e8de4795456397cc6118952175f3/media/7cb6c5f3edae6bc65065e1d270dde7dab74488e819fb4cc6905229e3ebedb601.png)\n\n# 多表查询\n\n从多张表中查询数据。\n\n\n1. 了解笛卡尔积\n`select * from table1,table2`\n2. 消除无效的笛卡尔积\n`select * from table1,table2 where table1.id = table2.id`\n\n## 内连接\n\n隐式内连接：`select 字段列表 from 表1，表2 where 条件...;`\n显式内连接：`select 字段列表 from 表1 [inner] join 表2 on 连接条件...;`\n\n\n内连接：相当于查询A、B交集的部分数据\n\n## 外连接\n\n1. 左外连接：查询左表所有数据（包括两张表交集部分数据)\n```sql\nSELECT employees.*, departments.*\nFROM employees\nLEFT JOIN departments ON employees.department_id = departments.department_id;\n```\n2. 右外连接：查询右表所有数据（包括两张表交集部分数据）\n```sql\nSELECT employees.*, departments.*\nFROM employees\nRIGHT JOIN departments ON employees.department_id = departments.department_id;\n```\n## 子查询\n\n**介绍**：SQL语句中嵌套select语句，称为嵌套查询，又称子查询。\n**形式**：`select * from t1 where column1=（select column1 from t.2 …);`\n子查询外部的语句可以是 insert/update/delete/select 的任何一个，最常见的是select。\n\n### 分类\n\n1. 标量子查询：子查询返回的结果为单个值\n\t- 常用的操作符：= <> > >= < <=\n```sql\nSELECT column1, (SELECT MAX(column2) FROM table2) AS max_value\nFROM table1;\n```\n2. 列子查询：子查询返回的结果为一列\n\t- 常用的操作符：in、not in等\n```sql\nSELECT column1\nFROM table1\nWHERE column2 IN (SELECT column2 FROM table2 WHERE condition);\n```\n3. 行子查询：子查询返回的结果为一行\n\t- 常用的操作符：=、<>、in、not in\n```sql\nSELECT column1, column2\nFROM table1\nWHERE (column1, column2) = (SELECT column1, column2 FROM table2 WHERE condition);\n```\n4. 表子查询：子查询返回的结果为多行多列\n\t- 常用的操作符：in\n```sql\nSELECT column1, column2\nFROM (SELECT column1, column2 FROM table2 WHERE condition) AS subquery_table\nWHERE column1 = value;\n```\n\n\n# 事务\n\n\n事务是一组操作的集合，它是一个不可分割的工作单位。事务会把所有的操作作为一个整体一起向系统提交或撤销操作请求，即这些操作**要么同时成功，要么同时失败。**\n\n**如果没有事务会出现如下情况：**\n1. 网上购物，付款了但是没有发货\n2. 银行转账出现问题，扣了A账户的钱但是没有增加B账户的钱\n\n## 事务操作\n```sql\nstart transaction ;\n\n……\n\ncommit;\n\nrollback;\n```\n1. 开启事务：start transaction /begin;\n2. 提交事务：commit; 事务执行成功，真正的提交到数据库。\n3. 回滚事务：rollback;事务执行失败，回滚到事务执行前。\n## 四大特性\n\n1. 原子性 Atomicity，事务是不可分割的最小单元，要么全部成功，要么全部失败\n2. 一致性 Consistency，事务完成时，必须使所有的数据都保持一致状态\n3. 隔离性 Isolation，数据库系统提供的隔离机制，保证事务在不受外部并发操作影响的独立环境下运行\n4. 持久性 Durability，事务一旦提交或回滚，它对数据库中的数据的改变就是永久的\n\n\n# 索引\n\n索引(index)是帮助数据库高效获取数据的数据结构，通过建立树实现，空间换时间。\n\n**优点**：\n1. 提高数据查询的效率，降低数据库的IO成本。\n2. 通过索引列对数据进行排序，降低数据排序的成本，降低CPU消耗。\n\n**缺点**：\n1. 索引会占用存储空间。\n2. 索引大大提高了查询效率，同时却也降低了insert、update、delete的效率。\n\n**注意事项**：\n主键字段，在建表时，会自动创建主键索引。\n添加唯一约束时，数据库实际上会添加唯一索引。\n\n---\n### 创建索引\n\n为`tb_sku`的`sn`字段建立`idx_sku_sn`索引：`create index idx_sku_sn on tb_sku(sn);`\n\n`create [unique] index索引名 on 表名(字段名,..)；`\n### 查看索引\n\n`show index from 表名;`\n### 删除索引\n\n`drop index 索引名 on表名;`\n\n\n\n# 触发器\n\n\n## 介绍\n通过触发器可以实现在增、删、改操作前/后执行指定的sql语句实现级联更新、级联删除。\n\n-在使用触发器时，执行操作的对象 与 拥有该触发器的表不能为同一张表，否则触发器会不停地进行递归调用\n\n## 创建\n\n```sql\nCREATE TRIGGER trigger_name  \ntrigger_time trigger_event  \nON table_name  \nFOR EACH ROW  \nBEGIN  \n-- 触发器的逻辑代码  \nEND;\n```\n\n- 在上面的语法中，您需要指定以下内容：\n\t- trigger_name：触发器的名称，您可以根据自己的需要进行命名。\n\t- trigger_time：触发器的时间，可以是BEFORE或AFTER。\n\t- trigger_event：触发器的事件，可以是INSERT、UPDATE或DELETE。\n\t- table_name：触发器所在的表名。\n\t- FOR EACH ROW：指定触发器是每行触发还是一次触发。\n\n## 删除\n\n删除触发器\n`DROP TRIGGER trigger_name`\n\n\n# 存储过程\n\n## 介绍\n\nMySQL中的存储过程是一组预先定义的SQL语句，它们被命名并存储在数据库中，可以在需要时被调用和执行。存储过程可以接受参数，并且可以包含条件判断、循环、事务处理等逻辑。\n\n存储过程用call调用：`call procedure(arg)`\n\n## 创建\n```sql\nCREATE PROCEDURE procedure_name ([IN|OUT|INOUT] parameter_name data_type [, ...])  \nBEGIN  \n-- 存储过程的逻辑代码  \nEND;\n```\n- 在上面的语法中，您需要指定以下内容：\n\t- procedure_name：存储过程的名称，您可以根据自己的需要进行命名。\n\t- \\[IN|OUT|INOUT] parameter_name data_type：存储过程的参数，可以使用IN、OUT或INOUT来指定参数的类型和传递方式。参数名称和数据类型需要根据实际情况进行定义。\n\n## 删除\n`DROP PROCEDURE IF EXISTS procedure_name;`\n\n# 存储函数\n\n## 介绍\n\n存储过程用call调用：`select func(arg)`\n\n## 创建\n\n```sql\nCREATE FUNCTION function_name ([参数列表])\nRETURNS 返回值的数据类型 BEGIN \n-- 函数逻辑代码 RETURN 返回值; \nEND;\n\n```\n\n```sql\nCREATE FUNCTION add_numbers(a INT, b INT) \nRETURNS INT \nBEGIN DECLARE result INT; \nSET result = a + b; \nRETURN result; \nEND;\n```\n\n## 删除\n\n`drop FUNCTION function_name`\n",
+  "id": "8725e8de-4795-4563-97cc-6118952175f3",
+  "metadata": {
+    "title": "MySQL"
+  },
+  "resources": [
+    "04540164b8e46dbb49647af42ca6aee32f352ce972efe679abda816f61f57daf.png",
+    "1b37e317a576da1ce83a9e26890e64c20752f820e93332695c2ce4f23c250687.png",
+    "30a583ee80eeb66c7fd71c05539de7f7001f1c4376158ded1c630fed31c7c600.png",
+    "7cb6c5f3edae6bc65065e1d270dde7dab74488e819fb4cc6905229e3ebedb601.png"
+  ],
+  "url": "/notes/n-8725e8de4795456397cc6118952175f3/"
+}

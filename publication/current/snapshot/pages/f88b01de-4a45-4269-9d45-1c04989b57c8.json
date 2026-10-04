@@ -1,0 +1,31 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-405b3191363e9adeb47c",
+      "kind": "heading",
+      "offset": 8
+    },
+    {
+      "id": "h-4941bedccce2f09d2842",
+      "kind": "heading",
+      "offset": 169
+    },
+    {
+      "id": "h-00012b816285a8949c74",
+      "kind": "heading",
+      "offset": 346
+    }
+  ],
+  "body": "# STL 概览\n\n上级：[C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/)\n\n相关内容：[C&#43;&#43; 模板机制](/notes/n-ee8743c7e4904a32b0036908655eae75/)\n\n## 什么是 STL\n\n`STL`（Standard Template Library，标准模板库）是 `C++` 标准库中非常重要的一部分。它围绕**泛型编程**组织了一组可复用的容器、迭代器、算法和函数对象，使常见数据结构与算法能够以统一接口协同工作。\n> `STL` 是 `C++` 标准函数库中的一个子集，这个子集约占整个库的 `80%`。\n\n## STL 基本组件\n\n`STL` 主要由**容器**、**迭代器**和**算法**组成。\n\n![a7cd25070259bcf84ce0f35dc5af4b07&#95;MD5&#46;jpg](/notes/n-f88b01de4a4542699d451c04989b57c8/media/e5b127a9200a9970070bcf67cd02303d7e9b265c578a131b68b1986a07045024.jpg)\n\n- **容器**：用于存储各种数据类型的数据结构。\n- **迭代器**：用于依次访问容器中元素的对象。\n- **算法**：用于操作容器元素的函数模板，例如 `sort()`、`find()`、`count()`。\n\n举例说明：数组 `int array[100]` 可以视为一个顺序存储容器，而 `int*` 类型的指针可以作为它的迭代器；在此基础上，就可以编写通用排序算法处理该数组。\n",
+  "id": "f88b01de-4a45-4269-9d45-1c04989b57c8",
+  "metadata": {
+    "tags": [
+      "lang/cpp/stl"
+    ],
+    "title": "C++ STL 概览"
+  },
+  "resources": [
+    "e5b127a9200a9970070bcf67cd02303d7e9b265c578a131b68b1986a07045024.jpg"
+  ],
+  "url": "/notes/n-f88b01de4a4542699d451c04989b57c8/"
+}

@@ -1,0 +1,53 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-8f8fbe0419fa1ff37129",
+      "kind": "heading",
+      "offset": 30
+    },
+    {
+      "id": "h-29151b4c3848edde32ad",
+      "kind": "heading",
+      "offset": 52
+    },
+    {
+      "id": "e-3ba4d3b9c57b999554e6-b-9xp9lk",
+      "kind": "quote-block",
+      "offset": 603,
+      "prefix": "> "
+    },
+    {
+      "id": "h-b8a5fbab29abe2a4c184",
+      "kind": "heading",
+      "offset": 635
+    },
+    {
+      "id": "h-a3a2196172eb8b5f5901",
+      "kind": "heading",
+      "offset": 1875
+    }
+  ],
+  "body": "# Windows 线程创建（04）：用户线程与系统线程启动\n\n## SystemRoutine 的作用\n\n在 `PspCreateThread` 创建线程时，会通过 `KeInitThread` 为新线程设置初始执行环境。\n\n![dfc417f46b669c93cd0520a79d8c37d0&#95;MD5&#46;jpg](/notes/n-965b6f66f3814cca8f4d28e41e7d7d47/media/9734ea4805f49d372240b7418b76560ce70b8bd0472b4e6d91a9525605af854c.jpg)\n其中有一个关键参数 `SystemRoutine`——它是线程被调度后、在内核态运行的**第一个函数**，可以理解为线程进入自己业务逻辑之前的\"启动前准备工作\"。对于创建用户线程和系统线程的情况，SystemRoutine 分别是 `PspUserThreadStartup` 和 `PspSystemThreadStartup`。\n\n\n\n> **用户线程第一次进 3 环的顺序是**：位置 3 执行指定的用户 APC（即 `LoaderInitRoutine`，也是 `LdrInitializeThunk`），完成用户 APC 后返回到“3 环原位置”（即恢复原始 `CONTEXT` 到位置 2），再由用户态启动桩调用位置 1。 \n\n\n\n### 用户线程：PspUserThreadStartup\n\n**核心调用就两处**：\n\n1. 调用 `DbgkCreateThread(Thread, StartContext)` 发送调试事件。这里的 `StartContext` 是位置 2；首线程会表现为进程创建调试事件，后续线程才表现为线程创建调试事件。`KiInitializeUserApc` 后续会把 `TrapFrame` 的 `EIP` 从位置 2 改为位置 3，所以第一次返回用户态先落到位置 3。\n![9e0365039a3fd273150e8ef77c8d2d8f&#95;MD5&#46;jpg](/notes/n-965b6f66f3814cca8f4d28e41e7d7d47/media/9c76ce7a492e2b611a902c255c594991e0477ab9629746f341868d3aea33d2f6.jpg)\n2. 调用 `KiInitializeUserApc`，它不是插入 APC 队列，而是把当前 `TrapFrame` 改造成一次用户态 APC 分发现场，和构建内核态返回用户态的现场逻辑相似，并且将内核态返回用户态时的返回地址从位置 2 改为位置 3，`KiInitializeUserApc` 的现场改写过程，见 [用户 APC 的现场构造](/notes/n-3d7533bad94d40888f2bb35b29d2125e/#h-c22201a93f2a4b8c606b)。\n   ![68f31fd9f02294c1b9d09de7e513573e&#95;MD5&#46;jpg](/notes/n-965b6f66f3814cca8f4d28e41e7d7d47/media/beb967cebdd93c1815806075f4b219d276d81a621c3719385a0718ab9b6d860e.jpg)\n\n\t1. 将内核栈中的陷阱帧转换为 `CONTEXT`，此时 `PC/EIP` 仍是位置 2。\n\t2. 在用户栈上向高地址方向分配一段空间（栈向低地址增长），用作“临时栈”，避免覆盖原栈内容。\n\t3. 将刚才的 `CONTEXT` 复制到“临时栈”中，原始执行状态（包括 `EIP`，即位置 2）由此备份在用户栈上。\n\t4. 修改陷阱帧，重点是将 `EIP` 从位置 2 改为位置 3。WRK 源码写入的是 `KeUserApcDispatcher` 变量，它指向用户态 `ntdll!KiUserApcDispatcher`。\n\t5. 线程返回用户态时先进入位置 3，由 `KiUserApcDispatcher` 调用 `LdrInitializeThunk`。loader 按当前场景完成进程/线程初始化后，dispatcher 根据“临时栈”上保存的原始 `CONTEXT` 恢复到位置 2，再由用户态启动桩调用位置 1。\n\n\n### 系统线程：PspSystemThreadStartup\n\n相比用户线程的间接跳转，系统线程的路径就直接得多。\n\n![8274da2f306697053282919e9c3034f3&#95;MD5&#46;jpg](/notes/n-965b6f66f3814cca8f4d28e41e7d7d47/media/d1942d49f61c5e1259788480764434aeea710834bdbfd94a6a47dfb12ec5c32c.jpg)\n\n**逻辑说明**：`PspSystemThreadStartup` 流程非常简洁——降低 IRQL 到 `PASSIVE_LEVEL`，检查线程是否已被标记终止，**然后直接调用 `StartRoutine(StartContext)` 执行业务逻辑**。如果 `StartRoutine` 正常返回，线程就调用 `PspExitThread` 终止自己。\n",
+  "id": "965b6f66-f381-4cca-8f4d-28e41e7d7d47",
+  "metadata": {
+    "aliases": [
+      "PspUserThreadStartup 与 PspSystemThreadStartup：线程启动例程",
+      "PspUserThreadStartup",
+      "PspSystemThreadStartup"
+    ],
+    "tags": [
+      "os/windows/thread",
+      "reverse/windows",
+      "arch/x86"
+    ],
+    "title": "Windows 线程创建（04）：用户线程与系统线程启动",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "9734ea4805f49d372240b7418b76560ce70b8bd0472b4e6d91a9525605af854c.jpg",
+    "9c76ce7a492e2b611a902c255c594991e0477ab9629746f341868d3aea33d2f6.jpg",
+    "beb967cebdd93c1815806075f4b219d276d81a621c3719385a0718ab9b6d860e.jpg",
+    "d1942d49f61c5e1259788480764434aeea710834bdbfd94a6a47dfb12ec5c32c.jpg"
+  ],
+  "url": "/notes/n-965b6f66f3814cca8f4d28e41e7d7d47/"
+}

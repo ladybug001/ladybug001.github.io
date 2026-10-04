@@ -1,0 +1,135 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-41f32f39c4618d885b16",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-51ce46af21b7ec32de6f",
+      "kind": "heading",
+      "offset": 30
+    },
+    {
+      "id": "h-47ef7c5ff246d4d59a42",
+      "kind": "heading",
+      "offset": 344
+    },
+    {
+      "id": "h-38d7449d5b95ae06b85d",
+      "kind": "heading",
+      "offset": 1071
+    },
+    {
+      "id": "h-56cb6d1d6cbe9f947665",
+      "kind": "heading",
+      "offset": 1082
+    },
+    {
+      "id": "h-4816fe2cbc7d4c79dcdc",
+      "kind": "heading",
+      "offset": 1342
+    },
+    {
+      "id": "h-624d636c8c7afa5538bd",
+      "kind": "heading",
+      "offset": 1653
+    },
+    {
+      "id": "h-5c09346c6b5549898bc4",
+      "kind": "heading",
+      "offset": 1927
+    },
+    {
+      "id": "h-70df023af227fafb9141",
+      "kind": "heading",
+      "offset": 5813
+    },
+    {
+      "id": "h-6ba43f62cb2b1cb915c3",
+      "kind": "heading",
+      "offset": 6796
+    },
+    {
+      "id": "h-59d868e1c962b03d7fb5",
+      "kind": "heading",
+      "offset": 7171
+    },
+    {
+      "id": "h-70ed0bed1bbef9ecfe88",
+      "kind": "heading",
+      "offset": 8557
+    },
+    {
+      "id": "h-6ff14874ef40bd95509b",
+      "kind": "heading",
+      "offset": 9658
+    },
+    {
+      "id": "h-f4670df39c5374b3cd0a",
+      "kind": "heading",
+      "offset": 10978
+    },
+    {
+      "id": "h-0136a316bffa228c3994",
+      "kind": "heading",
+      "offset": 11000
+    },
+    {
+      "id": "h-e3d596588e39bf3774f0",
+      "kind": "heading",
+      "offset": 12972
+    },
+    {
+      "id": "h-602f971b91c3dd6271f9",
+      "kind": "heading",
+      "offset": 13908
+    },
+    {
+      "id": "h-e2a9b94fa1ff68686224",
+      "kind": "heading",
+      "offset": 14564
+    },
+    {
+      "id": "h-9c8a581ef7601e70fb02",
+      "kind": "heading",
+      "offset": 14684
+    },
+    {
+      "id": "h-1985be6ab8852c695f19",
+      "kind": "heading",
+      "offset": 16104
+    }
+  ],
+  "body": "\n# Windows 窗口消息机制\n\n## 消息驱动模型概述\n\n消息循环，是 Windows 这一**消息驱动**操作系统的基石。几乎所有的系统行为——从鼠标点击、窗口刷新到系统关机——本质上都是通过发送与接收**消息 (`Message`)** 来协同完成的。所有用户交互（鼠标、键盘）和系统事件都被封装为消息，投入目标线程的消息队列，由程序的消息循环提取并分发处理。\n\n**需要理解的核心要点**：\n\n- 并非所有线程都需要消息队列，只有 GUI 线程才会拥有消息队列，每个 GUI 线程有且只有一个消息队列。\n- 消息队列存储在内核空间中，具体的内核结构将在后续章节展开。\n- 硬件输入由系统内核线程监控，根据窗口位置和焦点自动路由到正确的线程消息队列。\n\n## 消息结构体 MSG\n\n应用程序通过 `GetMessage` 函数接收消息，其第一个参数即为接收的消息结构体。在 `WinUser.h` 中可以查看 `MSG` 的定义，该结构体里有窗口句柄、消息类型、消息参数等内容：\n\n![0c3ec794d2816ff260a42cdb0902d80c&#95;MD5&#46;png](/notes/n-588dd991e500491c94d1853fffca6bdb/media/57b4af67f9ea7f183abd64859d2b805d08455970e2a7f32a555a5e32904b9bf7.png)\n\n```cpp\ntypedef struct tagMSG {\n    HWND hwnd;      // 目标窗口句柄\n    UINT message;   // 消息 ID：用于区分消息类型（如 WM_QUIT, WM_PAINT）\n    WPARAM wParam;  // 附加数据 1（如按键发生时的虚拟键码）\n    LPARAM lParam;  // 附加数据 2（如鼠标点击时的 X, Y 坐标）\n    DWORD time;     // 消息产生的系统时间戳\n    POINT pt;       // 消息产生时的鼠标坐标\n} MSG, *PMSG;\n```\n\n> [!important] 注意事项\n> 一个线程可以管理多个窗口，但一个窗口严格属于一个唯一的线程。窗口过程函数与窗口一一对应，因此消息中必须封装窗口句柄 (`hwnd`)，使得 `DispatchMessage` 能够根据此 `hwnd` 精确路由至其唯一绑定的 `WindowProc`。\n\n## 消息队列\n\n### 双队列架构\n\n为了高效管理事件，Windows 主要维护两类消息队列：\n\n- **系统消息队列**：记录所有的底层硬件输入（如键盘按键、鼠标移动与点击等）。\n- **线程消息队列**：每个 GUI 线程都拥有独立的私有队列。系统负责将全局系统队列中的消息进行过滤，并分发至对应的目标线程消息队列中。\n\n每个 GUI 线程都会启动一个**消息循环（死循环）**，持续通过 `GetMessage` 从队列中提取消息，并调用相应的**窗口过程函数 (`Window Procedure`)** 进行响应。\n\n### 消息队列的存放位置\n\n在消息驱动模型中，消息的产生与处理是异步的——消息可能随时到达，而程序需要按自己的节奏逐一处理。为了缓冲这种速率差异，操作系统需要提供一个容器来暂存待处理的消息，这就是**消息队列**。\n\n![9bf605149eccabf030d86d9233735c4c&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/c3ae964e55da870b85c9bc9e0409e7ab0ba3938592bbf3eb79258a8102ae5d9e.jpg)\n\n那么消息队列应该存放在哪里？不同的操作系统做出了不同的设计选择。\n\n#### 用户空间\n\n如果消息队列存在于用户空间，将硬件产生的消息从内核传递到用户空间，需要进行频繁的跨进程通信，Linux 操作系统通过单独的进程专门负责将消息发送给不同的进程：\n\n![2baca4edc1bcf6a2557297563604142e&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/04b0d72e8c53400b26d419d73e68868a35ba2183cbcd40489230a69e21d7736e.jpg)\n\n这种方法效率较低。\n\n#### 内核空间\n\n在 Windows 操作系统上微软采用了一种不同的策略：将**消息队列存储在内核空间**，由于不同进程的内核空间往往是相同的，因此无需跨进程传递数据。\n\n---\n\n在线程结构体的 `0x130` 偏移位有个成员 `Win32Thread`，该成员在线程调用图形界面相关函数时，会指向一个名为 `_THREADINFO` 的结构体，该结构体中包含了消息队列。\n\n![ccb2270f9388c4873912bb802374c109&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/1d3e49777db054123c3c3a685aaf81d58fe7bd15a21463aedffe301d8e68c076.jpg)\n\n由于该结构体是未公开的，所以我们也只能在 ReactOS 代码（https://sourceforge.net/projects/reactos/）中找到：\n\n```cpp\n#ifdef __cplusplus\ntypedef struct _THREADINFO : _W32THREAD\n{\n#else\ntypedef struct _THREADINFO\n{\n    W32THREAD;\n#endif\n    PTL                 ptl;\n    PPROCESSINFO        ppi;\n    struct _USER_MESSAGE_QUEUE* MessageQueue;\n    struct tagKL*       KeyboardLayout;\n    struct _CLIENTTHREADINFO  * pcti;\n    struct _DESKTOP*    rpdesk;\n    struct _DESKTOPINFO  *  pDeskInfo;\n    struct _CLIENTINFO * pClientInfo;\n    FLONG               TIF_flags;\n    PUNICODE_STRING     pstrAppName;\n    struct _USER_SENT_MESSAGE *pusmSent;\n    struct _USER_SENT_MESSAGE *pusmCurrent;\n    /* Queue of messages sent to the queue. */\n    LIST_ENTRY          SentMessagesListHead;    // psmsReceiveList\n    /* Last message time and ID */\n    LONG                timeLast;\n    ULONG_PTR           idLast;\n    /* True if a WM_QUIT message is pending. */\n    BOOLEAN             QuitPosted;\n    /* The quit exit code. */\n    INT                 exitCode;\n    HDESK               hdesk;\n    UINT                cPaintsReady; /* Count of paints pending. */\n    UINT                cTimersReady; /* Count of timers pending. */\n    struct tagMENUSTATE* pMenuState;\n    DWORD               dwExpWinVer;\n    DWORD               dwCompatFlags;\n    DWORD               dwCompatFlags2;\n    struct _USER_MESSAGE_QUEUE* pqAttach;\n    PTHREADINFO         ptiSibling;\n    ULONG               fsHooks;\n    struct tagHOOK *    sphkCurrent;\n    LPARAM              lParamHkCurrent;\n    WPARAM              wParamHkCurrent;\n    struct tagSBTRACK*  pSBTrack;\n    /* Set if there are new messages specified by WakeMask in any of the queues. */\n    HANDLE              hEventQueueClient;\n    /* Handle for the above event (in the context of the process owning the queue). */\n    PKEVENT             pEventQueueServer;\n    LIST_ENTRY          PtiLink;\n    INT                 iCursorLevel;\n    /* Last message cursor position */\n    POINT               ptLast;\n\n    INT                 cEnterCount;\n    /* Queue of messages posted to the queue. */\n    LIST_ENTRY          PostedMessagesListHead; // mlPost\n    WORD                fsChangeBitsRemoved;\n    WCHAR               wchInjected;\n    UINT                cWindows;\n    UINT                cVisWindows;\n#ifndef __cplusplus /// FIXME!\n    LIST_ENTRY          aphkStart[NB_HOOKS];\n    CLIENTTHREADINFO    cti;  // Used only when no Desktop or pcti NULL.\n\n    /* ReactOS */\n\n    /* Thread Queue state tracking */\n    // Send list QS_SENDMESSAGE\n    // Post list QS_POSTMESSAGE|QS_HOTKEY|QS_PAINT|QS_TIMER|QS_KEY\n    // Hard list QS_MOUSE|QS_KEY only\n    // Accounting of queue bit sets, the rest are flags. QS_TIMER QS_PAINT counts are handled in thread information.\n    DWORD nCntsQBits[QSIDCOUNTS]; // QS_KEY QS_MOUSEMOVE QS_MOUSEBUTTON QS_POSTMESSAGE QS_SENDMESSAGE QS_HOTKEY\n\n    LIST_ENTRY WindowListHead;\n    LIST_ENTRY W32CallbackListHead;\n    SINGLE_LIST_ENTRY  ReferencesList;\n    ULONG cExclusiveLocks;\n#if DBG\n    USHORT acExclusiveLockCount[GDIObjTypeTotal + 1];\n#endif\n#endif // __cplusplus\n} THREADINFO;\n```\n\n成员 `MessageQueue` 就是消息队列，其中包含 7 组队列（仅适用于旧版 ReactOS），用于处理不同类型的消息。如下 3 个是比较常见的消息队列：\n\n1. `SentMessagesListHead`：接到 `SendMessage` 发来的消息。\n2. `PostedMessagesListHead`：接到 `PostMessage` 发来的消息。\n3. `HardwareMessagesListHead`：接到鼠标、键盘的消息。\n\n当线程首次调用窗口相关的 API 时，内核将创建一个带有消息队列的结构体 `_THREADINFO`，并将其挂接到 `_KTHREAD` 结构体 `Win32Thread` 成员上。\n\n> 相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n### 窗口对象与消息队列的关联\n\n在 3 环创建窗口时，首先需要创建和注册一个窗口类对象，并注册和设置窗口的样式和过程函数。然后，通过调用 `CreateWindow` 函数在内核中创建窗口对象。\n\n![b8dcc3f78958047949d85c178b97420d&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/05656dd5becec8f2ef127a4ce060a563a7834957718ee62f65ae238a08959773.jpg)\n\n`CreateWindow` 最终调用的是位于 `Win32k.sys` 中的 0 环函数，相关的调用链条：`CreateWindow` → `CreateWindowA`/`W` → `CreateWindowEx` → `_VerNtUserCreateWindowEx` → `NtUserCreateWindowEx`：\n\n![782f2cd4a9b2d0431a972ee5604023bf&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/545f88ea96fe840acf0bb6d14be90856e75b0c7f58cda77dc6534d9687d2aa7a.jpg)\n\n> [!tip] 系统调用路由\n> 根据系统调用号的第 12 位判断路由：为 0 则查主表（`ntoskrnl.exe`），为 1 则查影子表（`win32k.sys`）。窗口相关的系统调用都由 `Win32k.sys` 提供服务。\n\n在 0 环中会为窗口创建 `_WINDOW_OBJECT` 的结构体，每个窗口都有一个这样的结构体（该结构体没有通过符号表导出，可以查看 ReactOS 的代码来查看该结构体）。\n\n在窗口对象 `_WINDOW_OBJECT` 中，存在一个名为 `pti` 的成员，其类型为 `_PTHREADINFO`，指向 `_THREADINFO` 结构体（这个结构体也被 `_KTHREAD.Win32Thread` 指向）。因为消息队列位于 `_THREADINFO` 结构体中，**这就实现了窗口对象与消息队列的关联**。\n\n## 消息的来源与路由\n\n了解消息队列与线程关系后，我们需要知道**消息是从哪里来，又到哪里去，是谁来做这些消息传递的**。如下图所示，我们可以通过 VC++ 6.0 的工具 Spy++ 用于捕捉某窗口接收到的消息。\n\n![788e0e3c1e49919305e72c0ffcc01f9d&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/6479d89306d3e7db54b84ad387cae12bf24825c01a9ce22c06d6988b1e100f43.jpg)\n\n消息的来源主要分为两类：**硬件消息**（由键盘、鼠标等硬件中断产生）和**软件消息**（由程序主动调用 `SendMessage` 或 `PostMessage` 发送）。\n\n### 硬件消息的产生与内核线程\n\n当鼠标在窗口上移动、点击或键盘敲击时，键盘、鼠标等硬件中断发生时会生成原始的消息放入内核中的全局消息队列，由内核线程封装为消息，经过路由投入目标线程的消息队列。\n\n`Win32k.sys` 服务在初始化时，它会创建 2 个内核线程：`KeyboardThreadMain`、`MouseThreadMain`，也就是鼠标、键盘消息的搬运线程，具体的我们可以看如下这个函数：\n\n```cpp\nNTSTATUS FASTCALL InitInputImpl(VOID)\n{\n   NTSTATUS Status;\n   KeInitializeEvent(&InputThreadsStart, NotificationEvent, FALSE);\n   MasterTimer = ExAllocatePoolWithTag(NonPagedPool, sizeof(KTIMER), TAG_INPUT);\n   KeInitializeTimer(MasterTimer);\n   Status = PsCreateSystemThread(&RawInputThreadHandle,THREAD_ALL_ACCESS,NULL,NULL,\n                                  &RawInputThreadId,RawInputThreadMain,NULL);\n\n   // 键盘输入线程：KeyboardThreadMain\n   Status = PsCreateSystemThread(&KeyboardThreadHandle,THREAD_ALL_ACCESS,NULL,NULL,\n                                  &KeyboardThreadId,KeyboardThreadMain,NULL);\n\n   // 鼠标输入线程：MouseThreadMain\n   Status = PsCreateSystemThread(&MouseThreadHandle,THREAD_ALL_ACCESS,NULL,NULL,\n                                  &MouseThreadId,MouseThreadMain,NULL);\n\n   InputThreadsRunning = TRUE; // TRUE表示现在可以开始读取键盘鼠标输入\n   KeSetEvent(&InputThreadsStart, IO_NO_INCREMENT, FALSE);\n\n   return STATUS_SUCCESS;\n}\n```\n\n![18acc87cb258a377f939e736769ce336&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/137259dc789e511a544341183d452182f43c7458f0f31665d1ab17b677cba328.jpg)\n\n如上代码也就解释了为什么有的时候程序卡死，但鼠标仍然可以移动，这是因为鼠标操作运行在独立的线程中。\n\n### 软件消息：SendMessage 与 PostMessage\n\n除了硬件输入外，程序也可以主动向其他窗口发送消息。获得窗口句柄后，可以使用 `SendMessage` 或 `PostMessage` 函数向目标窗口发送消息以进行交互。两者的核心差异如下：\n\n- **`PostMessage`（异步投递）**：将消息直接压入目标线程的 `PostedMessagesListHead` 队列中，函数立即返回，不等待处理结果。\n- **`SendMessage`（同步发送）**：若目标窗口属于当前线程，直接调用其窗口过程函数；若属于其他线程，则投递至目标线程的 `SentMessagesListHead` 队列，然后发送线程挂起等待，直到目标窗口过程处理完毕并返回结果。\n\n两者的关键区别：\n\n1. **进入的队列不同**：`SendMessage` 发送的消息进入 `SentMessagesListHead`，`PostMessage` 发送的消息进入 `PostedMessagesListHead`。\n2. **执行时机不同**：`SentMessagesListHead` 中的消息由 `GetMessage` 在内部直接处理；`PostedMessagesListHead` 中的消息由 `GetMessage` 取出后交由 `DispatchMessage` 处理。\n\n如下图所示，控制台程序使用 `SendMessage` 函数发送消息，当窗口程序未处理该消息（即弹窗不关闭就不会处理），则控制台程序会等待接收处理结果：\n\n![e428637718fecd8d161944edb4cb89c2&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/b7e2d63d2aeec2dbbec0150cf009b12f300dfc469287f948e35190128423eafe.jpg)\n\n从内核视角来看，`SendMessage` 与 `PostMessage` 底层**运作机制的根本差异**：前者用到了等待与唤醒机制。\n\n> 这从侧面说明，内核中不同的消息队列，其使用的消息结构体是不同的：`SentMessagesListHead` 队列中的结构体还含有可等待对象成员，相关内容参考：[Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/)\n> 但是用户态使用的消息结构体是统一的。\n\n### 目标窗口的定位\n\n如下图所示，在打开了三个窗口的情况下，当鼠标进行点击和移动操作时，操作系统是如何知道发送给哪个窗口所对应的消息队列呢？\n\n![b05aec3652767e0bf587e3e73b9969e8&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/a4936a6f65baa70948ae71181b4f8b21de42aae8532a7b97fbf4bf57f161b10e.jpg)\n\n> 严格来说，图中不仅有三个窗口：每个窗口的子控件，如内部按钮、表格等也都是一个窗口。一个线程可以拥有多个窗口，但一个窗口只能属于一个线程——消息路由正是基于这种线程级归属关系来定位目标消息队列的。\n\n当用户点击窗口的某个按钮时，整个分发路径如下：\n\n1. **硬件驱动处理**：当用户移动鼠标或敲击键盘时，硬件产生中断。Windows 内核中的鼠标/键盘类驱动程序拦截这些中断，将输入事件封装为消息。\n2. **系统消息队列入队**：这些消息首先放入**系统消息队列 (`System Message Queue`)**。该队列由单线程 **原始输入线程 (`Raw Input Thread`, `RIT`)** 负责调度。\n3. **RIT 搬运与派发**：\n    - **监控与识别**：RIT 持续检查系统消息队列，**根据坐标或焦点计算并确定目标窗口及句柄 `HWND`**，找到目标窗口对应的内核结构体 `_WINDOW_OBJECT` 并定位其所属线程（`pti` 成员）。\n    - **搬运**：将消息从系统全局队列中移出，挂载到目标 UI 线程的**用户消息队列 (`User Message Queue`)** 中。\n\n**完整调度链条**：计算目标坐标 → 确定目标窗口及 HWND → 定位窗口所属线程 → 投入线程消息队列。\n\n![f986193e50b0f9a5c3c17ba4c2d72681&#95;MD5&#46;png](/notes/n-588dd991e500491c94d1853fffca6bdb/media/ef818df79a9c3ef2be94497cb999007f932c34bcf2f8bc9c1ede01d40543f588.png)\n\n存入线程队列后，应用程序即可通过 `GetMessage` 循环提取：\n\n![5d4217a2fedf496687f4ef5cd388cd7e&#95;MD5&#46;png](/notes/n-588dd991e500491c94d1853fffca6bdb/media/a9a6e71ed473f628e2e7a229208a691e6ef7e026afe03ac013c8dca4f9bc81ac.png)\n\n> 系统是如何得知点击的是窗口的哪个部位（关闭、最小化等），参考：[MFC 键盘与鼠标消息处理](/notes/n-a8306eb080294d6d894a9ec5e1053d67/#h-0780b5cf5a8fa4e6f080)\n\n## 消息循环管线\n\n### GetMessage 的内核行为\n\n`GetMessage` 函数的语法如下：\n\n```cpp\nBOOL GetMessage(\n  LPMSG lpMsg,         // 返回从队列中获取的消息\n  HWND hWnd,           // 过滤条件：指定接收哪个窗口的消息\n  UINT wMsgFilterMin,  // 过滤条件\n  UINT wMsgFilterMax   // 过滤条件\n);\n```\n\n该函数循环判断是否存在符合过滤条件的消息，如果有则取出并存储到输出参数中，然后传递给 `TranslateMessage` 和 `DispatchMessage` 函数进行处理。\n\n虽然 `GetMessage` 表面上只有获取消息的含义，但实际还会处理消息。\n\n我们将程序 A 代码中的 `TranslateMessage` 和 `DispatchMessage` 注释掉：\n\n![7b68f73ffb5fdaf40995224cb7321ba9&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/232e1d3323d94904a23ae1688c0750f642fa733603c751741f68aeb39dfee085.jpg)\n\n让另外一个程序 B 使用 `SendMessage` 发送消息给 A：\n\n![39da540429d4fb5deeb3cd59b37de762&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/e1f94a1ecfd15219ddfe9fcf5e05540ebf7513faa4d8da4746dbf15641cf4b18.jpg)\n\n运行程序 A 和 B 后，会发现窗口成功接收到了消息，并执行了对应的处理函数：\n\n![e428637718fecd8d161944edb4cb89c2&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/b7e2d63d2aeec2dbbec0150cf009b12f300dfc469287f948e35190128423eafe.jpg)\n\n不仅 `DispatchMessage` 函数会触发窗口过程函数的处理逻辑，我们通过实验发现 `GetMessage` 函数也会对消息进行处理。\n\n---\n\n`GetMessage` 函数最终调用的是 `Win32k.sys` 中的 `NtUserGetMessage` 函数，在该函数内部有如下的大致逻辑：\n\n```cpp\ndo\n{\n    // 先判断SentMessagesListHead是否有消息，如果有就处理掉\n    do\n    {\n        ....\n        KeUserModeCallback(USER32_CALLBACK_WINDOWPROC,\n                                Arguments,\n                                ArgumentLength,\n                                &ResultPointer,\n                                &ResultLength);\n        ....\n    } while (SentMessagesListHead != NULL)\n    // 依次判断其他的6个队列，里面如果有消息就返回，没有则继续\n} while (其他队列 != NULL)\n```\n\n在一个内部的 `do...while` 循环中，`NtUserGetMessage` 首先会判断 `SentMessagesListHead` 中是否存在消息，如果有，则调用窗口回调函数处理它。然后，在处理完 `SentMessagesListHead` 中的所有消息之后，才会考虑返回其他六个队列中的消息——注意不会处理这些消息。\n\n因此，**`GetMessage` 也会对消息进行处理，但只会处理 `SentMessagesListHead` 中的消息**。\n\n如果我们将发送消息使用的函数从 `SendMessage` 变成 `PostMessage`，在没有 `TranslateMessage` 和 `DispatchMessage` 函数的情况下，`GetMessage` 函数就不会处理这个消息了。\n\n\n### DispatchMessage：消息分发与窗口过程调用\n\n消息分发的核心点在于 `DispatchMessage` 函数，它会根据窗口句柄调用相关的窗口过程函数。\n\n我们了解到 `GetMessage` 函数除了接收消息还会处理 `SendMessage` 发送过来的消息，也就是 `SentMessagesListHead` 消息队列中的消息。其它消息队列中的消息是交由 `DispatchMessage` 函数来处理的。\n\n`DispatchMessage` 函数最终调用的是 `Win32k.sys` 中的 `NtUserDispatchMessage` 函数，该函数主要做了以下两件事情：\n\n1. 根据窗口句柄找到窗口对象 `_WINDOW_OBJECT`；\n2. 根据**窗口对象获取窗口过程函数**，并通过 0 环发起调用。\n\n![82c7de33ff6a2f3acb48ebf9d193f330&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/1bf6354ae9e5c5d061043faeec07a59f3b5933a86509b2aa9979e86fab0c113e.jpg)\n\n如图所示，我们可以看见 `DispatchMessage` 函数与 `GetMessage` 函数（`NtUserGetMessage` 函数）一样，最终都是调用 `KeUserModeCallback` 的回调函数进入 3 环，再去调用窗口过程函数。\n\n\n> [!QUESTION] 为什么 `DispatchMessage` 要进入 0 环？\n> \n> 虽然窗口过程 `WndProc` 最终运行在 3 环，但 `DispatchMessage` 不能简单地在用户态通过 `MSG.hwnd` 查找并直接调用窗口过程。`HWND` 只负责标识目标窗口，具体如何分发消息、最终调用哪个过程，需要在 0 环根据窗口对象、消息类型及相关状态进行判断，随后再回调到 3 环执行对应的 `WndProc`。\n> \n> 理论上设计一个只读的用户态共享表，完全能在用户态完成 `HWND → WndProc → call`。\n\n## 窗口过程函数的调用者\n\n我们知道 `GetMessage` 函数在处理 `SentMessagesListHead` 消息队列中的消息时，以及 `DispatchMessage` 在处理其他消息队列中的消息时，都会调用窗口过程函数。\n\n但除此之外，还有其它情况也会调用窗口过程函数，我们注释如下图所示的代码，并且在窗口过程函数中加入一个输出，再编译运行窗口程序会发现，即使没有 `GetMessage`、`DispatchMessage` 函数，窗口过程函数仍然被执行了。\n\n![a2d662293af66f50ea4e160bb9cc4c2d&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/70fe0128931daa6c5841755d5dee4d9c611d715052b9a1aadfcaa1b638f06232.jpg)\n\n这次执行是由内核发起的，**内核代码也会调用窗口过程函数**，而不只是来自窗口过程处理，那么为什么内核代码需要调用窗口过程函数呢？假设有一个需求：要在窗口创建时去执行一些初始化操作，如果等待窗口循环处理该消息会有问题，所以要在窗口创建时，同步调用窗口处理函数。\n\n`CreateWindow` 进入 0 环后调用的 `NtUserCreateWindowEx` 函数，该函数在窗口创建之前通过调用内核回调函数，**直接调用相应的窗口过程函数**，传递的消息参数类型为 `WM_CREATE`。\n\n## 内核回调机制\n\n无论是 `DispatchMessage`、`GetMessage` 还是内核同步需求，都是通过 `KeUserModeCallback` 函数来调用 3 环的窗口过程函数的。\n\n### KeUserModeCallback 的工作流程\n\n`KeUserModeCallback` 函数的语法格式如下：\n\n```cpp\nNTSTATUS NTAPI KeUserModeCallback(    \n    IN ULONG     RoutineIndex,\n    IN PVOID     Argument,\n    IN ULONG     ArgumentLength,\n    OUT PVOID *     Result,\n    OUT PULONG     ResultLength \n)\n```\n\n其有 5 个参数，其中 `Argument` 是提供参数的，其中包含窗口过程函数、窗口句柄、消息类型、消息参数等等内容，**这些参数就是 3 环窗口过程函数所需要的参数**。\n\n![8a707d33b7e737325e32ce235ea3486c&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/cc4f213208597a2ca3374d4051fa9ccc359d82ea0e74601fe871c8f5081fbfce.jpg)\n\n`RoutineIndex` 参数是回调函数表中的索引，它决定了回到 3 环时的落脚点。\n\n> 实际 3 环的最初落脚点是 `KiUserCallbackDispatcher`，它根据索引去调用回调函数表中的函数。这块逻辑和用户 APC、用户态异常相似。\n\n回调函数表中包含多个回调函数，部分索引及对应函数含义如下图所示：\n\n![00879ac3bf6fb503f4bec8963651c93e&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/136ad3670f5669651f08582dd046f813c17777faecf64724ac9c6d95ef8bdeb0.jpg)\n\n这些回调函数均由 `USER32.dll` 提供，我们可以这样找到回调函数表：`FS:[0]` -> `TEB` -> `TEB.PEB`（`0x30` 偏移位）-> `PEB.KernelCallbackTable`（`0x2C` 偏移位），也就是 `PEB` 结构体中的成员 `KernelCallbackTable`。\n\n我们可以大概推测出回调函数的作用：**从 `Argument` 中取窗口过程函数地址，再将其他几个参数作为参数，然后调用窗口过程函数**。\n\n> 完整的调用链是这样的： `win32k.sys` -> `KeUserModeCallback(索引号)` -> **`KernelCallbackTable[索引号]` (这里的函数负责在用户态把参数解包整理好)** -> `你的 WndProc`。\n\n如下图所示随便找个程序放到 OD 里都可以找到回调函数表：\n\n![59d21f9723ae3a242098c6520aebae15&#95;MD5&#46;jpg](/notes/n-588dd991e500491c94d1853fffca6bdb/media/442bf918a5e81bd0517013e21b6bb114fab8793bbf4bf39a7d475ca5aff74750.jpg)\n\n### 0 环到 3 环的跨环调用方式\n\n从 0 环调用 3 环函数的有三种方法：\n\n**用户 APC 的执行**：用户 APC（Asynchronous Procedure Call）是一种用于异步执行用户模式代码的机制。在这种情况下，内核可以将用户模式函数作为一个 APC 请求提交给目标线程，并在目标线程处于用户模式执行时，将该函数插入到目标线程的执行流中。\n\n**用户异常的处理**：当内核调试器和用户调试器均不存在或不处理时，如果发生用户模式异常，处理流程将从 Ring 0（内核模式）转移到 Ring 3（用户模式）。在这种情况下，操作系统会将异常传递给目标进程的异常处理程序，由用户模式代码处理该异常。\n\n**内核回调**：内核回调是指在 Ring 0 的代码中调用窗口过程函数。这种调用是通过内核提供的机制实现的，允许 Ring 0 的代码直接调用特定窗口的过程函数。通过这种方式，Ring 0 的代码可以与用户模式的窗口过程进行交互，以实现特定的功能或处理特定事件。我们调用的 `SendMessage`，在进入内核空间后，往往会依赖这套底层的内核回调机制来完成消息的同步派发。\n\n> **三者的核心区别在于：内核是否需要等待用户态函数执行完成，并取得其返回结果。**\n> \n> 对于用户 APC 和用户异常，内核主要负责**构造用户态执行环境并改变返回路径**，随后线程进入 Ring 3 执行相应的 APC 或异常处理代码；这些机制通常不要求原先的 Ring 0 调用者同步等待某个用户态函数返回值。\n> \n> **内核回调则不同**：内核需要同步执行指定的用户态回调，并在回调结束后取得结果。因此，`KeUserModeCallback` 将执行流切换到 Ring 3 后，会再通过 `NtCallbackReturn` 把结果交回给内核：当 `NtCallbackReturn` 从 3 环陷入 0 环后，恢复之前保存的内核现场，执行流是**无缝接续在 `KeUserModeCallback` 的返回点，继续向下执行的。**",
+  "id": "588dd991-e500-491c-94d1-853fffca6bdb",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows"
+    ],
+    "title": "Windows 窗口消息机制"
+  },
+  "resources": [
+    "04b0d72e8c53400b26d419d73e68868a35ba2183cbcd40489230a69e21d7736e.jpg",
+    "05656dd5becec8f2ef127a4ce060a563a7834957718ee62f65ae238a08959773.jpg",
+    "136ad3670f5669651f08582dd046f813c17777faecf64724ac9c6d95ef8bdeb0.jpg",
+    "137259dc789e511a544341183d452182f43c7458f0f31665d1ab17b677cba328.jpg",
+    "1bf6354ae9e5c5d061043faeec07a59f3b5933a86509b2aa9979e86fab0c113e.jpg",
+    "1d3e49777db054123c3c3a685aaf81d58fe7bd15a21463aedffe301d8e68c076.jpg",
+    "232e1d3323d94904a23ae1688c0750f642fa733603c751741f68aeb39dfee085.jpg",
+    "442bf918a5e81bd0517013e21b6bb114fab8793bbf4bf39a7d475ca5aff74750.jpg",
+    "545f88ea96fe840acf0bb6d14be90856e75b0c7f58cda77dc6534d9687d2aa7a.jpg",
+    "57b4af67f9ea7f183abd64859d2b805d08455970e2a7f32a555a5e32904b9bf7.png",
+    "6479d89306d3e7db54b84ad387cae12bf24825c01a9ce22c06d6988b1e100f43.jpg",
+    "70fe0128931daa6c5841755d5dee4d9c611d715052b9a1aadfcaa1b638f06232.jpg",
+    "a4936a6f65baa70948ae71181b4f8b21de42aae8532a7b97fbf4bf57f161b10e.jpg",
+    "a9a6e71ed473f628e2e7a229208a691e6ef7e026afe03ac013c8dca4f9bc81ac.png",
+    "b7e2d63d2aeec2dbbec0150cf009b12f300dfc469287f948e35190128423eafe.jpg",
+    "c3ae964e55da870b85c9bc9e0409e7ab0ba3938592bbf3eb79258a8102ae5d9e.jpg",
+    "cc4f213208597a2ca3374d4051fa9ccc359d82ea0e74601fe871c8f5081fbfce.jpg",
+    "e1f94a1ecfd15219ddfe9fcf5e05540ebf7513faa4d8da4746dbf15641cf4b18.jpg",
+    "ef818df79a9c3ef2be94497cb999007f932c34bcf2f8bc9c1ede01d40543f588.png"
+  ],
+  "url": "/notes/n-588dd991e500491c94d1853fffca6bdb/"
+}

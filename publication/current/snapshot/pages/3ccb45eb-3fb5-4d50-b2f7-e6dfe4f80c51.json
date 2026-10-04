@@ -1,0 +1,22 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-4e84bb8e0c8ddeee038a",
+      "kind": "heading",
+      "offset": 19
+    }
+  ],
+  "body": "# Charles DNS 映射与验证\n\n无论是转发 HTTPS 请求还是 HTTP 请求，抓包软件都可以得知要访问的域名。\n> 相关原理参考：[HTTP&#40;S&#41; 代理协议](/notes/n-ff55129e8a7b4cc3b65ef611de063b7e/)、[SOCKS5 代理协议](/notes/n-f6c6ef20c9704570bd3078f37f192b81/)、[数字证书与 PKI 体系](/notes/n-b7dbfaffe07f5e839320f3db28bb722b/)\n\n\n代理软件通过配置可以让某域名解析为我们指定的 IP 地址，以 Charles 为例：\n1. 开启 DNS 欺诈功能，并让域名 `www.baidu.com` 解析为我们的服务器 IP 地址： ![](/notes/n-3ccb45eb3fb54d50b2f7e6dfe4f80c51/media/ef9a98011c51d6da53aa09b1059c818d083668b85f5049605649847ddc2d309a.jpeg)\n2. 执行 `curl -x 127.0.0.1:8888 www.baidu.com`，查看结果：![](/notes/n-3ccb45eb3fb54d50b2f7e6dfe4f80c51/media/2d0cd90b188976ca66fcd43450b2b360fd3cb6959e88930664d54dfec3181692.jpeg)\n\n",
+  "id": "3ccb45eb-3fb5-4d50-b2f7-e6dfe4f80c51",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "Charles DNS 映射与验证"
+  },
+  "resources": [
+    "2d0cd90b188976ca66fcd43450b2b360fd3cb6959e88930664d54dfec3181692.jpeg",
+    "ef9a98011c51d6da53aa09b1059c818d083668b85f5049605649847ddc2d309a.jpeg"
+  ],
+  "url": "/notes/n-3ccb45eb3fb54d50b2f7e6dfe4f80c51/"
+}

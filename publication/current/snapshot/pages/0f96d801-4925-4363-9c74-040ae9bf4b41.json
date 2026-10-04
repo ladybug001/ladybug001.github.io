@@ -1,0 +1,55 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-22b52eba7f7f5ebc7bf0",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-da579006026aab5c7409",
+      "kind": "heading",
+      "offset": 146
+    },
+    {
+      "id": "h-3dde8a998869c9ab10e3",
+      "kind": "heading",
+      "offset": 826
+    },
+    {
+      "id": "h-3e9f35d60f1a8c34d2c9",
+      "kind": "heading",
+      "offset": 1325
+    },
+    {
+      "id": "h-36c287ae52b6ec34be06",
+      "kind": "heading",
+      "offset": 1335
+    },
+    {
+      "id": "h-28a878b9c0848a56f4ff",
+      "kind": "heading",
+      "offset": 1915
+    },
+    {
+      "id": "h-b8e17e3fac2deda914e3",
+      "kind": "heading",
+      "offset": 2086
+    }
+  ],
+  "body": "# x86 如何调用 x64 API\n\nWOW64 进程（64 位 Windows 上的 32 位程序）最终仍需通过 64 位 `syscall` 进入内核。其内存中包含完整的 64 位运行环境，这使得 32 位程序可绕过兼容层直接调用 64 位 API。\n\n## WOW64 的系统调用过程\n\n查看 64 位系统中 `C:\\Windows\\SysWOW64\\ntdll.dll` 文件的 `NtOpenProcess` 函数：\n![cab006055d5f2bafbd365dd21b6edbc6&#95;MD5&#46;jpg](/notes/n-0f96d801492543639c74040ae9bf4b41/media/f8f9b100f88c92198e3ab6419ade84dd1edc2e0ee617714097512e0291e5e4e2.jpg)\n\n对比原生 32 位系统可以发现，正常情况下 `ntdll.dll` 内部应直接使用 `syscall`（或 `sysenter`、`INT 2E`）发起系统调用，但在 WOW64 环境下，却跳转到了另一个函数。\n> 相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n![79405f8afdc34d3c700ceb2d0b211d0e&#95;MD5&#46;jpg](/notes/n-0f96d801492543639c74040ae9bf4b41/media/691a9d1b67d58cd58099a57977829927df98a9c2c1d3ef7bb09dab01ef44368e.jpg)\n\n跟踪该函数可知，指令最终跳转至一个导出变量指向的地址。通过动态调试确认，该地址处执行的核心指令为 `jmp far`（远转移）。\n\n## 通过 JMP Far 切换模式\n\n利用远转移指令修改 `CS`，从 `Compatibility Mode` 切换到 `long-mode` 的技术称为天堂之门（Heaven's Gate）。\n\n> 相关内容参考：[x86 与 x64 运行模式](/notes/n-298cb43cc9a0408f8e9aaca03ad64049/)\n\n系统预置了 64 位代码段选择子（通常为 `0033`），**触发切换的代码**：\n```nasm\njmp far 0033:某段内地址  ; 0033 选择子代表 64 位代码段\n```\n\n切换到 `long-mode` 后，即可执行 64 位指令：完成 32 位参数到 64 位的转换，随后通过系统调用执行内核中的 API。执行完毕后，通过远返回切回 `Compatibility Mode`。\n\n> 相关底层原理参考：[x86 段寄存器与描述符体系](/notes/n-9865620a6a12491a86ee4494a0e2a392/)、[x86 指令结构与机器码编码](/notes/n-73c020bf8852497187fe07c7be4f453d/)\n\n## 延伸技术与应用\n\n### 调试问题\n\n由于 `jmp far` 执行后切换到 64 位长模式，并按照 64 位机器码解释执行指令，这会导致传统 32 位调试器（如 OllyDbg）无法继续向下跟踪指令流。\n\n若需跟进、查看 `jmp far` 后续的指令执行，需使用支持该特性的调试器 `yzDbg`，效果如下：\n\n![77f9504858eac9f150f9daafde146e40&#95;MD5&#46;jpg](/notes/n-0f96d801492543639c74040ae9bf4b41/media/bd31cec563fd824bacc647d780da4741c7ca03d82675edf6698d83e6bb96f87b.jpg)\n\n---\n\n`yzDbg` 可通过注入 `FakeDebugEngine32.dll` 开启伪调试，接管调试事件与 API，绕过标准调试流程及麻婆、VMP、SE 等反调试检测。\n> 原帖：[[分享]我自写自用的调试器x32和x64位-逆向工程-看雪安全社区｜专业技术交流与安全研究论坛](https://bbs.kanxue.com/thread-217252.htm)\n> \n> 其它相关技术参考（奈何桥）： https://github.com/stonedreamforest/NaiHeQiao\n\n### 绕过 32 位 Hook\n\n在 64 位操作系统下，若 32 位安全软件或反调试工具，仅监控 32 位的系统 API（如 `SysWOW64` 目录下的 DLL）。\n\n可通过 `jmp far` 直接调用底层 64 位 API，绕过 32 位层的监控。同理，若直接在底层 64 位 API 处 Hook，32 位的软件也难以察觉。\n\n### 开源库：wow64ext\n\n利用上述原理，可实现在 32 位项目对任意 64 位 API 的调用，实现 64 位程序能做到的事情（包括向 64 位进程注入）。\n\n手工维护 32/64 位栈帧与环境切换较为繁琐，开源库 [wow64ext](https://github.com/wantleran/rewolf-wow64ext)封装了利用远转移切换 `CS` 的核心逻辑，包含进 32 位项目后，即可像调用本地函数一样调用 64 位 API 或注入 64 位进程。\n",
+  "id": "0f96d801-4925-4363-9c74-040ae9bf4b41",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "arch/x64"
+    ],
+    "title": "x86 调用 x64 API"
+  },
+  "resources": [
+    "691a9d1b67d58cd58099a57977829927df98a9c2c1d3ef7bb09dab01ef44368e.jpg",
+    "bd31cec563fd824bacc647d780da4741c7ca03d82675edf6698d83e6bb96f87b.jpg",
+    "f8f9b100f88c92198e3ab6419ade84dd1edc2e0ee617714097512e0291e5e4e2.jpg"
+  ],
+  "url": "/notes/n-0f96d801492543639c74040ae9bf4b41/"
+}

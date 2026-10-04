@@ -1,0 +1,46 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-98dd360b8c7658c646a6",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-671093f9b3869fb7ba3d",
+      "kind": "heading",
+      "offset": 991
+    },
+    {
+      "id": "h-5a9f453ed22b7f3b0880",
+      "kind": "heading",
+      "offset": 1333
+    },
+    {
+      "id": "h-71e12fe2772c288876b6",
+      "kind": "heading",
+      "offset": 1482
+    },
+    {
+      "id": "h-a875d9d506f705f935b4",
+      "kind": "heading",
+      "offset": 1495
+    },
+    {
+      "id": "h-92215c5640f5ff1f8bf6",
+      "kind": "heading",
+      "offset": 1818
+    }
+  ],
+  "body": "## Windbg常用命令\n\n以下是一些常用的Windbg调试器命令及其全称：\n\n1. `g`：Go，继续执行程序。\n2. `lm`：List Modules，列出加载的模块。\n3. `bp`：Breakpoint，设置断点。\n4. `bl`：Breakpoint List，列出当前设置的断点。\n5. `!analyze -v`：分析崩溃信息。\n6. `!threads`：列出线程信息。\n7. `kv`或`k`：显示当前堆栈信息。\n8. `r`：Registers，显示当前寄存器值。\n9. `dt`：Data Type，显示指定类型的变量信息。\n10. `lmf`：List Managed Functions，列出已加载的托管函数。\n11. `dq`：Display Quadword，命令在Windbg中用于显示内存中的8个字节数据。。\n12. `eq`：Edit quadWord，修改8个字节的内存\n13. `!dq`：读取8个字节物理地址\n14. `!ed`：修改4个字节的物理页内存，物理页内存不能使用`!eq`修改!\n15. `dg 段选择子`，windbg解析该段选择子对应的段描述符\n16. `u 地址`，反汇编目标地址。\n17. `uf  地址`，把目标地址作为函数头，一直反汇编到该函数结束\n\t1. `uf 官方函数名称`，可以解析出对应函数的反汇编代码和函数地址\n18. `.process EPROCESS结构体的地址`，修改Windbg当前的CR3为指定的`EPROCESS`的CR3。\n19. `!VtoP FEN VA`，将虚拟地址转换为物理地址，并且显示出相应的PDPTE、PTE、PDE。\n20. `dt 结构体名称 r`，会展开该结构体下的子结构体。\n21. 断点相关的命令\n\t1. `bp 函数名称/函数地址`，在该地址/函数下断点。\n\t2. `bl`，按照顺序，列出当前所有的断点。\n\t3. `bc index`，删除对应索引处的断点。\n22. 调试相关命令\n\t1. `F5`，运行\n\t2. `F10`，单步步过\n\t3. `F11`，单步步入\n\n请注意，Windbg支持大量的命令和扩展，这里只列举了一些常用的命令。全称可以使用Windbg命令行中的`?`或`help`命令来查看详细的文档和语法。\n\n\n## Windbg符号操作相关\n\n**windbg配置符号表**\n[windbg符号表_windbg 符号表_Kiopler的博客-CSDN博客](https://blog.csdn.net/qq_37232329/article/details/120846694)\n\n开启符号文件加载信息的详细输出\n\n```\n!sym noisy\n```\n\n加载符号文件\n\n```\n.sympath srv*d:\\mysymbol*https://msdl.microsoft.com/download/symbols\n```\n\n重新加载应用程序中用到的所有模块\n\n```\n.reload /f\n```\n测试一个符号文件对某个模块的有效性\n\n```\n!chksym ntdll.dll\n```\n\n## Windbg寄存器不显示\n\n[Windbg 内核调试，寄存器窗口没有数据_Psy_Hacker的博客-CSDN博客](https://blog.csdn.net/sxr__nc/article/details/107387852)\n\n```\n!WingDbg.regfix\n```\n\n\n\n## 使用 PDB 进行源码级调试\n\n### PDB 的作用\n\nPDB 是程序的调试符号文件。符号信息能够把机器地址映射到函数名、变量和源码位置，是 WinDbg 进行源码级调试的重要依据。\n\n使用 Visual Studio 编译驱动时，只要没有关闭调试信息生成，构建输出目录通常会生成与 `.sys` 对应的 `.pdb` 文件：\n\n![059f5db9cce116a8f51e2b921eca44ce&#95;MD5&#46;jpg](/notes/n-a3d1192722d148b6ade29801cde5c370/media/3d9a5cb5e9fda03bcfb0a5f05d2dacde7393eb3f306e8f85cf8177873009fcd3.jpg)\n\n### 触发断点并加载符号\n\n原示例在驱动 C 代码中加入 `__asm { int 3 }`，通过软件断点主动中断目标机：\n> MSVC 的 `__asm` 内联汇编只适用于 x86，x64 与 ARM64 目标不支持。\n\n\n![efb8ca4616bcd1541b7b8c4eff69953f&#95;MD5&#46;jpg](/notes/n-a3d1192722d148b6ade29801cde5c370/media/6a00c1e1978f69cf4052e7c2eed61796b167491883caa25dcb814b03cbebcdfb.jpg)\n\n重新编译后，将带断点的 `.sys` 文件放入虚拟机。在宿主机 WinDbg 中把 Symbol Path 指向本地 `.pdb` 所在目录，并重新加载符号：\n\n![f576ec1f67f5bbc7639c60a7139135dc&#95;MD5&#46;jpg](/notes/n-a3d1192722d148b6ade29801cde5c370/media/6c59226fdc57342376da45109e28e9d39a3cc4d14896790d8d857d86ca6231db.jpg)\n\n随后在虚拟机中使用 `KdmManager` 加载并运行驱动。执行到 `int 3` 后，目标机中断，WinDbg 接管执行流；符号与源码路径正确时，WinDbg 可以打开源码窗口并定位到触发断点的代码行：\n\n![102e896be7ba5fc9d8c013c0e7b5038d&#95;MD5&#46;jpg](/notes/n-a3d1192722d148b6ade29801cde5c370/media/be2127e0235fafa516861669d4a651a161d4c22a9fe37d8dc6aa3c5038c58ae1.jpg)",
+  "id": "a3d11927-22d1-48b6-ade2-9801cde5c370",
+  "metadata": {
+    "title": "Windgb"
+  },
+  "resources": [
+    "3d9a5cb5e9fda03bcfb0a5f05d2dacde7393eb3f306e8f85cf8177873009fcd3.jpg",
+    "6a00c1e1978f69cf4052e7c2eed61796b167491883caa25dcb814b03cbebcdfb.jpg",
+    "6c59226fdc57342376da45109e28e9d39a3cc4d14896790d8d857d86ca6231db.jpg",
+    "be2127e0235fafa516861669d4a651a161d4c22a9fe37d8dc6aa3c5038c58ae1.jpg"
+  ],
+  "url": "/notes/n-a3d1192722d148b6ade29801cde5c370/"
+}

@@ -1,0 +1,58 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-5c0dce425663d21edd71",
+      "kind": "heading",
+      "offset": 11
+    },
+    {
+      "id": "h-48c259543bbc6715d17b",
+      "kind": "heading",
+      "offset": 57
+    },
+    {
+      "id": "h-50e981b3a427c5244db8",
+      "kind": "heading",
+      "offset": 174
+    },
+    {
+      "id": "h-c01c4ba345bc9e52b07b",
+      "kind": "heading",
+      "offset": 318
+    },
+    {
+      "id": "h-f299417510475f55d12f",
+      "kind": "heading",
+      "offset": 475
+    },
+    {
+      "id": "h-201c9c2bb387c60c4a95",
+      "kind": "heading",
+      "offset": 496
+    },
+    {
+      "id": "h-9711c60e570be198491c",
+      "kind": "heading",
+      "offset": 739
+    },
+    {
+      "id": "h-e6a4cd7e51fc7d4c541e",
+      "kind": "heading",
+      "offset": 884
+    }
+  ],
+  "body": "# SO 文件加载流程\n\nELF 格式中有三个比较特殊的初始化相关节区：\n\n## `.preinit_array`\n\n该节区保存的是一组函数指针，主要用于主可执行文件的早期初始化。其执行时机通常早于依赖共享库的初始化。对于普通共享库（`.so`），`.preinit_array` 通常不会作为共享库初始化机制的一部分执行。\n\n## `.init`\n\n这是较传统的初始化机制，节区中保存的是一段可执行代码，而不是函数指针数组。动态链接器会在对象初始化阶段调用对应的初始化入口，通常用于执行库或程序的早期初始化逻辑。现代工具链中，这一机制更多由编译器、链接器和运行库自动生成，通常不建议手动编写或修改。\n\n## `.init_array`\n\n该节区保存的是一组初始化函数指针，是现代 ELF 中最常见的初始化机制之一。这些函数会在 `main()` 执行前被依次调用，常用于执行 C/C++ 全局对象构造函数、`__attribute__((constructor))` 函数以及其他需要在程序或共享库加载阶段完成的初始化逻辑。\n\n## 初始化执行顺序\n\n### Linux ELF 可执行文件\n\n```mermaid\nflowchart TD\n    A[\"EntryPoint (_start)\"] --> B[\".preinit_array\"]\n    B --> C[\"依赖 SO 的 .init\"]\n    C --> D[\"依赖 SO 的 .init_array\"]\n    D --> E[\"主程序 .init\"]\n    E --> F[\"主程序 .init_array\"]\n    F --> G[\"main()\"]\n```\n\n### Linux ELF 共享库\n\n```mermaid\nflowchart TD\n    A[\"ld.so / dlopen\"] --> B[\".init\"]\n    B --> C[\".init_array\"]\n    C --> D[\"（通常不走 e_entry）\"]\n```\n\n### Android JNI SO\n\n安卓中，从 JAVA 层开始 SO 文件的加载流程如下图所示（可以分析 `linker.so` 源码验证）：\n\n![安卓 SO 文件加载流程图](/notes/n-569d0c18845340eea0b3eda45fe9828e/media/3692ccd83b9ebd1c163b894695c3c612b4f996b97eaf51664eae383667ecb1f1.jpg)\n\n`.init` 和 `.init_array` 中的初始化逻辑由 `call_constructors()` 统一触发。该函数位于 Android 动态链接器 `linker` 的实现中，并会在 `dlopen()` 加载共享库的流程中被调用。\n\n如上可以看到 `init`、`.init_array` 中的函数先于 `JNI_OnLoad` 执行，因此很多 APK 加固方案都在这两个节区中做文章（`.init` 节区不常用）。\n\n> 相关内容参考：[Linux ELF 文件格式](/notes/n-95e8c75c9da6476fbc85e09535265997/)\n\n> [!warning] 与 Windows TLS 的区别\n> 注意和 Windows 的[Windows 线程局部存储 &#40;TLS&#41;](/notes/n-55b4927c9ebb593794ba1e9b31a402c0/)区分：TLS 早于 entrypoint 执行，而 `.init` 等晚于 entrypoint 早于 `main` 函数。\n\n",
+  "id": "569d0c18-8453-40ee-a0b3-eda45fe9828e",
+  "metadata": {
+    "tags": [
+      "os/android",
+      "reverse/android",
+      "os/linux"
+    ],
+    "title": "SO 加载与初始化流程"
+  },
+  "resources": [
+    "3692ccd83b9ebd1c163b894695c3c612b4f996b97eaf51664eae383667ecb1f1.jpg"
+  ],
+  "url": "/notes/n-569d0c18845340eea0b3eda45fe9828e/"
+}

@@ -1,0 +1,126 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7f4550a34b9cbbaa0852",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-44dfd776519c0e5c78fb",
+      "kind": "heading",
+      "offset": 28
+    },
+    {
+      "id": "h-6dc3122942d79f385cff",
+      "kind": "heading",
+      "offset": 814
+    },
+    {
+      "id": "h-a807cc4ccf4b7fa6d729",
+      "kind": "heading",
+      "offset": 1134
+    },
+    {
+      "id": "h-0e80bd9a9a6be4259035",
+      "kind": "heading",
+      "offset": 1473
+    },
+    {
+      "id": "h-9eb01cdc84a4331db6a2",
+      "kind": "heading",
+      "offset": 1535
+    },
+    {
+      "id": "h-5f8563daa29a90526882",
+      "kind": "heading",
+      "offset": 1912
+    },
+    {
+      "id": "h-6b8cf352fb6350c99993",
+      "kind": "heading",
+      "offset": 2440
+    },
+    {
+      "id": "h-169ac8d6ec676aa2a99b",
+      "kind": "heading",
+      "offset": 2759
+    },
+    {
+      "id": "h-c87732751b33d2e1b7e9",
+      "kind": "heading",
+      "offset": 3639
+    },
+    {
+      "id": "h-27c7dcdaa697f03c8baa",
+      "kind": "heading",
+      "offset": 4117
+    },
+    {
+      "id": "h-596a366ba8f844042727",
+      "kind": "heading",
+      "offset": 4349
+    },
+    {
+      "id": "h-b234511764e4ca65ce9a",
+      "kind": "heading",
+      "offset": 4497
+    },
+    {
+      "id": "h-82b919ef01c2c84522eb",
+      "kind": "heading",
+      "offset": 4775
+    },
+    {
+      "id": "h-e2d952ecdbb4518e57e8",
+      "kind": "heading",
+      "offset": 5055
+    },
+    {
+      "id": "h-0a24fe71b3e128511c4d",
+      "kind": "heading",
+      "offset": 5157
+    },
+    {
+      "id": "h-4d25a825c9aa8a0b44e3",
+      "kind": "heading",
+      "offset": 5556
+    },
+    {
+      "id": "h-b081303f6c2a032eb646",
+      "kind": "heading",
+      "offset": 5573
+    },
+    {
+      "id": "h-3cfbbc2aae30eff64866",
+      "kind": "heading",
+      "offset": 6022
+    },
+    {
+      "id": "h-c64895c91545297c5529",
+      "kind": "heading",
+      "offset": 6356
+    },
+    {
+      "id": "h-1779f49828c090c42777",
+      "kind": "heading",
+      "offset": 6859
+    }
+  ],
+  "body": "# SOCKS5 代理协议\n\n## SOCKS5 是什么\n\nSOCKS 协议位于传输层与应用层之间（OSI 会话层），分为 SOCKS4 和 SOCKS5 两个版本。\n\nSOCKS5 代理在客户端与目标服务器之间中转 TCP/UDP 流量，它不关心被转发的数据属于哪个应用层协议。**SOCKS 本身不会对载荷进行加密、修改或解析**，因此常被称为\"协议无关的中继\"——它只负责搬运数据，不干预内容。\n\n> [!warning] 概念辨析：SOCKS5 ≠ 透明代理\n> SOCKS5 是**显式代理**：客户端必须主动配置代理地址，并按 SOCKS5 协议发起握手。而\"透明代理\"（Transparent Proxy）在网络术语中专指客户端**无需任何配置**、流量被网关/防火墙自动重定向到代理的模式（如 iptables REDIRECT）。SOCKS5 不解析载荷这一点应称为**载荷透明**或**字节流透传**，不要与架构意义上的[透明代理机制](/notes/n-0ed2f726700c45d0a61c3f0ede066761/)混淆。\n\n![61e5b4cb4636090a4ace13b595196be0&#95;MD5&#46;jpg](/notes/n-f6c6ef20c9704570bd3078f37f192b81/media/766a805222534bf5d7894401411fd9c878549952d667a81065352bb4f9423603.jpg)\n\n**隧道建立**：客户端与 SOCKS5 服务器建立一条 TCP 连接，SOCKS5 服务器再与目标服务器建立另一条 TCP 连接。这两条连接首尾相接，构成一条逻辑隧道，SOCKS5 服务器在中间双向转发数据。\n\n\nSOCKS5 只关心 TCP 和 UDP，不关心上层具体是什么协议。\n\n## SOCKS4 与 SOCKS5 的差异\n\n| 特性 | SOCKS4 | SOCKS5 |\n|------|--------|--------|\n| 认证机制 | 无（仅 USERID 字段） | 支持多种认证方法（无认证 / 用户名密码 / GSSAPI 等） |\n| UDP 支持 | ❌ 不支持 | ✅ 支持（UDP ASSOCIATE 命令） |\n| IPv6 支持 | ❌ 不支持 | ✅ 支持（ATYP=0x04） |\n| 域名解析 | 需 SOCKS4a 扩展 | 原生支持（ATYP=0x03，Remote DNS） |\n| 支持的命令 | CONNECT、BIND | CONNECT、BIND、UDP ASSOCIATE |\n\n\n## SOCKS5 握手协商\n\n客户端先与 SOCKS5 服务器建立 TCP 连接（三次握手），在该 TCP 连接上进行 SOCKS5 协议协商，完整过程有三回合，如下图所示：\n![1416aeb8e4fe248f5d78717a365cfcef&#95;MD5&#46;jpg](/notes/n-f6c6ef20c9704570bd3078f37f192b81/media/f5b3946bdd0e078c179e10291c3fac22b9d6c63d59fe45de970201b256df5dba.jpg)\n   \n若认证方法选择\"无需认证\"（METHOD=`0x00`），则跳过认证子协商，一般只需 **4 个 TCP 报文**即可完成 SOCKS5 握手\n\n### 回合三：命令请求与代理响应\n\n前两回合逻辑都比较简单，没啥要讲的，重点关注回合三。\n\n认证通过后，客户端发送命令请求：\n\n#### 客户端命令请求报文\n\n**客户端 → 代理（Request）：**\n\n| 字段 | 长度（字节） | 说明 |\n|------|------------|------|\n| VER | 1 | `0x05` |\n| CMD | 1 | 命令类型：`0x01` CONNECT / `0x02` BIND / `0x03` UDP ASSOCIATE |\n| RSV | 1 | 保留字段，固定为 `0x00` |\n| ATYP | 1 | 地址类型：`0x01` IPv4 / `0x03` 域名 / `0x04` IPv6 |\n| DST.ADDR | 可变 | 目标地址（IPv4=4字节，域名=1字节长度+域名字符串，IPv6=16字节） |\n| DST.PORT | 2 | 目标端口（网络字节序，大端） |\n\n\n##### CONNECT：建立 TCP 代理隧道\n\n**CONNECT 的使用场景**\n\n最常用的命令。客户端请求代理服务器与目标建立 TCP 连接，建立后双向转发数据：\n\n```\n客户端 ←TCP隧道→ SOCKS5代理 ←TCP连接→ 目标服务器\n```\n\n**CONNECT 成功后的 TCP 透传**\n\n- 代理建立到目标的 TCP 连接后，返回 Reply（REP=`0x00`）\n- 之后 SOCKS5 连接进入**透传模式**，客户端发送的任何数据都被原样转发到目标\n- 代理 HTTPS 请求时，隧道内传输的是 TLS 加密数据，代理本身**无法**解密内容\n\n**地址类型与 Remote DNS**\n\n> [!info] Remote DNS\n> SOCKS5 的 CONNECT 请求支持直接携带域名（ATYP=`0x03`），由代理服务器执行 DNS 解析（即 Remote DNS），避免客户端本地 DNS 泄露。在 Python `requests` 库中，使用 `socks5h://` 前缀（h = hostname）即表示将域名发送给代理解析；而 `socks5://` 则由客户端本地先做 DNS 解析后再将 IP 发给代理。\n\n##### BIND：等待目标主动回连\n\n**BIND 的使用场景**\n\n用于需要目标服务器**主动回连**客户端的场景（如 FTP 主动模式的数据通道）：\n\n**BIND 的两次响应流程**\n\n1. 客户端先通过 CONNECT 建立到目标的控制连接\n2. 客户端发送 BIND 请求，代理服务器在指定地址监听一个端口\n3. 代理返回第一次 Reply，告知绑定的 `BND.ADDR` 和 `BND.PORT`\n4. 客户端将该地址通过控制连接告知目标服务器\n5. 目标服务器主动连接 `BND.ADDR:BND.PORT`\n6. 代理返回第二次 Reply，告知实际连入的来源地址\n7. 此后进入双向数据转发\n\n##### UDP ASSOCIATE：建立 UDP 中继\n\n**UDP ASSOCIATE 建立流程**\n\nUDP 代理的握手阶段仍通过 TCP 进行，但数据传输使用 UDP：\n\n1. 客户端通过 TCP 发送 UDP ASSOCIATE 请求，`DST.ADDR` 和 `DST.PORT` 指明客户端将从哪个地址发送 UDP 报文（填 `0.0.0.0:0` 表示任意）\n2. 代理返回 Reply，其中 `BND.ADDR:BND.PORT` 是 **UDP 中继地址**\n3. 客户端向该中继地址发送带 SOCKS5 UDP 封装头的 UDP 报文\n4. 代理解析封装头，提取目标地址，将裸 UDP 载荷转发到目标\n5. 目标的响应数据同样由代理加上封装头后送回客户端\n\n**UDP 数据报封装格式**\n\n每个 UDP 报文须附加 **SOCKS5 UDP 封装头**：\n\n| 字段       | 长度（字节） | 说明                   |\n| -------- | ------ | -------------------- |\n| RSV      | 2      | 保留，`0x0000`          |\n| FRAG     | 1      | 当前分片序号（`0x00` 表示不分片） |\n| ATYP     | 1      | 目标地址类型               |\n| DST.ADDR | 可变     | 目标地址                 |\n| DST.PORT | 2      | 目标端口                 |\n| DATA     | 可变     | 实际的 UDP 载荷           |\n\n**TCP 控制连接与 UDP 中继生命周期**\n\n> [!important]\n> TCP 控制连接必须保持存活。一旦该 TCP 连接断开，代理服务器会**立即关闭**对应的 UDP 中继通道。这意味着 SOCKS5 的 UDP 代理**仍然依赖一条 TCP 控制连接**来维持会话。\n\n#### 代理响应报文\n\n**代理 → 客户端（Reply）：**\n\n| 字段 | 长度（字节） | 说明 |\n|------|------------|------|\n| VER | 1 | `0x05` |\n| REP | 1 | 响应状态码（见下表） |\n| RSV | 1 | `0x00` |\n| ATYP | 1 | 绑定地址类型 |\n| BND.ADDR | 可变 | 代理服务器绑定的地址 |\n| BND.PORT | 2 | 代理服务器绑定的端口 |\n关键区别在于：**不同命令下，`BND.ADDR` 和 `BND.PORT` 的语义不同。**\n\n|命令|CMD|服务器返回内容的含义|\n|---|---|---|\n|`CONNECT`|`0x01`|返回代理服务器用于连接目标服务器的本地地址和端口|\n|`BIND`|`0x02`|返回代理服务器监听等待外部连接的地址和端口；成功时通常会有两次响应|\n|`UDP ASSOCIATE`|`0x03`|返回 UDP Relay 的地址和端口，客户端之后把 UDP 包发到这里|\n##### REP 响应状态码\n\n| 值 | 含义 |\n|----|------|\n| `0x00` | 成功 |\n| `0x01` | 一般性 SOCKS 服务器故障 |\n| `0x02` | 规则集不允许的连接 |\n| `0x03` | 网络不可达 |\n| `0x04` | 主机不可达 |\n| `0x05` | 连接被拒绝 |\n| `0x06` | TTL 过期 |\n| `0x07` | 不支持的命令 |\n| `0x08` | 不支持的地址类型 |\n\n## SOCKS5 自身的安全局限\n\n- **不提供加密**：SOCKS5 协议本身**不对传输数据加密**，客户端与代理之间的流量是明文的（包括用户名/密码认证信息）\n- **无完整性校验**：无法防止数据在传输过程中被篡改\n- **认证机制薄弱**：用户名/密码以明文传输，GSSAPI 较少使用\n\n### 常见的加密增强方案\n\n| 方案 | 原理 | 典型用法 |\n|------|------|----------|\n| SSH 隧道（`ssh -D`） | 在 SSH 加密通道内暴露本地 SOCKS5 端口 | `ssh -D 1080 user@server` |\n| Shadowsocks | 对 SOCKS5 流量进行加密封装，对抗 DPI | 客户端本地 SOCKS5 → 加密传输 → 远端还原 |\n| TLS 封装 | 在 SOCKS5 外层套 TLS | 部分代理工具支持 SOCKS5-over-TLS |\n\n## 与 HTTP CONNECT 代理的对比\n\n| 维度 | SOCKS5 代理 | HTTP CONNECT 代理 |\n|------|-------------|-------------------|\n| 协议层级 | 会话层，协议无关 | 应用层，基于 HTTP |\n| 支持的协议 | 任何 TCP/UDP 应用 | 仅 TCP（通过 CONNECT 隧道） |\n| UDP 支持 | ✅ | ❌ |\n| 配置方式 | 显式配置（`socks5://`） | 显式配置（`http://`）或系统代理 |\n| 典型场景 | 全局代理、科学上网工具 | 浏览器代理、企业网关 |\n\n## 实验验证\n\n抓包验证环境配置前往：[代理协议抓包验证实验](/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/#h-8e12d33a0afe91673c8a)\n\n### 测试代码\n\n以下代码通过 SOCKS5 代理访问目标 URL，修改 `url` 变量即可切换 HTTP / HTTPS：\n\n```python\nimport requests\n\nproxies = {\n    \"http\": \"socks5h://172.20.10.6:8889\",\n    \"https\": \"socks5h://172.20.10.6:8889\",\n}\n\n# 切换 http:// 或 https:// 测试不同场景\nurl = \"http://example.com\"\nresponse = requests.get(url, proxies=proxies, verify=False)\n\nprint(\"Status Code:\", response.status_code)\nprint(\"Response:\", response.text)\n```\n\n### TCP 流量转发\n\n\n#### HTTP 明文请求\n\nWireshark 捕获到的流量（可观察到完整的 SOCKS5 握手 + 明文 HTTP 请求/响应）：\n![](/notes/n-f6c6ef20c9704570bd3078f37f192b81/media/16358830c27c8989020223b2304d71db9165da228250740e05840212b53aa886.jpeg)\n\n关键报文说明：\n1. **前 3 帧**：TCP 三次握手（SYN → SYN-ACK → ACK）\n2. **第 4 帧**：客户端发送认证方法请求（VER=05, NMETHODS=01, METHODS=00）\n3. **第 5 帧**：代理回应选定方法（VER=05, METHOD=00 即无需认证）\n4. **第 6 帧**：客户端发送 CONNECT 请求（含目标域名和端口）\n5. **第 7 帧**：代理回应连接成功（REP=00）\n6. **后续帧**：HTTP 明文请求和响应数据透传\n\n#### HTTPS 普通转发\n\n关闭 Charles 的 SSL 代理功能，SOCKS5 代理仅做字节流中继，Wireshark 捕获到的流量：\n![](/notes/n-f6c6ef20c9704570bd3078f37f192b81/media/336f098ce7937b9c9318256542f792bee77f26e05e6c3fa46c02143d3fd38386.jpeg)\n\nSOCKS5 握手完成后，隧道内传输的是 TLS 加密数据。Wireshark 仅能看到 TLS 握手和加密的 Application Data，**无法解析 HTTP 内容**——这正体现了 SOCKS5 的\"协议无关\"特性。\n\n#### Charles SSL Proxying / MITM 场景\n\n开启 Charles 的 SSL 代理（本质是 MITM：Charles 用自签证书与客户端建立 TLS，同时与目标服务器建立另一条 TLS，在中间解密/重新加密），Wireshark 捕获到的流量：\n![](/notes/n-f6c6ef20c9704570bd3078f37f192b81/media/8280035e8775bab90f1a7b4a0a1442f9951c92ef06c60d23f62b7aac7797ec81.jpeg)\n![](/notes/n-f6c6ef20c9704570bd3078f37f192b81/media/9bad61e117edd1136714865824d251c34ff8f0134981caf82edccf7effc85723.jpeg)\n\n> [!note]\n> 中间人攻击是 Charles 的功能，**不是 SOCKS5 协议本身的特性**。SOCKS5 只负责建立隧道，不关心隧道内是否被解密。此处展示是为了对比说明：同样经过 SOCKS5 代理，是否开启 SSL Proxying 会导致抓包可见性的巨大差异。\n\n### UDP 流量转发\n\nUDP 代理的握手阶段与 TCP 代理基本一致（区别在于命令字段为 `UDP ASSOCIATE`，即 CMD=`0x03`），代理返回 UDP 中继地址后，后续 UDP 数据通过该中继地址转发（每个 UDP 报文前附加 SOCKS5 封装头）。\n\n**注意**：TCP 控制连接必须保持存活，一旦断开，代理服务器会立即关闭对应的 UDP 中继通道\n\n> [!tip]\n> 常见的 UDP 代理场景包括：DNS 查询转发、游戏加速、实时音视频等。\n",
+  "id": "f6c6ef20-c970-4570-bd30-78f37f192b81",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "SOCKS5 代理协议"
+  },
+  "resources": [
+    "16358830c27c8989020223b2304d71db9165da228250740e05840212b53aa886.jpeg",
+    "336f098ce7937b9c9318256542f792bee77f26e05e6c3fa46c02143d3fd38386.jpeg",
+    "766a805222534bf5d7894401411fd9c878549952d667a81065352bb4f9423603.jpg",
+    "8280035e8775bab90f1a7b4a0a1442f9951c92ef06c60d23f62b7aac7797ec81.jpeg",
+    "9bad61e117edd1136714865824d251c34ff8f0134981caf82edccf7effc85723.jpeg",
+    "f5b3946bdd0e078c179e10291c3fac22b9d6c63d59fe45de970201b256df5dba.jpg"
+  ],
+  "url": "/notes/n-f6c6ef20c9704570bd3078f37f192b81/"
+}

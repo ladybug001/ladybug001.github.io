@@ -1,0 +1,93 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-af371055207fe9e0fa65",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-9408318ce7a28bb83dd5",
+      "kind": "heading",
+      "offset": 121
+    },
+    {
+      "id": "h-3725dcdd0c878c691ede",
+      "kind": "heading",
+      "offset": 651
+    },
+    {
+      "id": "h-f7b3766874b951789e6f",
+      "kind": "heading",
+      "offset": 661
+    },
+    {
+      "id": "h-b2ed5f9b271ed2c28171",
+      "kind": "heading",
+      "offset": 1320
+    },
+    {
+      "id": "h-f920d1a11f14fe0276ff",
+      "kind": "heading",
+      "offset": 1513
+    },
+    {
+      "id": "h-a08b63f438907bf22df6",
+      "kind": "heading",
+      "offset": 1698
+    },
+    {
+      "id": "h-18beb4c3cc83a38e41d6",
+      "kind": "heading",
+      "offset": 1972
+    },
+    {
+      "id": "h-e8bf44ea8587776ddfb7",
+      "kind": "heading",
+      "offset": 1990
+    },
+    {
+      "id": "h-86eef3c12b87a2d995a0",
+      "kind": "heading",
+      "offset": 2479
+    },
+    {
+      "id": "h-8cf4baa069c1125e246c",
+      "kind": "heading",
+      "offset": 3015
+    },
+    {
+      "id": "h-6ac75b843866fed9dc4e",
+      "kind": "heading",
+      "offset": 3133
+    },
+    {
+      "id": "h-6a905fef7d8de075b730",
+      "kind": "heading",
+      "offset": 3443
+    },
+    {
+      "id": "h-ddf8aeb099ceed75751b",
+      "kind": "heading",
+      "offset": 3839
+    },
+    {
+      "id": "h-5fe66dda3bf672c6001e",
+      "kind": "heading",
+      "offset": 4539
+    }
+  ],
+  "body": "# Windows 线程局部存储 (TLS)\n\nTLS 包含两个核心概念：\n\n1. TLS 变量：\n    - 静态 TLS 变量\n    - 动态 TLS 变量\n2. TLS 回调函数（TLS Callback）\n\n## 静态 TLS 变量\n\n以一个 DLL 为例：\n\n```c\n// dllmain.cpp\n\n#include <Windows.h>\n\n__declspec(thread) int g_tlsValue = 123;\n\nBOOL APIENTRY DllMain(\n    HMODULE hModule,\n    DWORD reason,\n    LPVOID reserved)\n{\n    return TRUE;\n}\n```\n\n进程的多个线程都要使用该 DLL 及其 `g_tlsValue` 变量，每个线程需要独立维护这个变量。编译器将对 `g_tlsValue` 的读写转换为：\n\n1. 通过段寄存器（x86 下为 `FS`，x64 下为 `GS`）找到当前线程的 TEB\n2. 再通过 TEB 访问当前线程私有的 `g_tlsValue`\n\n> `__declspec(thread)` 是 MSVC 扩展语法。C++11 的 `thread_local` 关键字对 POD 类型等价于 `__declspec(thread)`（纯静态 TLS）；对非 POD 类型，MSVC 会额外生成 TLS 回调来处理构造和析构。\n\n### 访问静态 TLS 变量的汇编流程\n\n#### x86\n\n假设某 DLL 存在：\n\n```c\n__declspec(thread) int g_tlsValue = 123;\n```\n\n当该 DLL 中的代码访问该变量时：\n\n```asm\nmov eax, dword ptr [_tls_index]\nmov ecx, fs:[2Ch]\nmov ecx, [ecx + eax*4]\nmov eax, [ecx + offset_g_tlsValue]\n```\n\n逐句分析：\n\n**第一步**：`mov eax, [_tls_index]`——获取本模块在 TLS Vector 中的索引（不是 TLS 变量地址）。\n\n> `_tls_index` 是该模块内由编译器生成的全局变量（存放系统分配给本模块的 TLS 索引值），汇编中直接访问该变量的绝对地址（加载 DLL 时会被重定位）。\n\n假设 `eax = 5`。\n\n**第二步**：`mov ecx, fs:[2Ch]`——取得当前线程的 `TEB->ThreadLocalStoragePointer`，即 TLS Vector。\n\n**第三步**：`mov ecx, [ecx + eax*4]`——等价于 `ecx = TLSVector[_tls_index]`，得到当前线程 + 当前 DLL 对应的 TLS Block。\n\n**第四步**：`mov eax, [ecx + offset_g_tlsValue]`——在 TLS Block 中通过偏移找到 `g_tlsValue`。\n\n#### x64\n\nx64 下使用 `GS` 段寄存器，`ThreadLocalStoragePointer` 的偏移为 `0x58`：\n\n```asm\nmov rax, qword ptr [_tls_index]\nmov rcx, gs:[58h]\nmov rcx, [rcx + rax*8]\nmov eax, [rcx + offset_g_tlsValue]\n```\n\n#### 三层索引结构\n\n\n三个层级：\n\n1. **TLS Vector**：per-thread 的指针数组，由 `TEB->ThreadLocalStoragePointer` 指向\n2. **TLS Block**：per-module 的数据区域，通过 `_tls_index` 索引\n3. **变量**：Block 内通过编译期确定的 offset 定位\n\n## 动态 TLS 变量\n\n动态 TLS 变量的核心逻辑：可以认为操作系统在代码里面声明/预留了很多静态 TLS 变量，供线程申请使用。\n\n动态 TLS 变量的值直接保存在 TEB 的 `TlsSlots` 和 `TlsExpansionSlots` 槽位中，每个线程各自隔离。\n\nPEB 中的 `TlsBitmap` 记录哪些槽位已被占用，运行时通过 `TlsAlloc` 在进程内全局分配一个未被占用的槽位索引，然后各个线程通过该索引调用 `TlsSetValue` / `TlsGetValue` 在各自的 TEB 槽位中存取私有变量值。\n\n\n## TLS 回调函数\n\n### 为什么需要 TLS 回调\n\n以下 DLL 中的 `thread_local` 对象需要构造和析构：\n\n```cpp\n#include <Windows.h>\n\nclass Test\n{\npublic:\n    Test()\n    {\n        OutputDebugStringA(\"Test ctor\\n\");\n    }\n};\n\nthread_local Test obj1;\nthread_local Test obj2;\nthread_local Test obj3;\n\nBOOL WINAPI DllMain(\n    HINSTANCE,\n    DWORD,\n    LPVOID)\n{\n    return TRUE;\n}\n```\n\n这些对象的生命周期管理需要在 TLS 回调函数中完成。\n\nTLS 回调函数与 `DllMain` 类似，有相同的调用原因：\n\n1. `DLL_PROCESS_ATTACH`\n2. `DLL_THREAD_ATTACH`\n3. `DLL_THREAD_DETACH`\n4. `DLL_PROCESS_DETACH`\n\n### 自定义 TLS 回调\n\n除了编译器为变量生命周期生成的 TLS 回调外，也可以利用 MSVC 语法手动注册自定义回调：\n\n![d8fe8cfe5fc4f0485f2e3357a29c0e7e&#95;MD5&#46;jpg](/notes/n-55b4927c9ebb593794ba1e9b31a402c0/media/95833984a772e390059c997f2d75cdd0ff147355539b7337435912060d9bd5c2.jpg)\n\n`#pragma const_seg(\".CRT$XL?\")` 让后续符号放入 `.CRT` 节区。`$` 后的后缀决定链接器合并同名节区时的排序位置——`$XLA` 与 `$XLZ` 分别是 CRT 预留的起始与结束哨兵（指针值为 NULL）。为避免破坏首尾哨兵，自定义回调应放入两哨兵之间（通常从 `$XLB` 开始，如 `$XLB`、`$XLC`、`$XLD`……）。\n\n`#pragma comment(linker, \"/INCLUDE:XXXX\")` 让链接器保留指定符号（即使代码中未引用）。其中 `_tls_used` 用于确保链接器建立 `IMAGE_TLS_DIRECTORY`。\n\n## TLS 初始化时序\n\n假设进程有以下模块：\n\n```\nEXE     \nA.dll   TLS index 0\nB.dll   TLS index 1\nC.dll   TLS index 2\nD.dll   无\n```\n\n### 创建新线程时的初始化流程\n\n创建的新线程回到用户态，依次完成：\n\n1. 遍历所有使用 TLS 的模块，为每个模块分配 TLS Block，并将各 Block 的指针填入 TLS Vector（指针数组）中\n2. 用各模块中的 TLS 变量初始数据模板初始化对应 Block\n3. 将 TEB 中的 `ThreadLocalStoragePointer` 指向当前线程自己的 TLS Vector\n4. 依次调用各模块的 TLS 回调函数和 `DllMain`（调用原因均为 `DLL_THREAD_ATTACH`），最后进入线程入口函数。\n\n> 主线程的初始流程类似，由 Loader 在进程启动期间完成。\n\n### 后加载使用 TLS 的模块\n\n如果一个使用 TLS 的模块是在后面加载的（如通过 `LoadLibrary`），前面已经分配了 TLS Block 的线程怎么办？\n\n**动态 TLS 变量**：完全不受影响。动态 TLS 依赖运行时分配的槽位和显式 API 查询，天然支持随用随分。\n\n**静态 TLS 变量**：在现代 Windows（Vista 及更高版本）中，Loader 会为已存在的线程补上新模块对应的 TLS 存储，使 `_tls_index` 能正常索引，然后配合该模块导出的访问线程局部变量的函数。\n> **配合导出函数访问的原由**：模块之所以需要“后加载”，正是因为主程序在源码层面并未直接链接或静态声明该 DLL 及其线程局部符号（否则在程序启动时就会被 PE 导入表一同载入）。因此必须由 DLL 导出一个使用该局部变量的常规函数或访问器；\n\n\n## PEB / TEB 中的 TLS 相关成员\n\n| 位置 | 成员 | 作用 |\n|---|---|---|\n| **TEB** | `ThreadLocalStoragePointer` | **Static TLS** 入口，指向当前线程的 TLS Vector |\n| **TEB** | `TlsSlots[64]` | **Dynamic TLS** 前 64 个 TLS index 对应的线程私有值 |\n| **TEB** | `TlsExpansionSlots` | **Dynamic TLS** 扩展槽位，处理 index ≥ 64 的情况 |\n| **TEB** | `TlsLinks` | Loader 内部管理 TLS 时使用的链表节点，不是平时直接访问 TLS 变量的主路径 |\n| **PEB** | `TlsBitmap` | 记录前 64 个 **Dynamic TLS index** 哪些已经被 `TlsAlloc()` 占用 |\n| **PEB** | `TlsBitmapBits[2]` | `TlsBitmap` 实际使用的位图存储空间，2 × 32 bit = 64 bit |\n| **PEB** | `TlsExpansionBitmap` | 记录扩展 Dynamic TLS index 的占用情况 |\n| **PEB** | `TlsExpansionBitmapBits[32]` | 扩展位图的实际存储空间 |\n| **PEB** | `TlsExpansionCounter` | 与扩展 TLS 槽位管理相关的内部计数信息 |\n\n## 读取 TLS 回调与动态 TLS 变量\n\n获取模块 PE 头中的 `AddressOfCallBacks` 字段可以读取 TLS 回调函数地址列表；\n\n通过 TEB 可以读取动态 TLS 变量的值。\n\n项目参考：[multikill/TLS_Reader: TLS variant and how you can read from them](https://github.com/multikill/TLS_Reader)\n\n",
+  "id": "55b4927c-9ebb-5937-94ba-1e9b31a402c0",
+  "metadata": {
+    "tags": [
+      "os/windows/thread",
+      "reverse/windows",
+      "os/windows"
+    ],
+    "title": "Windows 线程局部存储 (TLS)"
+  },
+  "resources": [
+    "95833984a772e390059c997f2d75cdd0ff147355539b7337435912060d9bd5c2.jpg"
+  ],
+  "url": "/notes/n-55b4927c9ebb593794ba1e9b31a402c0/"
+}

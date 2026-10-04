@@ -1,0 +1,10 @@
+{{/* Stack 4.0.3 (GPL-3.0): restore the stock paginated article-card homepage. */}}
+{{ define "main" }}
+  {{ $paginator := partial "helper/paginator.html" . }}
+  <section class="article-list">
+    {{ range $paginator.Pages }}{{ partial "article-list/default" . }}{{ end }}
+  </section>
+  {{ partial "pagination.html" . }}
+  {{ partialCached "footer/footer" . }}
+{{ end }}
+{{ define "right-sidebar" }}{{ partial "sidebar/right.html" (dict "Context" . "Scope" "homepage") }}{{ end }}

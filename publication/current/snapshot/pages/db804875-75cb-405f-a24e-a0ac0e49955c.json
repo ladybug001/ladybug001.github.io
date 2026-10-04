@@ -1,0 +1,109 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-fd731f89df172c9278f5",
+      "kind": "heading",
+      "offset": 158
+    },
+    {
+      "id": "h-5347ce9af3a705f86a23",
+      "kind": "heading",
+      "offset": 489
+    },
+    {
+      "id": "h-0034a9cf7874d2625143",
+      "kind": "heading",
+      "offset": 822
+    },
+    {
+      "id": "h-f7637e475bded13408f5",
+      "kind": "heading",
+      "offset": 2639
+    },
+    {
+      "id": "h-3a325b9946d784e24e7a",
+      "kind": "heading",
+      "offset": 5458
+    },
+    {
+      "id": "h-bb540773230b9b49aadf",
+      "kind": "heading",
+      "offset": 5925
+    },
+    {
+      "id": "h-798bf705ec47e4c2160f",
+      "kind": "heading",
+      "offset": 6389
+    },
+    {
+      "id": "h-0e11012e7aec4a75e044",
+      "kind": "heading",
+      "offset": 10105
+    },
+    {
+      "id": "h-7d8584a46a72258bc88f",
+      "kind": "heading",
+      "offset": 10945
+    },
+    {
+      "id": "h-3802e7db4c9ef16394ae",
+      "kind": "heading",
+      "offset": 11497
+    },
+    {
+      "id": "h-9745d584b66edfb48db2",
+      "kind": "heading",
+      "offset": 12603
+    },
+    {
+      "id": "h-0df94dd9940580490439",
+      "kind": "heading",
+      "offset": 12655
+    },
+    {
+      "id": "e-e9500de66ca3d2a41511-b-s3hn8a",
+      "kind": "block",
+      "offset": 13544
+    },
+    {
+      "id": "h-0349e40a421b78b52751",
+      "kind": "heading",
+      "offset": 13567
+    },
+    {
+      "id": "h-f43a4529c6b9c426e064",
+      "kind": "heading",
+      "offset": 14209
+    },
+    {
+      "id": "h-5c20770ad99c6f3bead1",
+      "kind": "heading",
+      "offset": 14898
+    }
+  ],
+  "body": "\n> [!abstract] 前置知识\n> **架构界定**：本文中引用的结构体偏移量均基于 **x86 (32位)** 架构（如 WinXP / Win7）。x64 架构的偏移量差异较大，请勿直接平移。\n> 阅读本笔记前，建议先了解基本的保护模式和操作系统概念。\n\n# Windows 内核控制块与进程、线程结构体\n\n从操作系统的底层视角来看，进程与线程的本质均是内核对象（即特定的内存结构体）。\n\n当操作系统创建一个进程或线程时，其核心动作就是在内核空间分配一块内存并填充相应的结构体数据。因此，深入理解 Windows 进程与线程机制的起点，便是剖析它们的核心结构体定义。\n\n深入逆向分析操作系统内核代码，通常需要跨越以下两道核心技能门槛：\n\n1. **精通底层架构与汇编**：能够熟练阅读底层汇编代码，尤其是要深刻理解与**段机制**和**分页机制**相关的特权指令及内存寻址逻辑。\n2. **透彻理解三大核心结构体**：必须熟练掌握 `_EPROCESS`、`_ETHREAD` 以及 `_KPCR` 的内存布局与关键成员。\n\n## 进程结构体：`_EPROCESS`\n\n每个 Windows 进程在 Ring 0（内核态）都有一个核心描述结构体 `_EPROCESS`，该结构体维护了进程的所有关键管理信息。\n\n通过 WinDbg 查看 `_EPROCESS` 结构体：\n\n![4e60bc8a2d5d795317f87e4526991c12&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/25fa76ed657d6a919761e0c9793df9dfbd91837c3c0cc9d50c2b87480550b254.jpg)\n\n\n以下重点解析 `_EPROCESS` 结构体中最为关键的内核管理成员。\n\n### 核心成员：`_KPROCESS`\n\n`_EPROCESS` 的第一个成员（0x0 偏移位）是 `_KPROCESS` 结构体：\n\n![332387a5287e3c32ba2abffde0bc52cd&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/822d8b30cf460136d64976c45b4b24f40c4189adbd6f4289504e9189c952ed2f.jpg)\n\n`_KPROCESS` 的核心成员如下：\n\n| 偏移 | 成员 | 作用 |\n| --- | --- | --- |\n| `0x0` | `Header (_DISPATCHER_HEADER)` | 标识其为**可等待对象**，可通过 `WaitForSingleObject` 等 API 进行阻塞等待（如互斥体、事件）。 |\n| `0x10` | `ProfileListHead (_LIST_ENTRY)` | **性能分析链表头**。与性能监视器有关，用于监视进程性能。 |\n| `0x18` | `DirectoryTableBase ([2] Uint4B)` | **页目录表基址（Cr3）**。记录该进程专属的页目录表物理地址，控制着整个进程的虚拟地址空间映射。（第二个元素为**超过 4GB 物理地址**的 CR3） |\n| `0x34` | `ActiveProcessors (Uint4B)` | 记录当前进程**在哪个核上运行**（注：线程死亡时才会赋值，值不精确，参考价值有限）。 |\n| `0x38`<br>`0x3C` | `KernelTime (Uint4B)`<br>`UserTime (Uint4B)` | **时间统计信息**：分别记录该进程在 Ring 0（内核态）和 Ring 3（用户态）的运行耗时。 |\n| `0x40` | `ReadyListHead (_LIST_ENTRY)` | **就绪链表头**。当前进程中处于就绪状态但没有运行的线程会挂载在这个链表里。 |\n| `0x48` | `SwapListEntry (_SINGLE_LIST_ENTRY)` | **交换链表节点**。当进程被交换到磁盘上时使用（逆向中用处不大）。 |\n| `0x50` | `ThreadListHead (_LIST_ENTRY)` | **线程链表头**。当前进程下的所有线程挂载在该表（注：`_EPROCESS` 中也有个同名成员，但两者指向的**不是同一个链表**）。 |\n| `0x58` | `ProcessLock (Uint4B)` | **自旋锁**。用于**保护 `_KPROCESS` 数据成员的同步**。修改该结构时，强烈建议先通过此成员锁住进程。 |\n| `0x5C` | `Affinity (Uint4B)` | **CPU 亲和性掩码**。规定该进程的线程**优先并允许在哪些 CPU 核心上运行**。掩码的第 N 位为 1 代表允许在第 N 号 CPU 上运行。例如：值为 5 (二进制 101) 表示允许在 0号 和 2号 CPU 运行。若设为超出实际物理核数的掩码，会导致进程无法运行。 |\n| `0x60` | `StackCount (Uint2B)` | 指示进程**被交换到磁盘的次数**（逆向中用处不大）。 |\n| `0x62` | `BasePriority (Char)` | **基础优先级**。创建线程时如果没有指定优先级，会默认从这里继承。 |\n| `0x63` | `ThreadQuantum (Char)` | 线程默认执行的**时间碎片**（时间片分配基础）。 |\n| `0x65` | `State (UChar)` | 进程的**换入换出状态**（如：已交换到磁盘、正交换到磁盘、没交换到磁盘、已交换到内存等），与 `SwapListEntry` 有联系。 |\n| `0x66` | `ThreadSeed (UChar)` | 描述**最理想的 CPU 核心**，与 `Affinity` 亲和性相关联。 |\n| `0x67` | `DisableBoost (UChar)` | 是否**禁用优先级动态提升机制**。 |\n\n### `_EPROCESS` 其他核心成员\n\n| 偏移 | 成员 | 作用 |\n| --- | --- | --- |\n| `0x0` | `Pcb (_KPROCESS)` | `_KPROCESS` 结构体，进程在**内核层调度的核心结构**，嵌套在 `_EPROCESS` 头部。 |\n| `0x6C` | `ProcessLock (_EX_PUSH_LOCK)` | **保护锁**。与 `_KPROCESS` 中的 `ProcessLock` 意义类似，用于**保护 `_EPROCESS` 数据成员的同步**。 |\n| `0x70`<br>`0x78` | `CreateTime (_LARGE_INTEGER)`<br>`ExitTime (_LARGE_INTEGER)` | **时间记录**：进程创建时间与退出时间。 |\n| `0x80` | `RundownProtect (_EX_RUNDOWN_REF)` | **停止保护机制锁**。通过该机制可以实现**保护进程不被其他常规手段强杀**。 |\n| `0x84` | `UniqueProcessId (Ptr32 Void)` | **进程编号（PID）**。 |\n| `0x88` | `ActiveProcessLinks (_LIST_ENTRY)` | **活动进程双向链表节点**。**任务管理器的进程列表**与**进程快照**都是遍历该链表。将系统中所有存活的进程串联起来（注意：链表节点指向相邻进程 `_EPROCESS` 的 `0x88` 偏移处，而非基址）。 |\n| `0x90`<br>`0x9C` | `QuotaUsage ([3] Uint4B)`<br>`QuotaPeak ([3] Uint4B)` | 物理页**限额统计信息**。 |\n| `0xA8`<br>`0xAC`<br>`0xB0` | `CommitCharge (Uint4B)`<br>`PeakVirtualSize (Uint4B)`<br>`VirtualSize (Uint4B)` | **虚拟内存分配统计信息**。 |\n| `0xB4` | `SessionProcessLinks (_LIST_ENTRY)` | **会话进程链表**。与系统会话机制相关（如 `smss.exe` 管理的多会话体系）。 |\n| `0xBC`<br>`0xC0` | `DebugPort (Ptr32 Void)`<br>`ExceptionPort (Ptr32 Void)` | **调试端口**与**异常端口**指针。决定进程被调试时的事件派发走向。不断清零 `DebugPort` 是**实现反调试**（让 OD 无法附加）的一种经典手段。 |\n| `0xC4` | `ObjectTable (Ptr32 _HANDLE_TABLE)` | **私有句柄表**。存储当前进程申请的**所有内核对象句柄**。所有通过 `OpenProcess` 获取的进程句柄都会记录在此。如果其他进程的句柄表中存在当前进程的句柄引用，意味着当前进程正被操作，这也是一种典型的**反调试检测依据**。 |\n| `0xC8` | `Token (_EX_FAST_REF)` | **访问令牌（Token）**。与进程的**安全上下文、权限管理**息息相关。 |\n| `0x11C` | `VadRoot (Ptr32 Void)` | **VAD（Virtual Address Descriptor）树根节点**，用于记录当前进程虚拟内存空间（低 2G）的内存分配状态。参考：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/) |\n| `0x120` | `VadHint (Ptr32 Void)` | **内存管理相关辅助指针**，优化 VAD 树搜索。 |\n| `0x130` | `Win32Process (Ptr32 Void)` | **GUI 进程关联结构**（与进程是否是带有界面的 UI 程序有关）。 |\n| `0x14C` | `InheritedFromUniqueProcessId (Ptr32 Void)` | **父进程 PID**。记录创建该进程的创建者身份。 |\n| `0x174` | `ImageFileName ([16] UChar)` | **进程的可执行文件短名称**（最多存放 16 个字符）。 |\n| `0x190` | `ThreadListHead (_LIST_ENTRY)` | **进程所属线程链表**。当前进程下的所有线程挂载在该表（注：与 `_KPROCESS` 的 `ThreadListHead` 指向的**不是同一个链表**，即一个进程会维护两套线程链表）。 |\n| `0x1A0` | `ActiveThreads (Uint4B)` | 进程内当前**活动的线程总数**。 |\n| `0x1B0` | `Peb (Ptr32 _PEB)` | **PEB（Process Environment Block，进程环境块）**。进程在 Ring 3 暴露的核心结构，包含模块列表、调试状态（如 **`BeingDebugged` 标志位**，偏移 `0x2` 处）等。 |\n| `0x1B8`<br>`0x1C0`<br>`0x1C8` | `ReadOperationCount`<br>`WriteOperationCount`<br>`OtherOperationCount` | **IO 统计信息**：分别记录调用 `ReadFile`、`WriteFile` 等其他读写 IO 操作的次数。可通过这些值判断目标程序是否在**后台隐秘读写了文件**。 |\n| `0x1F4` | `SeAuditProcessCreationInfo` | 若进程名称或路径长度超过 `ImageFileName` 限制的 16 个字符，需通过该成员获取**完整的镜像路径信息**。 |\n| `0x248` | `Flags (Uint4B)` | **进程标志位集合**，决定进程的当前“死活”等诸多状态（内部包含一系列位域控制位）。 |\n| `0x24C` | `ExitStatus (Int4B)` | **退出状态码**。进程被杀死后其内核结构还会保留一段时间，通过该成员可获取其实际的退出状态。 |\n| `0x252` | `SubSystemMinorVersion (UChar)` | **子系统标识**。用于判断进程所属的子系统类型（如控制台程序或 Win32 GUI 程序）。 |\n\n#### ActiveProcessLinks 双向链表寻址\n\n以下为活动进程双向链表的拓扑结构，内核全局变量 `PsActiveProcessHead` 指向该链表的表头。\n\n![3609634a9dd6d5b553212a124ea36609&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/5637a7251f67d197a434f0eac7e361bcbdcaeec93f2305f069eca4e2be5df5e5.jpg)\n\n在 WinDbg 中查看表头，并沿链表推导计算对应的 `_EPROCESS` 结构体基址：\n\n![e720d1790a978922c81c3dd2519cca14&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/d29a89e2dab684f7e4027bdf87b4b6f3d08c1485ab4c9d0bd3a1d8544386c389.jpg)\n\n## 线程结构体：`_ETHREAD`\n\n进程是资源分配的容器，线程是 CPU 调度的基本单位。每启动一个线程，内核中便会分配并初始化一个线程结构体 `_ETHREAD`，存储线程相关的信息。\n\n> [!info] 0 环与 3 环的对应关系\n> `_EPROCESS` 和 `_ETHREAD` 属于 0 环（R0）的内核对象；而在 3 环（R3）用户态中，与它们职责相对应的伴生结构体分别是 `_PEB`（进程环境块）和 `_TEB`（线程环境块）。\n\n可以使用如下命令在 WinDbg 中查看 `_ETHREAD` 结构：\n\n```text\ndt _ETHREAD\n```\n\n![7abfb8de3b296c849b946cc4ba4fb2e7&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/8e56af46a55789e9f7e084efde4a4b5832216fadb53633e8d28ab778ab226dbe.jpg)\n\n\n\n### 核心成员：`_KTHREAD`\n\n与进程类似，`_ETHREAD` 的第一个成员 `Tcb` 是 `_KTHREAD` 结构体：\n![8a27e245fc29bd1690b05990d4f3506f&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/ea410bd070a24499f1c63425e0457e875056e8edb770a2149a07bf7519d610a1.jpg)\n\n\n`_KTHREAD` 关键成员解析：\n\n| 偏移 | 成员 | 作用                                                                                                |\n| --- | --- | --- |\n| `0x0` | `Header (_DISPATCHER_HEADER)` | **可等待对象头**，机制同 `_KPROCESS` 的 `Header`。带有此结构的都是可被同步等待的对象。                                          |\n| `0x10` | `MutantListHead (_LIST_ENTRY)` | **互斥体对象链表头**。用于记录线程当前持有的互斥体（Mutant）加锁信息。                                                          |\n| `0x18`<br>`0x1C`<br>`0x28` | `InitialStack`<br>`StackLimit`<br>`KernelStack` | **内核栈基址、栈边界、当前内核栈指针**。参与线程切换的核心字段。（注：线程初次创建时，内核栈顶初值就是 `InitialStack`）                             |\n| `0x20` | `Teb (Ptr32 Void)` | 指针，指向 **TEB（Thread Environment Block，线程环境块）**。线程在 Ring 3 的伴生结构体。在 Ring 3 态下可通过 `FS:[0]` 段寄存器寻址找到。 |\n| `0x2C` | `DebugActive (UChar)` | **调试激活标志**。若值为 `-1` 表示不能使用硬件调试寄存器（`Dr0`~`Dr7`）；若线程被附加调试，该值将被动态修改。                                 |\n| `0x2D` | `State (Uchar)` | **线程运行状态机**（如：就绪、等待、运行）。                                                                          |\n| `0x2E` | `Alerted ([2] UChar)` | 指示线程在内核与用户模式下**是否处于警觉（Alerted）状态**。决定了某些阻塞等待状态（如 `Sleep`）能否被 APC 等机制强行唤醒。                         |\n| `0x34`<br>`0xE8`<br>`0x138`<br>`0x14C` | `ApcState`<br>`ApcQueueLock`<br>`ApcStatePointer`<br>`SavedApcState` | **异步过程调用（APC）**的队列及状态控制相关成员。                                                                      |\n| `0x4C` | `ContextSwitches (Uint4B)` | **线程上下文切换次数**。记录该线程被调度的频繁程度。                                                                      |\n| `0x50` | `IdleSwapBlock (UChar)` | 指示当前是否为**闲置换出状态**。                                                                                |\n| `0x60` | `WaitListEntry / SwapListEntry` | **等待链表 / 交换链表节点**（联合体）。线程在内存中处于等待时挂入前者；被置换到磁盘时挂入后者。                                               |\n| `0x6C` | `BasePriority (Char)` | 线程的**基础优先级**。默认继承所属进程的 `BasePriority`，也可通过 `KeSetBasePriorityThread` 独立修改。                        |\n| `0x6E` | `PriorityDecrement (Char)` | **动态优先级衰减值**。                                                                                     |\n| `0x6F` | `Quantum (Char)` | **时间碎片**。与线程切换密切相关，系统依据该值判断线程当前时间片是否耗尽。                                                           |\n| `0x70` | `WaitBlock ([4] _KWAIT_BLOCK)` | **等待块**（内置4个）。当线程调用 `WaitForSingleObject` 等陷入阻塞时，用于记录其正在等待的具体内核对象。                                |\n| `0xD4` | `KernelApcDisable (Uint4B)` | **内核 APC 禁用状态**标记。                                                                                |\n| `0xE0` | `ServiceTable (Ptr32 Void)` | 指向该线程专属的**系统服务表（SSDT）基址**。修改该成员可实现针对单一目标线程的隐蔽 SSDT HOOK。                                          |\n| `0x134` | `TrapFrame (Ptr32 _KTRAP_FRAME)` | **陷阱帧指针**。当线程从 Ring 3 切入 Ring 0 时，该结构体用于保存陷入前的 CPU 寄存器上下文环境。通常指向**线程自己的内核栈中某个位置**。                |\n| `0x140` | `PreviousMode (Char)` | **先前模式**。内核 API 依赖此标志位判断发起调用的来源是 Ring 0 还是 Ring 3，以此进行严格权限校验。                                     |\n| `0x141` | `EnableStackSwap (UChar)` | 指示该线程**是否开启栈交换**机制。                                                                               |\n| `0x144`<br>`0x148` | `KernelTime`<br>`UserTime` | **时间统计信息**：分别记录该线程在 Ring 0（内核态）和 Ring 3（用户态）的实际运行耗时。                                              |\n| `0x164` | `Alertable (UChar)` | 标记该线程当前**是否可以被唤醒（Alertable）**。                                                                    |\n| `0x1B0` | `ThreadListEntry (_LIST_ENTRY)` | **线程双向链表节点**。隶属同一进程的所有线程均被挂载至该链表（对应 `_EPROCESS` 的链表头）。                                            |\n\n### `_ETHREAD` 其他核心成员\n\n| 偏移 | 成员 | 作用 |\n| --- | --- | --- |\n| `0x0` | `Tcb (_KTHREAD)` | `_KTHREAD` 结构体，线程在**内核层调度的核心结构**，嵌套在 `_ETHREAD` 头部。 |\n| `0x1EC` | `Cid (_CLIENT_ID)` | **客户端 ID**。包含线程所属的进程 ID 与线程本身的 ID。其中 `_CLIENT_ID[0]` 存放 PID，`_CLIENT_ID[4]` 存放 TID。 |\n| `0x208` | `LpcReplyMessage` / `LpcWaitingOnPort` | 与**本地进程间通信（LPC）**相关的消息与端口指针。 |\n| `0x220` | `ThreadsProcess (Ptr32 _EPROCESS)` | **反向进程指针**：指向把当前线程创建出来的所属进程的 `_EPROCESS` 结构体基址。 |\n| `0x224` | `StartAddress (Ptr32 Void)` | **线程的起始执行函数**地址。 |\n| `0x22C` | `ThreadListEntry (_LIST_ENTRY)` | 同 `_KTHREAD` 的 `ThreadListEntry`，这是另一种**双向链表链接方式**。 |\n| `0x234` | `RundownProtect (_EX_RUNDOWN_REF)` | **停止保护机制锁**。与进程中的作用类似，可以起到**保护线程自己不被强制杀死**的作用。 |\n| `0x248` | `CrossThreadFlags (Uint4B)` | **跨线程状态标志集合**。包含诸多位域控制位。例如通过修改 `SystemThread` 等标志位将其伪装成系统线程，从而**防止被 R3 层普通 API 杀死**。 |\n\n## CPU 核心在内核中的代理：`_KPCR` 结构\n\n除了描述进程与线程的 `_EPROCESS` 和 `_ETHREAD`，内核中还存在一个描述 CPU 物理核心本身的全局管控结构体——**`_KPCR`（Processor Control Region，处理器控制区）**。\n\n每个 CPU 核心都拥有一块专属的内核控制区 `KPCR`。它集中存储了与当前核心直接相关的硬件上下文与调度控制数据，是内核执行状态查询与底层操作的核心入口。它存储了中断描述符表（IDT）、全局描述符表（GDT）以及任务状态段（TSS）等数据。\n\n> [!NOTE] 软硬件视角的边界\n> 必须明确，`KPCR` 纯粹是 **Windows 操作系统（软件层面）** 抽象出的管理结构。对于底层的 CPU 硬件本身而言，它完全感知不到 `KPCR` 的存在。 **举个经典的例子**：`KPCR` 内部虽然详细记录了当前核心的 `GDT` 和 `IDT` 的基址，但 CPU 硬件在处理中断或寻址时，**根本不会去读取 `KPCR` 中的这些字段**，它只认自己内部的物理硬件寄存器（`GDTR` 和 `IDTR`）。内核在 `KPCR` 中“多此一举”存一份，纯粹是为了方便系统自身（如休眠唤醒恢复、崩溃转储调试以及安全比对）的管理需求。\n\n### `_KPCR` 定位\n\n在 Ring 3（用户态）下，段寄存器 `FS:[0]` 指向当前线程的 `TEB`；而**当线程陷入 Ring 0（内核态）时，`FS:[0]` 会被切换为指向当前物理 CPU 核心专有的 `_KPCR` 结构体**。\n> 尽管 `FS` 内容相同，但不同核心依然指向属于自己的 `_KPCR`，相关原理：[x86 段寄存器与描述符体系](/notes/n-9865620a6a12491a86ee4494a0e2a392/#h-4ef1dccd611de24b41bf)\n\n\n可以通过如下指令在 WinDbg 中查看 KPCR 相关信息：\n\n```text\ndt _KPCR              // 查看 KPCR 结构体\ndd KeNumberProcessors  // 查看 KPCR 数量\ndd KiProcessorBlock    // 查看 KPCR 位置\n```\n\n![15a2b3275a61e2ed25995f87cef41cf3&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/271850f6667a05faafaf257647e74d4eb128b7d410e9d6f94f65398f811456fc.jpg)\n\n通过 `KiProcessorBlock` 查看到的 KPCR 地址，实际上指向 KPCR 结构体 `0x120` 的偏移处。因此，若要完整查看该核心的 `_KPCR` 基址数据，需要在该地址上减去 `0x120`：\n\n![eb674accc2a2643e76c126973bb7957e&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/c35adebdc3140815d092d9e6bc9f69bafd9b5dd9ac81a54871be65682959a2c7.jpg)\n\n而这个 `0x120` 偏移位，本身指向另一个结构体 `_KPRCB`。可以理解为 `_KPRCB` 是 KPCR 内嵌的数据扩展：\n\n![b3064df8e043838f27d3b8e2ab49ebe6&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/16bc992b8f741aa85c477591691eaee62c875d7e401db3e6b58a70d4aec858f0.jpg)\n\n### `_KPCR` 核心成员\n\n以下是 `_KPCR` 及内部 `_KPRCB` 的详细偏移表解析。\n\n#### `_NT_TIB`\n\n`_KPCR` 结构体的头部（0x0 偏移处）嵌套了 `_NT_TIB`（线程信息块）：\n\n![0ba750e385a10c9a83b7c8c00a8852d8&#95;MD5&#46;jpg](/notes/n-db80487575cb405fa24ea0ac0e49955c/media/3433a8a8a1cbb30712ddab8689db8850f03b0277d380a970de4c0ca3556ce34a.jpg)\n\n| 偏移 | 成员 | 作用 |\n| --- | --- | --- |\n| `0x0` | `ExceptionList` | 指向当前线程的**内核结构化异常处理链表（SEH）**表头。 |\n| `0x4`<br>`0x8` | `StackBase`<br>`StackLimit` | 记录当前线程**内核栈的基地址**和**大小限制**。 |\n| `0x18` | `Self (Ptr32 _NT_TIB)` | **自引用指针**，指向当前 `_NT_TIB`（即指向 `_KPCR` 自身结构）。设计的目的是为了在内核代码中**查找方便、快速反向定位**。 |\n\n\n> [!NOTE] 为什么 `KPCR` 中也有一个 `_NT_TIB` 成员？\n> 在 Windows 32 位系统中，`FS` 段寄存器被用作上下文环境指针：在 3 环时指向 `TEB`，进入 0 环后则指向 `KPCR`。将两者的第一个成员均设计为 `NtTib`（即 `NT_TIB` 结构），其最核心的作用是维护**结构化异常处理（SEH）链表**。 无论是编译 3 环程序还是 0 环驱动，编译器对 `try` 块生成的底层汇编逻辑是完全相同的（均基于 `FS` 寄存器获取异常链）。因此，系统必须通过实现**内存布局的兼容**，来确保同一套异常处理机制在用户态和内核态下都能无缝工作。\n> 相关内容参考：[Windows x86 VEH 与 SEH](/notes/n-513b4c801b634b30839654b1a72897cc/)。 \n\n\n\n#### `_KPCR` 的其他核心数据\n\n| 偏移 | 成员 | 作用 |\n| --- | --- | --- |\n| `0x1C` | `SelfPcr (Ptr32 _KPCR)` | **自引用指针**，指向当前 `_KPCR` 基址，方便寻址。 |\n| `0x20` | `Prcb (Ptr32 _KPRCB)` | 指向 `_KPCR` 内嵌的**拓展结构体 `_KPRCB`**。通过指针寻址可屏蔽 `_KPCR` 尺寸变动带来的硬编码偏移失效问题。 |\n| `0x38` | `IDT (Ptr32 _KIDTENTRY)` | **中断描述符表（IDT）**基址指针。 |\n| `0x3C` | `GDT (Ptr32 _KGDTENTRY)` | **全局描述符表（GDT）**基址指针。 |\n| `0x40` | `TSS (Ptr32 _KTSS)` | **任务状态段（TSS）**基址指针。在 Windows 中，每颗 CPU 都维护一个专用的 TSS，主要用于**权限环切换**（如 3 环进 0 环的上下文切换），而非传统的进程任务切换。 |\n| `0x51` | `Number (UChar)` | 当前 CPU 的**逻辑硬件编号**（如 0, 1, 2...）。 |\n| `0x120` | `PrcbData (_KPRCB)` | 内联的 `_KPRCB`（处理器控制块）拓展结构体实体数据。 |\n\n#### `_KPRCB` (Processor Control Block)\n\n`_KPRCB` 作为 `_KPCR` 的延伸，主要用于存储线程调度相关的高频状态变量：\n\n| 偏移 | 成员 | 作用 |\n| --- | --- | --- |\n| `0x4` | `CurrentThread (Ptr32 _KTHREAD)` | 指向当前 CPU **正在执行的线程** `_KTHREAD`。 |\n| `0x8` | `NextThread (Ptr32 _KTHREAD)` | 指向调度器已决定的、**即将切换运行的下一个就绪线程** `_KTHREAD`。 |\n| `0xC` | `IdleThread (Ptr32 _KTHREAD)` | 指向**系统预留的空闲线程**（当无任何线程就绪时，CPU 将运行该线程）。 |\n| `0x1C` | `ProcessorState (_KPROCESSOR_STATE)` | **处理器状态**。内部保存了一个 Context 上下文结构（与 3 环的 Context 结构相似）。 |\n| `0x4A8` | `KernelTime (Uint4B)` | 记录 `_KPCR` 的创建时间（注：此时间戳**不精准**）。 |\n| `0x518` | `KeSystemCalls (Uint4B)` | **系统调用计数器**。记录该核上 0 环和 3 环的进出次数（系统调用次数）。 |\n| `0x860` | `DpcListHead (_LIST_ENTRY)` | **DPC（延迟过程调用）链表头**。用于处理高优先级中断产生的延迟调度任务。 |\n\n---\n\n## 相关链接\n\n- [Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/)——后续调度机制\n- [Windows 进程挂靠与跨进程读写机制](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/)——Cr3 的跨进程应用\n",
+  "id": "db804875-75cb-405f-a24e-a0ac0e49955c",
+  "metadata": {
+    "tags": [
+      "os/windows/process",
+      "os/windows/thread",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows 内核控制块与进程、线程结构体",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "16bc992b8f741aa85c477591691eaee62c875d7e401db3e6b58a70d4aec858f0.jpg",
+    "25fa76ed657d6a919761e0c9793df9dfbd91837c3c0cc9d50c2b87480550b254.jpg",
+    "271850f6667a05faafaf257647e74d4eb128b7d410e9d6f94f65398f811456fc.jpg",
+    "3433a8a8a1cbb30712ddab8689db8850f03b0277d380a970de4c0ca3556ce34a.jpg",
+    "5637a7251f67d197a434f0eac7e361bcbdcaeec93f2305f069eca4e2be5df5e5.jpg",
+    "822d8b30cf460136d64976c45b4b24f40c4189adbd6f4289504e9189c952ed2f.jpg",
+    "8e56af46a55789e9f7e084efde4a4b5832216fadb53633e8d28ab778ab226dbe.jpg",
+    "c35adebdc3140815d092d9e6bc9f69bafd9b5dd9ac81a54871be65682959a2c7.jpg",
+    "d29a89e2dab684f7e4027bdf87b4b6f3d08c1485ab4c9d0bd3a1d8544386c389.jpg",
+    "ea410bd070a24499f1c63425e0457e875056e8edb770a2149a07bf7519d610a1.jpg"
+  ],
+  "url": "/notes/n-db80487575cb405fa24ea0ac0e49955c/"
+}

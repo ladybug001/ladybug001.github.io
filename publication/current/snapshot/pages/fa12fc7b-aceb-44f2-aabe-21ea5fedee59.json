@@ -1,0 +1,59 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-0f23b8ed42abf0dc9d59",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-816fefb73f0479a6a26b",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-221e3af080baaf912e97",
+      "kind": "heading",
+      "offset": 436
+    },
+    {
+      "id": "h-f89d0a3376c052a43e81",
+      "kind": "heading",
+      "offset": 1163
+    },
+    {
+      "id": "h-2e9f9fb676cfa85c14f7",
+      "kind": "heading",
+      "offset": 1839
+    },
+    {
+      "id": "h-7ace70951dfe7fd93cef",
+      "kind": "heading",
+      "offset": 1854
+    },
+    {
+      "id": "h-320ab3db86957c981320",
+      "kind": "heading",
+      "offset": 1940
+    },
+    {
+      "id": "h-bce697b5ecd34de656ed",
+      "kind": "heading",
+      "offset": 2129
+    },
+    {
+      "id": "h-fcd94901279fdc361ced",
+      "kind": "heading",
+      "offset": 2237
+    }
+  ],
+  "body": "# Trampoline Hook\n\n## 核心概念\n\nTrampoline hook 是一种 inline hook 技术，涉及三个角色：\n\n- **Target function**：被 hook 的原始函数。入口处的若干字节被覆盖为跳板指令，使执行流跳转到 detour function。\n- **Detour function**：用户编写的替代函数，与 target function 具有相同的函数签名。这是 trampoline hook 最大的优势——hook 逻辑完全可以用高级语言编写，不需要大批量手写汇编。\n- **Trampoline stub**：一小段动态生成的代码。它保存了 target function 入口处被覆盖的那几条原始指令，末尾附加一条绝对跳转回 target function 被打断位置的下一条指令。当 detour function 需要调用原始逻辑时，通过 trampoline stub 间接执行。\n\n## 执行流程\n\n```\nTarget Function (入口被覆盖)\n┌──────────────────────────┐\n│  JMP detour_function  ←──┼──── 跳板指令（覆盖原始前 N 字节）\n│  ...（原函数后续代码）    │\n│  ...                  ◄──┼──┐\n└──────────────────────────┘  │  ③ 跳回原函数续接点\n                              │\nDetour Function               │\n┌──────────────────────────┐  │\n│  ① 进入 detour            │  │\n│  ... 自定义 hook 逻辑 ... │  │\n│  CALL trampoline_stub  ──┼──┼──┐\n│  ... 后续处理 ...         │  │  │\n│  RET                     │  │  │\n└──────────────────────────┘  │  │\n                              │  │\nTrampoline Stub               │  │\n┌──────────────────────────┐  │  │\n│  ② 执行被覆盖的原始指令  │  │  ▼\n│  （经过重定位修正）       │  │\n│  JMP target+N  ──────────┼──┘\n└──────────────────────────┘\n```\n\n## 跳板指令组合\n\n覆盖 target function 入口时，常见的跳板指令方案：\n\n| 方案         | 指令                        | 占用字节    | 适用场景                                        |\n| ---------- | ------------------------- | ------- | ------------------------------------------- |\n| 直接跳转       | `JMP rel32`               | 5       | 32 位程序，或 64 位下 detour 与 target 距离在 ±2 GB 以内 |\n| PUSH + RET | `PUSH addr; RET`          | 6（32 位） | 32 位程序，可跳转到任意地址                             |\n| MOV + JMP  | `MOV RAX, addr; JMP RAX`  | 12      | 64 位程序，需要跨越 ±2 GB 范围时的常用方案                  |\n| 间接跳转       | `JMP [rip+0]; .quad addr` | 14      | 64 位程序，不破坏寄存器（不占用 `RAX`）                    |\n\n覆盖区的长度必须对齐到完整指令边界——不能截断一条指令的中间字节。\n\n## 关键注意事项\n\n### 避开硬编码偏移指令\n\n覆盖区必须避开含有地址偏移相关的硬编码指令（如访问全局变量的 RIP-relative 指令），避免偏移受损产生执行异常。\n\n### 指令重定位（Relocation）\n\nTrampoline stub 中保存的是从 target function 入口\"搬运\"过来的原始指令。如果这些指令中包含相对寻址（例如 `JMP rel32`、`CALL rel32`、x64 下的 RIP-relative 寻址），由于指令所在地址已经变化，必须重新计算偏移量。这是 trampoline hook 引擎中最容易出错的部分。\n\n### 寄存器上下文保护\n\n在注入的 detour function 内，必须先妥善保存 CPU 寄存器上下文，再补偿执行被覆盖的原始指令，最终通过绝对跳转跳回原函数被打断位置的下一条指令处，以此保证业务逻辑的无损流转。\n\n### 线程安全\n\n在多线程环境下，修改 target function 入口时如果另一个线程正在执行该区域的代码，会导致崩溃。常见的缓解手段包括：\n\n- 挂起目标进程中的所有其他线程，完成 hook 后再恢复\n- 使用原子写入（例如 8 字节对齐的原子写）减小竞态窗口\n\n\n\n",
+  "id": "fa12fc7b-aceb-44f2-aabe-21ea5fedee59",
+  "metadata": {
+    "tags": [
+      "reverse"
+    ],
+    "title": "Trampoline Hook"
+  },
+  "resources": [],
+  "url": "/notes/n-fa12fc7baceb44f2aabe21ea5fedee59/"
+}

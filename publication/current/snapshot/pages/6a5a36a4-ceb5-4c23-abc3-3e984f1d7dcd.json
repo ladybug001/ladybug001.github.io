@@ -1,0 +1,24 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b7e5b77f71bd0e51c312",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-6676db8ccebf176c61dd",
+      "kind": "heading",
+      "offset": 168
+    }
+  ],
+  "body": "\n### OLLVM 简介\n\nOLLVM 是一款由瑞士西北科技大学开发的开源 LLVM **代码混淆工具**（[项目地址](https://github.com/obfuscator-llvm/obfuscator)），旨在加强逆向的难度。项目自 2017 年起停止更新，最终版本为 OLLVM 4.0。\n\n### OLLVM 混淆分类\n\n| 分类 | 描述 |\n| --- | --- |\n| 指令替换（Instructions Substitution / Sub） | 将一条运算指令替换为多条等价的运算指令，例如：`y=x+1` 变为 `y=x+1+1-1` |\n| 虚假控制流（Bogus Control Flow / BCF） | 通过加入包含不透明谓词的条件跳转和不可达的基本块，来干扰 IDA 的控制流分析和 F5 反汇编 |\n| 控制流平坦化（Control Flow Flattening / FLA） | 用主分发器控制基本块的执行流程：将所有基本块放到控制流最底部，删除原有跳转关系，通过次分发器和新的分发逻辑还原原来的执行顺序 |\n| 字符串加密 | 编写一个 Pass 将其中的字符串信息使用加密算法进行加密，然后在特定时间进行还原 |\n",
+  "id": "6a5a36a4-ceb5-4c23-abc3-3e984f1d7dcd",
+  "metadata": {
+    "tags": [
+      "reverse"
+    ],
+    "title": "OLLVM 混淆原理"
+  },
+  "resources": [],
+  "url": "/notes/n-6a5a36a4ceb54c23abc33e984f1d7dcd/"
+}

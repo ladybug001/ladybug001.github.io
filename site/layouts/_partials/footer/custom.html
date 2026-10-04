@@ -1,0 +1,4 @@
+{{- /* View-count service is separate from the note converter and Vault. */ -}}
+{{- if and .Params.note_id site.Params.pageViews.enabled -}}
+<template id="article-view-counter" data-host="{{ site.Params.pageViews.host }}" data-path="{{ .RelPermalink }}"></template>
+{{- end -}}

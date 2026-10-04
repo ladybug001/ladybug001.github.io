@@ -1,0 +1,180 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-dc2b76f16b9b1857de09",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-500985a355e883c95a1a",
+      "kind": "heading",
+      "offset": 210
+    },
+    {
+      "id": "h-938a186732acdfd2fbee",
+      "kind": "heading",
+      "offset": 1028
+    },
+    {
+      "id": "h-19dcc057eda968f99730",
+      "kind": "heading",
+      "offset": 1267
+    },
+    {
+      "id": "h-6f257f721aa848e21f54",
+      "kind": "heading",
+      "offset": 2433
+    },
+    {
+      "id": "h-45915262308583a4fdf0",
+      "kind": "heading",
+      "offset": 2940
+    },
+    {
+      "id": "h-d611a74532c1ca47992b",
+      "kind": "heading",
+      "offset": 2954
+    },
+    {
+      "id": "h-7caf43b86ce2b3d1a527",
+      "kind": "heading",
+      "offset": 4227
+    },
+    {
+      "id": "h-a76497488944d6694cb9",
+      "kind": "heading",
+      "offset": 4620
+    },
+    {
+      "id": "h-24627db31c0ab6438e8e",
+      "kind": "heading",
+      "offset": 5153
+    },
+    {
+      "id": "h-3a6f6a3ab6be8536e1b0",
+      "kind": "heading",
+      "offset": 6209
+    },
+    {
+      "id": "h-e125267290a909c0de2e",
+      "kind": "heading",
+      "offset": 6926
+    },
+    {
+      "id": "h-dd19b1532b82003cf016",
+      "kind": "heading",
+      "offset": 7012
+    },
+    {
+      "id": "h-bad4c463ea82c6e73c0c",
+      "kind": "heading",
+      "offset": 7483
+    },
+    {
+      "id": "h-bb90196e2b5323e6be6d",
+      "kind": "heading",
+      "offset": 7898
+    },
+    {
+      "id": "h-636d81f1d75c9f9a073e",
+      "kind": "heading",
+      "offset": 8336
+    },
+    {
+      "id": "h-a3a68dff44686fd173af",
+      "kind": "heading",
+      "offset": 8807
+    },
+    {
+      "id": "h-add33a02392ab90a5c45",
+      "kind": "heading",
+      "offset": 9859
+    },
+    {
+      "id": "h-c35aab3fc8a4d555dd61",
+      "kind": "heading",
+      "offset": 11197
+    },
+    {
+      "id": "h-3fafc4406c35faed7c68",
+      "kind": "heading",
+      "offset": 12148
+    },
+    {
+      "id": "h-ee83904618b7912be63a",
+      "kind": "heading",
+      "offset": 13275
+    },
+    {
+      "id": "h-558f4ec6dada98289fd5",
+      "kind": "heading",
+      "offset": 13421
+    },
+    {
+      "id": "h-85193d4e7581949b5700",
+      "kind": "heading",
+      "offset": 13751
+    },
+    {
+      "id": "h-d6336ca85abe2d90c9b1",
+      "kind": "heading",
+      "offset": 14349
+    },
+    {
+      "id": "h-77be2cb5197a19343f3f",
+      "kind": "heading",
+      "offset": 14779
+    },
+    {
+      "id": "h-6e23004731f179d1f28a",
+      "kind": "heading",
+      "offset": 15450
+    }
+  ],
+  "body": "# MFC CDC 绘图与坐标映射\n\n相关内容：\n1. [MFC 开发基础](/notes/n-581da27d7b3646a1b1298f1432e2939d/)\n2. [MFC 框架原理](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/)\n3. [Windows GDI](/notes/n-b415a25acde7408d9926f7a5612f432c/)\n\n## 核心定义\n\n- **GDI ( `Graphics Device Interface` )**：Windows 操作系统中负责图形输出的接口子系统。它为应用程序提供了一套通用且强大的图形编程服务，旨在屏蔽底层硬件设备的差异。\n- **DC ( `Device Context`，设备上下文/设备描述表)**：在 Windows 体系下，程序并不将像素直接输出到屏幕或打印机，而是绘制到逻辑意义上的显示平面—— `DC` 中。`DC` 是一种核心数据结构，包含了 GDI 绘图所需的所有环境属性（如画笔、画刷、背景色、映射模式等）。\n\t- **虚拟设备理念**：早期开发需针对不同显卡编写专用驱动。而在 Windows 中，底层驱动程序由操作系统接管并隐藏。开发者只需操作 `DC` 这个“虚拟设备”，从而实现了真正的设备无关性（`Device Independence`）。\n- **CDC**：MFC 对 Windows GDI 库和 `DC` 句柄的面向对象封装，极大简化了图形资源的管理与调用生命周期。\n\n> [!NOTE] `GDI`、`Direct3D (D3D)` 和 `OpenGL` 的技术对比\n> - **应用领域**：与后两者不同，`GDI` 是**专门用于 2D 绘图**的 API。虽然可通过纯数学计算模拟 3D 投影，但其底层管线设计初衷仅为 2D 渲染。\n> - **架构层级**：`GDI`、`Direct3D` 和 `OpenGL` 三者在操作系统底层架构中属于**平级关系**。它们均直接与底层图形驱动（如 `WDDM`）交互，**不存在谁封装谁的情况**。\n> - **设计理念**：`GDI` 和 `OpenGL` 均采用**状态机**（`State Machine`）设计模型；而现代 `Direct3D` 更多偏向于**面向对象**（`Object-Oriented`）的设计理念。\n\n## CDC 类\n\n`MFC` 的 `CDC` 类将 `DC` 和 `HDC`（`DC` 的句柄）的 `GDI` 函数就近封装到了一起，派生了四个不同场景下的 `DC` 类，以下是常用的三个：\n\n- `CPaintDC`：用于在窗口客户区画图，仅限于 `OnPaint()` 函数内使用。\n- `CClientDC`：用于在窗口客户区画图，用于除 `OnPaint()` 外的函数内。\n- `CWindowDC`：用于在窗口内任意地方画图，包括非客户区。\n\n## 在 MFC 中使用 CDC 类\n\n> `CDC` 类的使用，需要在 `CFrameWnd` 派生类中（因为要传入 `this`，需要有特定的函数和属性）。\n\n以 `OnPaint` 消息事件为例，使用 `CPaintDC` 类的步骤：\n1. 在类中声明消息映射（即 `DECLARE_MESSAGE_MAP` 宏）\n2. 在消息映射区（`BEGIN_MESSAGE_MAP` 宏和 `END_MESSAGE_MAP` 宏之间）声明 `ON_WM_PAINT()`。\n3. 在类中声明 `OnPaint` 函数。\n4. 定义 `OnPaint` 函数，在函数中创建 `CDC` 实例，并传入 `this` 指针。\n5. 接下来可以写自己的绘制逻辑。\n\n![2b60d6a9dc3cc01e096e510fa1e08687&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/e5aa5b7113ad9aaf49243f5c7132bd9b9f6a221e4fa66d8b6fba28f4579ed535.jpg)\n\n> [!info] `OnPaint` 函数\n> **OnPaint** 是图形界面编程中一个非常常见的“绘制事件（Paint Event）”，用于在窗口或控件需要**重新绘制界面时被触发**。\n> 比如：\n> - 窗口刚显示\n> - 窗口被遮挡后重新露出\n> - 窗口大小改变\n> - 调用刷新（如 `Invalidate()`）\n\n---\n\n将 `Win32 API` 的代码和 `MFC` 的 `CPaintDC` 类的代码进行对比，很明显可以看出代码量变得非常少：\n\n![a26ef31b90f87416c1c641c793f63c3d&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/36f8aaffdabb9a0918555f7c8bc5cf7544e4bb56ad47ca10cbc0ab554881dbd1.jpg)\n如上代码中，`Win32 API` 的代码使用了双冒号 `::`，表示从全局调用。\n\n如果在纯 `Win32` 工程中加与不加影响不大，但在 `MFC` 的工程中，默认的窗口类 `CWnd` 其成员函数有很多都跟 `Win32 API` 重名，比如：`ShowWindow`、`GetMessage`、`GetWindowText` 等等。如果你在 `CWnd` 或其派生类中调用了 `ShowWindow`，默认调用的就是 `CWnd` 的成员函数。如果你想要调用全局的 `Win32 API`，**就必须使用双冒号前缀**。\n## CDC 的核心属性\n\n> 注：此处介绍的属性操作主要基于 `CDC` 及其派生类，但底层概念对原生 `DC`（`HDC`）完全适用。\n\n`CDC` 维护着当前绘图环境的完整状态机。下表展示了 `CDC` 设备描述表中的部分关键属性：\n![650f4a7f464e8318c87adbb6389507d8&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/25601dd1a365c8e8934f2a0b2bce7c4c75b525cc989cf1ccdc47e05632052282.jpg)\n\n开发者可通过相应的 `Set`（修改）和 `Get`（获取）函数来动态调整这些属性：\n![710eddb5cdef311a7fa1e2cfb5f2406a&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/27c82e271adcd79547802229e5bda4a210ed1872a3e108169de204b0ec6d739c.jpg)\n\n\n## 绘图坐标系与必要知识\n\n### 绘图坐标系的分类\n\nWin 32 API 定义了四层严格的坐标空间。图形输出必须经过层层映射，才能最终呈现在物理屏幕上：\n- **世界坐标空间 ( `World Space` )**：引入此空间的目的是实现复杂的仿射变换（旋转、平移、缩放）。默认处于关闭状态，需调用 `SetWorldTransform` 并指定 **2 D 变换矩阵**方可启用。\n- **页面空间 ( `Page Space` / 逻辑窗口)**：使用与具体硬件无关的**逻辑坐标**。这是应用程序端最常操作的逻辑绘图空间。\n- **设备空间 ( `Device Space` / 物理视口)**：图形在**显示器目标区域**内的坐标空间。Windows 绘图引擎根据预设的“映射模式”，将页面空间中的逻辑单位换算为设备空间中的坐标。在**设备空间**下，GDI 定义了三种常用的相对坐标系：\n\t- **客户区坐标 ( `Client Coordinates` )**：原点 `(0, 0)` 定位于**窗口客户区**（剔除标题栏、边框与菜单栏）的左上角。\n\t- **全窗口坐标 ( `Window Coordinates` )**：原点 `(0, 0)` 定位于整个**应用程序窗口**（包含所有非客户区元素）的最外层边缘左上角。\n\t- **屏幕坐标 ( `Screen Coordinates` )**：原点 `(0, 0)` 定位于整个**物理显示器屏幕**的绝对左上角。\n\t![](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/f5cc0c50c22412ba5a273411783f8c7d4d71cc5cb14bb47854b46417749b6dbb.jpg)\n\n- **物理设备 ( `Physical Device` )**：**显示器屏幕**上的绝对像素坐标。它是将“展示窗口相对于屏幕原点的坐标偏移”与“设备空间坐标”相加后得到的最终光栅化位置。\n\n如下图所示，页面空间映射至设备空间，最终再投射至物理设备，完成完整的显示管线流转：\n![c3867d1a4e72a84e153e151f4a3d9146&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/c3f2c75ad60be4b6eaf68d51b2bff3c1e5b8fad6c2fe4ae38b065c7f169534af.jpg)\n> 相关概念可以类比：[计算机图形渲染&#65306;坐标变换与 MVP 矩阵](/notes/n-8147e4ef0bdc4e69a769e855f66bad49/#h-99c64ace8bd04bd1836a)\n\n> [!NOTE] 坐标系法则\n> GDI 是纯粹的 2D 引擎，其默认的坐标系方向（如 Y 轴向下递增）与常见的 3D 左手/右手坐标系在 Y 轴约定上存在显著差异。\n\n### 映射模式 ( `Mapping Mode` )\n\n映射模式是 `DC` 决定**逻辑坐标**到**设备坐标**转换比例与轴向规则的核心属性。\n> 设备坐标是逻辑图形‘落地’后的结果，它决定了图形在屏幕客户区中的具体像素坐标和实际视觉大小。设备坐标也分为三类\n\n调用 `CDC::SetMapMode()` 可修改当前模式。系统的**默认模式**为 `MM_TEXT`（1 逻辑单位 = 1 物理像素，X 轴向右递增，Y 轴向下递增）。\n\n其余映射模式如下表所示：\n![c9929da287d753abd57b3206ebb1e028&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/115cd2577f27ef61fa1aa1a570b7c532b34585462e02a971089c17ecef8c2c7b.jpg)\n\n#### 固定比例映射模式\n\n通过指定具有绝对物理意义的单位（如毫米、英寸），可确保图形在不同 `DPI`（每英寸像素数）的屏幕上呈现完全相同的物理尺寸，避免因像素密度差异导致的图形缩放失真：\n![d995ee4214758ad4fc643b525572922e&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/772bec7e61c516c819e7aba42974b7de8049ba3dedd7724dfbfbe8ca441e8b63.jpg)\n\n当采用 `MM_LOMETRIC` 模式时，Y 轴正方向变为朝上（但原点不变，所以原始 Y 值要取负号）。因此，若需绘制向下偏移的图形，其 Y 坐标参数必须为负值（这里是 `-300`）：\n![3bfdf70a140270d0e035c52b4de3e6e1&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/9e9e83083d373988e5a789b354e72b139929302d8293d1ab9b3a84fa2112e51c.jpg)\n\n#### 自定义映射模式\n\n在自定义映射模式 `MM_ISOTROPIC`（各向同性）和 `MM_ANISOTROPIC`（各向异性）下，函数 `SetWindowExt` 和 `SetViewportExt` 所指定的“范围”仅用于**计算逻辑坐标到设备坐标的缩放比例**，并不限制实际绘图的逻辑范围。\n> 自定义模式下，设备坐标的单位是像素。\n\n\n代码示例：\n```cpp\nvoid CMainWindow::OnPaint() {\n    CPaintDC dc(this);\n    CRect rect;\n    GetClientRect(&rect); // 获取客户区大小\n\n    // 设置映射模式\n    dc.SetMapMode(MM_ISOTROPIC); \n    // dc.SetMapMode(MM_ANISOTROPIC); \n\n    dc.SetWindowExt(100, 100);                // 逻辑坐标\"范围\"\n    dc.SetViewportExt(rect.Width(), rect.Height()); // 设备坐标\"范围\"\n\n    dc.Ellipse(0, 0, 100, 100); // 外接矩形的逻辑坐标\n}\n```\n\n可得：\n```\nX 轴比例 = rect.Width() / 100  \nY 轴比例 = rect.Height() / 100\n```\n\n1. 当在 `MM_ISOTROPIC` 模式下，会取两者中的最小值，然后乘以 `Ellipse` 中的坐标值，得到实际的像素坐标。即图形的 X 与 Y 轴被强制保持等比例缩放（图形形状不会发生拉伸变形）。\n   ![](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/5a07e7b005568f94d549f88ec426f0c010b3144c785099d3b05c9b2b5b9fccbf.jpg)\n\n2. 当在 `MM_ANISOTROPIC` 模式下，X 与 Y 轴允许独立自由缩放（图形会随**窗口的宽高比**而拉伸变形）。\n   ![](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/39762c6159591af82490efd17e065d692c0d8a0e8a9d59c5308199a4c0edaed1.jpg)\n\n\n\n### 逻辑坐标与设备坐标的转换\n\n- **输出函数**（如几何图形绘制、文本输出）强制使用**逻辑坐标**。\n- **输入消息**（如鼠标点击事件 `OnLButtonDown` 传回的 `point` 结构）传递的是**设备坐标**（无论什么映射模式，传回的坐标**单位都是像素**）。\n\n在处理基于鼠标交互的绘图逻辑时，如果系统当前应用了非 `MM_TEXT` 映射模式，则必须使用 `DPtoLP` 函数进行坐标转换，否则会将设备坐标当成逻辑坐标使用（反之亦然），导致错误的绘制逻辑：\n\n```cpp\n// 示例：在鼠标左键按下的位置绘制图形\n// point 默认是设备空间坐标（像素）\ndc.DPtoLP(&point); // 将物理设备坐标逆向映射为当前的逻辑坐标\n```\n![c317c20dc16bee931370539841b1b55e&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/896b0d03286ff62cee479f4c486642e693a3b95437a85d5c4be9f40b65af2496.jpg)\n![ca26e88ae48a9ff44218b3f7cb77d66a&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/3ccc49b6850798998b34db30b1c3e09d784b7ee52f52bfac835a3c636558faf0.jpg)\n\n\n同理，若需将逻辑坐标换算为设备坐标，可调用 `LPtoDP` 函数。\n\n### 更改坐标原点\n\n> [!NOTE] 视角的本质\n> GDI 的更改原点操作，相当于 3D 图形渲染中平移虚拟摄像机，原点想象为虚拟摄像机。\n\n\n#### SetWindowOrg 函数\n`SetWindowOrg`：更改**逻辑坐标系（页面空间）** 的原点。等效于：对所有**逻辑坐标减去**该偏移量（即加上相反值）  \n> 表现为图形整体向**相反方向移动**\n\n\n例如，调用 `SetWindowOrg(100, 100)` 意味着原本逻辑坐标 `(100, 100)` 的点，等同于逻辑坐标 `(0, 0)`，即图形向左、向上各平移 100 个**逻辑单位**，如下两幅图可以证明：\n![](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/db8ce6cfdad3725c67016de4a4ecde900e8c5339dd44487a9de737ba0c509024.jpg)\n![](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/cfb94f10f58b6a465b13a00d0201d636c8b478e593992eeb9d30e07c4909069f.jpg)\n\n#### SetViewportOrg 函数\n\n`SetViewportOrg`：更改**设备坐标系（物理视口）** 的原点。等效于：对最终的**设备坐标加上**该偏移量  \n> 表现为图形整体向**同方向移动**\n\n例如，`SetViewportOrg(100,100)` 相当于将图形的设备坐标各加上 100，即向右、向下平移 100 个**设备单位**。\n![](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/ec0b94b3863818d94f5b0be7cae5f909a395605b81ea7100d993471c7ae8791f.jpg)\n![](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/5ad0cacbff8a2a7230f432cd3ba0597d1c964214457d55e86f9f414bf0a1c39c.jpg)\n\n## 常用绘图 API\n\n在 MFC 中，我们通常通过 `CDC` 类（或其派生类如 `CPaintDC`）来调用 GDI 绘图函数。\n\n| 函数名 | 功能说明 |\n| :--- | :--- |\n| `MoveTo` | 在画线前设定当前的起始位置坐标。 |\n| `LineTo` | 从当前位置向指定坐标画一条直线，并更新当前位置到该终止坐标。 |\n| `Polyline` | 将一系列逻辑点用线段依次连接起来（不依赖/不更新当前位置）。 |\n| `PolylineTo` | 从当前位置开始，将一系列点用线段连接起来（依赖并更新当前位置）。 |\n| `Ellipse` | 基于外接矩形绘制一个圆或椭圆。 |\n| `Rectangle` | 绘制一个直角矩形。 |\n| `FillRect` | 使用指定的画刷（`Brush`）填充一个矩形区域。 |\n| `Draw3dRect` | 绘制具有 3D 凸起/凹陷立体边缘效果的矩形。 |\n\n### 线条绘制：LineTo 与 MoveTo\n\n使用 `LineTo` 画线必须搭配 `MoveTo` 设定起点。连续调用 `LineTo` 会以上一次的终点作为下一次的起点。\n\n```cpp\nvoid CMainWindow::OnPaint() {\n\tCPaintDC dc(this);\n\t\n\tdc.MoveTo(10, 10); // 设定起始点 (10, 10)\n\tdc.LineTo(30, 10); // 横向画线，终点停在 (30, 10)\n\tdc.LineTo(30, 30); // 竖向画线，以 (30, 10) 为起点，终点停在 (30, 30)\n}\n```\n![36e87e6b3355043926426f9fba0c802f&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/cf679b0557f9c4e5106d9d78b44a5bdd66fc848877d6f40309cfcf8a6d8ac5b4.jpg)\n\n### 折线绘制：Polyline 与 PolylineTo\n\n`Polyline` 函数接受一个 `POINT` 数组和点的数量。\n**注意：** 绘制闭合的多边形（如正方形）时，传入的点数必须是 `边数 + 1`，因为终点必须闭合回起点。\n\n```cpp\nvoid CMainWindow::OnPaint() {\n\tCPaintDC dc(this);\n\t\n\t// 定义 5 个点，最后一个点回到起点以闭合矩形\n\tPOINT pt[5] = {{40, 40}, {100, 40}, {100, 100}, {40, 100}, {40, 40}};\n\tdc.Polyline(pt, 5); \n}\n```\n![d5782034e5ba3e48201eb45b2cbd21af&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/e581175d3391ff356a85d51bd90013a0da7f483260bb583555b9cd8a74112a64.jpg)\n![27eb4e108d584cf94b45197c089932da&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/4ef26534610006259465e2ebf5950a960358d3e6d61c1a8c8451a99dab97bd30.jpg)\n\n若使用 `PolylineTo`，则可以利用 `MoveTo` 设定初始点，从而在数组中省去第一个起点：\n\n```cpp\nvoid CMainWindow::OnPaint() {\n\tCPaintDC dc(this);\n\t\n\tPOINT pt[4] = {{100, 40}, {100, 100}, {40, 100}, {40, 40}};\n\tdc.MoveTo(40, 40); // 预设起始位置\n\tdc.PolylineTo(pt, 4); \n}\n```\n![7e8da3b13f166412cb853bd994d4a3d7&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/25b5dd45a93e04c4a55ff6f3c25e618e5dc1a383e2136c8eeb1cefa002139835.jpg)\n\n### 形状绘制：Ellipse 与 Rectangle\n\n`Ellipse` 与 `Rectangle` 均通过指定一个**外接矩形**的坐标来绘制，两者都差不多，所以放在一起说明。\n\n\n- **参数传递**：`Ellipse` 和 `Rectangle` 函数都各有两个重载，分别需要传入四个 `int` 类型的值（左、上、右、下），或者传入一个 `LPCRECT` 类型的指针（也可以是 `CRect` 对象的地址，因为 `LPCRECT` 实际是 `Rect *`，而 `CRect` 又继承自 `Rect`）。\n  ![9fb02fcd8a2aceb57eace49173411e1f&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/22bfc3c5d0fd4cb48206a3f3886a4d8da8e612ddf83d85baa9446197515526d9.jpg)\n  ![3e952849f00e4086cc1d337cf8b4aea4&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/ab5d16661d9969761d660507fa3c61de00123c2676943cb8686d12579e3f071a.jpg)\n\n- **绘制逻辑**：由左上角 `(x1, y1)` 和右下角 `(x2, y2)` 共同确定一个矩形区域，图形在该区域内生成。\n\n```cpp\nvoid CMainWindow::OnPaint() {\n\tCPaintDC dc(this);\n\t\n\tdc.Ellipse(10, 10, 20, 20); // 在 10x10 的矩形区域内绘制椭圆/圆\n\tdc.Rectangle(10, 10, 20, 20); // 绘制 10x10 的矩形\n}\n```\n\n\n![6d82b78e5c175ee62409a836a3c49057&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/9dc6fc08809ed3174f123d95e0834f4787434237244cd79e88ad1535b29eeff6.jpg)\n![8571a1431a183f236f55c41d4922c856&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/bc6006e3f737ffc7d8843ce4a136f2d3cb66d50d77a540f1451709912108ca65.jpg)\n![b4b7c1131ffbf094d62937ea54efaaa5&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/14519316b171f8937294407d989da02f7214c41d8efa3848a49146c30c4e50fd.jpg)\n\n\n### 区域填充与 3D 效果\n\n- **`FillRect`**：使用指定的画刷填充矩形区域。\n- **`Draw3dRect`**：利用两种颜色分别绘制矩形的左/上边缘和右/下边缘，营造 3D 立体感。\n\n```cpp\nvoid CMainWindow::OnPaint() {\n\tCPaintDC dc(this);\n\tCRect rect(10, 10, 200, 200);\n\tCBrush brush;\n\t\n\tdc.Rectangle(&rect); // 绘制基础边框\n\t\n\tbrush.CreateStockObject(LTGRAY_BRUSH); // 获取系统内置的亮灰色画刷\n\tdc.FillRect(&rect, &brush); // 填充背景\n\t\n\t// 绘制 3D 边缘：左上边缘为黄色，右下边缘为品红色\n\tdc.Draw3dRect(&rect, RGB(255, 255, 0), RGB(255, 0, 255));\n}\n```\n![0bcd40b7942ff9a16618333b91f8a582&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/8da010098710f13a133ef051465827f2f552a8f9e70161db63e610e1db15cacc.jpg)\n![d753033908a0205788c7e967d6044f78&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/f5292ea5565066e0f92b43b41549c12f1fcbd95b16c752ac363ec0ff4e66b260.jpg)\n![71536165cfc9c152662d28b08b5da4b0&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/676606c2dadfede1a8d3770ffea4df1bab492d2cc4a6ebc683b27a3eca1889e1.jpg)\n\n#### 综合案例：实现伪 UI 按钮交互\n\n利用 `Draw3dRect` 颜色反转的特性，配合文本绘制 API，可以在 `OnLButtonDown` 事件中模拟按钮的按下反馈。\n\n```cpp\nvoid CMainWindow::OnPaint() {\n\tCPaintDC dc(this);\n\tCRect rect(10, 10, 100, 50);\n\tCBrush brush;\n\t\n\tbrush.CreateStockObject(LTGRAY_BRUSH);\n\tdc.FillRect(&rect, &brush); \n\t\n\t// 调整 3D 边框偏移\n\trect.top++;\n\trect.left++;\n\tdc.Draw3dRect(&rect, RGB(255, 255, 255), RGB(128, 128, 128)); // 凸起效果\n\t\n\t// 设置文字背景模式为透明 (TRANSPARENT)，默认不透明 (OPAQUE) 会覆盖画刷背景\n\tdc.SetBkMode(TRANSPARENT); \n\t\n\t// 格式化输出正文：水平居中、垂直居中、单行\n\tdc.DrawText(\"Click\", &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE); \n}\n\nvoid CMainWindow::OnLButtonDown(UINT nFlags, CPoint point) {\n\t// 判断鼠标点击坐标 point 是否在目标 rect 范围内\n\tif (rect.PtInRect(point)) {\n\t\tCClientDC dc(this); // 此处为示意，实际不建议在 OnLButtonDown 中创建局部静态类成员变量\n\t\t\n\t\t// 动画效果：按下边缘反转\n\t\tdc.Draw3dRect(&rect, RGB(0, 0, 0), RGB(0, 0, 0)); \n\t\tAfxMessageBox(\"Clicked!\");\n\t\t\n\t\t// 动画效果：弹起复原\n\t\tdc.Draw3dRect(&rect, RGB(255, 255, 255), RGB(128, 128, 128)); \n\t}\n}\n```\n![8f9e6d35a3103e9b3d95fdd60ec4334a&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/6d4807e401ced1b0570724ab6b5945bde6cc6012104dcedfa04e62ebfeb70562.jpg)\n\n---\n\n## GDI 对象管理 (画刷、画笔、字体)\n\n在 GDI 系统中，样式控制交由专用的 GDI 对象管理：**画刷 (`CBrush`)** 负责填充闭合区域内部，**画笔 (`CPen`)** 负责绘制线条与图形边框，**字体 (`CFont`)** 负责文本的渲染规格。\n\n### SelectObject 核心原则 (防内存泄漏)\n\n\n> [!CAUTION]- 极度重要\n> 当你通过 `SelectObject` 将任何自定义的 GDI 对象（画笔、画刷、字体等）绑定到 `DC` 时，**必须保存该函数返回的旧对象指针**。并在当前函数/绘图逻辑结束前，**将旧对象重新恢复到 `DC` 中**。\n\n**原因剖析**：\n1. `DC` 是一个贯穿系统的共享/复用资源状态机。若不恢复，后续的其他绘制代码可能会意外继承到你设定的画笔/画刷，导致渲染混乱。\n2. GDI 对象（如 `CPen`）通常是局部变量。如果函数结束时它仍被绑定在 `DC` 上，Windows 内核将拒绝销毁被 `DC` 占用的对象句柄，从而引发严重的**GDI 资源句柄泄漏**。\n\n### 画笔 (CPen)\n\n通过构造函数或 `CreatePen` 方法创建。参数依次为：画笔样式（如虚线 `PS_DASH`）、线条宽度、颜色。\n**注意：** 如果使用非实线（如虚线、点线），线条宽度必须为 1。\n\n```cpp\nvoid CMainWindow::OnPaint() {\n\tCPaintDC dc(this);\n\tCRect rect(10, 10, 100, 50);\n\t\n\tCPen pen;\n\tpen.CreatePen(PS_DASH, 1, RGB(255, 0, 0)); // 红色虚线\n\t\n\t// 绑定新画笔，并务必保存旧画笔指针\n\tCPen* oldPen = dc.SelectObject(&pen);\n\t\n\tdc.Rectangle(&rect); // 绘制边框为红色虚线的矩形\n\t\n\t// 绘图结束，恢复旧画笔，释放绑定\n\tdc.SelectObject(oldPen);\n}\n```\n![29a3184ccc0e61c1e217d78b7aedf9ba&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/7f45cb83d01aa39f4ec776f2db473b7e466f43393511baf41ba3caeb4cd7706a.jpg)\n\n#### 文本输出替代方案：TextOut\n\n除了功能强大的 `DrawText` 之外，还可以使用 `TextOut`。它的参数较少（仅需 X、Y 坐标及字符串），但无法自动处理矩形内的居中排版。需配合 `SetTextAlign` 手动调整基准点。\n\n```cpp\ndc.SetTextAlign(TA_CENTER); // 设定绘制坐标点对应文本的横向中心\ndc.TextOut(rect.left, rect.top, \"Test\"); \n```\n![1075f3e9177d57983951cc84419fb73d&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/787dc4cb60e4be2f31caf3c5bc3f7140d444c47563ee3c1e1b314b0bcebec54a.jpg)\n*注：若需在矩形框内完美居中对齐，推荐优先使用 `DrawText`。*\n\n### 字体 (CFont)\n\n字体通过 `CFont` 类管理。常用初始化方法有两种：\n\n- `CreatePointFont`：快速创建，指定字体大小（单位为 0.1 磅）和字体名。\n```cpp\nCFont font;\nfont.CreatePointFont(2000, \"Tahoma\"); // 相当于 200 磅大小的 Tahoma 字体\n```\n![e52b688649d23100d067a24517acf464&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/be1d2bf88db2eee59ffa9cc72c2e20bf1029b6155f9ecc0ab6918af5cc37f8a7.jpg)\n\n- `CreatePointFontIndirect`：通过 `LOGFONT` 结构体进行更精细的控制（如粗体、斜体）。\n```cpp\nCFont font;\nLOGFONT lf;\nmemset(&lf, 0, sizeof(lf)); // 清零初始化\nlf.lfWeight = 120;          // 字重\nlf.lfHeight = FW_BOLD;      // 粗体\nlf.lfItalic = TRUE;         // 斜体\nstrcpy(lf.lfFaceName, \"Tahoma\"); \nfont.CreatePointFontIndirect(&lf);\n```\n\n---\n\n## 实战作业：绘制 Excel 表格 UI\n\n本示例综合运用了矩形绘制、画刷填充、3D 边框边缘计算及字体居中输出等 GDI 核心机制。\n\n```cpp\nvoid CMainWindow::OnPaint() {\n\tCPaintDC dc(this);\n\n\t// 初始化双色画刷\n\tCBrush brush(RGB(128, 128, 128));\n\tCBrush brushA(RGB(245, 245, 245));\n\t// 绑定画刷并保存旧状态\n\tCBrush* oldBrush = dc.SelectObject(&brush);\n\n\tCRect clientRect;\n\tGetClientRect(&clientRect);\n\n\tint i = 0;\n\tint tabWidth = 100;\n\tint tabHeight = 20;\n\n\tCRect tableRect(25, 0, 125, 20);\n\tCRect rightTableRect(0, 0, 25, 20);\n\tchar test[] = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";\n\n\t// 设置文字全局属性\n\tdc.SetBkMode(TRANSPARENT);\n\tdc.SetTextAlign(TA_CENTER);\n\n\t// 绘制表左上角留空区域\n\tdc.Rectangle(&rightTableRect);\n\tdc.Draw3dRect(&rightTableRect, RGB(255, 255, 255), RGB(0, 0, 0));\n\tdc.TextOut(rightTableRect.right / 2, 1, \"\\\\\");\n\n\t// 双重循环：纵向生成行，横向生成列\n\tdo {\n\t\ttableRect.top = 0;\n\t\ttableRect.bottom = 20;\n\n\t\tdc.Rectangle(&tableRect);\n\t\tdc.Draw3dRect(&tableRect, RGB(255, 255, 255), RGB(0, 0, 0));\n\t\tdc.SelectObject(&brush); // 交替使用颜色（此处逻辑可按需调整）\n\n\t\tint x = 0;\n\t\tdo {\n\t\t\tdc.Rectangle(&tableRect);\n\t\t\tdc.Draw3dRect(&tableRect, RGB(255, 255, 255), RGB(0, 0, 0));\n\t\t\t\n\t\t\ttableRect.top += tabHeight;\n\t\t\ttableRect.bottom += tabHeight;\n\t\t\tdc.SelectObject(&brushA);\n\t\t\tx++;\n\t\t} while (clientRect.bottom / x / tabHeight != 0);\n\n\t\ttableRect.left += tabWidth;\n\t\ttableRect.right += tabWidth;\n\n\t\t// 绘制表头字母\n\t\tdc.TextOut(75 + (i * tabWidth), 1, test[i]);\n\t\ti++;\n\t} while (clientRect.right / i / tabWidth != 0);\n\n\t// 绘制左侧纵向行号\n\tfor (int b = 1; clientRect.right / b / tabHeight != 0; b++) {\n\t\trightTableRect.top += tabHeight;\n\t\trightTableRect.bottom += 25;\n\n\t\tdc.Rectangle(&rightTableRect);\n\t\tdc.Draw3dRect(&rightTableRect, RGB(255, 255, 255), RGB(0, 0, 0));\n\n\t\tchar c[2];\n\t\tsprintf(c, \"%d\", b);\n\t\tdc.TextOut(12, 1 + (b * tabHeight), c);\n\t}\n\n\t// 执行完毕，恢复画刷状态\n\tdc.SelectObject(oldBrush);\n}\n```\n![d0a86224d35c9c26af5abf4c8d6431bc&#95;MD5&#46;jpg](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/media/61ffc65e6ae71ad1d41a8d3c039b6014c882cf2ea8ee422eca63bb7e4524a0cf.jpg)\n",
+  "id": "a0177c92-51c1-4e20-a5ce-12a4ba1ce34f",
+  "metadata": {
+    "tags": [
+      "lang/cpp/mfc",
+      "cs/graphics"
+    ],
+    "title": "MFC CDC 绘图与坐标映射"
+  },
+  "resources": [
+    "115cd2577f27ef61fa1aa1a570b7c532b34585462e02a971089c17ecef8c2c7b.jpg",
+    "14519316b171f8937294407d989da02f7214c41d8efa3848a49146c30c4e50fd.jpg",
+    "22bfc3c5d0fd4cb48206a3f3886a4d8da8e612ddf83d85baa9446197515526d9.jpg",
+    "25601dd1a365c8e8934f2a0b2bce7c4c75b525cc989cf1ccdc47e05632052282.jpg",
+    "25b5dd45a93e04c4a55ff6f3c25e618e5dc1a383e2136c8eeb1cefa002139835.jpg",
+    "27c82e271adcd79547802229e5bda4a210ed1872a3e108169de204b0ec6d739c.jpg",
+    "36f8aaffdabb9a0918555f7c8bc5cf7544e4bb56ad47ca10cbc0ab554881dbd1.jpg",
+    "39762c6159591af82490efd17e065d692c0d8a0e8a9d59c5308199a4c0edaed1.jpg",
+    "3ccc49b6850798998b34db30b1c3e09d784b7ee52f52bfac835a3c636558faf0.jpg",
+    "4ef26534610006259465e2ebf5950a960358d3e6d61c1a8c8451a99dab97bd30.jpg",
+    "5a07e7b005568f94d549f88ec426f0c010b3144c785099d3b05c9b2b5b9fccbf.jpg",
+    "5ad0cacbff8a2a7230f432cd3ba0597d1c964214457d55e86f9f414bf0a1c39c.jpg",
+    "61ffc65e6ae71ad1d41a8d3c039b6014c882cf2ea8ee422eca63bb7e4524a0cf.jpg",
+    "676606c2dadfede1a8d3770ffea4df1bab492d2cc4a6ebc683b27a3eca1889e1.jpg",
+    "6d4807e401ced1b0570724ab6b5945bde6cc6012104dcedfa04e62ebfeb70562.jpg",
+    "772bec7e61c516c819e7aba42974b7de8049ba3dedd7724dfbfbe8ca441e8b63.jpg",
+    "787dc4cb60e4be2f31caf3c5bc3f7140d444c47563ee3c1e1b314b0bcebec54a.jpg",
+    "7f45cb83d01aa39f4ec776f2db473b7e466f43393511baf41ba3caeb4cd7706a.jpg",
+    "896b0d03286ff62cee479f4c486642e693a3b95437a85d5c4be9f40b65af2496.jpg",
+    "8da010098710f13a133ef051465827f2f552a8f9e70161db63e610e1db15cacc.jpg",
+    "9dc6fc08809ed3174f123d95e0834f4787434237244cd79e88ad1535b29eeff6.jpg",
+    "9e9e83083d373988e5a789b354e72b139929302d8293d1ab9b3a84fa2112e51c.jpg",
+    "ab5d16661d9969761d660507fa3c61de00123c2676943cb8686d12579e3f071a.jpg",
+    "bc6006e3f737ffc7d8843ce4a136f2d3cb66d50d77a540f1451709912108ca65.jpg",
+    "be1d2bf88db2eee59ffa9cc72c2e20bf1029b6155f9ecc0ab6918af5cc37f8a7.jpg",
+    "c3f2c75ad60be4b6eaf68d51b2bff3c1e5b8fad6c2fe4ae38b065c7f169534af.jpg",
+    "cf679b0557f9c4e5106d9d78b44a5bdd66fc848877d6f40309cfcf8a6d8ac5b4.jpg",
+    "cfb94f10f58b6a465b13a00d0201d636c8b478e593992eeb9d30e07c4909069f.jpg",
+    "db8ce6cfdad3725c67016de4a4ecde900e8c5339dd44487a9de737ba0c509024.jpg",
+    "e581175d3391ff356a85d51bd90013a0da7f483260bb583555b9cd8a74112a64.jpg",
+    "e5aa5b7113ad9aaf49243f5c7132bd9b9f6a221e4fa66d8b6fba28f4579ed535.jpg",
+    "ec0b94b3863818d94f5b0be7cae5f909a395605b81ea7100d993471c7ae8791f.jpg",
+    "f5292ea5565066e0f92b43b41549c12f1fcbd95b16c752ac363ec0ff4e66b260.jpg",
+    "f5cc0c50c22412ba5a273411783f8c7d4d71cc5cb14bb47854b46417749b6dbb.jpg"
+  ],
+  "url": "/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/"
+}

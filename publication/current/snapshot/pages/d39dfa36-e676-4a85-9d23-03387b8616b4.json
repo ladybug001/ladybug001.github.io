@@ -1,0 +1,80 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-60560f72bab715b55cd1",
+      "kind": "heading",
+      "offset": 8
+    },
+    {
+      "id": "h-4d1e4ff2bc11cf79ebf6",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-3c2b04ce4bfdf5863083",
+      "kind": "heading",
+      "offset": 36
+    },
+    {
+      "id": "h-5eab3e425c2070158434",
+      "kind": "heading",
+      "offset": 603
+    },
+    {
+      "id": "h-a5fe8cf8830a923ea61a",
+      "kind": "heading",
+      "offset": 1050
+    },
+    {
+      "id": "h-d6d7be6ea7e46d521046",
+      "kind": "heading",
+      "offset": 2091
+    },
+    {
+      "id": "h-ade6d3080c2c0083ca56",
+      "kind": "heading",
+      "offset": 2110
+    },
+    {
+      "id": "h-32c6687b9321e4bf11df",
+      "kind": "heading",
+      "offset": 2292
+    },
+    {
+      "id": "h-e65a9c5ddf5eacc069da",
+      "kind": "heading",
+      "offset": 4594
+    },
+    {
+      "id": "h-9559d1681c10120f918b",
+      "kind": "heading",
+      "offset": 5289
+    },
+    {
+      "id": "h-89bcc15182240a2eb2b5",
+      "kind": "heading",
+      "offset": 7699
+    },
+    {
+      "id": "h-554a9387db2e29888524",
+      "kind": "heading",
+      "offset": 7978
+    }
+  ],
+  "body": "# 投影矩阵推导\n## 前言\n\n### 2D 屏幕实现 3D 效果的原理\n\n1. 人眼成像的原理：\n   ![](/notes/n-d39dfa36e6764a859d2303387b8616b4/media/a41a552624be7a66a68c58cc8c7cbc1033ff8e9dd775a0bca348b1d82c7663e7.jpg)\n\n2. 2D 屏幕观看 3D 物体的现实场景模拟：\n   ![](/notes/n-d39dfa36e6764a859d2303387b8616b4/media/49ce1f3bdcc52b6c1a9dd4e5f630e323831d416a40f8a318f72285a056ca8f07.jpg)\n3. 屏幕、人眼和画面三者间的关系图（竖线相当于屏幕/近平面）：\n   ![](/notes/n-d39dfa36e6764a859d2303387b8616b4/media/0d475bc215dfbfc6a1f3d3b848b2ff44fe780ab612d12855a822d9b91bfb1ed8.jpg)\n> 近平面相当于我们的电子屏幕，而摄像机就像我们的眼睛，摄像机与近平面的相对位置和现实中的眼睛与屏幕的相对位置越接近、屏幕比例与近平面越相似，最终效果就越接近真实观感（彷佛人站在摄像机位置，看到的场景）\n\n---\n\n### 符号&条件假设\n\n对于 NDC 的 `x`,`y` 轴，全平台都是一致的：\n- 屏幕从左到右为 `x` 轴的 -1 到 1\n- 屏幕从下到上为 `y` 轴的 -1 到 1\n\n对于 NDC 的 `z` 轴，即视图空间下的近平面到远平面的 `z` 轴：\n- 在 OpenGL 平台：屏幕从前到后为 z 轴的 -1 到 1\n- 在 Direct 3D 平台：屏幕从前到后为 z 轴的 1 到 0\n\n> **注意！后续推导全部以右手坐标系进行**， OpenGL 是右手坐标系，D3D 是左手坐标系，其实也就 `z` 轴的正负方向不同而已。\n\n给定视锥体的六个平面的符号定义：\n- 左、右平面：`l, r`\n- 上、下平面：`t, b`\n- 近、远平面：`n, f`\n\n> 其中 `n, f` 是**距离值**而不是坐标，即都是正值，而在 OpenGL 中摄像机正对的是 `z` 轴的负方向，因此近平面与远平面的 z 坐标分别为：**`-n`（近平面）**、**`-f`（远平面）**。\n\n---\n## 正交投影矩阵\n\n![](/notes/n-d39dfa36e6764a859d2303387b8616b4/media/913ad84dc0c005871d393a4133832017d27d346cdadf522acef05a7b9a85bf2b.jpg)\n\n目标：将任意一点  \n$$\nP(x, y, z, 1)\n$$\n转换为裁剪空间坐标（正交投影下，裁剪空间坐标等于 NDC 空间坐标），若点在视锥内，则  \n$$\nx',y',z' \\in [-1,1], \\quad w' = 1.\n$$\n\n1. **推导 x 轴映射**\n\n令线性变换为  \n$$\nx' = R_x x + B_x\n$$\n\n要求：\n$$\nx = l \\Rightarrow x' = -1 \\\\\nx = r \\Rightarrow x' = 1\n$$\n\n解得：\n$$\nR_x = \\frac{2}{r-l}, \\qquad\nB_x = -\\frac{r+l}{r-l}.\n$$\n\n---\n\n2. **推导 y 轴映射**\n$$\ny' = R_y y + B_y\n$$\n\n要求：\n$$\ny = b \\Rightarrow y' = -1 \\\\\ny = t \\Rightarrow y' = 1\n$$\n\n解得：\n$$\nR_y = \\frac{2}{t-b}, \\qquad\nB_y = -\\frac{t+b}{t-b}.\n$$\n\n---\n\n3. **推导 z 轴映射**\n$$\nz' = R_z z + B_z\n$$\n\n近平面和远平面位于  \n$$\nz = -n,\\quad z = -f\n$$\n\n要求：\n$$\nz = -n \\Rightarrow z' = -1 \\\\\nz = -f \\Rightarrow z' = 1\n$$\n\n解得：\n$$\nR_z = \\frac{-2}{f-n},\\qquad\nB_z = -\\frac{f+n}{f-n}.\n$$\n---\n\n4. **得到正交投影矩阵**\n\n$$\nM_{\\text{ortho}}=\n\\begin{pmatrix}\n\\frac{2}{r-l} & 0 & 0 & -\\frac{r+l}{r-l} \\\\\n0 & \\frac{2}{t-b} & 0 & -\\frac{t+b}{t-b} \\\\\n0 & 0 & \\frac{-2}{f-n} & -\\frac{f+n}{f-n} \\\\\n0 & 0 & 0 & 1\n\\end{pmatrix}\n$$\n\n## 透视投影矩阵\n\n### 方法一：“先透视，再正交”\n\n具体思想可参考图片：![](/notes/n-d39dfa36e6764a859d2303387b8616b4/media/c971cc6f7151ca2a9753db2bd59314962d9a23ae144ca4c076a6bda7cfd81d75.jpg)\n\n> 图片仅供参考，辅助理解该思想，不可照该图片生搬硬套下列公式推导。\n\n#### 实现透视效果\n>  核心：让远处看起来更小\n\n根据相似三角形的原理，对于空间中任意一点：\n$$\nP(x, y, z, 1)\n$$\n其在近平面 $z=-n$ 上的投影的 $x$、$y$ 坐标为：\n$$\nx' = x \\cdot \\frac{n}{|z|}, \\qquad y' = y \\cdot \\frac{n}{|z|}.\n$$\n> n 是正值，表示进平面离摄像机的距离\n\n对于 $z'$ 和 $w'$ 我们令其保持原值：\n$$\nz' = z,\\qquad w' = 1.\n$$\n得到变换矩阵 $T_{1}$：\n$$\n\\begin{pmatrix}\n\\frac{n}{|z|} & 0           & 0 & 0 \\\\\n0           & \\frac{n}{|z|} & 0 & 0 \\\\\n0           & 0           & 1 & 0 \\\\\n0           & 0           & 0 & 1\n\\end{pmatrix}\n\\begin{pmatrix}\nx \\\\ y \\\\ z \\\\ 1\n\\end{pmatrix}\n=\\begin{pmatrix}\nx' \\\\[4pt]\ny' \\\\[4pt]\nz' \\\\[4pt]\nw'\n\\end{pmatrix}\n$$\n\n由于 $T_{1}$ 中的 $|z|$ 是一个依赖于每个点的变值，对于不同的点 $P$，矩阵 $T_{1}$ 可能是不同的，这使得计算变得复杂。因此我们需要对其进行优化处理，从而避免对每个点重新计算变换矩阵。\n\n我们将 $\\frac{1}{|z|}$ 提到矩阵外，得到新的矩阵：\n$$\n\\frac{1}{|z|}\n\\begin{pmatrix}\nn & 0 & 0 & 0 \\\\\n0 & n & 0 & 0 \\\\\n0 & 0 & |z| & 0 \\\\\n0 & 0 & 0 & |z|\n\\end{pmatrix}\n\\begin{pmatrix}\nx \\\\ y \\\\ z \\\\ 1\n\\end{pmatrix}\n=\n\\begin{pmatrix}\nx' \\\\[4pt] y' \\\\[4pt] z' \\\\[4pt] w'\n\\end{pmatrix}\n$$\n\n> 我们发现第三、四行依然含有变值 $|z|$ ​。\n\n考虑我们对 $z'$ （目前 $z'= |z| \\cdot z \\cdot \\frac{1}{|z|}$）的要求是：\n1. 当 $z \\in [-f,-n]$ 时，$z'$ 能正确反映出 $z$ 的大小，即 $z'$ 为增函数。\n2. 当 $z \\in [-f,-n]$ 时，$z'$的值域为$[-f,-n]$\n   > 值域必须为此范围，因为一般 $z'$ 为连续函数，所以无论 $z'$ 的值域范围比 $[-f,-n]$ 大或是小，都会导致点的渲染结果与预期不符，大了就会少渲染一部分，小了就会多渲染一部分\n3. 当 $z \\notin [-f,-n]$ 时，$z'  \\notin [-f,-n]$。\n> 即要求 $z'$ 能反映 $z$ 的大小关系且需要渲染的点对应的 $z'$ 取值范围在 $[-f,-n]$。\n>\n> 这些限制，是为了在后续与正交投影矩阵相乘后，能通过 $z'' \\in [-1,1]$ 来判断点是否可见，以及能通过大小关系，判断谁在前。\n\n\n因此我们希望找到一个**线性函数 $t(z)= Az + B$**，代替 $T(z)=|z| \\cdot z$，使得 $z'=t (z)\\frac{1}{|z|}$，则 $t (z)$ 应满足以下条件：\n> 矩阵第三行与向量相乘，能得到的关于 $z$ 的最简单的函数是线性函数\n1. 由【对 $z'$ 的要求 1、2】可知，当 $z \\in [-f,-n]$ 时，要求 $t(z)<0$ 且单调增\n2. 由 1 和【对 $z'$ 的要求 2】可知，要求 $t(-n)=-n^2$ 和 $t(-f)=-f^2$\n3. 由【对 $z'$ 的要求 3】可知，当 $z \\notin [-f,-n]$ 时，要求 $t(z)\\frac{1}{|z|}<-f，t(z)\\frac{1}{|z|}>-n$\n> 满足这些条件的 $t(z)$ 有且只有一个，仅通过条件 2 就已经可以求得。\n\n带入 $z=-f，-n$ 两点，建立方程组：\n$$\nA(-n) + B = -n^2\n$$\n$$\nA(-f) + B = -f^2\n$$\n解得：\n$$\nA = n+f,\\qquad B = nf.\n$$\n对于矩阵第四行中的 $|z|$，我们发现此时$w'=0 \\cdot x +0 \\cdot y +0 \\cdot z +|z| \\cdot 1$，如果我们将其改为$w'=0 \\cdot x +0 \\cdot y +(-1 \\cdot z) +0 \\cdot 1$，巧妙的消去了$|z|$\n\n故新的，用于实现透视效果的变换矩阵 $T_{2}$ 为：\n\n$$\n\\frac{1}{|z|}\n\\begin{pmatrix}\nn & 0 & 0 & 0 \\\\\n0 & n & 0 & 0 \\\\\n0 & 0 & n+f & nf \\\\\n0 & 0 & -1 & 0\n\\end{pmatrix}\n\\begin{pmatrix}\nx \\\\ y \\\\ z \\\\ 1\n\\end{pmatrix}\n=\n\\begin{pmatrix}\nx' \\\\[4pt] y' \\\\[4pt] z' \\\\[4pt] w'\n\\end{pmatrix}\n$$\n#### 与正交投影矩阵相乘\n将上一步得到的矩阵 $T_{2}$ 与正交投影矩阵相乘：\n$$\n\\begin{pmatrix}\n\\frac{2}{r-l} & 0 & 0 & -\\frac{r+l}{r-l} \\\\\n0 & \\frac{2}{t-b} & 0 & -\\frac{t+b}{t-b} \\\\\n0 & 0 & \\frac{-2}{f-n} & -\\frac{f+n}{f-n} \\\\\n0 & 0 & 0 & 1\n\\end{pmatrix}\n\\frac{1}{|z|}\n\\begin{pmatrix}\nn & 0 & 0 & 0 \\\\\n0 & n & 0 & 0 \\\\\n0 & 0 & n+f & nf \\\\\n0 & 0 & -1 & 0\n\\end{pmatrix}\n$$\n得到矩阵 $T_{3}$：\n$$\n\\frac{1}{|z|}\n\\begin{pmatrix}\n\\frac{2n}{r-l} & 0 & \\frac{r+l}{r-l} & 0 \\\\\n0 & \\frac{2n}{t-b} & \\frac{t+b}{t-b} & 0 \\\\\n0 & 0 & -\\frac{f+n}{f-n} & -\\frac{2fn}{f-n} \\\\\n0 & 0 & -1 & 0\n\\end{pmatrix}\n$$\n我们发现矩阵前面还有 $\\frac{1}{|z|}$，因为向量与矩阵相乘后，得到的 $w'$ 分量就是 $|z|$ 的值，因此我们最后只需要将所有分量都除以 $w'$ 即可——也就是所谓的透视除法。\n\n去掉 $\\frac{1}{|z|}$ 后，得到的就是透视投影矩阵的标准形式。\n\n### 方法二：直接几何推导\n对任意点  \n$$\nP(x,y,z,1)\n$$\n求其在近平面 $$z = -n$$ 上的投影：\n$$\nx' = \\frac{n}{|z|} x,\\qquad y' = \\frac{n}{|z|} y,\\qquad z' = z,\\qquad w' = 1.\n$$\n\n> 此时 $x', y'$ 是近平面的真实投影点坐标。\n\n以 $x$ 为例：\n1. 将 $x$ 移动到区间中心：  \n$$\nx' - \\frac{l+r}{2}\n$$\n2. 再缩放到 $[-1,1]$：  \n$$\n\\frac{2}{r-l}\\left(x' - \\frac{l+r}{2}\\right)\n$$\n同理：\n- $y$ 用 $t,b$ 做中心化和缩放  \n- $z$ 使用 $n,f$ 做中心化和缩放\n\n得到变换矩阵 $T_{4}$：\n$$\n\\begin{pmatrix}\n\\frac{2n}{r-l}\\frac{1}{|z|} & 0 & 0 & -\\frac{r+l}{r-l} \\\\\n0 & \\frac{2n}{t-b}\\frac{1}{|z|} & 0 & -\\frac{t+b}{t-b} \\\\\n0 & 0 & \\frac{-2}{f-n} & -\\frac{f+n}{f-n} \\\\\n0 & 0 & 0 & 1\n\\end{pmatrix}\n$$\n将 $\\frac{1}{|z|}$ 从矩阵中提出，可写成：\n$$\n\\frac{1}{|z|}\n\n\\begin{pmatrix}\n\\frac{2n}{r-l} & 0 & 0 & -\\frac{r+l}{r-l}|z| \\\\\n0 & \\frac{2n}{t-b} & 0 & -\\frac{t+b}{t-b}|z| \\\\\n0 & 0 & \\frac{-2}{f-n}|z| & -\\frac{f+n}{f-n}|z| \\\\\n0 & 0 & 0 & |z|\n\\end{pmatrix}\n$$\n其中第 1、2、4 行与向量相乘的结果，与下面这个矩阵完全一致：\n$$\n\\frac{1}{|z|}\n\n\\begin{pmatrix}\n\\frac{2n}{r-l} & 0 & \\frac{r+l}{r-l} & 0 \\\\\n0 & \\frac{2n}{t-b} & \\frac{t+b}{t-b} & 0 \\\\\n0 & 0 & \\frac{-2}{f-n}|z| & -\\frac{f+n}{f-n}|z| \\\\\n0 & 0 & -1 & 0\n\\end{pmatrix}\n$$\n仅第三行与 $|z|$ 有关，令 $G(z)=(\\frac{-2}{f-n}z-\\frac{f+n}{f-n})|z|$，第三行的结果可记为 $z'=G(z)\\frac{1}{|z|}$ ​，因为 $G(z)$ 中含有变值 $|z|$，不同点对应矩阵可能不同，不方便使用，因此需要进行优化，得到一个通用矩阵。\n\n考虑到我们对 $z'$ 的要求是：\n1. 当 $z \\in [-f,-n]$ 时，$z'$ 能正确反映出 $z$ 代表的远近关系，即 $z'$ 为减函数。\n2. 当 $z \\in [-f,-n]$ 时，$z'$的值域为$[-1,1]$\n   > 值域必须为此范围，因为一般 $z'$ 为连续函数，所以无论 $z'$ 的值域范围比 $[-1,1]$ 大或是小，都会导致点的渲染结果与预期不符，大了就会少渲染一部分，小了就会多渲染一部分\n3. 当 $z \\notin [-f,-n]$ 时，$z' \\notin [-1,1]$。\n> 即要求 $z'$ 能反映 $z$ 代表的远近关系且需要渲染的点对应的 $z'$ 取值范围在 $[-1,1]$。\n>\n> 这些限制，能通过 $z' \\in [-1,1]$ 来判断点是否可见，再通过大小关系，判断谁在前。\n\n\n因此我们希望找到一个**线性函数 $g(z)=Az+B$ 代替 $G(z)$**，使得 $z'=g(z)\\frac{1}{|z|}$，则 $g(z)$ 应满足以下条件：\n> 第三行与向量相乘，能得到的，关于 $z$ 的最简单函数是线性函数\n1. 由【对 $z'$ 的要求 1、2】可知，当 $z \\in [-f,-n]$ 时，要求 $g(z)$ 单调减且存在一点 $z_{0}$ 使得 $g(z_{0})=0$\n2. 由 1 和【对 $z'$ 的要求 2】可知，要求 $g(-n)=-n$ 和 $g(-f)=f$\n3. 由【对 $z'$ 的要求 3】可知，当 $z \\notin [-f,-n]$ 时，要求 $g(z)\\frac{1}{|z|}<-1$ 或 $g(z)\\frac{1}{|z|}>1，$\n> 满足条件的函数 $g(z)$ 有且仅有一个，且仅由条件 2 就已经可以求得。\n\n带入两点 $z=-f，-n$，解得系数 $A=-\\frac{f+n}{f-n}$，$B=-\\frac{2fn}{f-n}$\n\n使用该线性函数 $g(z)$ 替代 $G(z)$ 后，可得矩阵：\n$$\n\\frac{1}{|z|}\n\\cdot\n\\begin{pmatrix}\n\\frac{2n}{r-l} & 0 & \\frac{r+l}{r-l} & 0 \\\\\n0 & \\frac{2n}{t-b} & \\frac{t+b}{t-b} & 0 \\\\\n0 & 0 & -\\frac{f+n}{f-n} & -\\frac{2fn}{f-n} \\\\\n0 & 0 & -1 & 0\n\\end{pmatrix}\n$$\n对于矩阵外的 $\\frac{1}{|z|}$，分量 $w'$ 就是 $|z|$ 的值，可以通过在最后将所有分量都除以 $w'$ 实现——透视除法，去掉 $\\frac{1}{|z|}$ 后就得到标准的透视投影矩阵。\n\n\n## OpenGL 和 D3D 投影矩阵的差异\n\n**OpenGL 和 D3D 投影矩阵有什么是不一样的？**\n\n差异主要体现在以下两点：\n1. 使用左手坐标系还是右手坐标系，两者分别面向摄像机的 `z` 轴正方向和负方向，又因为要求最后 `w` 分量的值是 $|z|$，所以差异之一在于投影矩阵的元素 $a_{43}$ 是 `-1` 还是 `+1`。\n2. 对最后 `z` 坐标的映射区间不同，前者为 $[-1,1]$ 后者为 $[0,1]$，这就导致第三行会有所不同。\n> 综上，差异主要体现在第三行、第四行，两个投影矩阵的**结构/形状是一模一样的**，主要是数值上可能存在差异。\n\n## 参考链接\n1. https://www.cnblogs.com/BDFFZI/p/18732772\n2. https://www.cnblogs.com/AirGuanZ/p/6365702.html",
+  "id": "d39dfa36-e676-4a85-9d23-03387b8616b4",
+  "metadata": {
+    "tags": [
+      "cs/graphics"
+    ],
+    "title": "计算机图形渲染：投影矩阵推导"
+  },
+  "resources": [
+    "0d475bc215dfbfc6a1f3d3b848b2ff44fe780ab612d12855a822d9b91bfb1ed8.jpg",
+    "49ce1f3bdcc52b6c1a9dd4e5f630e323831d416a40f8a318f72285a056ca8f07.jpg",
+    "913ad84dc0c005871d393a4133832017d27d346cdadf522acef05a7b9a85bf2b.jpg",
+    "a41a552624be7a66a68c58cc8c7cbc1033ff8e9dd775a0bca348b1d82c7663e7.jpg",
+    "c971cc6f7151ca2a9753db2bd59314962d9a23ae144ca4c076a6bda7cfd81d75.jpg"
+  ],
+  "url": "/notes/n-d39dfa36e6764a859d2303387b8616b4/"
+}

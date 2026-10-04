@@ -1,0 +1,35 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7b693f5039f2cdf85ce4",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-f69c5dca7c584c4073c9",
+      "kind": "heading",
+      "offset": 90
+    },
+    {
+      "id": "h-9432a9fbd164d429b69d",
+      "kind": "heading",
+      "offset": 635
+    },
+    {
+      "id": "h-49898ba67b21c031dc2a",
+      "kind": "heading",
+      "offset": 1796
+    }
+  ],
+  "body": "# Windows 进程创建流程 (MOC)\n\n围绕进程对象与地址空间的建立展开：先了解用户态与内核的整体创建流程，再深入地址空间骨架、地址空间初始化和 PEB。\n\n## 阅读前置\n\n- [CreateProcess 函数概览](/notes/n-c2ee979bfba343668b3e7567f93782c4/) — 建立用户态接口与基本参数模型。\n- [Windows 内核对象](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/)、[Windows 句柄机制](/notes/n-399db2c150e54f6db70dc0058623ffb0/) — 理解对象、引用、句柄表与继承。\n- [Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/) — 了解 `EPROCESS`/`KPROCESS` 等结构分层。\n- [x86 保护模式分页机制 &#40;MOC&#41;](/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/) — 阅读地址空间骨架前掌握页表与自映射。\n- [Windows 内存管理 &#40;MOC&#41;](/notes/n-eaaa660aabe44f52abf865bf51bb3789/) — 阅读初始化细节前补充 VAD、PFN 和工作集。\n\n## 主线阅读顺序\n\n编号表示阅读顺序；第 3—5 项展开第 2 项中的内部过程。\n\n1. **用户态创建流程** — [Windows 进程创建&#65288;01&#65289;&#65306;用户态创建流程](/notes/n-a563a14132aa4c968d5f20c4000cb850/)\n    - 路径与命令行解析、映像节创建、进程与主线程创建、参数注入及 CSRSS 通知。\n2. **内核进程对象创建** — [Windows 进程创建&#65288;02&#65289;&#65306;内核进程对象创建](/notes/n-c95d91895dd0421ebd2799d64b467384/)\n    - `EPROCESS/KPROCESS`、Token、Job、句柄表及 PID/CID；串联地址空间与 PEB 的创建。\n3. **地址空间骨架**\n    - [Windows 进程创建&#65288;03&#45;1&#65289;&#65306;非 PAE 地址空间骨架](/notes/n-715b80e32efa4cada011b9dda96e0bca/)：先理解页目录、HyperSpace、VAD bitmap 与工作集基础页的构建。\n    - [Windows 进程创建&#65288;03&#45;2&#65289;&#65306;PAE 地址空间骨架](/notes/n-4e7a476b48e045eb8201a825f75e5557/)：再看 PAE 顶层结构及其与非 PAE 版本的差异。\n4. **地址空间初始化** — [Windows 进程创建&#65288;04&#65289;&#65306;地址空间初始化](/notes/n-4e7721abe8c84130a292e886ccb41126/)\n    - 初始化 PFN、工作集与 VAD，完成映像及系统 DLL 映射，使页表骨架成为正式地址空间。\n    - [Windows 进程创建&#65288;04&#65289;&#65306;地址空间初始化](/notes/n-4e7721abe8c84130a292e886ccb41126/#h-f641b88ecb130c864385)：其中的映像进程分支，包含 `ntdll.dll` 映射。\n5. **PEB 创建与初始化** — [Windows 进程创建&#65288;05&#65289;&#65306;PEB 创建与初始化](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/)\n    - PEB 页面创建、NLS 表映射，以及 PE Header 与 Load Config 相关初始化。\n\n## 相关机制与后续阅读\n\n- [Windows 进程挂靠与跨进程读写机制](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/)：解释内核线程如何进入目标进程地址空间。可在阅读第 4、5 项前补充。\n- [Windows 线程创建流程 &#40;MOC&#41;](/notes/n-1c54138a1f3c4b9ba003f8b0f18d6ffe/)：主线程创建与执行流启动的详细分析。\n\n- [Windows 进程与线程管理 &#40;MOC&#41;](/notes/n-1909310e1a5e499cb337d28521607edb/)：返回进程、线程生命周期与调度总览。\n",
+  "id": "2c12b904-cddf-42c0-b7b7-304bf5e3ea22",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows"
+    ],
+    "title": "Windows 进程创建流程 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/"
+}

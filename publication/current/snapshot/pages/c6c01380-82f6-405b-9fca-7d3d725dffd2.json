@@ -1,0 +1,73 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-30d4cbe8413e34b256d9",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-b4d1512cd8a475d93997",
+      "kind": "heading",
+      "offset": 39
+    },
+    {
+      "id": "h-a60db5d8846c2a51cd55",
+      "kind": "heading",
+      "offset": 156
+    },
+    {
+      "id": "h-c6e36524cec8ec3ea59e",
+      "kind": "heading",
+      "offset": 835
+    },
+    {
+      "id": "h-9039910e73e146f79c88",
+      "kind": "heading",
+      "offset": 1769
+    },
+    {
+      "id": "h-61d25351900cc254b5a8",
+      "kind": "heading",
+      "offset": 1792
+    },
+    {
+      "id": "h-9da06bd2f39f253755d3",
+      "kind": "heading",
+      "offset": 2325
+    },
+    {
+      "id": "h-a8b8988b6aaa76c2eb6f",
+      "kind": "heading",
+      "offset": 2952
+    },
+    {
+      "id": "h-5d28b308cec3b51b7b0a",
+      "kind": "heading",
+      "offset": 2975
+    },
+    {
+      "id": "h-be7210f1fc0cc2a53b85",
+      "kind": "heading",
+      "offset": 3045
+    }
+  ],
+  "body": "# C++ static 与 const 关键字\n\n## static 关键词\n\n`static` 关键词在 `C++` 中主要涉及存储期（Storage Duration）与链接性（Linkage）的改变。其核心内涵包括：静态存储区存储、内部链接性以及类属性共享。\n\n### 非成员（全局/命名空间作用域）使用\n\n当 `static` 用于类外的全局变量或函数时，其语义如下：\n\n- **静态存储期**：变量存储在程序的**静态存储区**，生命周期从程序启动持续到程序结束。\n- **内部链接性 (Internal Linkage)**：该标识符仅在当前编译单元（`.cpp` 文件）内可见。这常用于隐藏文件私有的全局变量或辅助函数，避免符号冲突。\n\n如下图所示，当未使用 `static` 修饰时，`other.cpp` 可以通过 `extern` 声明直接使用被 `main.cpp` 赋值后的变量 `g_globalParam`：\n![8efab28c9634925de68cafeca9d851e5&#95;MD5&#46;jpg](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/media/3d75beaedfbca3da4ff99bd73e536b3b8e444e1696ea3104512a4de12b174a2d.jpg)\n\n当使用 `static` 修饰后，该变量具有内部链接性，跨文件引用将导致链接器（Linker）提示无法找到该符号：\n![5fb992fe704c6f7e85105f292343c870&#95;MD5&#46;jpg](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/media/41c88854547079de08f06adecd5fafd071ae9e4d2601359f22d3d735382acc4b.jpg)\n\n### 类成员（静态成员）使用\n\n在 `C++` 类定义中使用 `static`：\n\n- **存储特性**：静态成员变量存储在**静态存储区**，而非实例化的栈或堆内存中。\n- **关联性**：`static` 成员属于**类属性**而非实例属性。它由该类的所有对象共享，在内存中仅存在一份物理拷贝。\n- **访问方式**：不依赖于特定对象的创建，推荐通过 `类名::成员名` 的方式直接访问。\n- **初始化规则**：静态成员变量通常**必须在类外部进行定义并初始化**。除非其满足 `static const` 整型常量条件，或使用了 `C++17` 的 `inline` 关键词。\n\t- **原理：规避 ODR（一处定义原则）冲突**\n\t\t若头文件被多个 `.cpp` 文件引用且在类内声明时直接赋值，编译器会在每个编译单元中尝试为该变量分配全局地址。最终链接器（Linker）会因为发现多个重名的全局符号而报“多重定义”错误。因此，传统的做法是在类内声明，仅在某一个 `.cpp` 文件中进行定义，确保符号唯一。\n\t- **特例 1：`static const` 整型常量**\n\t\t对于 `static const` 修饰的基本整型数据，编译器允许其在类内初始化。这是因为编译器通常将其视为文字常量进行内联替换（Inlining），不一定需要分配实际的物理内存地址（除非代码中对其执行了取地址操作 `&`）。\n\t- **特例 2：`inline static` (C++17 引入)**\n\t\t在静态成员前加上 `inline` 关键词，相当于告诉链接器：“该变量允许在多个编译单元中存在定义，但在最终链接时，请务必将它们合并为同一个物理地址（COMDAT 合并）”。这使得在头文件中直接初始化静态成员成为可能。\n\n![e1b5b23c3711fd236f7078886658aa2b&#95;MD5&#46;jpg](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/media/4968bb2e86bc8b54b0a9d5530294a6d5e57047861dd71fe982ca145c57e58d8e.jpg)\n\n---\n\n## const 关键词\n\n### 非成员（全局/命名空间作用域）使用\n\n- **常量属性**：`const` 修饰的变量在初始化后其值不可更改。\n- **链接性特例**：在 `C++` 中，全局 `const` 变量默认具有**内部链接性**（类似于隐式含有 `static`），除非显式使用 `extern` 声明。\n\n非法赋值将导致编译器报错：\n![4eddee5b8b46c9656515f0da14ef6575&#95;MD5&#46;jpg](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/media/2ca9be1f3055dc1c76d43829454bfb5a496d26074ffad33cf04ab60cdf97aec6.jpg)\n\n同时，`const` 变量默认仅在当前文件可见，符合单文件使用属性：\n![fed351ab5aefbbdcc044d1fbc7fbeef3&#95;MD5&#46;jpg](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/media/f2dbfef88522328749cf85d5621e684e9db2fd376f522033c0b8417a9fd339f1.jpg)\n\n### 类成员（常量成员）使用\n\n`const` 修饰类成员变量，表示该成员在对象生命周期内是只读的。\n\n- **初始化规则**：非静态的 `const` 成员变量无法在构造函数体内通过赋值语句初始化，必须使用**构造函数初始化列表**（`Member Initializer List`）进行初始化。\n- **对象依赖性**：与 `static` 不同，非静态 `const` 成员属于对象实例。每个实例化出的对象都有自己独立的 `const` 变量拷贝。\n\n![85e97f8e53e888c02af5af708369f029&#95;MD5&#46;jpg](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/media/85f1b813f5dcd97a254c7ba38bbc2b4d5c74cee67704d721009c49508d8ab4ac.jpg)\n\n- **访问方式**：必须在对象实例化后，通过**对象名**或对象指针进行访问。\n\n![104a4d78918bfe564096013b8311f6c8&#95;MD5&#46;jpg](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/media/a3979ab4f1b55f6ebace6bdd7d0199ce32b40431d7994875ece96fb2a0b53bbf.jpg)\n\n---\n\n## static 与 const 复合使用\n\n### 非成员（全局/命名空间作用域）使用\n\n联合使用时，变量既具有常量属性（不可修改），又具有内部链接性（当前文件专用），且存储在静态存储区。\n\n### 类成员（静态常量成员）使用\n\n当成员变量同时被 `static const` 修饰时，它融合了两者的特性：\n\n- **特性融合**：它既是一个全局唯一的类属性（共享且静态存储），又是一个不可修改的常量。\n- **类内初始化特例**：在 `C++` 标准中，`static const` 类型的**基本整型数据**（如 `int`、`char`、`bool`）允许在类定义内部直接进行初始化，这是编译器提供的特殊语法便利。\n- **访问规范**：遵循静态成员规则，推荐通过 `类名::成员名` 访问。\n\n在实际进行类外定义（若需要取地址等操作）时，赋值操作仍需保留 `const` 限定符：\n> 不进行类外定义/赋值，编译器会将对使用该变量的地方硬编码，即相当于一个宏常量。\n![30564a4836f5ca0dcdb115e16baefd88&#95;MD5&#46;jpg](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/media/4e23b91f6712d863af837ce8b6a1bf6e46318d541e951d8af0bbb4bbb37566ed.jpg)\n",
+  "id": "c6c01380-82f6-405b-9fca-7d3d725dffd2",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ static 与 const 关键字"
+  },
+  "resources": [
+    "2ca9be1f3055dc1c76d43829454bfb5a496d26074ffad33cf04ab60cdf97aec6.jpg",
+    "3d75beaedfbca3da4ff99bd73e536b3b8e444e1696ea3104512a4de12b174a2d.jpg",
+    "41c88854547079de08f06adecd5fafd071ae9e4d2601359f22d3d735382acc4b.jpg",
+    "4968bb2e86bc8b54b0a9d5530294a6d5e57047861dd71fe982ca145c57e58d8e.jpg",
+    "4e23b91f6712d863af837ce8b6a1bf6e46318d541e951d8af0bbb4bbb37566ed.jpg",
+    "85f1b813f5dcd97a254c7ba38bbc2b4d5c74cee67704d721009c49508d8ab4ac.jpg",
+    "a3979ab4f1b55f6ebace6bdd7d0199ce32b40431d7994875ece96fb2a0b53bbf.jpg",
+    "f2dbfef88522328749cf85d5621e684e9db2fd376f522033c0b8417a9fd339f1.jpg"
+  ],
+  "url": "/notes/n-c6c0138082f6405b9fca7d3d725dffd2/"
+}

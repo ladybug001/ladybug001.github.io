@@ -1,0 +1,160 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7870856b9aabcb59857d",
+      "kind": "heading",
+      "offset": 9
+    },
+    {
+      "id": "h-2b0b6ea8fe2ac92d8f5a",
+      "kind": "heading",
+      "offset": 662
+    },
+    {
+      "id": "h-32fc0eebe8a524cca198",
+      "kind": "heading",
+      "offset": 966
+    },
+    {
+      "id": "h-a959cab8db26fe9fbf7c",
+      "kind": "heading",
+      "offset": 987
+    },
+    {
+      "id": "h-10253abd31e10a11950d",
+      "kind": "heading",
+      "offset": 2296
+    },
+    {
+      "id": "h-3669e2953de7e3774444",
+      "kind": "heading",
+      "offset": 3171
+    },
+    {
+      "id": "h-c1c874e8a7f2df170f14",
+      "kind": "heading",
+      "offset": 4055
+    },
+    {
+      "id": "h-b07e38d89059b3c60af9",
+      "kind": "heading",
+      "offset": 4273
+    },
+    {
+      "id": "h-851362f6793092f55f18",
+      "kind": "heading",
+      "offset": 5616
+    },
+    {
+      "id": "h-e4694e4abea84fc4877e",
+      "kind": "heading",
+      "offset": 9071
+    },
+    {
+      "id": "h-fb9a293a9457fa58a449",
+      "kind": "heading",
+      "offset": 9175
+    },
+    {
+      "id": "h-f83d7b702e8c2e5b4792",
+      "kind": "heading",
+      "offset": 9470
+    },
+    {
+      "id": "h-040eb73cf24379f951e1",
+      "kind": "heading",
+      "offset": 10132
+    },
+    {
+      "id": "h-44eb09bbd2d5237e1d01",
+      "kind": "heading",
+      "offset": 10663
+    },
+    {
+      "id": "h-ff60c9e57d9f9ea693e6",
+      "kind": "heading",
+      "offset": 11146
+    },
+    {
+      "id": "h-b8cdcec7a3f3b4c73045",
+      "kind": "heading",
+      "offset": 11566
+    },
+    {
+      "id": "h-62ab33cb2565dab9302d",
+      "kind": "heading",
+      "offset": 12135
+    },
+    {
+      "id": "h-5570c18234abce2eaa13",
+      "kind": "heading",
+      "offset": 12155
+    },
+    {
+      "id": "h-c22201a93f2a4b8c606b",
+      "kind": "heading",
+      "offset": 15577
+    },
+    {
+      "id": "h-0331beaf626cd488d8c2",
+      "kind": "heading",
+      "offset": 17895
+    },
+    {
+      "id": "h-8b83d56b968181803d61",
+      "kind": "heading",
+      "offset": 19156
+    },
+    {
+      "id": "h-6a18e27d2f637c2a34b0",
+      "kind": "heading",
+      "offset": 19178
+    },
+    {
+      "id": "h-21924c2559200313869e",
+      "kind": "heading",
+      "offset": 19525
+    },
+    {
+      "id": "h-8e8494b197149ab8584e",
+      "kind": "heading",
+      "offset": 20037
+    }
+  ],
+  "body": "## 核心结论速查\n\n| #   | 结论 |\n| --- | --- |\n| 1   | **`ApcStatePointer[ApcStateIndex]` 永远指向当前线程正在使用的 ApcState**（无论是否挂靠） |\n| 2   | **内核 APC** 可在线程切换（`SwapContext`）相关路径中执行，不需要返回 3 环 |\n| 3   | **普通用户 APC** 通常需要同时满足三个条件：①线程处于等待状态 ②用户态等待 ③`Alertable=1` |\n| 4   | 用户 APC **每执行一个**，通常都会经历一次 `0环→3环→0环` 的切换 |\n| 5   | `KiDeliverApc` 会**先处理内核 APC，再处理用户 APC** |\n| 6   | 进程挂靠时，`ApcState` 保存当前挂靠进程对应的 APC 环境，`SavedApcState` 保存原进程的 APC 环境 |\n| 7   | `KAPC.ApcStateIndex` 可出现 0/1/2/3 这几种取值，而 `KTHREAD.ApcStateIndex` 只有 0/1 |\n\n**注意区分**：\n1. `KTHREAD.KernelApcDisable` 表示是否禁止所有 APC 的执行。针对的是线程处于**运行状态**时。\n2. `KTHREAD.Alertable` 表示是否允许插入用户 APC 时唤醒该线程。针对的是线程处于**等待状态**时。\n\n---\n\n## APC 的基本机制\n\n线程在执行时会独占 CPU。外部并不能像“直接调用一个函数”那样，随时让一个正在运行的线程立刻去执行我们指定的代码。设想一种极端情况：如果线程既不主动调用相关 API，也没有异常、中断等路径介入，那么它就会一直沿着自己的执行流继续运行。\n\n因此，如果希望线程在**自己的执行流中**额外执行一段代码，就需要一种“把待执行过程挂到该线程名下，再等待合适时机由它自己执行”的机制。APC 就承担了这个角色。\n\nAPC 机制与异步编程的思想一致：都是通过大循环+任务队列实现的，APC 机制的一个特点是允许跨线程插入任务。\n> 相关内容参考：异步编程的本质与实现机制\n\n---\n\n## APC 的数据结构与环境\n\n### 1 KAPC 与 APC 队列\n\n每次挂入 APC，实际挂入的是一个 `KAPC` 结构体，而不是裸函数指针：\n![6f84934f0c5ca5a5251d289ddf14ea6c&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/2455bf9bf8e007a4acfbe3d5fa4b3398ce63cd66884001b824ecf3ab37de31d3.jpg)\n\n比较关键的几个成员：\n1. `KernelRoutine`：目标线程将 APC 摘下来后，先执行的函数。\n2. `RundownRoutine`：较少使用，这里先忽略。\n3. `NormalRoutine`：在满足条件时，随后执行的“正常例程”。\n\n> **区分 `NormalRoutine` 和 `NormalContext`**：\n> - 用户 APC 时，`NormalRoutine` = 总入口（`BaseDispatchApc`），`NormalContext` = 用户真正提供的函数或上下文\n> - 内核 APC 时，`NormalRoutine` = 内核正常例程地址，`NormalContext` 用于向该例程传参，不能简单理解为“无意义”\n\n---\n\n`KAPC` 是实际进入队列的对象，而线程通过 `KAPC_STATE` 保存和管理这些 APC 队列：\n\n线程结构体 `KTHREAD` 偏移 `0x34` 处的成员 `ApcState` 指向 `_KAPC_STATE`：\n![b2dffb034696e026cd30b8508805c514&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/38750cb0f3b5521e01a5d710e8ae38194f6225ded3797c1f9611d8b84405a6e3.jpg)\n\n```\n0: kd> dt _KAPC_STATE\nnt!_KAPC_STATE\n +0x000 ApcListHead      : [2] _LIST_ENTRY  // 2个双向链表：[0]=内核APC队列，[1]=用户APC队列\n +0x010 Process          : Ptr32 _KPROCESS  // 线程所属或挂靠的进程\n +0x014 KernelApcInProgress : UChar         // 内核APC是否正在执行\n +0x015 KernelApcPending : UChar            // 是否有等待执行的内核APC\n +0x016 UserApcPending   : UChar            // 是否有等待执行的用户APC\n```\n\n**工作原理**：你想让线程做什么，就把对应的 APC 函数封装成 `KAPC` 结构体挂入链表中；线程在特定时机检查链表，并决定是否调用其中的 APC。\n\n---\n\n### 2 KTHREAD 中与 APC 相关的字段\n\n前面介绍了单个 `KAPC_STATE`，本节继续看 `KTHREAD` 如何持有当前与备用的两套 APC 状态，以及哪些线程字段会影响 APC 的入队和派发。\n\n```\n0: kd> dt _KTHREAD\nnt!_KTHREAD\n +0x034 ApcState         : _KAPC_STATE             // 当前使用的 APC 状态\n +0x138 ApcStatePointer  : [2] Ptr32 _KAPC_STATE   // 快速寻址指针数组\n +0x14c SavedApcState    : _KAPC_STATE             // 备用 APC 状态（挂靠时保存原进程 APC）\n +0x165 ApcStateIndex    : UChar                   // 0=正常, 1=挂靠\n +0x166 ApcQueueable     : UChar                   // 是否允许插入 APC（线程退出时=0）\n```\n\n注意区分 `ApcState` 和 `SavedApcState` 的关系：两者内部都各自维护完整的用户态和内核态 APC 队列，因此从队列视角看，相当于线程同时关联了两套 APC 环境。\n\n`ApcQueueable`：线程开始执行退出代码时，会将此值设为 0。此后 `KeInsertQueueApc` 会拒绝新的插入请求，以防止向正在退出的线程继续投递 APC。\n\n`KTHREAD` 中还有三个与 APC 派发密切相关的成员：\n1. `State`\n2. `WaitMode`\n3. `Alertable`\n\n这三者会影响：当一个新的用户 APC 被插入队列后，它**是否会立刻推动**线程进入可执行 APC 的路径。\n\n其中，`ApcStatePointer` 与两套 APC 状态之间的具体指向关系取决于线程是否发生进程挂靠，下一节展开说明。\n\n---\n\n### 3 进程挂靠与备用 APC 环境\n\n**为什么需要备用 APC 环境**\n\n线程上的 APC 往往和它所处的进程地址空间语义绑定。当线程 A 挂靠到进程 B（本质上切换到 B 的地址空间）后，如果此时仍直接执行原来属于进程 A 语义下的 APC，那么 APC 中访问到的地址就可能落到进程 B 的地址空间中，进而导致语义错乱。\n> 参考：[Windows 进程挂靠与跨进程读写机制](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/)\n\n**解决方案**：挂靠时，将原先活动的 `ApcState` 内容暂存到 `SavedApcState`；挂靠期间产生的新 APC 放入当前 `ApcState`；回到原进程后，再把原有状态恢复回来。\n\n> 可以把它类比成双缓冲：切换的不是“APC 本身”，而是“当前活动 APC 环境”的指向。\n\n**正常与挂靠状态下的指针关系**\n\n| 字段 | 正常场景（ApcStateIndex=0） | 挂靠场景（ApcStateIndex=1） |\n|------|----|----|\n| `ApcStatePointer[0]` | → `ApcState`（原进程 APC） | → `SavedApcState`（原进程 APC） |\n| `ApcStatePointer[1]` | → `SavedApcState` | → `ApcState`（挂靠进程 APC） |\n| **`ApcStatePointer[ApcStateIndex]`** | **→ ApcState（当前）** | **→ ApcState（当前）** |\n\n> `ApcStateIndex` 用来标识当前线程所使用的是哪一套 APC 环境：**正常状态下为 0，挂靠状态下为 1**。\n> \n> **设计精妙之处**：`ApcStatePointer[ApcStateIndex]` 这个组合，无论在线程处于何种状态，都能统一指向线程**当前正在使用的** APC 状态，从而避免额外判断。\n\n---\n\n## APC 的初始化与入队\n\n![b99a58ba7d4a18af3c921edc5d284420&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/e46e102d1388470190d00eb8b1c8d58f099a6c0ec4b13220ac1b3644dc1ff4ea.jpg)\n> 内核函数可以参考WRK的源码，逻辑更清晰。\n\n### 1 KeInitializeApc\n\n作用：为 `KAPC` 结构体的各个成员赋值。\n\n```c\nVOID KeInitializeApc(\n    IN PRKAPC Apc,                               // KAPC结构体指针\n    IN PKTHREAD Thread,                          // 目标线程 → KAPC.Thread\n    IN KAPC_ENVIRONMENT Environment,             // 目标环境（0/1/2/3）→ KAPC.ApcStateIndex\n    IN PKKERNEL_ROUTINE KernelRoutine,           // 内核例程 → KAPC.KernelRoutine\n    IN PKRUNDOWN_ROUTINE RundownRoutine OPTIONAL,// Rundown 例程\n    IN PKNORMAL_ROUTINE NormalRoutine,           // 正常例程 → KAPC.NormalRoutine\n    IN KPROCESSOR_MODE ApcMode,                  // 内核/用户 → KAPC.ApcMode\n    IN PVOID NormalContext                       // 上下文 → KAPC.NormalContext\n);\n```\n\n`KAPC.ApcStateIndex` 与 `KTHREAD.ApcStateIndex` 虽然同名，但含义并不完全相同：前者表示“这个 APC 应该挂入目标线程的哪一套 APC 环境”，后者表示“目标线程当前正在使用哪一套 APC 环境”。\n\n**Environment 参数的四个值**：\n\n| 值 | 含义 | 行为 |\n| --- | --- | --- |\n| 0 | 原始环境（原进程 APC 队列） | 直接赋值为 0 |\n| 1 | 挂靠环境（挂靠进程 APC 队列） | 直接赋值为 1 |\n| 2 | **当前环境**（初始化时） | 将 `KTHREAD.ApcStateIndex` 赋给 `KAPC.ApcStateIndex`，即采用目标线程当前的 APC 环境 |\n| 3 | **插入时的当前环境** | 真正插入 APC 队列时，再按目标线程当时的当前环境决定 |\n\n值为 2 时的代码逻辑（IDA 截图）：\n\n![1486630eba4aa8d005d50f4db881cc26&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/e21664138aa8f65ee400f62605956b9dc71c9bc5f83b9ade56f786e1437eb782.jpg)\n\n> 值 2 和 3 的设计目的，是防止“初始化”和“插入”之间线程状态发生变化（例如发生挂靠），从而确保 APC 最终始终挂入正确的 APC 队列。\n\n### 2 KiInsertQueueApc\n\n该函数的使用方式比较简单，只有两个参数：\n\n```c\nVOID FASTCALL KiInsertQueueApc\n(\n  IN PKAPC Apc,                   // 已初始化完成的 KAPC\n  IN KPRIORITY PriorityBoost\n)\n```\n\n函数逻辑总览：\n```\nKiInsertQueueApc(Apc, PriorityBoost)\n│\n├── 检查 KAPC.Inserted == 0？\n│   否 → 已挂入，直接返回\n│\n├── Environment == 3？\n│   是 → 用当前 KTHREAD.ApcStateIndex 更新 KAPC.ApcStateIndex\n│\n├── 判断 NormalRoutine 是否为 0\n│   ├── 为 0（特殊内核 APC）→ 挂入内核队列\n│   └── 不为 0\n│       ├── KernelRoutine == PsExitSpecialApc？\n│       │   是 → 插入队列头，设 UserApcPending=1\n│       └── 否 → 挂入对应 APC 队列\n│\n├── 设置 KAPC.Inserted = 1\n│\n├── 检查 KAPC.ApcStateIndex == KTHREAD.ApcStateIndex？\n│   否 → 说明挂入的不是当前活动环境，仅完成排队后返回\n│\n└── 判断是否需要推动线程进入 APC 派发路径\n    ├── 用户 APC：需同时满足 State=等待 && WaitMode=用户 && Alertable=1\n    │   满足 → 设 UserApcPending，并通过 KiUnwaitThread() 唤醒线程\n    └── 内核 APC：设 KernelApcPending，并通过 KiUnwaitThread() 推动线程继续执行\n```\n\n下面按源码中的几个关键判断点，对上述流程逐段展开。\n\n在常规入队逻辑之外，如果当前线程向自己插入内核 APC，函数请求 `APC_LEVEL` 软件中断，由相应中断例程推动该 APC 的处理。\n> 相关内容可参考 WRK 源码证明。\n\n---\n\n首先是判断 `KAPC.Inserted` 以及 `KAPC.ApcStateIndex` 是否为 3：\n\n![bdbb921e76cb287ba19f871e41382f4d&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/6b56aad85525bb664663283505f4822154a33e2f21aef719f6dae12bae9d8abd.jpg)\n\n---\n\n然后：\n![e93cc65901bbb39e02b367cab83eb8b2&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/fbbb7afc007d053f40c56fda48f53d07e9604c1bc705cfb8f979cd69c43c1100.jpg)\n\n1. 判断 `Kapc.NormalRoutine` 是否为 0——也就是是否为特殊 APC；如果不为 0，则跳转。\n\t1. 接着判断要插入的 APC 是内核态还是用户态：\n\t\t1. 内核态 APC 直接插入到对应链表中。\n\t\t2. 用户态 APC 也插入到对应链表中，并且还会根据 `KAPC.KernelRoutine` 是否为 `PsExitSpecialApc`，决定是否设置 `KAPC_STATE.UserApcPending`（是则设置，否则不设置）。\n2. 继续向下走则表示 `Kapc.NormalRoutine` 的值为 0——这是特殊 APC 的情况，主要逻辑是将当前 APC 挂入对应队列，并处理队列相关状态。\n\n---\n\n继续向下，无论是用户 APC 还是内核 APC 插入队列之后，最终都会走到这里：\n\n![3293d3f680294f039d80cddf50768cf3&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/12bb51b27dd30fbccc67b4b7271cc1244ff82f9f55b6718189beef6afa71a3c8.jpg)\n\n1. 设置 `KAPC.Inserted = 1`；\n2. 判断 `KAPC.ApcStateIndex` 的值与 `KTHREAD.ApcStateIndex` 的值是否相同：\n\t1. 若不同，说明该 APC 不是要在**当前活动环境**下立即推进执行，因此这里会只完成“挂入对应环境队列”这一步，而不会继续设置当前环境下的 pending 状态；\n\t2. 若相同，则继续向下执行。\n3. 再根据 APC 属于用户态还是内核态，决定是否需要推动线程进入 APC 派发路径：\n\t1. 若是用户态 APC，则判断 `State`、`WaitMode` 和 `Alertable` 是否满足要求。这里判断三者的目的，是区分：\n\t\t1. 仅仅把 APC 插入队列、先不推进派发；\n\t\t2. 还是立即设置 `ApcState.UserApcPending` 并唤醒目标线程，让它尽快进入用户 APC 的派发时机。\n\t\t\n\t\t具体来说：\n\t\t1. 如果前两者不满足，说明线程当前并不处于合适的等待路径上，那么函数会直接退出，不唤醒线程，也不在当前路径上设置 `UserApcPending`；\n\t\t2. 如果前两者满足，且 `Alertable` 也满足，则设置 `ApcState.UserApcPending`，再调用 `KiUnwaitThread`，把当前线程从等待链表中取出、挂到就绪链表中。这样做不是“当场执行 APC”，而是让线程在后续调度到来时尽快进入 APC 派发点；\n\t\t3. 如果前两者满足，但 `Alertable` 不满足，则仍只进行插入，等待后续其它路径推动用户 APC 的派发。此时队列里已经有 APC，但是否执行取决于后续允许用户 APC 派发。\n\t2. 若是内核态 APC，则这里不会像普通用户 APC 那样依赖上述三个条件。它会设置 `ApcState.KernelApcPending = 1`，然后通过与线程调度相关的路径推动该 APC 尽快被派发处理。\n\n`KTHREAD.WaitMode` 表示当前等待的来源。例如调用 `SleepEx` 时，该成员会被设置为 `UserMode`；而内核态等待可以指定为 `KernelMode`。\n\n`KTHREAD.Alertable`：该成员会进一步影响 `ApcState.UserApcPending` 的设置，因此可以理解为：线程当前是否愿意在合适的时机执行用户 APC。\n> `ApcState.UserApcPending` 和 `ApcState.KernelApcPending` 体现的是：**当前线程是否应在后续合适路径中执行这类 APC**。\n\n> [!NOTE]\n> `SleepEx`、`WaitForSingleObjectEx` 等带 `Ex` 后缀的函数，其额外参数表示线程是否在合适的时机执行用户 APC——本质上就是通过设置 `KTHREAD.Alertable` 来实现：\n> \n> ![5511615ea23d93a684d8921a93e76f58&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/858ad4b7401c682647b1e792aaddc2ab69668be2595b82cc9c51196bcf9a49b7.jpg)\n> \n> 调用这些函数时，除了设置 `KTHREAD.Alertable`，如果用户 APC 队列中已有待处理项，还会配合设置 `UserApcPending`。\n\n`KTHREAD.State` 表示当前线程所处的状态。\n\n---\n\n## APC 的派发入口与触发路径\n\nAPC 的派发入口可以分为两类：被动进入和主动推动。\n\n更准确地说，本章主要分析的是：**哪些路径会调用 `KiDeliverApc`，以及不同调用路径允许处理哪一类 APC。**\n\n### 常规派发路径\n\n| 派发入口        | 触发阶段             | 处理范围                |\n| ----------- | ---------------- | ------------------- |\n| **线程切换路径**  | 目标线程切换回来后        | 只处理内核 APC           |\n| **返回用户态路径** | 线程从 0 环准备返回 3 环时 | 先处理内核 APC，再处理用户 APC |\n\n> 线程切换本身往往也发生在系统调用、中断或异常等内核执行框架中，因此两个执行点并不是彼此孤立的。\n\n#### 1 线程切换路径\n\n整个调用链是：`KiSwapThread -> KiSwapContext -> SwapContext`。\n\n> `KiSwapContext` 和 `SwapContext` 的返回值可以体现当前是否有内核 APC 需要处理，`KiSwapThread` 再据此决定是否调用 `KiDeliverApc` 去执行内核 APC。\n\n先看 `SwapContext`。在该函数内部，会有一处判断 `ESI+0x49`——也就是判断 `KTHREAD.ApcState.KernelApcPending` 是否为 0，从而决定当前是否有待执行的内核 APC。如果不为 0，就会沿着对应路径把结果反馈给调用者。随后 `KiSwapThread` 在调用完 `KiSwapContext` 之后，再根据这个结果决定是否调用 `KiDeliverApc`——该函数根据参数1的值，决定是处理内核和用户APC队列还是只处理内核APC队列：\n\n![307fbbf88f94a7ba04fa8120c6be59ab&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/7390c500a4fb13483195a5cbf997b9a30a6b6f4d9201f52566e488f19f4f1a77.jpg)\n\n> 内核 APC 的执行时机是在**线程切换回来之后**，而不是切换出去之前。\n\n**这里仅执行内核 APC。**\n\n#### 2 返回用户态路径\n\n`KiServiceExit` 是**系统调用、异常或中断**返回用户空间的必经之路。\n\n它会检查当前 `KTHREAD.KAPC_STATE.UserApcPending` 是否为 0，以判断当前是否存在待处理的用户 APC 请求；如果有，就继续沿着对应路径走，最后进入 `KiDeliverApc` 处理 APC。\n\n![1ba7769804f5d6ed1ce004083da473ad&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/77ebdbaa87453bb87ea667342b4ab5004f9e859866069219275f0a1cd896c790.jpg)\n\n**注意 `KiServiceExit` 检查的是 `UserApcPending`**，所以：\n1. 如果没有用户 APC，则这条专门用于用户 APC 派发的路径就不会继续向下推进——不会调用 `KiDeliverApc`。\n2. 如果有用户 APC，则会先处理内核 APC，再处理用户 APC——因为 `KiDeliverApc` 内部本身就会优先处理内核 APC。\n\n### 显式触发路径\n\n部分内核路径也可以通过直接调用 `KiDeliverApc` 或请求 `APC_LEVEL` 软件中断，主动推动 APC 的派发：\n\n| 派发入口                 | 处理范围                 |\n| -------------------- | -------------------- |\n| **请求 APC 软件中断路径**    | 只处理内核 APC            |\n| **调用`KiDeliverApc`** | 处理内核 APC，也可能处理用户 APC |\n\n**比如**：`KiInsertQueueApc` 函数本身并不是“直接执行 APC”，而是通过唤醒线程、设置 pending 的方式，推动线程更快进入后续的 APC 派发路径（对内核 APC 来说，这通常表现为线程切换相关路径；对用户 APC 来说，则体现为返回用户态相关路径）。**但如果插入的是内核 APC 且目标线程是当前线程，则会请求 `APC_LEVEL` 软件中断。**\n\n#### 3 `KiDeliverApc` 的直接调用\n\n`KiDeliverApc` 是内核内部的 APC 派发函数，调用者必须预先建立相应的线程状态和 IRQL 条件，不能在任意 IRQL 下直接调用。\n\n在本文分析的经典实现中，常见的合法调用点会在 `APC_LEVEL` 下进入该函数。这里的 `APC_LEVEL` 是由调用路径保证的前置条件，而不是说 `KiDeliverApc` 会为任意调用者自动建立这一条件。\n\n调用 `KiDeliverApc` 也不意味着用户 APC 一定会被处理。具体处理范围取决于函数参数和当前线程状态：\n\n1. 如果调用者只允许处理内核 APC，则函数不会进入普通用户 APC 的派发过程；\n2. 如果调用者允许处理用户 APC，还需要满足当前线程准备返回用户态、`UserApcPending` 已设置等条件；\n3. 当允许处理用户 APC 时，函数仍会先处理内核 APC，再处理用户 APC。\n\n#### 4 `APC_LEVEL` 软件中断路径\n\n除了前面的路径，还可以从 **APC 软件中断**处理路径调用 `KiDeliverApc` ；\n\n调用：\n```c\nKiRequestSoftwareInterrupt(APC_LEVEL);\n```\n\n会在 IRQL 合适的时候进入 `APC_LEVEL` 中断例程，但该例程仅处理内核 APC，不会处理用户 APC。\n> `APC_LEVEL` 软件中断本质上也是调用 `KiDeliverApc`。\n\n\n无论从哪条路径进入，`KiDeliverApc` 的入口约定都是当前 IRQL 已经处于 `APC_LEVEL`。\n> 相关内容参考：[中断请求优先级与 IRQL](/notes/n-d4f651574a52425791b6f0f74f89a06c/)\n\n\n> [!QUESTION] 请求 `APC_LEVEL` 软件中断和实际执行软件中断的一定是同一个线程吗？\n> 不一定。`DISPATCH_LEVEL` 的优先级高于 `APC_LEVEL`：\n> \n> ```text\n> PASSIVE_LEVEL < APC_LEVEL < DISPATCH_LEVEL\n> ```\n> 如果响应前发生了更高优先级的中断、DPC 或线程调度，那么响应软件中断时，处理器上运行的当前线程可能已经变化。\n\n## APC 的执行过程\n\n### 1 KiDeliverApc\n\n前一章已经说明了进入 `KiDeliverApc` 的几条路径。本节按照函数内部的实际顺序，先分析内核 APC，再分析用户 APC 的内核态准备过程。\n\n> 该函数可以参考WRK的源码，逻辑更清晰。\n\n**内核 APC 的处理**\n\n`KiDeliverApc` 会先处理内核空间的 APC，再处理用户空间的 APC。\n\n通过 IDA 打开内核文件（`Ntoskrnl.exe`）找到 `KiDeliverApc` 函数后开始分析。\n\n先可以看到：函数会将 `KernelApcPending` 设为 0，**获取内核 APC 队列地址**，再判断该队列（链表）是否为空；如果不为空，就表示队列中还有 APC，接着跳转到处理逻辑：\n\n![428d08561e426e36da818e54d8ace127&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/3691131362b18e858e39323808c33b035c51a22eb79b47743cf6d01503a44168.jpg)\n\n> [!NOTE] 为什么 APC 和 DPC 的执行都要先从链表中摘下再去执行回调？\n> 处理 DPC/APC 节点时，需要先更新其排队状态并将其从待处理队列中摘除。其核心目的是维护队列状态和对象状态的一致性。\n\n跟进后可以看到：代码会取到 `KAPC` 的首地址，把若干关键成员如 `KernelRoutine`、`NormalRoutine`、`NormalContext`、`SystemArgument1`、`SystemArgument2` 取出并压栈，便于后续使用；然后判断 `NormalRoutine` 是否为 0，不为空则跳转。\n> `NormalRoutine` 为 0 表示是特殊的内核 APC。\n\n![dce8aadcf811bdeb9fb834b4fa50862a&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/ac442df083a84ffdd3592f0630d126f050d7a6aad054834967c671970d336d8c.jpg)\n\n跟进跳转后，会进行两个判断：\n1. 通过 `KTHREAD.KernelApcInProgress`，判断当前线程是否正在执行某内核 APC；用于防止嵌套执行内核 APC。\n2. 通过 `KTHREAD.KernelApcDisable`，判断当前线程是否禁止执行 APC——包括用户和内核 APC。\n![70d23ebed8fb1ebdb133cd215ac46caa&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/f79d7572c407b3d358e8ed62dca26e4fe4ef24768c881310ea41a404b674d484.jpg)\n\n如果都没有问题，就继续向下走：先把当前 APC 从队列中摘除，再调用 `KernelRoutine` 对应的函数。这个函数很多时候会承担清理或转交控制的作用。接着再次判断 `NormalRoutine` 是否为 0；如果不为 0，则先把 `KernelApcInProgress` 设为 1，然后传入 `NormalContext`、`SystemArgument1`、`SystemArgument2`，执行 `NormalRoutine` 对应的函数——也就是此处真正的业务内核 APC 正常例程。\n\n---\n\n当内核 APC 的正常例程执行完后，会再把 `KernelApcInProgress` 设回 0，然后继续判断是否还有下一个待处理的内核 APC；如果有，就重复上面的步骤。\n\n![ddff545f5c5f2d1edad57055f4d30ede&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/fb51e6b87e50f3384e00e8ad5dd9d732fc6134fce21376ee09dfcca709bbf9b5.jpg)\n\n**内核 APC 总结**：\n1. 在线程切换相关路径中即可执行，因此通常插入后不久就能被处理；\n2. 在同一次 `KiDeliverApc` 调用中，执行顺序先于用户 APC；\n3. 在内核空间执行，不需要构造用户态返回现场，往往可以通过一个循环连续处理多个内核 APC。\n\n`KiDeliverApc` 处理完内核 APC 后，再检查用户 APC 队列；如果队列不为空，就进入用户 APC 的处理逻辑。\n\n**用户 APC 的内核态准备**\n\n![f32825f42b040949b2d5871af2e18373&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/17ce0334fafba54e114f81d264c30fbe3f581e0284cb857538b2bcb4ba984cd5.jpg)\n\n接下来会进行两个判断：\n1. `KiDeliverApc` 的第一个参数是否为 1——为 1 表示允许处理用户 APC；\n2. `UserApcPending` 是否为 0——不为 0 表示当前确实有待执行的用户 APC。\n\n接下来的步骤与内核 APC 的处理相似：\n- 先把 `UserApcPending` 设为 0；\n- 取出 `KAPC` 结构体首地址；\n- 把若干成员压栈备用；\n- 把当前 APC 从链表中摘除；\n- 调用 `KernelRoutine`（这里通常承担清理或转交控制的作用）。\n\n之后再判断 `NormalRoutine` 是否为 0。若不为 0，说明用户 APC 的总入口存在，于是继续向下走；\n> `NormalRoutine` 为 0 表示是特殊的用户 APC。\n\n至此，`KiDeliverApc` 已完成用户 APC 的队列检查、摘除以及 `KernelRoutine` 调用。接下来需要为该 APC 构造用户态执行环境。\n\n用户 APC 必须在**用户空间**执行，因此它涉及到的现场切换要比内核 APC 复杂得多。如果当前存在用户 APC 要执行，线程就必须返回到用户空间，而且返回位置不是线程最初进入内核前的位置，而是一个被改写后的新位置。本质上，这是通过“伪造调用现场”实现的。\n> 相关内容参考：[Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)、[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n同时，每处理一个用户 APC，都会涉及一次额外的内核空间与用户空间切换，这一点与内核 APC 明显不同。\n\n> [!NOTE] 为什么不能在内核直接执行用户 APC？\n> 用户 APC 的目标函数属于 3 环代码，**不能在 0 环直接把这段 3 环代码当作普通内核例程去调用**。因此，必须让线程先回到 3 环，再在那里执行用户 APC。\n\n**这里开始与内核 APC 逻辑不一样**：接着把 `SystemArgument2`、`SystemArgument1`、`NormalContext`、`NormalRoutine` 这些值压栈，为后续 `KiInitializeUserApc` 构造用户态执行环境做准备。\n\n\n![34c9b30d4ddc8b885c66aa5a38dc9338&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/da6135710ea5f13ceb9e0a47e31fb07e18db4aeacce5d286e53f1043244eb301.jpg)\n\n---\n\n### 2 用户 APC 的现场构造\n\n上一节中，`KiDeliverApc` 已经摘下一个用户 APC，并准备调用 `KiInitializeUserApc`。本节继续分析该函数如何改写返回现场，使线程返回 3 环后先执行用户 APC。\n\n线程从用户层进入 0 环后，原来的运行环境（寄存器、栈顶等）被保存在 `Trap_Frame` 结构体中（该结构体存储在内核栈上）。\n\n正常情况下，返回用户态会通过该 `Trap_Frame` 恢复现场，现在要返回 3 环去处理用户 APC——需要修改该结构体的 EIP 等成员。\n\n**举例来说**：线程原先进入 0 环时的返回位置保存在 `EIP` 中；而现在要让线程先去执行用户 APC，就意味着返回位置不能再是原来的地址，而必须被改成一个新的入口地址。同时，还需要修改用户栈（`ESP`），为新函数创建参数和执行环境。\n\n那么，处理完用户 APC 后，又如何恢复到线程进入 0 环之前的原始位置继续执行呢？\n\n**这个函数做了三件事**：\n\n**① 备份 `TrapFrame` → `_Context` 结构体**\n\n线程进入 0 环时，原来的运行环境（寄存器、栈顶等）保存在 `Trap_Frame` 中。`KiInitializeUserApc` 要做的第一件事，就是把原来的 `Trap_Frame` 备份到一个新的结构体（`_Context`）中——这是由子函数 `KeContextFromKframes` 完成的：\n\n![a960a050d89f7788ea050e9f86d44b71&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/9ce4e2d6d9e8520582157eb84fc1488b3bff7d3bd74c79818ff170d1af3d3771.jpg)\n\n这个新的结构体与 `Trap_Frame` 结构体在语义上大致对应：\n> `_Context` ≈ TrapFrame（所有寄存器快照）\n\n![b99e14f4cc5a1d61699c66f4b1e3b742&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/d0fbe53a9e5b2178b0b6c5b737cedfc8794852fb3c34a9c6af22dfa6e99747dc.jpg)\n\n**② 将 `_Context` 结构体复制到 3 环栈**\n\n完成转换后，`_Context` 结构体仍位于当前内核空间中，因此还需要把它搬到 3 环栈里。\n\n如下图代码所示：先将原 3 环的 `ESP` 按 4 字节对齐；然后提升栈顶，**提升的高度正好等于 `_Context` 结构体大小再加上 4 个 APC 执行所需参数的大小**；接着把提升后的 `ESP` 暂存到内核空间栈中；最后再通过循环指令，把 `_Context` 的内容逐项复制到 3 环栈中。\n\n```\n原 3 环栈顶 ESP 按 4 字节对齐\n↓\n提升栈顶（大小 = sizeof(_Context) + 4个 APC 参数）\n↓\n通过循环指令将 _Context 逐成员复制到 3 环栈\n```\n\n![10dda6faddb0ad49703589d262fd68da&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/c556d8bf91622206185ef3ab9576a20dc8d9d7f83437e147bc400ee668af5785.jpg)\n\n**③ 修改 TrapFrame，使线程返回到新地址**\n\n处理好 `_Context` 之后，就可以修改 `Trap_Frame` 的值了，目的就是让 0 环返回 3 环时先执行用户 APC 入口：\n\n```\nTrapFrame.Eip = KiUserApcDispatcher  ← 返回3环后从这里开始执行\nTrapFrame.Esp = 新栈顶（含4个 APC 参数）\n```\n\n![b57a1847858417cc07ada7c062f349c6&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/47b68287dea29adde330079b5d9dc5f5fe671f1f00debf3da57b7ae7457b992a.jpg)\n\n把 `Trap_Frame.Eip` 改成 `KiUserApcDispatcher` 的地址之后，就相当于把返回 3 环时的入口点改掉了；随后再把执行 APC 所需的 4 个参数依次填充到 3 环栈中。此时的**3 环栈布局（修改后）** 如下：\n\n![69a0c330d84e2d6f5e47e4780eecab2c&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/dbe00fcdf57327bb74a864b576773612900883b17ba46e87156a6995954202b2.jpg)\n\n至此，`KiDeliverApc` 对这一个用户 APC 的处理逻辑就完成了。随后函数返回，0 环调用链继续依次返回——线程从 0 环回到 3 环，并开始执行该用户 APC。\n\n---\n\n### 3 用户态分发与现场恢复\n\n上一节已经把返回地址改为 `KiUserApcDispatcher`，并在用户栈中保存了 APC 参数和原执行现场。本节继续分析线程返回 3 环后如何执行用户 APC，并通过 `ZwContinue` 恢复现场或推动下一个用户 APC。\n\n当线程返回 3 环后，就会跳转到 `KiUserApcDispatcher` 开始执行；之前压入的那 4 个参数，也正是给它准备的。\n\n`KiUserApcDispatcher` 位于 `ntdll.dll` 中。通过 IDA 分析可以发现，这个函数本身并不复杂：先取出 `NormalRoutine`，然后调用对应函数；接着再取出 `_Context` 结构体，作为参数调用 `ZwContinue`。\n\n![e9f1a6801e841ff75ba2457991ec11af&#95;MD5&#46;jpg](/notes/n-3d7533bad94d40888f2bb35b29d2125e/media/1017b6020d0f65b4b6880054f40a1706562f1f7caf62fa0c1e4699fb35d3666e.jpg)\n\n> **`NormalRoutine` 指向的是总入口，而不是用户函数本身**。\n>\n> 用户通过 `QueueUserAPC()` 插入 APC 时，`NormalRoutine` 会被固定为 `BaseDispatchApc`（由系统内部指定）；`BaseDispatchApc` 再去调用用户真正提供的函数。也就是说，用户通常只需要提供函数地址和参数，而不需要关心这一层分发机制。\n\n`ZwContinue` 的作用，是加载给定的上下文，也就是恢复原来 3 环进入 0 环前的执行环境；但在这里它还有另一个意义：**继续推动后续用户 APC 的执行**。\n\n- 第二个参数为 `True` 时，内部会调用 `KeTestAlertThread`，从而设置 APC 队列相关的 `UserApcPending` 状态；\n- 而在线程随后再次从 0 环返回 3 环时，又会经过 `KiServiceExit`；如果此时 `UserApcPending` 仍不为 0，那么又会再次调用 `KiDeliverApc`。\n\t- 如此反复，直到所有用户 APC 都执行完毕，最后真正恢复回 `TrapFrame`，线程回到原来进入内核的位置继续执行，**一切如初**。\n\n**用户 APC 总结**：\n1. 只有线程允许，用户 APC 才有机会执行；\n2. 每个用户 APC 执行一次，通常都要经过 `内核→用户→内核` 的切换；\n3. 多个用户 APC 会依次执行，每次都围绕“备份现场 → 构造返回现场 → 执行 → 恢复现场”这条路径展开。\n> 队列非空和 `XXXXApcPending` 不是一回事：前者表示线程上有排队的 APC，后者表示系统决定在合适的时机继续推进该类 APC 的派发。\n\n---\n\n## 典型场景与应用\n\n### 1 普通用户 APC 的投递时序\n\n将前文的入队与派发条件放到实际调用顺序中，可以看到两种常见时序：\n- 用户 APC 仅插入、不立即执行，比如**先有 APC，后调用 `SleepEx`**。调用 `SleepEx` 会设置 `UserApcPending`，在线程从 0 环返回 3 环时就会执行该 APC。\n- 另外一种情况是：**先调用 `SleepEx` 使线程进入 alertable 等待，再插入 APC**。这时会在插入函数 `KiInsertQueueApc` 中直接设置 `UserApcPending`，并推动线程尽快进入派发路径。\n> 但**内核 APC**以及某些**特殊用户 APC**的派发逻辑，并不遵循普通用户 APC 的 `Alertable` 模型。\n\n---\n\n### 2 线程间投递场景\n\n上一节按调用顺序区分了两种时序；下面换成投递线程 A 与目标线程 B 的视角，说明这些时序在线程间投递中的具体表现。\n\n线程 A 想控制线程 B 去执行某个函数时，可以选择：\n1. 插入用户 APC：这就要看线程 B 现在以及未来是否会执行类似 `SleepEx` 的函数，并允许普通用户 APC 执行：\n\t1. 如果当前没有执行、将来也不会执行，那么这个普通用户 APC 就可能永远不会执行；\n\t2. 如果当前正处于满足条件的等待路径上，那么插入后会唤醒线程；当线程下次被调度，并沿着 0 环返回 3 环的路径运行时，就会执行该用户 APC；\n\t3. 如果将来某个时刻会进入满足条件的等待路径，那么 APC 可以先排队，等到线程后续进入相应路径后并沿着 0 环返回 3 环的路径运行时，就会执行该用户 APC；\n2. 插入内核 APC：该线程在后续的线程切换相关派发点上就有机会处理该内核 APC。\n\n**总结**：内核 APC 在插入后，通常会较快推动线程进入对应的派发路径并被处理；而普通用户 APC 在插入后，是否会被执行，则取决于线程之后是否进入允许用户 APC 派发的路径。\n\n---\n\n### 3 应用场景\n\n| 场景                       | 原理                                                  |\n| ------------------------ | --------------------------------------------------- |\n| **APC 注入（Shellcode 注入）** | 向目标进程中处于可警报等待路径上的线程插入用户 APC，APC 函数地址指向注入的 shellcode |\n| **调试器实现线程挂起/恢复**         | 某些实现会利用 APC 机制在线程自己的执行流中插入特定处理过程                    |\n| **异步 I/O 完成通知**          | `ReadFileEx` 等机制可通过用户 APC 通知 I/O 完成                 |\n| **进程注入防检测**              | Early Bird 技术会利用“线程启动早期”这一时机投递 APC，以提高触发概率          |\n\n传统 `QueueUserAPC` 注入使用的是普通用户 APC，确实存在目标线程始终不进入可警报状态、导致 APC 永远不执行的问题。为提高可靠性，可以利用线程启动前投递的 Early Bird 方式、选择可警报线程，或者在支持的现代系统上使用特殊用户 APC。驱动型注入有时会先使用内核 APC 做准备，但最终执行 3 环函数的，通常仍是用户态投递阶段。\n",
+  "id": "3d7533ba-d94d-4088-8f2b-b35b29d2125e",
+  "metadata": {
+    "tags": [
+      "reverse/windows",
+      "arch/x86",
+      "os/windows/thread",
+      "cs/concurrency"
+    ],
+    "title": "Windows APC 机制"
+  },
+  "resources": [
+    "1017b6020d0f65b4b6880054f40a1706562f1f7caf62fa0c1e4699fb35d3666e.jpg",
+    "12bb51b27dd30fbccc67b4b7271cc1244ff82f9f55b6718189beef6afa71a3c8.jpg",
+    "17ce0334fafba54e114f81d264c30fbe3f581e0284cb857538b2bcb4ba984cd5.jpg",
+    "2455bf9bf8e007a4acfbe3d5fa4b3398ce63cd66884001b824ecf3ab37de31d3.jpg",
+    "3691131362b18e858e39323808c33b035c51a22eb79b47743cf6d01503a44168.jpg",
+    "38750cb0f3b5521e01a5d710e8ae38194f6225ded3797c1f9611d8b84405a6e3.jpg",
+    "47b68287dea29adde330079b5d9dc5f5fe671f1f00debf3da57b7ae7457b992a.jpg",
+    "6b56aad85525bb664663283505f4822154a33e2f21aef719f6dae12bae9d8abd.jpg",
+    "7390c500a4fb13483195a5cbf997b9a30a6b6f4d9201f52566e488f19f4f1a77.jpg",
+    "77ebdbaa87453bb87ea667342b4ab5004f9e859866069219275f0a1cd896c790.jpg",
+    "858ad4b7401c682647b1e792aaddc2ab69668be2595b82cc9c51196bcf9a49b7.jpg",
+    "9ce4e2d6d9e8520582157eb84fc1488b3bff7d3bd74c79818ff170d1af3d3771.jpg",
+    "ac442df083a84ffdd3592f0630d126f050d7a6aad054834967c671970d336d8c.jpg",
+    "c556d8bf91622206185ef3ab9576a20dc8d9d7f83437e147bc400ee668af5785.jpg",
+    "d0fbe53a9e5b2178b0b6c5b737cedfc8794852fb3c34a9c6af22dfa6e99747dc.jpg",
+    "da6135710ea5f13ceb9e0a47e31fb07e18db4aeacce5d286e53f1043244eb301.jpg",
+    "dbe00fcdf57327bb74a864b576773612900883b17ba46e87156a6995954202b2.jpg",
+    "e21664138aa8f65ee400f62605956b9dc71c9bc5f83b9ade56f786e1437eb782.jpg",
+    "e46e102d1388470190d00eb8b1c8d58f099a6c0ec4b13220ac1b3644dc1ff4ea.jpg",
+    "f79d7572c407b3d358e8ed62dca26e4fe4ef24768c881310ea41a404b674d484.jpg",
+    "fb51e6b87e50f3384e00e8ad5dd9d732fc6134fce21376ee09dfcca709bbf9b5.jpg",
+    "fbbb7afc007d053f40c56fda48f53d07e9604c1bc705cfb8f979cd69c43c1100.jpg"
+  ],
+  "url": "/notes/n-3d7533bad94d40888f2bb35b29d2125e/"
+}

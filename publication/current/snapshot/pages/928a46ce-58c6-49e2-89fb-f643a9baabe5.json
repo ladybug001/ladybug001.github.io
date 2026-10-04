@@ -1,0 +1,241 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-987315b671e01fd6d057",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-298a76b638e085d66586",
+      "kind": "heading",
+      "offset": 68
+    },
+    {
+      "id": "b-9xp9lk",
+      "kind": "quote-block",
+      "offset": 827,
+      "prefix": "> "
+    },
+    {
+      "id": "h-7be157ecb5b403720e0c",
+      "kind": "heading",
+      "offset": 850
+    },
+    {
+      "id": "h-4bdea8cff6852c5329a6",
+      "kind": "heading",
+      "offset": 877
+    },
+    {
+      "id": "h-3a60025b596aef435063",
+      "kind": "heading",
+      "offset": 1727
+    },
+    {
+      "id": "h-dd31f8576fd253dd4bb9",
+      "kind": "heading",
+      "offset": 2798
+    },
+    {
+      "id": "h-9c34e8d3831c4bef6297",
+      "kind": "heading",
+      "offset": 3454
+    },
+    {
+      "id": "h-ef7649a8e75629711bf2",
+      "kind": "heading",
+      "offset": 3483
+    },
+    {
+      "id": "h-266a67062b4a89401ad6",
+      "kind": "heading",
+      "offset": 4301
+    },
+    {
+      "id": "h-12647b93715abe3697d6",
+      "kind": "heading",
+      "offset": 5458
+    },
+    {
+      "id": "h-0c53fbb974d95d84a008",
+      "kind": "heading",
+      "offset": 5472
+    },
+    {
+      "id": "h-40dd4297425a87b4bab4",
+      "kind": "heading",
+      "offset": 5847
+    },
+    {
+      "id": "h-98c23c9d53f3daa5f658",
+      "kind": "heading",
+      "offset": 7000
+    },
+    {
+      "id": "h-6b9c4ca95dd5a107e3d9",
+      "kind": "heading",
+      "offset": 7327
+    },
+    {
+      "id": "e-9be72d8c259563f673c1-b-97heys",
+      "kind": "quote-block",
+      "offset": 7952,
+      "prefix": "> "
+    },
+    {
+      "id": "h-8ffcd236f46d90b4889a",
+      "kind": "heading",
+      "offset": 7977
+    },
+    {
+      "id": "h-a863c7484d01f9f416fe",
+      "kind": "heading",
+      "offset": 7993
+    },
+    {
+      "id": "h-7ae202b0beb37dab856e",
+      "kind": "heading",
+      "offset": 9237
+    },
+    {
+      "id": "h-5b39d001080c8466a79c",
+      "kind": "heading",
+      "offset": 9590
+    },
+    {
+      "id": "h-0b4ddf5fecdcb3821d57",
+      "kind": "heading",
+      "offset": 9604
+    },
+    {
+      "id": "h-ff76fca328c13c474248",
+      "kind": "heading",
+      "offset": 11169
+    },
+    {
+      "id": "h-f1ae4b72dd591c4285d1",
+      "kind": "heading",
+      "offset": 11986
+    },
+    {
+      "id": "h-36968c1c584f32d15de9",
+      "kind": "heading",
+      "offset": 12003
+    },
+    {
+      "id": "h-f7ca57b9d693f42510fb",
+      "kind": "heading",
+      "offset": 12562
+    },
+    {
+      "id": "h-6d183872d533d51a7b62",
+      "kind": "heading",
+      "offset": 13348
+    },
+    {
+      "id": "h-9f11f6d19b2127d4626d",
+      "kind": "heading",
+      "offset": 13366
+    },
+    {
+      "id": "h-013113641a47249dfa66",
+      "kind": "heading",
+      "offset": 13892
+    },
+    {
+      "id": "h-b132530af55d62e01c62",
+      "kind": "heading",
+      "offset": 14334
+    },
+    {
+      "id": "h-06598139db31e8e83a9a",
+      "kind": "heading",
+      "offset": 14702
+    },
+    {
+      "id": "h-63b5b91d4f4681d7a39d",
+      "kind": "heading",
+      "offset": 14735
+    },
+    {
+      "id": "h-b15f59dbe6f644fc6ccc",
+      "kind": "heading",
+      "offset": 16321
+    },
+    {
+      "id": "e-a69b0d42a13cdfd9f069-b-xup4xc",
+      "kind": "quote-block",
+      "offset": 17065,
+      "prefix": "> "
+    },
+    {
+      "id": "h-733fd56066702d14112b",
+      "kind": "heading",
+      "offset": 17084
+    },
+    {
+      "id": "h-474e7311c4d14b68f2c4",
+      "kind": "heading",
+      "offset": 17400
+    },
+    {
+      "id": "h-3453529748c491c009fb",
+      "kind": "heading",
+      "offset": 17985
+    },
+    {
+      "id": "h-bebf020985916b9b5622",
+      "kind": "heading",
+      "offset": 18011
+    },
+    {
+      "id": "h-ff127f7c1356f9ad6be1",
+      "kind": "heading",
+      "offset": 18708
+    }
+  ],
+  "body": "# Windows 线程创建（01）：线程创建主流程\n\n## 整体关系：NtCreateThread 与 PspCreateThread\n\nWindows 内核的线程创建体系可以分成**两层**：\n- **外层接口**：`NtCreateThread`（用户态线程）和 `PsCreateSystemThread`（内核态线程），负责参数验证、调用来源适配和模式边界处理。\n- **核心引擎**：`PspCreateThread`，作为线程创建的**统一底层实现**，负责对象创建、子系统初始化、安全检查以及最终进入调度路径。\n\n> [!NOTE] 用户线程入口位置约定\n> - 位置 1：`CreateThread` 等 Win32 封装指定的用户线程函数，例如 `ThreadProc`；到 `NtCreateThread` 层面，它已经被编码进初始 `CONTEXT` 的约定字段。\n> - 位置 2：初始 `CONTEXT` 的 `PC/EIP/RIP`，指向用户态启动桩，例如 `BaseThreadStartThunk` / `BaseThreadInitThunk`；内核先据此构造原始 `TrapFrame` 返回目标。\n> - 位置 3：`PspUserThreadStartup -> KiInitializeUserApc` 改写 `TrapFrame` 后的第一次 3 环返回目标。WRK 源码写入的是 `KeUserApcDispatcher` 变量，它指向用户态 `ntdll!KiUserApcDispatcher`。\n> \n> **用户线程第一次进 3 环的顺序是**：位置 3 执行指定的用户 APC（即 `LoaderInitRoutine`，也是 `LdrInitializeThunk`），完成用户 APC 后返回到“3 环原位置”（即恢复原始 `CONTEXT` 到位置 2），再由用户态启动桩调用位置 1。 \n\n## NtCreateThread：创建入口\n\n### `NtCreateThread` 函数原型\n\n```c\nNTSTATUS NtCreateThread(\n    __out   PHANDLE           ThreadHandle,      // [输出] 新线程的句柄\n    __in    ACCESS_MASK       DesiredAccess,      // 请求的访问权限\n    __in_opt POBJECT_ATTRIBUTES ObjectAttributes, // 对象属性（名称、安全描述符等）\n    __in    HANDLE            ProcessHandle,      // 目标进程句柄\n    __out   PCLIENT_ID        ClientId,           // [输出] 新线程的 CLIENT_ID\n    __in    PCONTEXT          ThreadContext,      // 线程初始上下文（用户线程的 PC/EIP/RIP 为位置 2）\n    __in    PINITIAL_TEB      InitialTeb,         // 线程环境块初始值\n    __in    BOOLEAN           CreateSuspended     // 是否以挂起状态创建\n);\n```\n\n和创建进程类似，用户在 3 环调用 `NtCreateThread` 函数时指定的 `Context` 会被 `BaseInitializeContext` 函数修改，然后再做为 0 环 `NtCreateThread` 函数的 `ThreadContext` 参数。\n> 相关内容参考：[Windows 线程创建&#65288;01&#65289;&#65306;线程创建主流程](/notes/n-928a46ce58c649e289fbf643a9baabe5/#h-5b39d001080c8466a79c)\n\n### 参数探测与安全验证\n\n![d6ef056cb08254b425d91436e050fab7&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/9c4411d7030310865b5e721ba6d1b7722c454b56d3bd68e62d80e3f9372ce584.jpg)\n\n**逻辑说明**：`NtCreateThread` 可以由用户态通过系统调用（`syscall` / `int 2e`）进入内核，因此从用户态传入的指针都必须视为**不可信任**。\n\n这一段实现的是典型的 NT 内核参数探测模式：\n\n- **`KeGetPreviousMode()` 判断调用者模式**：如果调用来自用户态（`UserMode`），就必须对每个用户态指针执行探测（Probe），确认它们位于合法的用户地址空间，并且具备正确的对齐和访问权限。\n\t- `ProbeForWriteHandle`：验证 `ThreadHandle` 输出指针可写\n\t- `ProbeForWriteSmallStructure`：验证 `ClientId` 输出指针可写\n\t- `ProbeForReadSmallStructure`：验证 `ThreadContext` 和 `InitialTeb` 输入指针可读\n- **`ThreadContext` 是必需参数**：对于用户态线程，如果没有提供 `ThreadContext`，直接返回 `STATUS_INVALID_PARAMETER`。原因是用户态线程必须有一份初始寄存器上下文，内核后续要用它构造用户态执行现场；其中 `PC/EIP/RIP` 的原始返回目标是位置 2。\n- **`InitialTeb` 分两阶段捕获**：先读取 `OldInitialTeb` 部分（旧式 TEB 格式）。如果 `OldStackBase` 和 `OldStackLimit` 都为 `NULL`，说明调用者使用的是新式 `INITIAL_TEB`，再完整捕获整个结构。这样可以兼容 NT 的新旧 TEB 格式。\n\n> [!IMPORTANT]\n> 整个探测过程被 `try/except` 包裹。如果探测过程中触发异常（例如用户态传入非法地址），异常会被 `ExSystemExceptionFilter` 过滤并转换为返回状态，**不会导致内核崩溃**。这是内核处理用户态输入时最基础的防护方式。\n\n### 转入 PspCreateThread\n\n![434ba7de4e904109bd39f42b9a2c1080&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/ef216b7b66cc698d25597d30fc0fb0edbb7d0fb10e98278380d13ae3ccd36856.jpg)\n\n**逻辑说明**：参数验证完成后，`NtCreateThread` 不再直接处理线程创建细节，而是把实际工作交给 `PspCreateThread`。\n\n这里要注意几个关键的 `NULL` 参数：\n- `ProcessPointer = NULL`：表示通过 `ProcessHandle` 句柄来定位目标进程\n- `StartRoutine = NULL` 和 `StartContext = NULL`：这是区分**用户态线程**与**内核态线程**的关键标志。`PspCreateThread` 内部通过 `ThreadContext` 是否为 `NULL` 来判断线程类型\n\n\n> [!TIP]\n> `NtCreateThread` 本身很薄，主要承担**参数验证和边界适配**。真正的线程创建逻辑在 `PspCreateThread` 中完成。这也是 Windows 内核常见的 `Nt*` / `Psp*` 分层：`Nt*` 处理用户态边界，`Psp*` 实现进程/线程管理的核心逻辑。\n\n---\n\n## PspCreateThread：线程创建核心流程\n\n\n### `PspCreateThread` 函数原型\n\n```c\nNTSTATUS PspCreateThread(\n    OUT PHANDLE           ThreadHandle,\n    IN  ACCESS_MASK       DesiredAccess,\n    IN  POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,\n    IN  HANDLE            ProcessHandle,       // 目标进程句柄（二选一）\n    IN  PEPROCESS         ProcessPointer,      // 目标进程指针（二选一）\n    OUT PCLIENT_ID        ClientId OPTIONAL,\n    IN  PCONTEXT          ThreadContext OPTIONAL,  // 非 NULL=用户线程，NULL=系统线程\n    IN  PINITIAL_TEB      InitialTeb OPTIONAL,\n    IN  BOOLEAN           CreateSuspended,\n    IN  PKSTART_ROUTINE   StartRoutine OPTIONAL,   // 系统线程的启动函数\n    IN  PVOID             StartContext             // 系统线程的启动参数\n);\n```\n> **`StartContext` 是传给系统线程入口函数的参数**，不是 CPU 的启动上下文。\n\n> [!NOTE]\n> `ThreadContext` 和 `StartRoutine` 是两条不同创建路径的输入：提供 `ThreadContext` 表示创建用户态线程；提供 `StartRoutine` 表示创建内核态系统线程。\n\n### 执行流程图\n\n```mermaid\nflowchart TB\n    A[\"确定调用者模式<br/>PreviousMode\"] --> B[\"获取进程对象引用<br/>ObReferenceObjectByHandle\"]\n    B --> C[\"安全性检查<br/>禁止用户态在System进程创建线程\"]\n    C --> D[\"创建ETHREAD对象<br/>ObCreateObject\"]\n    D --> E[\"基础初始化<br/>CID/LPC/IO/注册表/定时器\"]\n    E --> F{\"ThreadContext<br/>是否存在?\"}\n    F -->|\"是(用户态线程)\"| G[\"创建TEB<br/>MmCreateTeb\"]\n    G --> H[\"提取启动地址<br/>初始化用户线程<br/>KeInitThread + PspUserThreadStartup\"]\n    F -->|\"否(系统线程)\"| I[\"设置系统线程标志<br/>KeInitThread + PspSystemThreadStartup\"]\n    H --> J[\"进程状态验证<br/>检查进程是否正在退出\"]\n    I --> J\n    J --> K[\"链入进程线程链表<br/>KeStartThread\"]\n    K --> L[\"首线程进程创建通知\"]\n    L --> M[\"Job完成端口通知\"]\n    M --> N[\"线程创建通知回调\"]\n    N --> O[\"挂起处理<br/>CreateSuspended\"]\n    O --> P[\"安全访问状态创建<br/>SeCreateAccessStateEx\"]\n    P --> Q[\"对象插入命名空间<br/>ObInsertObject\"]\n    Q --> R[\"输出结果<br/>ThreadHandle/ClientId\"]\n    R --> S[\"设置创建时间\"]\n    S --> U[\"安全访问检查<br/>计算GrantedAccess\"]\n    U --> T[\"KeReadyThread<br/>线程进入就绪状态\"]\n\n    style D fill:#e8f5e9,stroke:#4caf50,color:#000\n    style H fill:#fff3e0,stroke:#ff9800,color:#000\n    style I fill:#e3f2fd,stroke:#2196f3,color:#000\n    style T fill:#fce4ec,stroke:#e91e63,color:#000\n```\n\n\n### 前置校验与线程对象创建\n\n#### 确定调用者模式\n\n![df0ccf13437c33eb642346d591205d80&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/3aa94e9fe3ded2bd94d88dd88fbc2998ef89b61fc49f576ea4d50332a18a19d9.jpg)\n\n**逻辑说明**：这里先确定当前创建请求应按哪种模式处理。如果提供了 `StartRoutine`，说明调用来自内核的系统线程创建路径，直接按 `KernelMode` 处理；否则读取当前线程的 `TCB.PreviousMode`，沿用发起系统调用前的模式。\n\n这个 `PreviousMode` 会贯穿后续流程，影响安全检查、句柄引用以及用户缓冲区写回等操作。\n\n---\n\n#### 获取目标进程对象\n\n![163ec153b1506ea45f26b065369d0bff&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/375873cf2f701adacf3213a1372596304497a3a2fa65005191b43777e83ee24b.jpg)\n\n**逻辑说明**：此段负责获取目标进程的内核对象指针，分两种路径：\n\n| 路径       | 条件                                               | 行为                                                                                                            |\n| -------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |\n| **句柄路径** | `ProcessHandle != NULL`                          | 通过 `ObReferenceObjectByHandle` 将句柄转换为进程对象指针，同时验证句柄有效性、对象类型（必须是 `PsProcessType`）和访问权限（`PROCESS_CREATE_THREAD`） |\n| **指针路径** | `ProcessHandle == NULL` 且 `StartRoutine != NULL` | 直接引用 `ProcessPointer` 对象。该路径一般用于为系统进程创建系统线程。                                                                  |\n| **非法路径** | 都为 `NULL`                                          | 返回 `STATUS_INVALID_HANDLE`                                                                                    |\n\n引用计数的增加确保了在整个线程创建过程中进程对象不会被销毁。\n\n---\n\n#### 禁止用户态向 System 进程创建线程\n\n![af7d5ab27dc510088ee526f83c28c76b&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/86498b1fc58334d7a12cae92bd688548ca9700532b3871bb71691cab5962e521.jpg)\n\n**逻辑说明**：这是一条**安全防线**：禁止用户态请求在 `System` 进程（PID 4，即 `PsInitialSystemProcess`）中创建线程。否则，用户态代码可能借助高权限系统进程上下文制造严重的安全风险。这里通过显式检查阻断这类路径。\n\n---\n\n#### 创建 ETHREAD 对象\n\n![6558880401d2eff9888c193d2de9accc&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/a436a4f8e1fe3f75db664b2fdaff0bf2204d447b138b7abb02dc234d320c6e31.jpg)\n\n**逻辑说明**：调用对象管理器 `ObCreateObject` 创建一个线程对象，大小为 `ETHREAD`。`PsThreadType` 指定线程对象的类型信息，包括安全描述符和对象方法等。创建完成后立即使用 `RtlZeroMemory` 清零整个结构，确保所有字段都有确定的初始值；如果创建失败，则释放进程引用并返回错误。\n\n> [!NOTE]\n> `ETHREAD`（Executive Thread）是 Windows 内核中线程的完整表示，其内嵌的 `KTHREAD`（`Tcb` 字段）是调度器层面的线程表示。`ETHREAD` 在 `KTHREAD` 基础上扩展了进程关联、安全、I/O、LPC 等执行体层面的信息。相关内容参考：[Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)\n\n\n\n> 3. 递增 `PsProcessType->TotalNumberOfObjects`。 \n\n\n\n---\n\n### ETHREAD 基础初始化\n\n#### 初始化执行体层字段\n\n![475e43e3ad5791dda7aa3ec1573e0b6a&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/fcd27570167578d7c674b09345f260de5e975c0218c8a30f7e27de31342429fd.jpg)\n\n**逻辑说明**：这一段为新创建的 `ETHREAD` 初始化执行体层面需要的基础字段：\n\n| 初始化内容                                 | 用途                                            |\n| ------------------------------------- | --------------------------------------------- |\n| `RundownProtect`                      | 提供跨线程访问 TEB 等资源时的同步保护，确保在线程退出时能安全地等待所有引用者释放   |\n| `ThreadsProcess`, `Cid.UniqueProcess` | 建立线程与所属进程的关联                                  |\n| `Cid.UniqueThread`                    | 通过 `PspCidTable`（全局 CID 句柄表）分配一个系统范围内唯一的线程 ID |\n| `ReadClusterSize`                     | 设置页面预读簇大小，影响该线程的页面调入性能                        |\n| `LpcReplySemaphore`, `LpcReplyChain`  | 初始化本地过程调用（LPC）的应答信号量和等待链表                     |\n| `IrpList`                             | IRP（I/O 请求包）链表头，跟踪线程发出的所有异步 I/O 请求            |\n| `PostBlockList`                       | 注册表变更通知的阻塞链表                                  |\n| 线程锁、定时器自旋锁、定时器链表                      | 线程自身的同步原语和活动定时器跟踪                             |\n\n如果 CID 分配失败（`ExCreateHandle` 返回 `NULL`），说明资源不足，释放线程对象后返回 `STATUS_INSUFFICIENT_RESOURCES`。\n\n---\n\n#### 获取进程 Rundown Protection\n\n![d43effc0c35b002c20ea2f706e6011d9&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/b23b64c8b1c4100fdd4f47a93bd6bddd5d5f43b5c2be419b6e3969604308d910.jpg)\n\n**逻辑说明**：在修改进程结构（如线程链表、TEB 等）之前，必须先获取进程的 Rundown Protection。如果获取失败，说明进程已经进入终止/拆除阶段，此时不应继续创建线程。函数直接返回 `STATUS_PROCESS_IS_TERMINATING`，避免在正在销毁的进程中继续插入新线程造成竞态。\n\n---\n\n### 按线程类型构造初始执行现场\n\n#### 用户线程初始化\n\n![a73b5621d2f10631b945c6875e045c0c&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/cc3df4e16e6b42f0dc09c6f60a85897fbe60d19f4b61ff97882ce3012508feb3.jpg)\n\n**逻辑说明**：当 `ThreadContext` 存在时，当前创建的是**用户态线程**。这一分支主要做三件事：\n\n1. **创建 TEB（线程环境块）**：调用 `MmCreateTeb`，在目标进程的用户地址空间中**分配并初始化** TEB。TEB 保存线程栈、TLS、最后错误码等用户态运行时信息。\n2. **提取启动地址**：\n\t- `StartAddress`：从 `ThreadContext` 的 `EIP/RIP`（位置 2）中提取，表示内核记录到的用户态启动桩位置。\n\t- `Win32StartAddress`：从特定寄存器中提取（x86 为 `EAX`，AMD64 为 `RDX`），表示 Win32 子系统层面的线程入口点，即位置 1（例如 `ThreadProc`）。该值主要用于调试和监控，因为 `ThreadContext` 的 `EIP/RIP`（位置 2）通常指向 `BaseThreadStartThunk` / `BaseThreadInitThunk` 这类启动包装函数。\n3. **初始化 KTHREAD**：调用 `KeInitThread` 设置调度器层面的线程状态，包括内核栈、初始陷阱帧和初始切换现场。关键参数是：\n\t- `PspUserThreadStartup`：作为用户线程第一次被调度后进入的内核态启动例程，负责完成最后的内核侧初始化，然后返回用户态。\n\n> 这里的 `KeInitThread` 很关键，参考：[Windows 线程创建&#65288;02&#65289;&#65306;KTHREAD 初始化](/notes/n-6592c409b1a640c7848b3d4033762bb0/)\n\n这里还要补一层：此处 `ThreadContext->EIP/RIP`（位置 2）通常不是用户真正编写的线程函数（位置 1），而是系统的启动 `Thunk`。位置 1 会作为参数传给这些启动包装函数。\n\n`ThreadContext` 通常由 `BaseInitializeContext` 构造，位置 1 和位置 2 也在这里分开：\n\n![f3650411ad895ad338ded1fa0c9d372c&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/4a784931250000a3041b31cab5561c4d8619c24f61dcf936d03897782ce475fe.jpg)\n\n可以看到：\n1. 用户线程函数地址（位置 1）和传入参数分别放入 `EAX`、`EBX`。\n2. 构造完成后，`Context` 的 `EIP`（位置 2）指向系统启动 `Thunk`，而不是用户函数本身（位置 1）。\n\n**注意**：这里构造的 `Context` 不是线程切换时由 `KiSwapContext` 恢复的内核上下文；它会被内核用于构造用户态陷阱帧。初次返回 3 环前，`PspUserThreadStartup` 会把 `TrapFrame` 返回目标改为位置 3；位置 3 经 dispatcher/loader 路径完成初始化后，恢复到位置 2，最后由启动桩调用位置 1。\n\n---\n\n#### 系统线程初始化\n\n![788cc37d5e030f104adcfd7c1a9a6fd7&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/f20cefffdeccdf228ca398122bf766d076c3d3c36e8b3def8d4defca219df7f9.jpg)\n\n**逻辑说明**：当 `ThreadContext` 为 `NULL` 时，当前创建的是**内核态系统线程**：\n> 系统线程并非指系统进程中的线程，而是指专门执行内核态函数的线程。\n\n1. **设置系统线程标志**：通过 `PS_CROSS_THREAD_FLAGS_SYSTEM` 将线程标记为系统线程。该标志会影响线程生命周期中的异常处理、终止策略等行为。\n2. **设置启动地址**：直接将 `StartRoutine` 记录为内核态启动函数。\n3. **初始化 KTHREAD**：流程与用户线程类似，但这里使用 `PspSystemThreadStartup` 作为内核态启动例程，并且不需要 `ThreadContext` 和 `Teb`。\n\n\n> [!TIP]\n> 系统线程和用户线程两条路径的关键区别，在于 `KeInitThread` 的第三个参数是 `PspUserThreadStartup` 还是 `PspSystemThreadStartup`。这两个函数都是线程第一次被调度后进入的 0 环启动例程；前者负责修改陷阱帧然后返回用户态，后者则直接在内核态调用 `StartRoutine`。\n> 相关内容参考：[Windows 线程创建&#65288;04&#65289;&#65306;用户线程与系统线程启动](/notes/n-965b6f66f3814cca8f4d28e41e7d7d47/)\n\n---\n\n### 不归点：链入进程并启动 KTHREAD\n\n#### 进程终止状态二次检查\n\n![b69ebb9bead1831454d77f465f30f3b7&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/620a118b4de91965da136f06484114c5685ab7cc3398c5e6d6b24038c2af42b7.jpg)\n\n**逻辑说明**：获取进程排他锁后，再次检查进程是否已经进入删除或终止流程。这里的检查比段 6 更精确：\n\n- **进程标记检查**：`PS_PROCESS_FLAGS_PROCESS_DELETE` 表示进程已进入删除流程\n- **ExitProcess 竞态检查**：如果当前线程已被标记为 `TERMINATED`，且正在为**自己所属的同一个进程**创建用户态线程（`ThreadContext != NULL`），说明 `ExitProcess` 正在执行中——此时不应再创建新线程\n\n这是一个**双重检查（double-check）** 的应用：段 6 在无锁条件下快速失败；这里在持有排他锁后再次精确判断，用来消除 TOCTOU（Time-of-Check-Time-of-Use）竞态。\n\n---\n\n#### 链入进程线程链表与 KeStartThread\n\n![be2db3274f43357dbd5a0627d998d1f0&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/d1648b93dd3f4fc768570d3b56ce676c3f3b4f60c17688269e265838eb307a4a.jpg)\n\n**逻辑说明**：**这是线程创建过程中的“不归点”（point of no return）**。一旦执行到这里，线程就正式成为进程的一部分。此后即使发生失败，也不能再简单销毁线程对象，而要让它走 `PspExitThread` 的正常退出清理流程。\n\n1. **活跃线程计数递增**：保存旧值用于后续判断是否是进程的第一个线程\n2. **链入线程链表**：将线程的 `ThreadListEntry` 插入进程的 `ThreadListHead` 双向链表尾部\n3. **`KeStartThread`**：在调度器层面完成剩余初始化，例如优先级、亲和性等，使线程具备后续进入调度路径的条件。\n4. **释放锁和保护**：线程已经安全链入进程结构，可以释放排他锁和 Rundown Protection。\n\n这里的 `KeStartThread` 并不表示线程已经开始执行。它主要完成调度属性初始化，并把线程纳入进程/内核调度结构；真正进入 ready/runnable 路径要等后面的 `KeReadyThread`。\n\n```text\nKeInitThread  ->  State = Initialized\nKeStartThread ->  挂入 KPROCESS，继承调度属性\nKeReadyThread ->  进入 ready/runnable 调度路径\n```\n\n---\n\n### 创建通知与 Job 通知\n\n#### 首线程触发进程创建通知\n\n![be2785eb0df9b21ff497af09654472aa&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/6234be55b67974dc599fc32724a7a9ef8bdb4a86287d488d7006fc7ea6f4bffe.jpg)\n\n**逻辑说明**：如果这是进程中的**第一个线程**（`OldActiveThreads == 0`），则触发**进程创建通知**。原因是 Windows 中“创建进程对象”和“创建第一个线程”是两个独立步骤；只有拥有线程后，进程才真正具备运行能力。因此进程创建通知被延迟到首线程创建时触发。\n\n通知机制使用回调块数组（`PspCreateProcessNotifyRoutine`），每个已注册的回调（如杀毒软件驱动通过 `PsSetCreateProcessNotifyRoutine` 注册的）都会被调用，传递父进程 ID、新进程 ID 和创建标志 `TRUE`。\n\n> 内核里的进程/线程创建回调，本质上就是在这些关键创建节点向外部组件广播生命周期事件。\n\n---\n\n#### Job 完成端口通知\n\n![70ce960e25f6c45065aebf46030f8ff2&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/de880064534ed98e0f966ba669de30cab953c49c0bb48c34de674d84dfd38753.jpg)\n\n**逻辑说明**：如果进程关联了 **Job 对象**，并且该 Job 配置了完成端口用于接收通知，则在这里发送 `JOB_OBJECT_MSG_NEW_PROCESS` 消息。`PS_JOB_STATUS_NEW_PROCESS_REPORTED` 用来保证同一个进程只报告一次。\n\n> [!NOTE]\n> 代码注释提到，这个通知“本应在 `AddProcessToJob` 中完成”，但当时进程 ID 尚未分配，所以只能延迟到首线程创建时发送。这是典型的**初始化时序约束**带来的设计折中。\n\n\n---\n\n#### 线程创建通知回调\n\n![1276a7aef0872b0ebb047702395c62f2&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/ca9c01fe7a13efdeedcc2c0642859e62fdfe967427c309c2a70b382d3d0d5dfb.jpg)\n\n**逻辑说明**：这一段遍历所有通过 `PsSetCreateThreadNotifyRoutine` 注册的线程创建回调，并向每个回调传入进程 ID、线程 ID 和创建标志 `TRUE`。安全软件、调试器、ETW 等组件都可以依赖这类回调监控线程生命周期。\n\n> 内核里的进程/线程创建回调，本质上就是在这些关键创建节点向外部组件广播生命周期事件。\n---\n\n### 挂起、句柄与安全权限\n\n#### 引用计数与 CreateSuspended 挂起处理\n\n![7c67b843c606fe1f165188cc116e1855&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/1c8b38b4560147ca1e3b302e2ff47e816946a8c4db53fa996e3b8d8a38f6d11b.jpg)\n\n**逻辑说明**：\n\n1. **引用计数偏移加 2**：一份引用给线程自身（表示线程存活期间的自引用），另一份给即将创建的句柄。这确保在后续 `ObInsertObject`（会消耗一份引用）和最终返回后，引用计数仍然正确\n2. **挂起处理**：如果调用者要求以挂起状态创建线程，调用 `KeSuspendThread` 将其挂起。如果在挂起过程中线程已被标记为终止，则强制恢复——因为终止线程不能处于挂起状态，否则它永远无法完成退出\n\n**这里的逻辑是**：如果指定了 `CreateSuspended`，`PspCreateThread` 会调用 `KeSuspendThread`，以实现在线程初次调度时，等待某对象从而进入挂起状态。\n\n> [!NOTE] 线程的挂起和恢复原理\n> `KeSuspendThread` 和 `KeResumeThread` 是线程挂起函数`SuspendThread` 和恢复函数 `ResumeThread` 的核心逻辑实现。\n> 1. `KeSuspendThread` 函数会增加线程的 `SuspendCount`，并向线程插入一个内核 APC：\n> ![f8f8e9d1253e7f22476f60b0c6dee708&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/1a050da8f192ce04662d525682c2855e6e9df3e848e22e8c7ad8bef7415ab388.jpg)\n> 这个 APC 的 `NormalRoutine` 是 `KiSuspendThread`，核心逻辑是：\n> ![6335ead84d0af058a9745c8de9031505&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/9a345ae7d7a046e029d4813b7ce49112bb0d9ee1863bea9556eef9125cf25836.jpg)\n> 2. 用于恢复线程的 `KeResumeThread` 核心逻辑：\n> ![a6ac1acc6b0ebee56c8d184c64356863&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/ab90eb58bb27d54674db228b1ee9f622ba5d185641153dc8b06f88cc72c434d5.jpg)\n> \n> 核心思想：\n> 1. Windows 的等待关系挂在具体可等待对象的等待链表上。也就是说，挂起线程本质上是让线程等待某个对象，这里等待的是线程内置的 `SuspendSemaphore`。相关内容参考：[Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/)\n> 2. 这里利用 APC 机制，在目标线程自己的执行流中插入一个负责等待某对象的函数逻辑。相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)\n\n---\n \n#### 创建访问状态并插入对象\n\n![5ac007389bf3ff2d68b63cf39b9d28bf&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/5a68319308363c8f48ff47e458527476bb5d05c98cf0b056dfc98789c181c0ee.jpg)\n\n**逻辑说明**：这一段完成线程对象的安全访问状态建立，以及线程句柄的创建：\n\n1. **安全访问状态**：`SeCreateAccessStateEx` 的第二个进程参数决定安全主体。用户线程路径传当前线程所在进程，系统线程路径传目标进程；它会影响对象所有者和后续访问检查上下文。\n2. **`ObInsertObject`**：把线程对象插入当前进程的句柄表，并返回句柄值。这个过程会完成对象插入、访问检查和句柄分配。如果失败，线程会被标记为 `DEADTHREAD`，后续通过正常退出路径清理。\n3. **输出写入**：在 `try/except` 保护下把句柄和 CID 写回用户态缓冲区。如果写回失败（例如用户态内存已被释放），同样标记 `DEADTHREAD` 并关闭句柄。\n\n> [!WARNING]\n> `DEADTHREAD` 标志的作用是告诉调试子系统（Dbgk）不要为这个线程报告任何事件。这避免了调试器收到关于一个立即就要死亡的线程的虚假通知。\n\n\n\n> 4. 补充一点：如果有名字的话，该函数还会将内核对象插入到内核对象命名空间。参考：[Windows 内核路径解析&#65306;对象命名空间与 DeviceMap 机制](/notes/n-fd51c9c5b3534549885452c844b09c8e/) \n\n\n\n---\n\n#### 设置创建时间\n\n![7eb5c2c019df0fe7d97591b2be39daeb&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/406c6d94424c902c4e5cf063b7f6502c79fc9ade141f0c5f6c1840baa5f0992d.jpg)\n\n**逻辑说明**：记录线程的创建时间。这里的 `ASSERT` 用来确认时间戳高位没有占用保留标志位，因为 `PS_SET_THREAD_CREATE_TIME` 可能会在高位编码额外信息。该时间戳可用于性能监控、资源统计和诊断。\n\n---\n\n#### 计算 GrantedAccess\n\n![beecd8a1a3fe84efdc0df7bcba9483a4&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/ec4970879d9ceccb1a51127e1cbdceb5dc9c2878451f10ba1b96aa3e2fd3152a.jpg)\n\n**逻辑说明**：这一段为线程计算**所属进程对该线程对象拥有的最大访问权限**（`GrantedAccess`）：\n\n1. 获取线程对象的安全描述符\n2. 以所属进程的主令牌（Primary Token）作为安全主体，对线程对象执行 `MAXIMUM_ALLOWED` 访问检查\n3. 结果存储在 `Thread->GrantedAccess` 中——当进程内的其他线程通过 `OpenThread` 打开此线程时，该值被用于快速授权判断\n4. **保底权限**：无论安全检查结果如何，进程始终拥有对自己线程的 `TERMINATE`、`SET_INFORMATION`、`QUERY_INFORMATION` 权限。这确保了进程总能管理自己的线程\n\n如果线程已被标记为 `DEADTHREAD`，直接授予 `THREAD_ALL_ACCESS`，因为它马上就要退出，安全检查无实际意义。\n\n---\n\n### 进入调度路径\n\n#### KeReadyThread 与创建返回\n\n![2f9c595c3fececd08db81223a11dbb34&#95;MD5&#46;jpg](/notes/n-928a46ce58c649e289fbf643a9baabe5/media/f86631d4fe675d1c29453cfaea6a0f7fe9eecfd67044ef764f0f67667a410f26.jpg)\n\n**最后的关键一步**：调用 `KeReadyThread`，把线程从创建初始化阶段交给调度器，使其进入 ready/runnable 调度路径。\n\n如果前面因为 `CreateSuspended` 调用了 `KeSuspendThread`，线程虽然仍会被 `KeReadyThread` 放入调度体系，但它第一次真正运行时会先处理挂起 APC，并等待 `SuspendSemaphore`，因此线程不会真正执行。\n> 相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)\n\n最后释放段 14 中添加的一份额外引用，保留句柄持有的引用和线程自身的生命周期引用，然后返回状态码。\n\n> [!IMPORTANT]\n> 即使线程已经被标记为 `DEADTHREAD`，这里也仍然要调用 `KeReadyThread`。原因是：过了“不归点”的线程必须被调度起来，才能执行自己的退出清理路径（`PspExitThread`）。创建失败但已经链入进程的线程，会在首次运行时发现自己是 `DEADTHREAD`，然后走终止清理流程。\n\n---\n\n### 用户线程与系统线程对比\n\n| 特性                     | 用户态线程                                                                 | 系统线程                                                                  |\n| ---------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------- |\n| **调用入口**               | `NtCreateThread`                                                      | `PsCreateSystemThread`                                                |\n| **区分标志**               | `ThreadContext != NULL`、`StartRoutine == NULL`、`StartContext == NULL` | `ThreadContext == NULL`、`StartRoutine != NULL`、`StartContext != NULL` |\n| **TEB**                | `MmCreateTeb` 创建                                                      | 无                                                                     |\n| **内核启动例程**             | `PspUserThreadStartup`                                                | `PspSystemThreadStartup`                                              |\n| **所属进程/执行入口**          | 目标进程 + 用户态启动路径                                                       | 默认 `System` 或指定目标进程；执行入口仅内核态                                      |\n| **`CrossThreadFlags`** | 无特殊标志                                                                 | `PS_CROSS_THREAD_FLAGS_SYSTEM`                                        |\n| **启动地址来源**             | `ThreadContext->EIP/RIP`（位置 2）                                     | `StartRoutine` 参数                                                     |\n",
+  "id": "928a46ce-58c6-49e2-89fb-f643a9baabe5",
+  "metadata": {
+    "aliases": [
+      "NtCreateThread 与 PspCreateThread：线程创建主流程",
+      "NtCreateThread",
+      "PspCreateThread"
+    ],
+    "tags": [
+      "os/windows/thread",
+      "os/windows/process",
+      "reverse/windows",
+      "arch/x86"
+    ],
+    "title": "Windows 线程创建（01）：线程创建主流程",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "1a050da8f192ce04662d525682c2855e6e9df3e848e22e8c7ad8bef7415ab388.jpg",
+    "1c8b38b4560147ca1e3b302e2ff47e816946a8c4db53fa996e3b8d8a38f6d11b.jpg",
+    "375873cf2f701adacf3213a1372596304497a3a2fa65005191b43777e83ee24b.jpg",
+    "3aa94e9fe3ded2bd94d88dd88fbc2998ef89b61fc49f576ea4d50332a18a19d9.jpg",
+    "406c6d94424c902c4e5cf063b7f6502c79fc9ade141f0c5f6c1840baa5f0992d.jpg",
+    "4a784931250000a3041b31cab5561c4d8619c24f61dcf936d03897782ce475fe.jpg",
+    "5a68319308363c8f48ff47e458527476bb5d05c98cf0b056dfc98789c181c0ee.jpg",
+    "620a118b4de91965da136f06484114c5685ab7cc3398c5e6d6b24038c2af42b7.jpg",
+    "6234be55b67974dc599fc32724a7a9ef8bdb4a86287d488d7006fc7ea6f4bffe.jpg",
+    "86498b1fc58334d7a12cae92bd688548ca9700532b3871bb71691cab5962e521.jpg",
+    "9a345ae7d7a046e029d4813b7ce49112bb0d9ee1863bea9556eef9125cf25836.jpg",
+    "9c4411d7030310865b5e721ba6d1b7722c454b56d3bd68e62d80e3f9372ce584.jpg",
+    "a436a4f8e1fe3f75db664b2fdaff0bf2204d447b138b7abb02dc234d320c6e31.jpg",
+    "ab90eb58bb27d54674db228b1ee9f622ba5d185641153dc8b06f88cc72c434d5.jpg",
+    "b23b64c8b1c4100fdd4f47a93bd6bddd5d5f43b5c2be419b6e3969604308d910.jpg",
+    "ca9c01fe7a13efdeedcc2c0642859e62fdfe967427c309c2a70b382d3d0d5dfb.jpg",
+    "cc3df4e16e6b42f0dc09c6f60a85897fbe60d19f4b61ff97882ce3012508feb3.jpg",
+    "d1648b93dd3f4fc768570d3b56ce676c3f3b4f60c17688269e265838eb307a4a.jpg",
+    "de880064534ed98e0f966ba669de30cab953c49c0bb48c34de674d84dfd38753.jpg",
+    "ec4970879d9ceccb1a51127e1cbdceb5dc9c2878451f10ba1b96aa3e2fd3152a.jpg",
+    "ef216b7b66cc698d25597d30fc0fb0edbb7d0fb10e98278380d13ae3ccd36856.jpg",
+    "f20cefffdeccdf228ca398122bf766d076c3d3c36e8b3def8d4defca219df7f9.jpg",
+    "f86631d4fe675d1c29453cfaea6a0f7fe9eecfd67044ef764f0f67667a410f26.jpg",
+    "fcd27570167578d7c674b09345f260de5e975c0218c8a30f7e27de31342429fd.jpg"
+  ],
+  "url": "/notes/n-928a46ce58c649e289fbf643a9baabe5/"
+}

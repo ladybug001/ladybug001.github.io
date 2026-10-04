@@ -1,0 +1,59 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-56c8898bc8f788b2ff26",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-a95e9213afcb7a8bc8d3",
+      "kind": "heading",
+      "offset": 102
+    },
+    {
+      "id": "h-3ef5a531212837fd11c6",
+      "kind": "heading",
+      "offset": 325
+    },
+    {
+      "id": "h-dcdcf73609ac274df245",
+      "kind": "heading",
+      "offset": 1217
+    },
+    {
+      "id": "h-bc41143e8baa9e766c45",
+      "kind": "heading",
+      "offset": 3468
+    },
+    {
+      "id": "h-f8efeb33c786f261e12a",
+      "kind": "heading",
+      "offset": 4058
+    },
+    {
+      "id": "h-e8ed3e06422734e84a5e",
+      "kind": "heading",
+      "offset": 8215
+    },
+    {
+      "id": "h-43c2d49cde01a737f985",
+      "kind": "heading",
+      "offset": 8636
+    }
+  ],
+  "body": "# C 语言模拟 Windows 线程切换\n\n本篇用一份极简的 C 代码，剥离 TCB、调度队列、状态机等一切外围概念，**只聚焦线程切换的物理本质——伪造堆栈 + 交换 ESP。**\n\n### 核心思想\n\n1. 只有两个\"线程\"做乒乓式交替切换，不需要任何调度器。其中一个是系统本身的主线程，另一个是我们额外添加的，用一片全局数组充当其私有堆栈。\n2. 线程切换函数分两层：第一层负责 `pushad`/`pushfd` 保存现场；第二层是核心逻辑，只做一件事——**交换 ESP**。\n3. 在数组中预先构造好第二个线程的堆栈调用链，让 CPU 切过去时以为它\"刚好在第二层被挂起\"，能沿着伪造的调用链一路返回到工作函数。\n\n### 两层切换函数\n\n切换函数拆成两层，各司其职：\n\n**第一层：保护/恢复现场**\n\n```c\nvoid __declspec(naked) switch_layer1() {\n    __asm {\n        pushfd          // 保存标志寄存器\n        pushad          // 保存 8 个通用寄存器\n        call switch_layer2   // 调用第二层，执行 ESP 交换\n        popad           // 切回来后恢复寄存器\n        popfd\n        ret             // 返回到调用点\n    }\n}\n```\n\n**第二层：交换 ESP（核心）**\n\n```c\nvoid __declspec(naked) switch_layer2() {\n    __asm {\n        mov esp_save, esp       // 1. 保存当前线程的 ESP\n        mov eax, esp_restore    // 2. 取出目标线程的 ESP\n        mov esp, eax            //    覆盖物理 ESP（此刻已跳到另一片内存）\n        \n        // 3. 互换 esp_save 与 esp_restore，为下一次切换做准备\n        mov ecx, esp_save\n        mov esp_save, eax\n        mov esp_restore, ecx\n        \n        ret                     // 从目标线程的栈顶弹出返回地址，跳过去执行\n    }\n}\n```\n\n> [!important] 线程切换的物理本质\n> 所谓\"线程切换\"，就是**更换 CPU 的 ESP 寄存器**。ESP 一换，栈上的返回地址、寄存器快照全都变了，CPU 的执行流自然就迁移到了另一个\"线程\"。\n\n### 在数组中构造堆栈调用链\n\n第二个线程从未被 CPU 执行过，没有真实的调用历史。所以我们必须在数组中**伪造一套完整的堆栈快照**，让它看起来就像\"刚好在 `switch_layer2` 内部被挂起\"一样。\n\n堆栈调用链的目标是：**当前执行位置是第二层，上一个调用链是第一层，再上一个调用链是工作函数。**\n\n用一个结构体精确描述栈中每个位置存放的内容：\n\n```c\nstruct ThreadContext {\n    // ---- [低地址，当前栈顶 ESP] ----\n    unsigned int layer1_resume_eip;  // switch_layer2 的 ret 弹出此值 → 跳到第一层的 popad 处\n    unsigned int edi;                // pushad 保存的 8 个通用寄存器\n    unsigned int esi;\n    unsigned int ebp;\n    unsigned int esp_dummy;\n    unsigned int ebx;\n    unsigned int edx;\n    unsigned int ecx;\n    unsigned int eax;\n    unsigned int eflags;             // pushfd 保存的标志寄存器\n    unsigned int worker_func_eip;    // 第一层的 ret 弹出此值 → 跳到工作函数\n    unsigned int dummy_ret;          // 工作函数的伪造返回地址（占位）\n    // ---- [高地址，栈底] ----\n};\n```\n\n然后将结构体直接映射到数组尾部，填入初始值：\n\n```c\n#define STACK_SIZE 16384\nunsigned char thread_stack[STACK_SIZE];\n\n// 将结构体指针对准数组尾部（栈底）\nThreadContext* ctx = (ThreadContext*)(thread_stack + STACK_SIZE - sizeof(ThreadContext));\n\nctx->layer1_resume_eip = <第一层 popad 指令的地址>;  // 第二层 ret 后跳到这里\nctx->edi = ctx->esi = ctx->ebp = ... = 0;            // 寄存器初始值全部置零\nctx->eflags = 0x202;                                  // 开启中断标志\nctx->worker_func_eip = (unsigned int)worker_func;     // 第一层 ret 后跳到工作函数\nctx->dummy_ret = 0;                                   // 占位\n\n// 将数组中构造好的栈顶地址赋给 esp_restore，等待第一次切换\nesp_restore = (unsigned int)ctx;\n```\n\n构造完毕后，`thread_stack` 数组的内存布局如下（从低地址到高地址）：\n\n```\n         thread_stack 数组\n  ┌─────────────────────────────────┐ ← thread_stack[0]（低地址）\n  │          （未使用空间）           │\n  │              ...                │\n  ├─────────────────────────────────┤ ← ctx / esp_restore 指向此处\n  │  layer1_resume_eip  ──→ popad  │ ◄ switch_layer2 的 ret 弹出\n  │  EDI = 0                       │\n  │  ESI = 0                       │\n  │  EBP = 0                       │\n  │  ESP = 0  (占位)               │  ◄ pushad 保存的 8 个寄存器\n  │  EBX = 0                       │\n  │  EDX = 0                       │\n  │  ECX = 0                       │\n  │  EAX = 0                       │\n  │  EFLAGS = 0x202                │ ◄ pushfd 保存的标志寄存器\n  │  worker_func_eip ──→ worker    │ ◄ switch_layer1 的 ret 弹出\n  │  dummy_ret = 0                 │ ◄ 工作函数的伪造返回地址\n  └─────────────────────────────────┘ ← thread_stack[STACK_SIZE]（高地址 / 栈底）\n```\n\n### 切换执行流程\n\n当主线程第一次调用 `switch_layer1()` 时，整个切换链条如下：\n\n```\n主线程调用 switch_layer1()\n  ├─ pushfd, pushad            → 主线程寄存器压入【主线程自己的栈】\n  ├─ call switch_layer2\n  │    ├─ 保存主线程 ESP 到 esp_save\n  │    ├─ 将 esp_restore 加载到 ESP   ← 此刻 ESP 指向 thread_stack 数组！\n  │    └─ ret                  → 弹出 layer1_resume_eip → 跳到第一层的 popad\n  ├─ popad                     → 从数组中弹出伪造的 8 个寄存器\n  ├─ popfd                     → 从数组中弹出伪造的 EFLAGS\n  └─ ret                       → 弹出 worker_func_eip → 跳到 worker_func() 开始执行！\n```\n\n工作函数内部再次调用 `switch_layer1()` 时，就是真实的现场保存了——把工作线程的寄存器压入 `thread_stack`，然后切回主线程的栈，两个线程从此交替运行。\n\n### 完整代码\n\n```cpp\n#include <stdio.h>\n#include <windows.h>\n\n// ============================================================================\n// 全局数据\n// ============================================================================\n\n#define STACK_SIZE  16384                    // 第二个线程的堆栈大小 (16KB)\nunsigned char  thread_stack[STACK_SIZE];     // 第二个线程的堆栈数组\nunsigned int   esp_save = 0;             // 切换时保存当前线程的 ESP\nunsigned int   esp_restore = 0;             // 切换时恢复目标线程的 ESP\n\n// ============================================================================\n// 堆栈调用链结构体\n// 与 switch_layer1 中 pushfd / pushad 的压栈顺序严格对应，\n// 用来在 thread_stack 数组中精准构造第二个线程的初始调用链。\n// ============================================================================\n\nstruct ThreadContext {\n\t// ---- 低地址 (栈顶, ESP 指向此处) ----\n\tunsigned int layer1_resume_eip;     // switch_layer2 ret → 跳到第一层 popad 处\n\tunsigned int edi;                   // ┐\n\tunsigned int esi;                   // │\n\tunsigned int ebp;                   // │\n\tunsigned int esp_dummy;             // ├─ pushad 压入的 8 个通用寄存器\n\tunsigned int ebx;                   // │\n\tunsigned int edx;                   // │\n\tunsigned int ecx;                   // │\n\tunsigned int eax;                   // ┘\n\tunsigned int eflags;                // pushfd 压入的标志寄存器\n\tunsigned int worker_func_eip;       // switch_layer1 ret → 跳到工作函数\n\tunsigned int dummy_ret;             // 工作函数的伪造返回地址 (占位)\n\t// ---- 高地址 (栈底) ----\n};\n\n// ============================================================================\n// 第二层 (核心)：交换 ESP\n// ============================================================================\n\nvoid __declspec(naked) switch_layer2() {\n\t__asm {\n\t\tmov esp_save, esp           // 保存当前线程 ESP\n\t\tmov eax, esp_restore        // 取出目标线程 ESP\n\t\tmov esp, eax                // 切换到目标线程的栈\n\n\t\tmov ecx, esp_save           // 互换 esp_save 与 esp_restore，\n\t\tmov esp_save, eax           // 为下一次反向切换做准备\n\t\tmov esp_restore, ecx\n\n\t\tret\n\t}\n}\n\n// ============================================================================\n// 第一层：保存/恢复寄存器现场，调用第二层\n// ============================================================================\n\nvoid __declspec(naked) switch_layer1() {\n\t__asm {\n\t\tpushfd\n\t\tpushad\n\t\tcall switch_layer2          // 进入第二层执行 ESP 交换\n\t\tpopad                       // 切回来后从这里继续，恢复现场\n\t\tpopfd\n\t\tret\n\t}\n}\n\n// ============================================================================\n// 工作函数 (第二个线程的业务逻辑)\n// ============================================================================\n\nvoid worker_func() {\n\tint count = 0;\n\twhile (1) {\n\t\tprintf(\"[Worker Thread] is running... count = %d\\n\", ++count);\n\t\tSleep(500);\n\t\tswitch_layer1();            // 切换回主线程\n\t}\n}\n\n// ============================================================================\n// 主函数\n// ============================================================================\n\nint main() {\n\tprintf(\"[Main Thread] initializing thread stack...\\n\");\n\n\t// --- 在数组中构造第二个线程的堆栈调用链 ---\n\tThreadContext* ctx = (ThreadContext*)(thread_stack + STACK_SIZE - sizeof(ThreadContext));\n\n\t// 计算第一层 call switch_layer2 之后 popad 指令的地址\n\tunsigned char* p = (unsigned char*)switch_layer1;\n\tif (*p == 0xE9)                 // 处理 Debug 模式 MSVC 的 JMP Thunk\n\t\tp += 5 + *(int*)(p + 1);\n\tp += 7;                         // pushfd(1) + pushad(1) + call(5) = 7 字节偏移\n\n\tctx->layer1_resume_eip = (unsigned int)p;               // switch_layer2 ret 后跳到 popad\n\tctx->edi = 0;\n\tctx->esi = 0;\n\tctx->ebp = 0;\n\tctx->esp_dummy = 0;\n\tctx->ebx = 0;\n\tctx->edx = 0;\n\tctx->ecx = 0;\n\tctx->eax = 0;\n\tctx->eflags = 0x00000202;                           // IF 中断标志位置位\n\tctx->worker_func_eip = (unsigned int)worker_func;       // switch_layer1 ret 后跳到工作函数\n\tctx->dummy_ret = 0;\n\n\tesp_restore = (unsigned int)ctx;\n\n\t// --- 主线程运行循环，与工作线程交替执行 ---\n\tint main_count = 0;\n\twhile (main_count < 5) {\n\t\tprintf(\"[Main Thread] is running... count = %d\\n\", ++main_count);\n\t\tSleep(500);\n\t\tswitch_layer1();            // 切换到工作线程\n\t}\n\n\tprintf(\"[Main Thread] execution finished.\\n\");\n\treturn 0;\n}\n\n```\n\n运行截图：\n![f0558d88ff0e8b1c60965a14c4752244&#95;MD5&#46;jpg](/notes/n-dc26a1ccb21c475a91f966f52af7ca3a/media/921a3904176b4b1e61fb14725a320abb84c5a9c41514f5962f513e337abd8bfb.jpg)\n### 核心机理总结\n\n基于本篇 C 语言模拟的代码流转，可以提炼出 Windows 线程调度的三个底层真相：\n\n1. **主动切换**：线程的切换都是主动的，主动调用线程切换的函数，而不是\"被迫的\"。\n2. **堆栈驱动**：现代操作系统的线程切换并不依赖繁重的 `TSS`（任务状态段）硬件机制保存上下文（关于 Windows 对 TSS 的实际应用，参见 [Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/#h-14c6040b881fd94b966c)），而是**以线程私有堆栈为核心媒介**，辅以软件层面的主动 `push/pop` 来保护寄存器。\n3. **物理本质**：在内存抽象层面上，**所谓的“线程切换”，其本质就是更换底层 CPU 的 `ESP` 寄存器（栈顶指针）。** 只要栈切换了，指令执行流（函数调用链）也就顺理成章地发生迁移。\n\n---\n\n## 相关链接\n\n- [Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)——探究真实内核在 `SwapContext` 中的设计\n",
+  "id": "dc26a1cc-b21c-475a-91f9-66f52af7ca3a",
+  "metadata": {
+    "tags": [
+      "os/windows/thread",
+      "arch/x86",
+      "reverse/windows",
+      "lang/c"
+    ],
+    "title": "C 语言模拟 Windows 线程切换"
+  },
+  "resources": [
+    "921a3904176b4b1e61fb14725a320abb84c5a9c41514f5962f513e337abd8bfb.jpg"
+  ],
+  "url": "/notes/n-dc26a1ccb21c475a91f966f52af7ca3a/"
+}

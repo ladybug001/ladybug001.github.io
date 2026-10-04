@@ -1,0 +1,49 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3739ef5d846ac709e726",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-392f139cd3c3a8ec98d7",
+      "kind": "heading",
+      "offset": 34
+    },
+    {
+      "id": "h-97fb146bacde8db9ed32",
+      "kind": "heading",
+      "offset": 203
+    },
+    {
+      "id": "h-82afeea461bb94f10549",
+      "kind": "heading",
+      "offset": 701
+    },
+    {
+      "id": "h-053f56c880ccca6dab89",
+      "kind": "heading",
+      "offset": 1000
+    },
+    {
+      "id": "h-eecaabf44c9cd4430942",
+      "kind": "heading",
+      "offset": 1560
+    },
+    {
+      "id": "h-a2c130eb7bf407ad33d4",
+      "kind": "heading",
+      "offset": 1830
+    }
+  ],
+  "body": "# 内存 Dump 与 IAT 修复技术\n\n## 为什么要 Dump\n\n如果软件加壳，就不能静态分析，可以利用执行时会解壳的特性，将内存中已经解壳的数据保存为文件，进而进行静态分析。\n\n**简单加壳实现**：\n1. 对代码节区进行异或等加密。\n2. 替换原始 OEP，运行我们的 ShellCode，在内存中动态解密还原代码。\n3. 然后跳到原始 OEP 执行程序逻辑。\n\n### Dump 的时机：OEP\n\nDump 必须停在程序的 OEP（原始入口点）进行，不能在程序运行后执行。\n\n若在运行期 Dump，全局数据已经被修改（数据污染）。例如：\n\n```cpp\n#include <iostream>\n\nint gNumber = 200; // 停在 OEP 时，数据段值为 200\n\nint main(){\n    printf(\"计算后的结果：%d\\n\", 1000 / (gNumber - 100));\n    gNumber = 100; // 运行后被修改为 100\n    system(\"pause\");\n}\n```\n\n如果在 `gNumber` 变为 `100` 后 Dump，生成的程序数据段初始值即为 `100`。下次运行该 Dump 程序时，`gNumber - 100 = 0` 会直接触发除零异常。\n\n> [!tip] OEP 定位技巧\n> 加密壳在内存中解密原始代码后，通常调用 `VirtualProtect` 将对应节（Section）的内存属性恢复为可执行。对 `VirtualProtect` 下断点是定位 OEP 的常用方法。\n\n## 为什么要修复 IAT\n\nPE 文件的导入表（IAT）初始存储指向函数名称的指针（RVA）。程序加载时，Windows 加载器会将真实的 API 绝对内存地址填入 IAT。\n> IAT 在 PE 加载前后的内容变化，见 [IAT 加载前后的变化](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/#h-61e42f6f605d3dbbfcde)。\n\n直接 Dump 出的程序，IAT 中的内容是特定环境下的绝对地址，不同系统版本或 ASLR 机制会导致 DLL 基址动态变化，再次运行时会因调用地址错误崩溃，因此 Dump 后必须重建标准的 IAT。\n\n### IAT 修复原理与实战\n\n对于无壳程序，Dump 工具可以通过 INT 重构 IAT；而加壳程序的 PE 结构被破坏，工具无法自动处理，需手工修复。\n> INT 与 IAT 的结构及对应关系，见 [INT 与 IAT 的关系](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/#h-7f9074eec0dc8c304a4e)。\n\n\n**简单 IAT 加密实现**：\n1. 扫描原始文件，记录 IAT 表相关数据的位置及内容。\n2. 清空文件中的 IAT 表相关数据。\n3. 替换原始 OEP，执行我们的 ShellCode。\n4. ShellCode 获取第 1 步记录的数据，寻址系统 API 的真实内存地址并填入 IAT 表中对应位置。也可以为每个 API 生成中转函数（内部包含花指令混淆），然后填入 IAT 表中，执行时跳转至真实 API 地址。\n\n\n**常规 IAT 修复工具（如 ImportREC / Scylla）流程**：\n\n1. 附加运行中的程序。\n2. 获取程序 OEP 位置。\n3. 定位 IAT 在内存中的起始位置与大小。\n4. 读取 IAT 中地址，并判断属于哪个 DLL 及其名称。\n5. 重建导入表结构，并写入被修复的 PE 文件。\n\n#### 疑难场景：VMP 导入表加密\n\nVMP 会将正常的 API 调用替换为经其虚拟机中转的乱序调用。\n\n**修复步骤**：\n\n1. **还原调用**：通过插件将 VMP 中转调用还原为直接调用（`call` 绝对地址），或直接还原为通过 IAT 的间接调用（若已还原为间接调用，可跳过第 2 步）。\n2. **修改调用方式**：使用 Universal Import Fixer 等工具将直接调用修改为间接调用。\n3. 执行 Dump。\n4. 使用 ImportREC 或 Scylla 修复 IAT（OEP 需填写 RVA）。\n\n#### 疑难场景：Dump 后图标丢失\n\n内存展开时 `.data` 段的大小可能与文件中不一致，导致后续的 `.rsrc`（资源段）发生偏移。由于 PE 头指向资源的指针未同步改变，系统无法加载图标。\n\n**解决方法**：使用 PE 工具修正 `Section Headers` 中 `.rsrc` 的虚拟大小和偏移，并同步修正 `Data Directory` 中的 `Resource Directory RVA`。\n\n\n\n> [!warning] 避坑\n> 修复 IAT 时容易遇到环境兼容性与权限故障：\n> - **权限问题**：若 ImportREC 无法附加目标进程，需以**管理员权限**运行。\n> - **系统兼容性**：Win10 环境下，ImportREC 和 Scylla 易出现进程获取失败、函数解析错误或修复后无法跨设备运行的问题。建议在 **Win7 虚拟机** 内配合管理员权限进行 Dump 与修复。\n\n",
+  "id": "38c4387a-e066-47ce-b7af-501ef428d8c8",
+  "metadata": {
+    "tags": [
+      "reverse/windows"
+    ],
+    "title": "内存 Dump 与 IAT 修复"
+  },
+  "resources": [],
+  "url": "/notes/n-38c4387ae06647ceb7af501ef428d8c8/"
+}

@@ -1,7 +1,9 @@
 # Local publication contract
 
 This is a content/conversion/build architecture, not a Theme, page layout,
-navigation or visual design. No production workflow has been activated.
+navigation or visual design. Stack now has an isolated local renderer in `site/`
+(see [preview instructions](hugo-stack.md)). Production uses a separate reviewed
+Pages workflow and `publication/current/` public hand-off.
 
 ## Source and directory ownership
 
@@ -15,7 +17,7 @@ navigation or visual design. No production workflow has been activated.
 | `.generated/` | Disposable adapter/materialization results | Never; generated |
 | `.build/` | Isolated test/build output, including `public/` | Never; generated |
 | `publication/fixture/` | Deterministic synthetic two-page fixture | Rebuild with its generator |
-| Future reviewed `publication/snapshot/` | Approved public portable snapshot for CI | Replace by reviewed generation, never hand-maintain |
+| `publication/current/` | Approved portable snapshot, public presentation metadata and receipt for CI | Replace by reviewed generation, never hand-maintain |
 | Future project `config/`, `layouts/`, `assets/`, `static/`, `data/` | Site configuration, render adapters, processed assets, copied assets and generated public indices | Project-level extension points; not a selected design |
 
 Hugo `content/` contains generated Leaf Page Bundles, not a second note library.
@@ -176,8 +178,8 @@ explicit, separately scoped history/cache operation.
 
 Current snapshots are `validation_only: true`, `deployable: false`. Hashes prove
 integrity/repeatability, **not** privacy review or authority to publish. The current
-repository allowlist admits only technical files and the exact synthetic fixture.
-Real snapshots cannot be added until that policy is explicitly reviewed.
+reviewed repository allowlist also admits the selected site source files and
+exact generated public hand-off, following the owner's deployment approval.
 
 After content approval and renderer/Theme selection, the production contract is:
 
@@ -197,8 +199,9 @@ After content approval and renderer/Theme selection, the production contract is:
    before the first production push, and guard stale main revisions from deployment.
 5. Deploy through Actions, not by checking in a locally built `public/` tree.
 
-No deploy Action, artifact upload, Discussions setup or Giscus script has been
-activated. Giscus should be a disabled project-level adapter, not part of note
+The separate `hugo-pages.yml` now builds and deploys the approved public hand-off;
+only its deploy job receives Pages/OIDC rights. Discussions/Giscus remain disabled.
+Giscus should be a project-level adapter, not part of note
 conversion. Bind it preferably to `specific` stable term `note:<UUID>`; pathname
 is acceptable only while routes stay immutable, since redirects do not migrate
 Discussions. Title and URL changes must not silently create a different comment

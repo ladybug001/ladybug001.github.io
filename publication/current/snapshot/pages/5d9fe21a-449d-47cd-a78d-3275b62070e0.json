@@ -1,0 +1,77 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-f7746ad5284ae2c615cc",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-2838a8043108c24b66ca",
+      "kind": "heading",
+      "offset": 126
+    },
+    {
+      "id": "h-1834f4c753ef347c935f",
+      "kind": "heading",
+      "offset": 305
+    },
+    {
+      "id": "h-0ec1625f36e7665ffa78",
+      "kind": "heading",
+      "offset": 699
+    },
+    {
+      "id": "h-01e4d5b431b3c7437c24",
+      "kind": "heading",
+      "offset": 1211
+    },
+    {
+      "id": "h-670d5a6d37594b4cb9ad",
+      "kind": "heading",
+      "offset": 2034
+    },
+    {
+      "id": "h-d4739e42628e9427e36e",
+      "kind": "heading",
+      "offset": 3047
+    },
+    {
+      "id": "h-44be59e2bc43394655f8",
+      "kind": "heading",
+      "offset": 3524
+    },
+    {
+      "id": "h-4fa3593f2ff9f174e2eb",
+      "kind": "heading",
+      "offset": 3541
+    },
+    {
+      "id": "h-d876128af5b21830df78",
+      "kind": "heading",
+      "offset": 3830
+    },
+    {
+      "id": "h-20b1758b1f56e1e42199",
+      "kind": "heading",
+      "offset": 4408
+    },
+    {
+      "id": "h-abddae07da212013bedc",
+      "kind": "heading",
+      "offset": 5561
+    }
+  ],
+  "body": "# V86 与 NTVDM 原理\n\n本文从 x86 平台的软件演进路径出发，探讨 DOS 和 Win16 程序在现代 Windows 保护模式下运行的兼容层机制（如 V86、NTVDM 与 WOW），梳理底层执行模型的差异。\n\n## 程序执行模型的演进\n\n从 x86 平台的软件发展来看，程序执行模型经历了以下阶段：DOS（如 MS-DOS）→ Win16 → Win32 → Win64。其中 DOS 和 Win16 程序基于实模式或 16 位的受保护模型运行；而现代的 Win32 和 Win64 程序则运行在保护模式或长模式的用户态中，具备完善的进程隔离与虚拟内存保护。\n\n### DOS 程序的裸机模型\n\nDOS 程序面向 DOS 环境，通常通过 DOS / BIOS 中断、实模式内存模型、端口 I/O 等方式与系统交互。它不依赖 Windows API。\n\n早期 DOS / MS-DOS 程序以 8086 兼容的实模式模型为基础。典型特征是：\n\n- 16 位寄存器\n- 实模式（Real Mode）\n- 1 MB 地址空间\n- 段:偏移寻址，例如 CS:IP、DS:SI\n- 可以直接访问物理内存\n- 可以调用 BIOS/DOS 中断，例如 `int 10h`、`int 21h`\n- 可以直接操作硬件端口\n- 没有进程隔离、权限隔离、虚拟内存保护\n\n此类程序默认具有对底层硬件的最高控制权，可无限制地访问物理内存、端口及硬件中断。\n\n现代 Windows 的程序不具备这种模型，所以不能把 DOS 程序直接当作普通 Win32 程序运行。\n\n### Win16 程序的16位保护模式\n\n普通的 DOS 程序在实模式下运行，而主流的 Win16 程序（自 Windows 3.x 时代起）虽然建立在 DOS 之上，但已转向了受操作系统管控的**16位保护模式**。Win16 程序本身不是普通 DOS 程序，它依赖 Win16 API、Windows 消息机制和 16 位 Windows 执行模型，无法脱离 Windows 环境独立运行。\n\n此处的保护模式主要指分段机制，但指令级的运行逻辑与 32 位保护模式仍有很大差异：例如仍使用段:偏移方式寻址、部分指令的操作数宽度和寻址模式不同等，因此无法在现代 Windows 上直接运行。\n>相关内容参考：[x86 保护模式分段机制 &#40;MOC&#41;](/notes/n-591f04ba95784267982ebc62f2b0c04d/)\n\n正是因为这种 16 位到 32 位的指令执行模型存在巨大鸿沟，Win16 程序无法像 32 位程序在 64 位系统上（利用 WOW64 兼容 x86-64 指令集共性）那样简单运行，它不仅需要 API 转译，还需要特殊的虚拟机环境（详情见后文 WOW 与 NTVDM 章节）。\n\n### 执行模型的核心差异\n\n通过可执行文件的头部结构判断一个 `.exe` 到底是 DOS、Win16 还是 Win32 程序。\n\n早期 DOS 可执行文件以 `MZ` 作为标志性头部。微软为了向下兼容，在后续 Windows 可执行格式中继续保留了 DOS 兼容结构：\n\n- DOS 程序：典型 `MZ` 可执行文件。\n- Win16 程序：常见为 `NE`（New Executable）格式。\n- Win32 / Win64 程序：现代 Windows 使用 `PE`（Portable Executable）格式。\n\n| 类型       | 主要依赖                   | 典型运行模型               | 在 32 位 Windows NT/XP 中的承接 |\n| :------- | :--------------------- | :------------------- | :------------------------ |\n| DOS 程序   | DOS / BIOS 中断、实模式模型    | 实模式或 V86 模拟出的 DOS 环境 | `NTVDM`（NT Virtual DOS Machine） / DOS VDM |\n| Win16 程序 | Win16 API、Windows 消息机制 | 16 位 Windows 应用模型    | `NTVDM` + `WOW`           |\n| Win32 程序 | Win32 API              | 32 位保护模式用户态          | 原生 Win32 子系统              |\n| Win64 程序 | Win64 API              | 64 位用户态              | 原生 64 位 Windows           |\n\n## V86 模式：保护模式下的实模式沙箱\n\n现代 CPU 仅在启动初期（POST，Power-On Self-Test / 引导阶段）处于实模式，随后由操作系统切换至保护模式。\n> 相关参考：[x86 裸机实验&#65306;实模式进入保护模式](/notes/n-b8281eab11a94cc19572b938dead1e60/)\n\n保护模式下运行实模式程序的需求，催生了 V86 模式。\n\n虚拟 8086 模式（Virtual 8086 Mode, V86 / VM86）是 80386 以后 IA-32 保护模式提供的一种特殊执行状态，目标是在受保护的系统中运行 8086 风格的实模式程序。\n> 判断是否处于 V86，关键看 `EFLAGS` 中的 `VM` 位，相关内容参考：[x86 标志寄存器](/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/)\n\nV86 的核心目标不是\"完全回到 DOS 时代\"，而是让旧程序以为自己在实模式中运行。真实的硬件访问、中断处理和异常处理仍由保护模式下的监控程序（V86 monitor）接管。DOS 程序认为自己在直接操作硬件，实际上所有敏感操作都在这个“沙盒”内被拦截和模拟。\n\n例如这些指令在 DOS 中看起来很自然：\n\n```text\nCLI\nSTI\nIN\nOUT\nHLT\n```\n\n但在 V86 中，它们不会被简单地原样放行：\n\n- `CLI`、`STI`、`PUSHF`、`POPF`、`INT n`、`IRET` 等指令会受 `IOPL`（I/O Privilege Level，I/O 特权级别，决定当前代码能否执行 I/O 敏感指令）影响；当权限不足时会触发 `#GP`（General Protection Exception，通用保护异常），交给 V86 monitor 处理。\n- `HLT` 在 V86 中同样会触发 `#GP`。\n- `IN` / `OUT` 这类端口 I/O 可通过 `TSS`（Task State Segment，任务状态段）中的 I/O permission bitmap（I/O 许可位图）控制：系统可以允许、拦截或只拦截特定端口。\n\n所以更准确的说法是：DOS 程序中的敏感操作在 V86 中可能被放行、陷入、模拟或拒绝，取决于 CPU 权限机制和操作系统的 V86 监控逻辑。\n\n### 64 位系统对 V86 的硬件级摒弃\n\n64 位 Windows 工作在 x86-64 的 Long Mode（IA-32e 模式，即处理器的原生 64 位运行模式）下。该模式从硬件层面移除了 V86 支持——CPU 无法直接进入 V86 状态，因此 64 位 Windows 不再提供 `NTVDM`，也无法原生运行 DOS 时代的程序。如需运行此类程序，须借助虚拟化或纯软件模拟（如 DOSBox）。\n> x86-64 处理器在 legacy / protected mode 下仍具备 V86 能力。换言之，64 位 CPU 上运行 32 位保护模式的 Windows 系统时，`NTVDM` 仍然可用。因果链：CPU 运行在 64 位长模式 → 无法进入 V86 → 64 位 Windows 不提供 `NTVDM`。\n\n> [!QUESTION] 为什么 VMware 运行的 XP 系统还能运行 DOS 程序？\n> VMware 使用硬件虚拟化技术，运行 XP 时 CPU 确实工作在 32 位保护模式下，因此仍可进入 V86 模式。\n\n## 核心兼容层机制：VDM 与 WOW\n\n### VDM / NTVDM\n\nVDM 是 Virtual DOS Machine，即虚拟 DOS 机器。32 位 Windows NT 系列中，对应的系统进程通常是 `ntvdm.exe`。\n\n在 32 位 Windows 中，16 位应用不是以普通独立进程形态直接运行，而是由 `ntvdm.exe` 模拟/承接。因此，观察任务管理器时看到的是 `ntvdm.exe`，不是每个 16 位任务都有一个同名的普通进程。\n> `ntvdm.exe` 本身是一个普通的用户态进程，但在被调度运行时，它会完成准备工作后**请求内核**将线程切换到 V86 模式，转而执行 DOS 时代的程序。\n\n### WOW\n\nWOW 是 Windows on Windows。在本文的 Windows NT/XP 语境中，它指 32 位 Windows 上用于运行旧版 16 位 Windows 程序的兼容层，不是 WOW64。\n\n> [!important] WOW ≠ WOW64\n>\n> | 名称 | 宿主系统 | 目标程序 | 作用 |\n> |:---|:---|:---|:---|\n> | WOW | 32 位 Windows | 16 位 Win16 程序 | 将 Win16 API 转译到 Win32 |\n> | WOW64 | 64 位 Windows | 32 位 Win32 程序 | 将 Win32 API 转译到 Win64 |\n>\n> 两者名称相似但属于不同时代的兼容层，切勿混淆。\n\nWOW 的作用不是运行 DOS 程序，而是让 Win16 程序能够衔接到 32 位 NT/Win32 环境。它需要处理 Win16 API、消息机制、16 位句柄/指针模型等兼容问题。\n\n总结各类型程序的运行依赖：\n- DOS 程序需要 DOS VDM 环境；\n- Win16 程序除 VDM 外，还需要 WOW；\n- WOW64 是 64 位 Windows 上运行 32 位程序的机制，和这里的 WOW 不是同一个问题。\n\n### 共享与独立 WOW VDM\n\n要理解 VDM 的共享机制，需先对比 DOS 与 Win16 在多任务模型上的差异：\n\nMS-DOS 是单任务操作系统，一个进程默认独占整个硬件设备和机器环境。而 Win 3.1 系列引入了 **“协作式多任务”** 的概念：\n\n- 它们知道内存是要向系统申请的，而不是自己随便乱占的。\n- 它们懂得“发消息（Message Loop）”，运行一段时间后会主动将 CPU 控制权让给其他程序。\n- 因此，在同一个 `ntvdm.exe` 内，系统引入了 `wowexec.exe` 作为居中协调的调度程序，使得多个 Win16 任务能够在同一个虚拟机环境中和睦相处。\n\n基于上述差异，对于 Win16 应用，系统通常可以让多个任务**共享**同一个 WOW VDM，以减少资源消耗并维持共享执行环境；而 MS-DOS 任务通常需要独立的 `ntvdm.exe` 进程。\n\n`CREATE_SEPARATE_WOW_VDM (0x0800)` 和 `CREATE_SHARED_WOW_VDM (0x1000)` 都针对 16 位 Windows-based 应用：\n\n- `CREATE_SEPARATE_WOW_VDM`：要求目标 Win16 应用在独立 VDM 中运行。\n- `CREATE_SHARED_WOW_VDM`：要求目标 Win16 应用使用共享 VDM。\n\n这两个标志不应被解释为控制普通 DOS 程序共享方式的通用开关。\n\n**总结**：MS-DOS 等单任务系统程序需要独立的 `ntvdm.exe` 进程；Win16 任务可以共享或独占 WOW VDM，由 `CreateProcess` 标志控制；此外 Win16 程序还需要 WOW 兼容层进行 API 转译。\n\n**默认机制总结**：Win16 的共享与 DOS 的复用不可混为一谈。\n\n注意区分：\n- **Win16 共享**：多个 Win16 程序**同时存在**于一个 WOW VDM 中，通过 `wowexec.exe` 进行协作式多任务切换。\n- **DOS 复用**：同一个 VDM 在**不同时刻**被不同 DOS 程序使用，或者以 TSR（Terminate and Stay Resident，终止并驻留）+ 前台程序的方式共存，本质上仍然是一个 DOS 环境内的行为。\n> **DOS 程序在执行流上绝对是独占的。所谓多个 DOS 程序出现在同一个 `ntvdm.exe` 中，并非 Windows 级别的多任务共享，而是因为 `command.com` 等父进程尚未退出或有 TSR 常驻程序，导致后续 DOS 程序顺延复用了同一个虚拟环境。**\n\n## 实验观察：Windows XP 任务管理分析\n\n在 Windows XP 实验环境中，通过「开始 → 运行」对话框分别启动 `edit.com` 和 `debug.exe`，观察 `ntvdm.exe` 的实例情况。\n> `edit.com` 和 `debug.exe` 都是 16 位 DOS 程序，而不是 Win16。\n\n![4f55121e61177924718a7aec9d68b152&#95;MD5&#46;jpg](/notes/n-5d9fe21a449d47cda78d3275b62070e0/media/95e0607d14e5f28c71bdf4cc4ba3f8cdd4da4dd7a53ac1dc10dc30afd0649497.jpg)\n\n从截图也可以看到，MS-DOS 任务通常以命令行窗口形态呈现。\n",
+  "id": "5d9fe21a-449d-47cd-a78d-3275b62070e0",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86"
+    ],
+    "title": "V86 与 NTVDM 原理"
+  },
+  "resources": [
+    "95e0607d14e5f28c71bdf4cc4ba3f8cdd4da4dd7a53ac1dc10dc30afd0649497.jpg"
+  ],
+  "url": "/notes/n-5d9fe21a449d47cda78d3275b62070e0/"
+}

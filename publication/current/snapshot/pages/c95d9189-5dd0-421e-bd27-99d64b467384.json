@@ -1,0 +1,226 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6ca970a719010739fc6b",
+      "kind": "heading",
+      "offset": 27
+    },
+    {
+      "id": "h-c02a83bd55400290be14",
+      "kind": "heading",
+      "offset": 355
+    },
+    {
+      "id": "h-8637332ae81ed2f2d34f",
+      "kind": "heading",
+      "offset": 386
+    },
+    {
+      "id": "h-0182fd1dca529a103a71",
+      "kind": "heading",
+      "offset": 941
+    },
+    {
+      "id": "h-5e558ecc7ce73fc6581b",
+      "kind": "heading",
+      "offset": 1261
+    },
+    {
+      "id": "h-e023bd3ff65eee7b6560",
+      "kind": "heading",
+      "offset": 2338
+    },
+    {
+      "id": "h-97480e1f004d5143bca7",
+      "kind": "heading",
+      "offset": 3515
+    },
+    {
+      "id": "h-7033bc4ce2d7faf6075a",
+      "kind": "heading",
+      "offset": 4640
+    },
+    {
+      "id": "h-46b394e69739ff11ef8f",
+      "kind": "heading",
+      "offset": 5752
+    },
+    {
+      "id": "b-97heys",
+      "kind": "quote-block",
+      "offset": 6422,
+      "prefix": "> "
+    },
+    {
+      "id": "h-e9dde79a2ba4a982fef5",
+      "kind": "heading",
+      "offset": 6707
+    },
+    {
+      "id": "h-a4b11433e31f00337c46",
+      "kind": "heading",
+      "offset": 8029
+    },
+    {
+      "id": "h-e93658c804d76fbcec26",
+      "kind": "heading",
+      "offset": 10080
+    },
+    {
+      "id": "h-7be21ff97b677f585c82",
+      "kind": "heading",
+      "offset": 12435
+    },
+    {
+      "id": "h-713041a4f1f8815a1c1a",
+      "kind": "heading",
+      "offset": 13262
+    },
+    {
+      "id": "h-970bc385e4cc05992137",
+      "kind": "heading",
+      "offset": 15619
+    },
+    {
+      "id": "h-53ec983915c011baa014",
+      "kind": "heading",
+      "offset": 15660
+    },
+    {
+      "id": "h-a40a6b89dcd5cad0a167",
+      "kind": "heading",
+      "offset": 16654
+    },
+    {
+      "id": "h-beb7c496abcbfc8c4a79",
+      "kind": "heading",
+      "offset": 17118
+    },
+    {
+      "id": "h-f14e01ec3cad7d003d8c",
+      "kind": "heading",
+      "offset": 17716
+    },
+    {
+      "id": "h-a0c6ba767a838a4ba591",
+      "kind": "heading",
+      "offset": 18336
+    },
+    {
+      "id": "h-6440e4ac02adb935231c",
+      "kind": "heading",
+      "offset": 20492
+    },
+    {
+      "id": "h-423b9c9bb9f478b6f124",
+      "kind": "heading",
+      "offset": 22763
+    },
+    {
+      "id": "h-282d280d7720902fbb5f",
+      "kind": "heading",
+      "offset": 25068
+    },
+    {
+      "id": "h-3369f115064c23e55f71",
+      "kind": "heading",
+      "offset": 26316
+    },
+    {
+      "id": "h-da5cdd4f03ceca1846d6",
+      "kind": "heading",
+      "offset": 28958
+    },
+    {
+      "id": "b-xup4xc",
+      "kind": "quote-block",
+      "offset": 30237,
+      "prefix": "> "
+    },
+    {
+      "id": "h-6371d29c4b9d665d57b9",
+      "kind": "heading",
+      "offset": 30490
+    },
+    {
+      "id": "h-343d9f55f45f311e1871",
+      "kind": "heading",
+      "offset": 31771
+    },
+    {
+      "id": "h-cf838bb22f8f4af1851f",
+      "kind": "heading",
+      "offset": 32253
+    },
+    {
+      "id": "h-86956863ae9d1d23b97a",
+      "kind": "heading",
+      "offset": 33162
+    }
+  ],
+  "body": "# Windows 进程创建（02）：内核进程对象创建\n\n> [!note] 阅读导航\n> 本组笔记总览见 [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)。\n\n分析对象：WRK v1.2 中的 `NtCreateProcessEx` 及其核心实现 `PspCreateProcess`。\n\n> [!note] WRK 版本说明\n> WRK v1.2 基于 Windows Server 2003 SP1 内核源码的研究子集，原生支持 x86 和 x64 (AMD64) 架构，因此源码中出现 `#ifdef _WIN64`、`Wow64Process` 等 x64 逻辑是正常的。\n\n## 1) API 原型\n\n### 1.1) NtCreateProcessEx 原型\n\n```c\nNTSTATUS\nNtCreateProcessEx(\n    OUT PHANDLE ProcessHandle,          // 输出：新进程句柄\n    IN ACCESS_MASK DesiredAccess,        // 调用者希望获得的访问权限\n    IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL, // 对象属性（名称等）\n    IN HANDLE ParentProcess,            // 父进程句柄，必须提供\n    IN ULONG Flags,                     // 创建标志\n    IN HANDLE SectionHandle OPTIONAL,   // 可执行映像 section\n    IN HANDLE DebugPort OPTIONAL,       // 调试端口\n    IN HANDLE ExceptionPort OPTIONAL,   // 异常端口\n    IN ULONG JobMemberLevel             // Job Set 层级\n);\n```\n\n### 1.2) 旧接口 NtCreateProcess\n\n`NtCreateProcess` 是兼容层，将旧参数编码转换为 `NtCreateProcessEx` 的 Flags 格式，然后以 `JobMemberLevel=0` 调用 `NtCreateProcessEx`：\n\n![cab765e97fa15bdfeb7cfeec6e54efff&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/1c8709832306af044fcabd0eeb4af543adbf6fc75fdfcb553a782f02cd8628b4.jpg)\n\n\n\n---\n\n## 2) NtCreateProcessEx 入口逻辑\n\n![79fb25234ea4fb418a0abed8bc0d8d2d&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/7d29cf41aeae60fb2d1b4a20ee83e9b06626a35ccece68dd07efec9d3f7f1dd1.jpg)\n\n> 图中代码含义：`NtCreateProcessEx` 只是入口包装层；它探测 `ProcessHandle`、检查 `ParentProcess` 是否存在，然后把参数原样转交给 `PspCreateProcess`。\n\n流程：\n\n1. `PAGED_CODE()`：\n\t- 在 Debug 版本中，断言当前 `IRQL` 不高于 `APC_LEVEL`，因为当前函数可能位于 pageable code 区域，一旦代码页不在内存中，执行它会触发缺页并等待分页 I/O，高 `IRQL` 下不能安全等待这类 I/O。\n\t- 在 free/release 版本中，`PAGED_CODE()` 通常为空操作（`NOP_FUNCTION`），因此它不是运行期保护机制。真正的约束发生在缺页处理路径：如果内核在处理缺页时发现当前 `IRQL > APC_LEVEL`，就会触发 bug check。这也从侧面说明 `IRQL` 机制有软件实现，相关内容参考：[中断请求优先级与 IRQL](/notes/n-d4f651574a52425791b6f0f74f89a06c/)\n2. 若 `PreviousMode != KernelMode`，调用 `ProbeForWriteHandle(ProcessHandle)` 验证用户态指针可写。`PreviousMode` 用来记录调用来自内核态还是用户态，它决定内核是否把参数当成用户态不可信指针处理。相关参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)、[Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)\n3. 若 `ParentProcess != NULL`，调用 `PspCreateProcess` 并返回结果。\n\t- 否则返回 `STATUS_INVALID_PARAMETER`。\n\n\n---\n\n## 3) PspCreateProcess 主流程\n\n`PspCreateProcess` 是真正的内部实现，其参数列表与 `NtCreateProcessEx` 相同（9 个参数，类型一致），但它是 Ps 模块内部函数（Psp 前缀），不通过 SSDT 暴露。其中 `ParentProcess` 标注为 `OPTIONAL`，允许 NULL。\n\n![82ef416b2b7c864f843c11b13d663ac6&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/be6ec19c6749c7452bbc9afde240d2268d3c657478eeb354f14424be58a05fae.jpg)\n\n> [!note] 设计细节\n> 实际上 `PspCreateProcess` 内部支持 `ParentProcess == NULL`（仅用于创建 `\"System\"` 进程），但 `NtCreateProcessEx` 在入口处禁止普通调用者使用此路径，部分内部函数（如 `PsCreateSystemProcess`）不做此限制。\n> ![96af7054c46659c2a8924b1df35ebb56&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/09ee58fd9740d109112f089474deb8cd3b7f4fced40b43ec12e629ce4a89b1a2.jpg)\n\n函数开头先建立创建过程所需的局部变量，例如 `CreatePeb`、`UseLargePages`、`DirectoryTableBase` 等：\n\n![36732d65c1afa2eb1e24553e64b0dd36&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/750266216f8859010986c615e412fd8a220763231c425e593dd6b853556fe911.jpg)\n\n\n\n函数开头同样有 `PAGED_CODE()`，随后获取当前线程、当前进程和 `PreviousMode`，这些值会影响后续参数探测、句柄引用和访问检查。\n\n![a2ebe134cd9e162bd165cd6cf3c10bb7&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/72deaea74813caba948c6f227ce801fb4c2560c4d532f4d1ef8474960e58ea66.jpg)\n\n### 3.1) Flags 校验\n\nWRK 只接受 `Flags` 为以下 5 个标志：\n\n| Flag                                          |     值 | 语义                                                    |\n| --------------------------------------------- | -----: | ------------------------------------------------------- |\n| `PROCESS_CREATE_FLAGS_BREAKAWAY`              | `0x01` | 从父进程所在 Job 中 breakaway，前提是 Job 允许          |\n| `PROCESS_CREATE_FLAGS_NO_DEBUG_INHERIT`       | `0x02` | 不继承父进程 DebugPort                                  |\n| `PROCESS_CREATE_FLAGS_INHERIT_HANDLES`        | `0x04` | 继承父进程句柄表中带 `OBJ_INHERIT` 的句柄               |\n| `PROCESS_CREATE_FLAGS_OVERRIDE_ADDRESS_SPACE` | `0x08` | Win64 下影响地址空间限制逻辑                            |\n| `PROCESS_CREATE_FLAGS_LARGE_PAGES`            | `0x10` | 请求大页映射 image；失败时 MM 会在输出 Flags 中清除此位 |\n\n如下图所示，拒绝任何未定义的高位标志，其中 `PROCESS_CREATE_FLAGS_LEGAL_MASK` = `0x1F`（`11111b`）：\n\n![d253048ab062877a894b2fed0b2865a6&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/365e1030c7706f3ad2e6286e6ff94eed8e71fd2fc731234adcdb2dabf696d042.jpg)\n\n> 图中代码含义：`Flags` 中只允许合法掩码内的位；只要出现未定义标志位，函数立即返回 `STATUS_INVALID_PARAMETER`。\n\n\n\n### 3.2) 父进程引用\n\n![c9dc249a984771819b25b6c5e2bbdc0f&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/2ff583057fcd03fd431f0f3baf4117c25443bbc8c31f23f42a9b87c03fdc29f3.jpg)\n\n如上图所示，当 `ParentProcess` 存在时：\n\n```c\nObReferenceObjectByHandle(\n    ParentProcess,\n    PROCESS_CREATE_PROCESS,   // 要求此权限\n    PsProcessType,\n    PreviousMode,\n    &Parent,\n    NULL\n);\n```\n\n内核通过 `ObReferenceObjectByHandle` 把父进程句柄转换为 `EPROCESS` 指针（会增加引用计数），并要求调用者对该句柄拥有 `PROCESS_CREATE_PROCESS` 权限。\n\n\n\n> [!note] 调用者 ≠ 父进程\n> 调用者（当前线程所属进程）、`ParentProcess` 句柄指向的父进程对象、新创建的子进程是三个不同主体。`ParentProcess` 只是调用者传入的一个句柄；调用者只要持有对该进程的 `PROCESS_CREATE_PROCESS` 权限，就可以指定它作为父进程。\n\n\n\n随后的检查：若 `JobMemberLevel != 0` 但父进程没有 Job，即**调用者指定了 Job 层级，但父进程根本不在任何 Job 中** 的非法情况，返回 `STATUS_INVALID_PARAMETER`。\n\n> 若从用户态调用 `CreateProcessW/A` 进入到此处，该参数 `JobMemberLevel` 恒为 0。参考：[Windows 进程创建&#65288;01&#65289;&#65306;用户态创建流程](/notes/n-a563a14132aa4c968d5f20c4000cb850/)\n\n\n\n若没有进入失败逻辑，随后：\n\n- 获得父进程的`Affinity`（`Parent->Pcb.Affinity`，CPU 亲和性）\n- `WorkingSetMinimum` / `WorkingSetMaximum` 不继承自父进程，而是从全局默认值 `PsMinimumWorkingSet` / `PsMaximumWorkingSet` 获取。\n\n\n\n### 3.3) 创建 EPROCESS 对象\n\n![34cefee51dbf8c81f018848200ff3302&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/94433178251cd32d3ac9184ca2ea24427f67a01459fdd42647e2870b5b3fa946.jpg)\n\n> 图中代码含义：`ObCreateObject` 按 `PsProcessType` 创建进程对象，为对象分配内存空间；此时只是“对象内存存在”，还不是完整可用进程。\n\n\n> [!NOTE] `ObCreateObject` 函数的核心逻辑\n> ![8992097d284cbe85bf400bae5a83caec&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/86923625d909d2b4080e47dca4ffdb9deb39577b08e80edadb7df9d2928b7464.jpg)\n> 1. 其内部通过 `ExAllocatePoolWithTag` 分配 `OBJECT_HEADER` + 可选头（NameInfo、QuotaInfo 等）+ `sizeof(EPROCESS)` 大小的内存块。\n> 2. 设置 `ObjectHeader->Type = PsProcessType`\n> 3. 递增 `PsProcessType->TotalNumberOfObjects`。 \n\n此时只完成了内存分配和头部的初始化，Body 部分——即 EPROCESS，尚未初始化。\n\n---\n\n内核对象的创建、初始化和登记可以类比为 C++ 对象的“分配、初始化、注册”三阶段：\n\n```cpp\nauto p = new KEVENT;        // ObCreateObject\nInitialize(p);             // KeInitializeEvent\nRegister(p);               // ObInsertObject\n```\n\n现在已经有了\"分配\"。\n\n### 3.4) 初始化 EPROCESS 结构体\n\n创建 `EPROCESS` 对象成功后，立即执行基础初始化：\n\n![388e5fc73099efd7665e3f49a5519508&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/f6e1c26fa94a4e829541e8f26ec212d7282fcc08f604f8e816865173ca9025aa.jpg)\n\n> 图中代码含义：新分配的 `EPROCESS` 会被整体清零，然后初始化 rundown protection、进程锁和线程链表头，为后续失败清理和并发访问建立基础状态。\n\n各语句说明：\n\n- **`RtlZeroMemory`**：将整个 `EPROCESS` 清零。\n- **`ExInitializeRundownProtection`**：初始化 `RundownProtect`，这是一种**生命周期同步机制**，用于同步“对象访问”和“对象销毁”，避免对象仍被使用时被释放。类似于读写者问题，既有同步逻辑又有互斥逻辑：**访问者（读者）** 通过 `ExAcquireRundownProtection` 进入保护区，返回 `TRUE` 表示对象未进入销毁流程，可以安全访问；**销毁路径（写者）** 通过 `ExWaitForRundownProtectionRelease` 阻止新的访问者进入，并等待已有访问者全部退出后再继续清理。\n- **`PspInitializeProcessLock`**：初始化 `EPROCESS` 的 `ProcessLock`。该锁是进程对象内部的同步机制，用于协调对 `EPROCESS` 中线程链表、Token、Win32Process、Affinity 等共享可变字段的并发访问，防止多个线程同时读写或修改这些状态而造成竞争条件。\n- **`InitializeListHead`**：初始化线程链表头，后续该进程的所有线程通过 `ETHREAD.ThreadListEntry` 挂入此链表。\n\n> [!link] 知识关联：LIST_ENTRY 模式\n> `ThreadListHead` 和后文的 `ActiveProcessLinks`、`MmProcessLinks`、`SessionProcessLinks`、`HandleTableList` 都是 Windows 内核常见的双向链表模式，双向链表使用的是相同的链表结构体。\n\n\n\n内核对象的创建、初始化和登记可以类比为 C++ 对象的“分配、初始化、注册”三阶段：\n\n```cpp\nauto p = new KEVENT;        // ObCreateObject\nInitialize(p);             // KeInitializeEvent\nRegister(p);               // ObInsertObject\n```\n\n现在已经有了\"分配\"和\"初始化\"，后续会调用`ObInsertObject`实现\"注册\"。\n\n\n\n#### 3.4.1) 继承父进程属性\n\n![b8875b318300b037cfa7fe04223e6bdd&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/16cfbac0003e6aec87bcc89f43506aad06cad785f17a86d85bc3359df479f4c6.jpg)\n\n> 图中代码含义：进程对象基础初始化后，立即继承或设置几个进程级属性。\n\n\n- **`PspInheritQuota`**：若有父进程则父子进程共享同一个配额块，若没有父进程则子进程共享默认配额块。配额块记录该进程对 `Paged Pool`、`NonPaged Pool`、`PageFile` 等资源使用量的上限。 \n\n![c9c35af320202467bbfd15c6243a77f3&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/818a2a9ef4a216653443916aed5e8d0bf35609c850cdb4c5e729d3b5889ced1e.jpg)\n\n> [!note] 什么是 `Paged Pool`、`NonPaged Pool` 以及 `PageFile`？\n>\n> `Paged Pool` 和 `NonPaged Pool` 都属于内核虚拟地址空间，区别在于前者可以被换出到磁盘，后者必须常驻物理内存。进程可以间接消耗这些池资源来保存内核对象等数据结构；由于池空间由全系统共享，内核需要通过 quota 机制限制单个进程的资源消耗。\n>\n> 进程结构体中的相关字段通常会同时记录 `Usage` 和 `Limit`：![7f452c5b3ffb89bc20f699313096cd66&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/a59de479f13675fa963451be30689ae7bdba1ad640f68b3167afeab8417332bd.jpg)\n> 当某类资源的 `Usage` 超过 `QuotaBlock` 中的 quota limit 时，该进程就不能继续申请这类资源。\n\n> [!note] `QuotaBlock` 与 Job 的区别\n> `QuotaBlock` 是底层“资源配额账户”，主要管 pool/pagefile quota；`Job` 是高层“进程集合控制对象”，可以限制和统计一组进程的 CPU、内存、工作集、优先级、安全、UI、通知等。\n\n- **`ObInheritDeviceMap`**：若有父进程则父子进程共享同一个`DeviceMap`，若没有父进程则子进程共享默认`DeviceMap`。\n\n![0ecac267f3828aa695eeadb3556d7f82&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/0824d0f6cc4d88bf66618bfcccbb5cd27d3d92e3ed3238aa2dbe5166b7435784.jpg)\n\n> [!note] 什么是`DeviceMap`？它的作用是什么？\n> 参考：[Windows 内核路径解析&#65306;对象命名空间与 DeviceMap 机制](/notes/n-fd51c9c5b3534549885452c844b09c8e/)\n\n\n---\n\n随后子进程有条件地继承 `DefaultHardErrorProcessing` 和 `InheritedFromUniqueProcessId`（记录父进程 PID）。\n\n![7c7e3b4599bad23b0095ca3847048397&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/e51d3cd3bf02873253bb62807708d8f02de800baddb222745bce97add3c7ee6d.jpg)\n\n> `EPROCESS->DefaultHardErrorProcessing` 字段会影响当前进程后续 hard error 的默认处理行为，进程创建时该字段默认继承自父进程，后续也可能被外层父函数通过 `NtSetInformationProcess(ProcessDefaultHardErrorMode)` 修改，参考：[错误模式设置](/notes/n-a563a14132aa4c968d5f20c4000cb850/#h-40fc5b9d02b446a19273)\n\n### 3.5) Section 处理：Image 创建 vs Fork 克隆\n\n![3bfa7e456bfc668c03c7d99868fe4e37&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/3a4bf5e09a445241235ac906230241cd5ad4358760c427202b1d879ab260dd87.jpg)\n\n> 图中代码含义：如果调用者提供了 `SectionHandle`，新进程将基于 image section 创建地址空间；如果没有 section 且父进程不是 `\"System\"`进程（`PsInitialSystemProcess`），则通过 rundown protection 安全读取父进程的 `SectionObject`，为 clone 路径做准备。\n\n\n\n> [!note] `PsInitialSystemProcess`是什么？\n>\n> `PsInitialSystemProcess` 指向的是名为 `\"System\"` 的初始进程。注意区分 `\"System\"`进程和系统进程：前者是进程名就叫 `\"System\"`、PID 通常为 4 的那个进程；后者是泛称，表示由内核创建、没有用户态 image 的系统进程，可能有多个。\n> ![84ab145d560193857d1bb8d0b1117013&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/a9c4b448b9593cf3d2732936278083e676cddd2e3f997c16937678938aa7cd4a.jpg)\n> 为什么最早创建的 `\"System\"` 进程的 PID 为 4 而不是 0？原因见 [](/notes/n-c95d91895dd0421ebd2799d64b467384/#h-423b9c9bb9f478b6f124)。\n\n\n\n`SectionHandle` 是决定创建模式的核心参数：\n> 这里的 section 指映像 section（image section），即由可执行映像文件创建出的 section object。\n1. **对于 `SectionHandle != NULL` 的情况**（基于可执行映像创建新地址空间）：\n    - 通过 `ObReferenceObjectByHandle` 引用 Section 对象。要求 `SECTION_MAP_EXECUTE` 权限、对象类型必须是 `MmSectionObjectType`。\n\n2. **对于 `SectionHandle == NULL` 的情况**，需要单独区分 `Parent` 和 `PsInitialSystemProcess` 的关系。表面上可以组合出 4 种情况：\n    1. `Parent == NULL && PsInitialSystemProcess == NULL` 这是早期创建初始 `\"System\"` 进程的路径。此时 `PsInitialSystemProcess` 还没有被赋值，所以两者都为 `NULL`，**会跳过执行该if分支**。\n    2. `Parent == NULL && PsInitialSystemProcess != NULL`根据对该函数的分析，**不可能出现这种组合**。也就是说，在 `PsInitialSystemProcess` 已经存在之后，不会再以 `Parent == NULL` 的方式调用该函数了。\n    3. `Parent != NULL && PsInitialSystemProcess == NULL` **这种情况也不可能出现**。因为如果 `PsInitialSystemProcess` 还没有建立，系统中也不存在可作为父进程的 Windows 进程对象（除了 IDLE 进程）。\n    4. `Parent != NULL && PsInitialSystemProcess != NULL`\n        1. `Parent == PsInitialSystemProcess`，这是以 ** `\"System\"` 进程为父进程** 创建系统进程的特殊路径。它不会从父进程克隆 `SectionObject`，**会跳过执行该if分支**。![2baca7f2e076027637c10219fa640a5a&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/b65468e218b505b9d4d42d4f3a6375bfb9197209389f31df69bf061171e6fdde.jpg)\n        2. `Parent != PsInitialSystemProcess`，**这是普通父进程的无 `SectionHandle` 创建路径**。此时新进程需要从父进程克隆地址空间，因此会进入分支`if (Parent != PsInitialSystemProcess) `（Fork 克隆路径）：读取父进程的 `SectionObject`，对父进程 RundownProtect 的 Acquire/Release 调用，用于确保在读取父进程 SectionObject 期间，父进程不会被销毁。\n\n最后将获得的 Section 赋值给 `Process->SectionObject`。\n\n### 3.6) DebugPort 与 ExceptionPort\n\n**DebugPort 处理**：\n\n![549476cd0c61aaf8902ad0005dec441c&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/c2ed51255dd04aa99dac44aeaa78489ba47eae072ef1eaacc18390a5de76c5fb.jpg)\n\n> 图中代码含义：显式传入 `DebugPort` 时会引用调试对象并写入新进程；未显式传入时，新进程可能通过 `DbgkCopyProcessDebugPort` 从父进程继承调试端口。\n\n显式传入 `DebugPort` 时：\n\n- 通过 `ObReferenceObjectByHandle` 引用 `DbgkDebugObjectType` 对象。要求 `DEBUG_PROCESS_ASSIGN` 权限。\n- 写入 `Process->DebugPort`。\n- 若同时设置 `PROCESS_CREATE_FLAGS_NO_DEBUG_INHERIT`，则设置内部标志 `PS_PROCESS_FLAGS_NO_DEBUG_INHERIT`。此处体现了**参数 `Flags` 到 `EPROCESS.Flags` 的转换**。\n\n> [!note] Flags 的生命周期\n> `CreateProcess` API 传入的标志，一部分在 `InternalCreateProcess` 中已被消费，剩余部分转换为 `NtCreateProcessEx` 的 Flags 格式传入，又进而传入 `PspCreateProcess`。相关参考：[创建标志转换](/notes/n-a563a14132aa4c968d5f20c4000cb850/#h-16d64f6ff85a35f3ecef)\n> \n\n#### 3.6.1) DebugPort 的继承规则\n\n`DebugPort` 的继承发生在“创建新进程时没有显式指定 `DebugPort`”的情况下。此时内核会调用 `DbgkCopyProcessDebugPort(TargetProcess, SourceProcess)`，尝试从父进程复制调试端口：\n![4a8f7d99ff8caecc6f1d027f4a4a2972&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/3cc1fe3deca28d5d5b8a22a45c5a94960697e026a9ece430aee2ff01115e8ed5.jpg)\n\n如果父进程正在调试子进程，并且子进程的 `EPROCESS->Flags` 中没有置位 `PS_PROCESS_FLAGS_NO_DEBUG_INHERIT`，那么当子进程再创建孙进程且没有显式指定新的 `DebugPort` 时，孙进程会继承子进程的 `DebugPort`。结果是：\n```text\n父进程 DebugObject\n    ↑\n    子进程 DebugPort\n    ↑\n    孙进程 DebugPort\n```\n\n这意味着：子进程和孙进程都会把调试事件发送到同一个父进程持有的调试对象上。\n\n> **需要注意**：`PS_PROCESS_FLAGS_NO_DEBUG_INHERIT` 是 `EPROCESS->Flags` 中的内部标志，控制的是“当前进程的 `DebugPort` 是否允许继续传给它创建的子进程”；如果未置位，且创建子进程时没有显式指定新的 `DebugPort`，则调试端口会沿父子进程链继续继承。创建进程时外部传入 `PspCreateProcess` 的是 `PROCESS_CREATE_FLAGS_NO_DEBUG_INHERIT`，后者会导致新进程的内部标志被置位。\n\n完整的调试对象继承逻辑如下表所示：\n\n| 父进程是否调试子进程 | 子进程是否禁止 DebugPort 继续继承 | 子进程创建孙进程时是否显式指定 DebugPort | 结果                                 |\n| ---------- | ---------------------- | ------------------------- | ---------------------------------- |\n| 否          | 否                      | 否                         | 子、孙都不处于调试关系                        |\n| 否          | 否                      | 是                         | 子进程调试孙进程                           |\n| 是          | 否                      | 否                         | 孙进程继承子进程的 `DebugPort`，子、孙都被父进程调试   |\n| 是          | 否                      | 是                         | 父进程调试子进程，子进程使用新的 `DebugPort` 调试孙进程 |\n| 是          | 是                      | 否                         | 父进程调试子进程，但孙进程不会继承该 `DebugPort`     |\n| 是          | 是                      | 是                         | 父进程调试子进程，子进程显式调试孙进程                |\n\n---\n**ExceptionPort 处理**：\n\n![88e349cf25c7d2e6855369c18dfb0e89&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/f3368080942da9ba8fd11a4ff9607ad90c808ed60323854c7f166bb80909bc3b.jpg)\n\n> 图中代码含义：`ExceptionPort` 只要求对象类型是 LPC Port；验证通过后写入 `Process->ExceptionPort`，供后续异常/错误通知路径使用。\n\n显式传入 `ExceptionPort` 时：\n\n- 通过 `ObReferenceObjectByHandle` 引用，对象类型为 `LpcPortObjectType`，`DesiredAccess = 0`（仅验证对象类型，不要求任何端口权限，`create.c:1231-1232`）。\n- 写入 `Process->ExceptionPort`。\n\n`EPROCESS->ExceptionPort` 是该进程的异常/错误通知 LPC 端口，内核通过它将特定进程事件发送给用户态子系统（如 CSRSS）。\n> 相关内容参考：[Windows x86 异常的产生与分发流程](/notes/n-fc98c7868417430fa36063afb251fb17/#h-760d42c1345872984c1c)\n \n\n### 3.7) 页表骨架与 KPROCESS 初始化\n\n#### 3.7.1) MmCreateProcessAddressSpace\n\n![43c076519a44dac6924cce0fdbe47121&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/1b0e974912f8eb25a187c299bab1a546e235a8d74be7c8752d8a2b626a2e96f1.jpg)\n\n若有父进程，则调用 `MmCreateProcessAddressSpace` 创建页表骨架并取得 `DirectoryTableBase`，内存管理器同时准备 hyperspace、working set page、VAD bitmap 以及 MM 内部链表关系。若没有父进程，则进入早期创建 `\"System\"`进程专用的 hand-built 路径。\n> 相关内容参考：\n> 1. [Windows 进程创建&#65288;03&#45;1&#65289;&#65306;非 PAE 地址空间骨架](/notes/n-715b80e32efa4cada011b9dda96e0bca/)。\n> 2. [Windows 进程创建&#65288;03&#45;2&#65289;&#65306;PAE 地址空间骨架](/notes/n-4e7a476b48e045eb8201a825f75e5557/)。\n\n对于没有父进程的情况，也就是创建 `\"System\"`进程的 hand-built 路径，`Process->ObjectTable = CurrentProcess->ObjectTable;` 里的 `CurrentProcess` 指的是 Idle Process 进程。后文会在 PID/CID 分配处把这个闭环补上。然后调用函数 `MmInitializeHandBuiltProcess`，它核心逻辑很简单：\n![913a0cf8a1fa09cd977183b8fdbbe81c&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/19ae413bf037c3d12278b8cc6a7cd7d5a6cc69d84b30cd120f54ee75adf19068.jpg)\n\n\n#### 3.7.2) 标志与 Working Set 上限设置\n\n接下来：设置 `EPROCESS->Flags` 的 `PS_PROCESS_FLAGS_HAS_ADDRESS_SPACE` 位 ，表示这个 `EPROCESS` 底层页表骨架已经建立、已经拥有地址空间，但 image/PEB/VAD 等完整初始化还没完成。同时设置工作集的最大值。\n\n![364648ec88fab76b4573d71057b2ae27&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/99ff6a6c3cb430b918c7741f0f06a79f38638c86382bebf5a0ef39b05cb93244.jpg)\n\n\n**注意**：工作集的最小值 `Vm.MinimumWorkingSetSize` 由 ` MmCreateProcessAddressSpace ` 设置，二者共同构成进程 working set 的初始边界（最大和最小）。\n\n#### 3.7.3) KeInitializeProcess\n\n![d3b635c79745bb0632d02d8ee4c3867b&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/2efca404923ad5ee0c7464407f87e0b3a318f6c05ee492d7c4fcbb428f13a20d.jpg)\n\n> 图中代码含义：`KeInitializeProcess` 把 `DirectoryTableBase`、亲和性和基础优先级等写入 `EPROCESS.Pcb`；这一步初始化的是内核调度视角的 `KPROCESS`，不是用户态 PEB。\n\n\n`KeInitializeProcess` 初始化 `EPROCESS` 内嵌的 **KPROCESS（即 Pcb）**，使进程成为调度器可识别、可切换地址空间的内核进程对象。初始化的内容如上图所示。\n\n\n> [!important] 此处初始化的是 KPROCESS (PCB)，不是 PEB\n> KPROCESS（Pcb）位于内核空间，嵌入 EPROCESS 头部，由 `KeInitializeProcess` 初始化，描述调度和地址空间切换状态。PEB 位于用户地址空间，由后续的 `MmCreatePeb` 分配和初始化，描述用户态进程环境。\n\n\n### 3.8) 安全 Token（令牌）初始化\n\n![5b518f4ed7d85fa05613fa9f762558b1&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/70624e90f67ef82c529677ea1f3be84fe883950cb6bf4748d680c1a7ed90f07b.jpg)\n\n> 图中代码含义：地址空间骨架和 `KPROCESS` 就绪后，`PspInitializeProcessSecurity` 为新进程建立 Primary Token（主令牌）。\n\n`PspInitializeProcessSecurity` 初始化子进程的 Primary Token（主令牌）：\n\n- **有父进程**：引用父进程 Primary Token，调用 `SeSubProcessToken(..., TRUE, MmGetSessionId(Child))` 生成子进程 Primary Token。\n- **无父进程**：使用 `PspBootAccessToken`。此情况仅发生一次，用于 `\"System\"`进程。\n\n后续若进程被加入 Job，而该 Job 指定了 Token，则 `PspCreateProcess` 会再次用 Job Token（Job 指定令牌）生成新的 Primary Token 并赋给进程。\n\n### 3.9) 优先级和句柄表的初始化与继承\n\n然后为优先级赋默认值，紧接着判断是否有父进程：\n\n\n![179f9cea6f8b01e68eba77b0ec2088f2&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/2cf7f4fff4c439293e15ca39c80da2a6d237813b1cd76c527ae79631ae195370.jpg)\n\n若当前路径没有父进程，也就是正在创建早期 `\"System\"` 进程，则前文已经复用了当前进程的句柄表，因此这里不会再调用 `ObInitProcess` 初始化对象表，而是转而调用 `MmInitializeHandBuiltProcess2` 执行第二阶段 MM 初始化。该函数的核心逻辑仍然是调用 `MmInitializeProcessAddressSpace`，复用普通的地址空间初始化流程；随后，如果处于 x86 `/3GB` 早期启动场景，还会额外复制并修补 `8xxxxxxx` 区间的 PDE；最后，在启用 locked page 跟踪时初始化对应的 `LockedPagesList`。\n\n> 相关内容参考：[Windows 进程创建&#65288;04&#65289;&#65306;地址空间初始化](/notes/n-4e7721abe8c84130a292e886ccb41126/)\n\n\n若有父进程，代码先将 `Process->PriorityClass` 设为 `PROCESS_PRIORITY_CLASS_NORMAL`；只有父进程优先级类是 `IDLE` 或 `BELOW_NORMAL` 时，才继承父进程优先级类：\n\n```c\nProcess->PriorityClass = PROCESS_PRIORITY_CLASS_NORMAL;\nif (Parent->PriorityClass == PROCESS_PRIORITY_CLASS_IDLE ||\n    Parent->PriorityClass == PROCESS_PRIORITY_CLASS_BELOW_NORMAL) {\n    Process->PriorityClass = Parent->PriorityClass;\n}\n```\n> 外围调用者（如 `InternalCreateProcess`）可能会再次修改为用户指定的优先级类。相关参考： [进程优先级设置](/notes/n-a563a14132aa4c968d5f20c4000cb850/#h-3d9371d30819f87072a2)\n\n然后继续调用：\n\n```c\nObInitProcess(\n    (Flags & PROCESS_CREATE_FLAGS_INHERIT_HANDLES) ? Parent : NULL,\n    Process\n);\n```\n\n`ObInitProcess` 负责为新进程初始化 `EPROCESS.ObjectTable`（句柄表）：\n\n![c04e0024e3829ddca402779ab3d5b664&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/7a9ea4b31e9318da5c96860ec2dd07bd0a9c2d5081617e045a8b1509e716d9c4.jpg)\n\n> 图中代码含义：`ObInitProcess` 负责初始化 `ObjectTable`；传入父进程时复制可继承句柄，不传父进程时创建空句柄表。句柄复制分支中，若父进程句柄表引用失败（父进程正在终止），返回 `STATUS_PROCESS_IS_TERMINATING`。\n\n- 传入父进程时，调用 `ExDupHandleTable` 复制父进程句柄表中带 `OBJ_INHERIT` 属性的句柄，并增加相应对象的句柄计数。\n- 传入 NULL 时，调用 `ExCreateHandleTable` 创建空句柄表。\n\n除了创建/复制操作，`ExDupHandleTable`和`ExCreateHandleTable`这两个函数还会将句柄表挂入到全局 `HandleTableListHead` 链表中：\n![4beee07da6d06e5a8e28c598fdf2ec07&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/2ac7449b2eb00858735b42bed5dbf1cbf5208a255a06db8ab766c958d52abf1a.jpg)\n\n> **注意**：句柄表（`HANDLE_TABLE`）不通过 `ObCreateObject` 创建，没有 `OBJECT_HEADER`，不属于任何 `OBJECT_TYPE`，也就是说它不是内核对象（但属于内核内存区域）。\n\n\n\n### 3.10) 地址空间初始化：`\"System\"`进程 / 系统进程 / Clone / Image 四种路径\n\nWRK 注释将地址空间初始化分为四种模式：\n\n![e07d06418acb2852d9252243c96cdcc2&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/d6b44ad32dee993baa5a63a7f782ad6c52ba3a37b404de5b23594ed77460bcc0.jpg)\n\n> 图中代码含义：WRK 把后续地址空间初始化分成四类：`Boot Process`（创建 `\"System\"`进程）、`System Process`（创建系统进程）、`User Process Clone`、`User Process New Image`。\n\n这和我们前面提到的三种无 `Section` 情况和有 `Section` 情况是完全对应的：\n\n1. **Boot Process（创建 `\"System\"`进程）**：`Section == NULL`、`Parent == NULL && PsInitialSystemProcess == NULL`。\n2. **System Process（创建系统进程）**：`Section == NULL`，`Parent == PsInitialSystemProcess && PsInitialSystemProcess != NULL`。\n3. **User Process (Clone)**：`Section == NULL`，`Parent != PsInitialSystemProcess`。\n4. **User Process (New Image)**：`Section != NULL`。\n\n更准确地说，前三种模式会在这里直接调用 `MmInitializeProcessAddressSpace`；Boot Process 则更早通过 `MmInitializeHandBuiltProcess2` 间接完成普通地址空间初始化流程：\n1. **User Process (New Image)**：\n\n![38a42cc4e9c557f97d398afe6fc8239c&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/1967745ff9e58561c876f1bcb97ab0c742b3deb6ab64ffc498d074c2cd7e5010.jpg)\n\n2. **User Process (Clone)**：\n    ![c80a3690fb930ad0c89630bf647c35cf&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/861336518560932343044f4a48f40ad0b8ef16c5be58adf5300c007e50d0c78d.jpg)\n\n3. **System Process（系统进程路径）**：\n\n    ![803af1d602ead9533192a7dd8721b121&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/1b46ec9cdd6033eb6f4404ff7ecfd7b3d19c289861c3d46c152caa6ed12be372.jpg)\n\n4. **Boot Process（创建 `\"System\"`进程）**：已经在早些时候调用 `MmInitializeHandBuiltProcess2` 函数，完成了地址空间初始化，其内部也调用了 `MmInitializeProcessAddressSpace`。\n> 对于前三种模式，传入的参数决定地址空间初始化模式：映射新 image、克隆父进程，或创建只包含系统空间的系统进程地址空间。相关内容参考：[Windows 进程创建&#65288;04&#65289;&#65306;地址空间初始化](/notes/n-4e7721abe8c84130a292e886ccb41126/)\n\n可以看到前三种模式的共同点：三者在调用完毕`MmInitializeProcessAddressSpace`函数后，还会处理audit image file name：\n\n> `Process->SeAuditProcessCreationInfo.ImageFileName`用于保存进程创建时的镜像文件名信息，**主要供安全审计使用**。\n\n1. **System Process（系统进程路径）**：清除 large page flags，并分配空 image name 结构。\n2. **User Process (Clone)**：复制父进程 image audit name（`Process->SeAuditProcessCreationInfo.ImageFileName`）。\n3. **User Process (New Image)**：映射 image section，设置 audit image file name（`Process->SeAuditProcessCreationInfo.ImageFileName`）。\n\n### 3.11) PID/CID 分配\n\n地址空间就绪后，分配全局 CID 表项：\n\n![2bfba60a3d6b921917474c8b610d4bad&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/d95c9600561429a230a07e5e5b13578260439dcfb186cbbb4d6407c10ebfceae.jpg)\n\n> `PspCidTable` 是全局句柄表，PID 和 TID 本质上是该表的索引左移两位后得到的。`ExCreateHandle` 在表中查找空位并返回\"索引\"作为 PID。线程的 CID 分配使用同样的机制：`CidEntry.Object = Thread; Thread->Cid.UniqueThread = ExCreateHandle(PspCidTable, &CidEntry);`\n\n\n**注意**：\n1. 此时 `CidEntry.GrantedAccess = 0`：该 CID 表项没有授予任何访问权限，此时按 PID 打开进程仍被禁用。直到后续 `ObInsertObject` 完成且 `Process->GrantedAccess` 被设置后，按 PID 打开才有意义。\n2. `if (Process->UniqueProcessId == NULL)` 表示内核把 `ExCreateHandle` 返回 0 号\"索引\"作为分配失败的判据——即进程的 PID 不会为 0，所以即使是最先被创建的 `\"System\"`进程，它的 PID 为 4 而不是 0。\n\n> [!IMPORTANT] 真的没有 PID 为 0 的进程吗？\n> Windows 将 PID 0 保留给 `Idle Process`（空闲进程）：![85cc094263cc5acbb7ac2ab7fa532a77&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/955967e06de2d4f05a26291bcc4c7915c02d98a74b20884ee08a3599ad0547ff.jpg)\n>\n> `Idle Process` 不走 `PspCreateProcess` 路线。它对应早期手工构造的 `EPROCESS` 全局变量，是最早建立的进程对象：\n>\n> ![81a3d59e6bab7086bff7442c846492a8&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/fb6857bdbed7012da174ff92b762b0bfb314ebe1206770d99f7dc5f1e710a5d6.jpg)\n>\n> 当 CPU 没有可调度线程时，会执行 `Idle Process` 中的空闲线程（参考：[Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/)）。\n>\n> 这可以和 [x86 裸机实验&#65306;实模式进入保护模式](/notes/n-b8281eab11a94cc19572b938dead1e60/) 形成闭环：最初的启动执行流在加载内核后不会返回或凭空消失，而是绑定到手工构造的 `KiInitialThread` / `KiInitialProcess`。它完成早期初始化（包括调用 `PspCreateProcess` 创建 `\"System\"`进程）后，进入 `KiIdleLoop`，成为 0 号处理器上的空闲线程。\n>\n> 因此，前文 `Boot Process` 路径中的 `CurrentProcess` 实际上就是 `Idle Process` 的 `EPROCESS`。\n>\n> 至此将裸机实验、进程调度等联系了起来，逻辑彻底闭环。\n\n---\n\n随后调用 `ExSetHandleTableOwner(Process->ObjectTable, Process->UniqueProcessId)`，将新进程句柄表的 Owner 字段设为进程 PID：\n\n![bca3c9e95253b0650a8f9e1a1ca3a203&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/b7163005122ebff7847c9ba37c95cf19cf93f79de9772a168213cf6a54571d21.jpg)\n\n> 前面提到过，句柄表会被挂入全局 `HandleTableListHead` 链表，通过 Owner 可以找到句柄表的归属进程。\n\n---\n\n接着执行：\n\n\n![cb54ba2c5490060f6fb20d2bf46e3564&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/9452b864413c29e829a88e5d1a923b68e1a688dd616ed396a0f0aa518dc2c0eb.jpg)\n\n\n这段代码在系统启用详细审计时调用 `SeAuditProcessCreation`，为当前新建进程生成安全审计事件，记录 PID、父进程、镜像名和安全上下文等信息。\n\n\n### 3.12) Job 处理\n\n![bc38508ed310d35187ef01bb15a24089&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/e32a6a5a1d2c4a2849e42b4b9a34a845160b61baa7dd2be7d713bb42003c2737.jpg)\n\n> 图中代码含义：父进程属于 Job 时，新进程要么按规则 breakaway，要么继承并加入合适的 Job；若 Job 指定 Token，新进程 Primary Token（主令牌）还会被替换。\n\n用伪代码表示逻辑：\n\n```text\n如果存在父进程 Parent：\n    取父进程所属 Job\n\n    如果父进程在 Job 中，且 Job 没有 silent breakaway：\n        如果 Flags 要求 breakaway：\n            检查 Job 是否允许 JOB_OBJECT_LIMIT_BREAKAWAY_OK\n            不允许 → STATUS_ACCESS_DENIED\n        否则（继承 Job）：\n            PspGetJobFromSet(Job, JobMemberLevel, &Process->Job)\n            PspAddProcessToJob(Job, Process)\n            若 Job 指定了 Token → SeSubProcessToken 生成新 Token 并赋给进程\n```\n\n- **`PspGetJobFromSet`**：根据父进程当前所属的 `Job` 以及 `JobMemberLevel`，从父 Job 或 Job Set 中找出新进程应该加入的那个 Job，并写入 `Process->Job`。**核心逻辑**：`JobMemberLevel == 0` 时沿用父 Job；非 0 时在父 Job 的 Job Set 中查找匹配 member level 且满足层级约束的 Job。\n- **`PspAddProcessToJob`**：此处才是真正把新进程加入 Job。加入后 Job 的各种限制（进程数量、内存、CPU、优先级、UI 等）对新进程生效。\n- **Job Token 替换**：如果 Job 指定了 Token，则替换新进程的 Primary Token（主令牌）。若 `Job->Token != NULL`，调用 `SeSubProcessToken` 基于 Job Token 生成新的 Primary Token，再通过 `SeAssignPrimaryToken` 赋给进程。`ObDereferenceObject(NewToken)` 只是减少本函数对 NewToken 的引用计数，进程对象已持有它。\n\n### 3.13) PEB 创建或继承\n\n\n![fad2f9421d9d7fbac5b8282b3f163909&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/619529e7e30f91add20f4433f3304e26161de11acd7ba60e5d0ac2700fa9779d.jpg)\n只有 `Parent != NULL && CreatePeb == TRUE` 时才处理 PEB，满足这个条件的场景只有用户进程路径：\n\n1. **User Process (Clone)**：`Section == NULL`，`Parent != PsInitialSystemProcess`。\n2. **User Process (New Image)**：`Section != NULL`。\n\n> Boot Process（创建 `\"System\"`进程）不处理 PEB；\n> System Process（系统进程路径）也不会创建用户态 PEB。\n\n\n进入分支后，首先初始化 `INITIAL_PEB` 结构：\n- `InitialPeb.Mutant = (HANDLE)(-1)`。\n- `InitialPeb.ImageUsesLargePages = UseLargePages`。\n\n> [!note] PEB 与 PCB (KPROCESS) 的区别\n> PEB（Process Environment Block）位于用户地址空间，描述用户态进程环境（Image Base、Heap、NLS、子系统版本等）。KPROCESS（PCB）位于内核空间，嵌入 EPROCESS 头部，描述调度和地址空间切换状态。两者在不同阶段、由不同函数初始化。相关参考：[Windows 进程创建&#65288;05&#65289;&#65306;PEB 创建与初始化](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/) \n\n---\n\n**User Process (New Image)（新建 PEB）**：\n\n![673d89c0b5ae2c6d2c310a33484a6c7f&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/407891a59a9e441a163324b6538d586e0a60ed8b5b3ea645541731be702c6678.jpg)\n\n> 图中代码含义：User Process (New Image) 路径会初始化 `INITIAL_PEB`，然后调用 `MmCreatePeb` 创建全新的用户态 PEB。\n\n`MmCreatePeb` 内部完成大量工作，包括映射 NLS Section 到进程地址空间、依据 PE 结构填充 PEB 字段等。详见 [Windows 进程创建&#65288;05&#65289;&#65306;PEB 创建与初始化](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/)。\n\n---\n\n**User Process (Clone)**：\n\n![12db266807208ac18e381b537b693659&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/df77576d7a25d4b07a0d5e5ba5d65c03b00715fc36c5535f7ba537fe7b6fc2c6.jpg)\n\n> 图中代码含义：Clone/Fork 路径不会新建 PEB，而是复用父进程 PEB 的虚拟地址，并通过 `MmCopyVirtualMemory` 写入少量 `INITIAL_PEB` 修补字段。\n\n- `InitialPeb.InheritedAddressSpace = TRUE`。\n- `Process->Peb = Parent->Peb`：复用父进程 PEB 的虚拟地址。由于此时已克隆了父进程 VAD，PEB 页面是私有页，子进程写入时会触发 Copy-on-Write。\n- 使用 `MmCopyVirtualMemory` 将 `INITIAL_PEB` 中的特殊字段写入子进程 PEB 地址。\n- Wow64 进程（`Process->Wow64Process != NULL`）还会处理 `INITIAL_PEB32`。\n\n\n> [!IMPORTANT] 父子进程共用同一个 PEB？\n> `Process->Peb = Parent->Peb` 和 `Process->ObjectTable = CurrentProcess->ObjectTable` 虽然表面上都是“复制一个指针值”，但二者的地址空间语义完全不同。\n>\n> `Process->Peb = Parent->Peb` 发生在 **User Process (Clone)** 路径中。它让子进程的 `Peb` 字段保存与父进程相同的用户态虚拟地址；父子进程地址空间彼此独立，只是克隆初期的 PEB 页面可能映射到同一物理页，并受 Copy-on-Write 保护。一旦子进程写入自己的 PEB，就会触发写时复制，形成子进程独立的物理页。VAD 及写拷贝的实现原理参考：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)。\n>\n> `Process->ObjectTable = CurrentProcess->ObjectTable` 发生在 **Boot Process（创建 `\"System\"`进程）** 路径中。这里的 `ObjectTable` 指向内核中的 `HANDLE_TABLE` 结构，不属于用户态地址空间，也没有 COW 语义；`\"System\"`进程和 `Idle Process` 是真实共享同一个句柄表指针。这里没有增加句柄表引用计数，是因为 `Idle Process` 生命周期覆盖系统运行期，且它自身不再依赖该句柄表，因此可以直接交给 `\"System\"`进程使用。\n\n### 3.14) 插入活动进程链表与对象管理器\n\nPEB 处理后，插入全局活动进程链表：\n\n![123799e791b06a70b40841666cf09ba3&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/33b901f3b95863eb6b151b9bae68d9e962470448193cb632b6c490ad0c5424df.jpg)\n\n`PsActiveProcessHead` 是 Ps 模块维护的全局进程链表，所有活动进程通过 `EPROCESS.ActiveProcessLinks` 挂入。\n\n---\n\n紧接着：\n\n![e1efe82f9de486c747d8baedaa7b1e4d&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/a53578f90173d3bc0927f41b806a6170a8d304a97d16b87dbfb27fa50cb9f3aa.jpg)\n\n\n\n这段代码初始化 `AccessState` 为 `NULL`，然后判断 `PsUseImpersonationToken`。当其为 `FALSE` 时，内核不选择使用模拟令牌，而是使用调用者或 `\"System\"`进程的 Primary Token（主令牌）。\n\n> `AccessState` 用于后续 `ObInsertObject` 创建进程句柄时对 `DesiredAccess` 做访问检查；\n\n\n然后调用 `ObInsertObject` 函数，随后释放临时 `AccessState`。\n\n\n> [!NOTE] `ObInsertObject` 函数的核心逻辑\n> ![d1a820b395e0fb7f9c1e09bb0fc449eb&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/81a6f03fabe99b23b60242b37c17d02ab6af4addb434ce057b0d6ff187e146dc.jpg)\n> 1. 在当前进程的句柄表中创建句柄。\n> 2. 将新建进程添加到`PsProcessType->TypeList`中。\n> \t1. 只有对象类型启用了 `MaintainTypeList`（可以认为 Windows 为所有对象类型都启用了），才会为该类型创建的对象分配 `CreatorInfo`，进而才会在这里被插入 `TypeList`。\n> 3. 扣取当前进程相应的资源配额 `quota`。PS：谁创建的进程内核对象，就扣谁的资源额度。\n> 4. 补充一点：如果有名字的话，该函数还会将内核对象插入到内核对象命名空间。参考：[Windows 内核路径解析&#65306;对象命名空间与 DeviceMap 机制](/notes/n-fd51c9c5b3534549885452c844b09c8e/) \n\n\n---\n\n内核对象的创建、初始化和登记可以类比为 C++ 对象的“分配、初始化、注册”三阶段：\n\n```cpp\nauto p = new KEVENT;        // ObCreateObject\nInitialize(p);             // KeInitializeEvent\nRegister(p);               // ObInsertObject\n```\n\n现在调用 `ObInsertObject` 实现“注册”。\n\n### 3.15) 调度参数与自访问权限\n\n因为执行 `ObInsertObject` 之后，对象已可被外部按名称访问，因此后续代码立即计算优先级、设置 GrantedAccess。\n\n1. 确认线程链表为空后，计算进程基础优先级和时间片，写入 KPROCESS/Pcb：\n\n![6f3f33b459da60c2bbe0f4e81aaf13a8&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/edae051572f9f81e04d6c85a8ad00efbfc0abc0b6c1d37a3114782d229a62b4c.jpg)\n\n> 图中代码含义：进程对象插入成功后，内核确认此时线程链表仍为空，然后计算并写入基础优先级和 quantum。\n\n2. 设置 GrantedAccess：\n\n![fca1f9ab75a6f93d14ac4fee0064e048&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/6e3a702e3cd3d15c9f31b3490e9426c707fc1288001a7ebbd0591f852689893f.jpg)\n\n> 图中代码含义：进程先获得最低限度的自访问权限，再根据安全描述符和自身 Primary Token 计算 `Process->GrantedAccess`，最后补上一组进程自管理必需权限。\n\n对象插入成功后，进程先获得最低限度的自访问权限：\n\n```c\nProcess->GrantedAccess = PROCESS_TERMINATE;\n```\n\n- 若为普通父进程创建的用户进程，取对象 Security Descriptor，用进程自身的 Primary Token 做 `SeAccessCheck(MAXIMUM_ALLOWED)`，得到一组访问权限。然后**无论 SeAccessCheck 结果如何**，都强制 OR 补充一组自管理必需权限：\n\t- `PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE`\n\t- `PROCESS_QUERY_INFORMATION | PROCESS_TERMINATE | PROCESS_CREATE_THREAD`\n\t- `PROCESS_DUP_HANDLE | PROCESS_CREATE_PROCESS | PROCESS_SET_INFORMATION`\n\t- `STANDARD_RIGHTS_ALL | PROCESS_SET_QUOTA`\n> **为什么要补上这些权限**：*创建一个\"对自己什么也做不了\"的进程没有意义。*\n\n- 若无父进程，或父进程为 `PsInitialSystemProcess`（即 `\"System\"`进程），直接设置 `PROCESS_ALL_ACCESS`。\n\n### 3.16) 返回句柄与 CreateTime\n\n![dcf85800e3b00b0e750d67933bd14308&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/79ee4eec83a45daaf4d6ff12a453bf4bb955d6dd8d36fb2a0a0858688d9cc15d.jpg)\n\n> 图中代码含义：流程最后记录 `CreateTime`，并在异常保护下把 PEB 地址写入当前线程 TEB 的 `ArbitraryUserPointer`，同时把进程句柄写回调用者提供的输出地址。\n\n最后记录 `EPROCESS.CreateTime`，并且在异常保护下（`try/except`）完成两件事：\n\n1. 将新进程 PEB 地址写入当前线程 `TEB.NtTib.ArbitraryUserPointer`。\n2. 将进程句柄写回用户态 `*ProcessHandle = LocalProcessHandle`。\n\n> 若发生异常，则忽略并继续向下执行。\n\n---\n\n## 4) 失败路径与清理模型\n\n![306ecfe70f2b9b158ea36b720c142436&#95;MD5&#46;jpg](/notes/n-c95d91895dd0421ebd2799d64b467384/media/3e77899712bf8d8c5d3f9538bff5586ceb58ff337ddd61d914c22d6b605dcdbf.jpg)\n\n> 图中代码含义：失败路径统一减少进程和父进程引用；由于前面资源已经挂入 `EPROCESS`，真正释放动作主要依赖进程对象引用归零后执行的删除例程。\n\n`PspCreateProcess` 的失败出口只做两类引用释放：\n\n- **`exit_and_deref`**：`ObDereferenceObject(Process)`，减少新进程对象引用计数。\n- **`exit_and_deref_parent`**：若有父进程，则额外执行 `ObDereferenceObject(Parent)`。\n\n创建流程会逐步把 `SectionObject`、`DebugPort`、`ExceptionPort`、`Job`、`ObjectTable`、`Token`、地址空间、审计镜像名等资源挂到 `EPROCESS` 上。失败出口不逐项手工释放这些资源，而是让进程对象引用计数归零后触发 `PspProcessDelete`，由它逐项释放已挂入的资源。\n> 待补参考：Windows 进程的销毁（原链接目标缺失）。\n\n\n> [!note] TotalNumberOfObjects 的对称性\n> `ObCreateObject` 阶段（`ObpAllocateObject` 中）通过 `InterlockedIncrement` 递增 `ObjectType->TotalNumberOfObjects`。失败时 `ObDereferenceObject` 触发 `ObpFreeObject`，通过 `InterlockedDecrement` 恢复计数。但 `HighWaterNumberOfObjects` 作为历史峰值不会回退。\n\n---\n## 5) 总结\n\n`NtCreateProcessEx` 是进程创建的系统调用入口层，职责集中在参数探测与分发：\n\n1. 通过 `PAGED_CODE()` 约束调用环境。\n2. 当调用来自用户态时，使用 `ProbeForWriteHandle(ProcessHandle)` 探测输出指针。\n3. 要求 `ParentProcess` 非空，否则返回 `STATUS_INVALID_PARAMETER`。\n4. 将参数转交给内部实现 `PspCreateProcess`。\n\nPspCreateProcess的核心调用链条：\n\n```\n    1. 建立当前执行上下文\n        -> PsGetCurrentThread\n        -> KeGetPreviousModeByThread\n        -> PsGetCurrentProcessByThread\n        => 得到 CurrentThread、PreviousMode、CurrentProcess，\n           后续参数探测、句柄引用、访问检查都依赖这些上下文。\n\n    2. 校验创建参数并引用父进程\n        -> Flags 合法性检查\n        -> ObReferenceObjectByHandle(ParentProcess)\n        => 将父进程句柄转换为 EPROCESS 指针，\n           并确认调用者具备 PROCESS_CREATE_PROCESS 权限。\n\n    3. 创建进程对象\n        -> ObCreateObject\n        -> RtlZeroMemory(Process, sizeof(EPROCESS))\n        => 分配 OBJECT_HEADER + EPROCESS body。\n           此时只是“进程对象内存存在”，还不是完整进程。\n\n    4. 初始化 EPROCESS 基础字段并继承父进程属性\n        -> ExInitializeRundownProtection\n        -> PspInitializeProcessLock\n        -> InitializeListHead(ThreadListHead)\n        -> PspInheritQuota\n        -> ObInheritDeviceMap\n        => 初始化生命周期保护、进程锁、线程链表；\n           继承 QuotaBlock、DeviceMap、Hard Error 配置、父 PID 等。\n\n    5. 绑定外部对象\n        -> ObReferenceObjectByHandle(SectionHandle)\n        -> ObReferenceObjectByHandle(DebugPort)\n        -> ObReferenceObjectByHandle(ExceptionPort)\n        => 保存 SectionObject、DebugPort、ExceptionPort。\n           SectionObject 决定 Image 创建或 Clone 语义；\n           DebugPort / ExceptionPort 决定调试和异常通知路径。\n\n    6. 建立页表骨架和 MM 基础结构\n        -> MmCreateProcessAddressSpace\n        或\n        -> MmInitializeHandBuiltProcess\n        => 创建或复用页表骨架，返回 DirectoryTableBase。\n           DirectoryTableBase 是后续 CR3 语义的来源；\n           同时初始化 working set、hyperspace、VadRoot 等 MM 基础结构。\n\n    7. 初始化 KPROCESS / PCB\n        -> KeInitializeProcess\n        => 将 DirectoryTableBase、Affinity、基础优先级等写入 Process->Pcb。\n           从这里开始，该进程具备调度器意义和地址空间切换意义。\n\n    8. 初始化安全上下文\n        -> PspInitializeProcessSecurity\n        => 初始化进程安全字段和 Primary Token。\n\n    9. 初始化句柄表\n        -> ObInitProcess\n        或 Boot Process 路径复用早期 ObjectTable\n        => 普通路径创建空句柄表，或复制父进程可继承句柄；\n           Boot Process 路径不走普通继承，而是复用早期 ObjectTable。\n\n    10. 初始化完整地址空间语义\n        -> MmInitializeProcessAddressSpace\n        => 根据 Section / Parent 区分四种路径：\n           Image：映射 EXE Section，并通过 PsMapSystemDll 映射 system DLL；\n           Clone：克隆父进程地址空间；\n           System：创建系统进程地址空间；\n           Boot：跳过普通用户地址空间初始化。\n\n    11. 分配 PID/CID\n        -> ExCreateHandle(PspCidTable)\n        -> ExSetHandleTableOwner\n        => 在全局 PspCidTable 中分配 UniqueProcessId。\n           线程 TID 也使用同一张 PspCidTable 分配；\n           随后设置进程句柄表 Owner。\n\n    12. 处理 Job 继承与限制\n        -> PspGetJobFromSet\n        -> PspAddProcessToJob\n        -> SeSubProcessToken\n        => 根据父进程 Job、breakaway 标志、JobMemberLevel\n           决定是否加入 Job；\n           如果 Job 指定 Token，还可能替换新进程 Primary Token。\n\n    13. 创建或继承 PEB\n        -> MmCreatePeb\n        或\n        -> Process->Peb = Parent->Peb + MmCopyVirtualMemory\n        => Image 路径创建新 PEB；\n           Clone 路径继承父进程 PEB 虚拟地址，并依赖写时复制；\n           Boot/System 路径不创建用户态 PEB。\n\n    14. 挂入 Ps 活动进程链表\n        -> InsertTailList(&PsActiveProcessHead, &Process->ActiveProcessLinks)\n        => 将进程挂入 Ps 模块维护的全局活动进程链表，\n           之后 Ps 模块可以枚举到该进程。\n\n    15. 插入对象管理器并返回进程句柄\n        -> SeCreateAccessStateEx\n        -> ObInsertObject\n        => 将进程对象正式插入对象管理器；\n           在调用者句柄表中创建进程句柄并返回。\n           ObInsertObject 之后，对象才真正可被外部通过对象管理器访问。\n\n    16. 设置运行属性和自访问权限\n        -> 计算基础优先级和时间片\n        -> 设置 Process->GrantedAccess\n        => 设置调度参数；\n           同时保证进程拥有必要的自访问权限，\n           避免出现“进程对自己什么也做不了”的状态。\n\n    17. 写回结果并返回\n        -> KeQuerySystemTime(&Process->CreateTime)\n        -> *ProcessHandle = LocalProcessHandle\n        => 记录创建时间，写回进程句柄，返回最终状态。\n```\n",
+  "id": "c95d9189-5dd0-421e-bd27-99d64b467384",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "os/windows/process",
+      "reverse/windows",
+      "arch/x86",
+      "lang/c"
+    ],
+    "title": "Windows 进程创建（02）：内核进程对象创建"
+  },
+  "resources": [
+    "0824d0f6cc4d88bf66618bfcccbb5cd27d3d92e3ed3238aa2dbe5166b7435784.jpg",
+    "09ee58fd9740d109112f089474deb8cd3b7f4fced40b43ec12e629ce4a89b1a2.jpg",
+    "16cfbac0003e6aec87bcc89f43506aad06cad785f17a86d85bc3359df479f4c6.jpg",
+    "1967745ff9e58561c876f1bcb97ab0c742b3deb6ab64ffc498d074c2cd7e5010.jpg",
+    "19ae413bf037c3d12278b8cc6a7cd7d5a6cc69d84b30cd120f54ee75adf19068.jpg",
+    "1b0e974912f8eb25a187c299bab1a546e235a8d74be7c8752d8a2b626a2e96f1.jpg",
+    "1b46ec9cdd6033eb6f4404ff7ecfd7b3d19c289861c3d46c152caa6ed12be372.jpg",
+    "1c8709832306af044fcabd0eeb4af543adbf6fc75fdfcb553a782f02cd8628b4.jpg",
+    "2ac7449b2eb00858735b42bed5dbf1cbf5208a255a06db8ab766c958d52abf1a.jpg",
+    "2cf7f4fff4c439293e15ca39c80da2a6d237813b1cd76c527ae79631ae195370.jpg",
+    "2efca404923ad5ee0c7464407f87e0b3a318f6c05ee492d7c4fcbb428f13a20d.jpg",
+    "2ff583057fcd03fd431f0f3baf4117c25443bbc8c31f23f42a9b87c03fdc29f3.jpg",
+    "33b901f3b95863eb6b151b9bae68d9e962470448193cb632b6c490ad0c5424df.jpg",
+    "365e1030c7706f3ad2e6286e6ff94eed8e71fd2fc731234adcdb2dabf696d042.jpg",
+    "3a4bf5e09a445241235ac906230241cd5ad4358760c427202b1d879ab260dd87.jpg",
+    "3cc1fe3deca28d5d5b8a22a45c5a94960697e026a9ece430aee2ff01115e8ed5.jpg",
+    "3e77899712bf8d8c5d3f9538bff5586ceb58ff337ddd61d914c22d6b605dcdbf.jpg",
+    "407891a59a9e441a163324b6538d586e0a60ed8b5b3ea645541731be702c6678.jpg",
+    "619529e7e30f91add20f4433f3304e26161de11acd7ba60e5d0ac2700fa9779d.jpg",
+    "6e3a702e3cd3d15c9f31b3490e9426c707fc1288001a7ebbd0591f852689893f.jpg",
+    "70624e90f67ef82c529677ea1f3be84fe883950cb6bf4748d680c1a7ed90f07b.jpg",
+    "72deaea74813caba948c6f227ce801fb4c2560c4d532f4d1ef8474960e58ea66.jpg",
+    "750266216f8859010986c615e412fd8a220763231c425e593dd6b853556fe911.jpg",
+    "79ee4eec83a45daaf4d6ff12a453bf4bb955d6dd8d36fb2a0a0858688d9cc15d.jpg",
+    "7a9ea4b31e9318da5c96860ec2dd07bd0a9c2d5081617e045a8b1509e716d9c4.jpg",
+    "7d29cf41aeae60fb2d1b4a20ee83e9b06626a35ccece68dd07efec9d3f7f1dd1.jpg",
+    "818a2a9ef4a216653443916aed5e8d0bf35609c850cdb4c5e729d3b5889ced1e.jpg",
+    "81a6f03fabe99b23b60242b37c17d02ab6af4addb434ce057b0d6ff187e146dc.jpg",
+    "861336518560932343044f4a48f40ad0b8ef16c5be58adf5300c007e50d0c78d.jpg",
+    "86923625d909d2b4080e47dca4ffdb9deb39577b08e80edadb7df9d2928b7464.jpg",
+    "94433178251cd32d3ac9184ca2ea24427f67a01459fdd42647e2870b5b3fa946.jpg",
+    "9452b864413c29e829a88e5d1a923b68e1a688dd616ed396a0f0aa518dc2c0eb.jpg",
+    "955967e06de2d4f05a26291bcc4c7915c02d98a74b20884ee08a3599ad0547ff.jpg",
+    "99ff6a6c3cb430b918c7741f0f06a79f38638c86382bebf5a0ef39b05cb93244.jpg",
+    "a53578f90173d3bc0927f41b806a6170a8d304a97d16b87dbfb27fa50cb9f3aa.jpg",
+    "a59de479f13675fa963451be30689ae7bdba1ad640f68b3167afeab8417332bd.jpg",
+    "a9c4b448b9593cf3d2732936278083e676cddd2e3f997c16937678938aa7cd4a.jpg",
+    "b65468e218b505b9d4d42d4f3a6375bfb9197209389f31df69bf061171e6fdde.jpg",
+    "b7163005122ebff7847c9ba37c95cf19cf93f79de9772a168213cf6a54571d21.jpg",
+    "be6ec19c6749c7452bbc9afde240d2268d3c657478eeb354f14424be58a05fae.jpg",
+    "c2ed51255dd04aa99dac44aeaa78489ba47eae072ef1eaacc18390a5de76c5fb.jpg",
+    "d6b44ad32dee993baa5a63a7f782ad6c52ba3a37b404de5b23594ed77460bcc0.jpg",
+    "d95c9600561429a230a07e5e5b13578260439dcfb186cbbb4d6407c10ebfceae.jpg",
+    "df77576d7a25d4b07a0d5e5ba5d65c03b00715fc36c5535f7ba537fe7b6fc2c6.jpg",
+    "e32a6a5a1d2c4a2849e42b4b9a34a845160b61baa7dd2be7d713bb42003c2737.jpg",
+    "e51d3cd3bf02873253bb62807708d8f02de800baddb222745bce97add3c7ee6d.jpg",
+    "edae051572f9f81e04d6c85a8ad00efbfc0abc0b6c1d37a3114782d229a62b4c.jpg",
+    "f3368080942da9ba8fd11a4ff9607ad90c808ed60323854c7f166bb80909bc3b.jpg",
+    "f6e1c26fa94a4e829541e8f26ec212d7282fcc08f604f8e816865173ca9025aa.jpg",
+    "fb6857bdbed7012da174ff92b762b0bfb314ebe1206770d99f7dc5f1e710a5d6.jpg"
+  ],
+  "url": "/notes/n-c95d91895dd0421ebd2799d64b467384/"
+}

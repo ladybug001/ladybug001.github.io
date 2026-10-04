@@ -1,0 +1,28 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-618b07ea8f11041f1bca",
+      "kind": "heading",
+      "offset": 6
+    },
+    {
+      "id": "h-7e8644b78d06fa4afa23",
+      "kind": "heading",
+      "offset": 67
+    },
+    {
+      "id": "h-c80e49ecc1f1bac7797b",
+      "kind": "heading",
+      "offset": 478
+    }
+  ],
+  "body": "## IDA\n\n为什么要学习IDA?\n在我们中级班课程中，有大部分时间是分析系统内核文件，用到的工具\n主要就是IDA。\n\n## 知识点\n\n1. sub_xxxx：IDA识别成的函数\n2. loc_xxx：不是函数\n3. 字符识别乱码-->设置IDA(字符编码?)编码格式：`Option`s->`Set literals`->`选择合适编码`\n4. 修改汇编视图显示硬编码：-->Option-->General-->Number of opcode bytes (non-graph)修改显示的硬编码字节数，最大是16\n5. 展示堆栈平衡的指示数字：-->Option-->General-->Stack pointer  可以显示在反汇编视图中展示出堆栈的平衡情况\n6. 打开IDA`F5`生成的伪代码的花括号：EDIT-->Plugins-->Hex Rays Decompiler-->Option-->Analysis options1-->Keep curly braces for single-statement blocks\n## 快捷键\n\n1. 切换流程图/文本汇编视图\n\t- 空格 \n2. 跳转到某一地址\n\t1. G&&Ctrl+G—\n3. 转换为伪C代码\n\t1. F5\n4. 交叉引用\n\t1. X快捷键\n5. P--指定某处为函数头(PS:在IDA识别函数头错误的时候更正IDA)\n6. 显示硬编码->A C D U\n\t1) A转换为 字符串，\n\t2) C转换为代码，\n\t3) D转换为数据，多次按D可以修改数据的类型\n\t4) U转换为未定义。\n7. 注释\n\t1) 分号键-->;  这种方式 凡是引用这个位置的地方也会出现该注释\n\t2) Shift+;  这种方式 引用这个位置的地方就不会出现注释了\n8) 创建结构体、修改全局变量、修改局部变量\n\t1) Struct视图-->add struct--> 使用D键指定各成员的类型即可\n\t2) Alt+Q 为全局变量的指定一个结构体类型\n\t3) T为局部变量指定一个结构体类型(PS:寄存器+偏移就是局部变量)\n10) 修改变量、函数名\n\t1) N快捷键 \n\n11) 关闭窗口中各选项的作用![Pasted image 20230817090728&#46;png](/notes/n-ea6d689d9d0242a194a24743b6065e0c/media/ac88ca6f435a3852c08b2f9a5fe99aefb2cc528c8cf3b468801cdff414a5382b.png)\n\t1. 不打包数据库文件\n\t2. 打包数据库文件\n\t3. 打包保存且压缩IDA生成的四个文件到打包生成的文件中 \n\t4. 是否清理垃圾文件，勾选则会无用的文件\n\t5. 不保存数据库，即——此次进行的所有操作都不保存，是在我们修改错误后唯一的回退途径（PS：IDA没有撤销选项）\n\n12) 搜索指令 ALT+T \n13) 修改sp（stack pinter）的值\n\t1) ALT+K\n14) 数值转换成十六进制表示\n\t1) H键\n15) 数值转换成ASCII编码字符\n\t1) R键\n16) IDA匹配算法库\n\t1) Edit --> plugins --> Signsrch --> 选项全部勾选 --> Continue ；**PS**：如果匹配识别用了某些算法库，就会弹窗一个视图显示。否则就不会。\n17) 若伪代码中出现数字，单击\"R键\"会出现其对应的十六进制ASCII，若想返回可以单击\"R键\"或\"H键\"\n\n\n\n\n\n",
+  "id": "ea6d689d-9d02-42a1-94a2-4743b6065e0c",
+  "metadata": {
+    "title": "IDA"
+  },
+  "resources": [
+    "ac88ca6f435a3852c08b2f9a5fe99aefb2cc528c8cf3b468801cdff414a5382b.png"
+  ],
+  "url": "/notes/n-ea6d689d9d0242a194a24743b6065e0c/"
+}

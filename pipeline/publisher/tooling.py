@@ -30,7 +30,7 @@ def lock(project=PROJECT):
 
 
 def local_hugo(project=PROJECT):
-    return Path(project) / ".local/tools/hugo" / lock(project)["hugo"] / "bin" / ("hugo.exe" if os.name == "nt" else "hugo")
+    return Path(project) / ".local/tools/hugo-extended" / lock(project)["hugo"] / ("hugo.exe" if os.name == "nt" else "hugo")
 
 
 def runtime_check(project=PROJECT):
@@ -48,7 +48,7 @@ def runtime_check(project=PROJECT):
 
 
 def _safe_output(project, path):
-    if not within(Path(project) / ".local/tools/hugo", path):
+    if not within(Path(project) / ".local/tools/hugo-extended", path):
         raise ValueError("Hugo tool output must remain project-local")
     for value in (path, *path.parents):
         if value.is_symlink() or (hasattr(value, "is_junction") and value.is_junction()):
@@ -81,8 +81,8 @@ def install_hugo(project=PROJECT):
     expected = data["hugo_" + system + "_amd64_sha256"]
     if not re.fullmatch(r"[a-f0-9]{64}", expected):
         raise ValueError("Invalid pinned archive SHA-256")
-    filename = f"hugo_{data['hugo']}_{system}-amd64." + ("zip" if windows else "tar.gz")
-    folder = project / ".local/tools/hugo" / data["hugo"]
+    filename = f"hugo_extended_{data['hugo']}_{system}-amd64." + ("zip" if windows else "tar.gz")
+    folder = project / ".local/tools/hugo-extended" / data["hugo"]
     # Retain the existing Windows cache name; do not redownload a verified cache.
     archive_path = folder / ("hugo.zip" if windows else filename)
     _safe_output(project, archive_path)
@@ -121,6 +121,6 @@ def install_hugo(project=PROJECT):
             stream.write(raw)
         Path(pending).rename(archive_path)
     result = subprocess.run([str(executable), "version"], capture_output=True, text=True, encoding="utf-8", timeout=15, check=True)
-    if not re.search(r"\bhugo v" + re.escape(data["hugo"]) + r"(?:-|\s)", result.stdout):
+    if not re.search(r"\bhugo v" + re.escape(data["hugo"]) + r"[^\s]*\+extended\b", result.stdout):
         raise ValueError("Installed Hugo reports a different version")
     return executable

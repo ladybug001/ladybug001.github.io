@@ -1,0 +1,64 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b9e191488d7c1c7585ab",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-0b4b661676708d2ee9b3",
+      "kind": "heading",
+      "offset": 407
+    },
+    {
+      "id": "h-f6e5b5f7423ae7418730",
+      "kind": "heading",
+      "offset": 436
+    },
+    {
+      "id": "h-298729d1dd5cb54f2c56",
+      "kind": "heading",
+      "offset": 1380
+    },
+    {
+      "id": "h-b7e17ad4f65471707557",
+      "kind": "heading",
+      "offset": 2026
+    },
+    {
+      "id": "h-59d5af43c3f43f3f2f1a",
+      "kind": "heading",
+      "offset": 2154
+    },
+    {
+      "id": "h-7587f4d12348dea2cf84",
+      "kind": "heading",
+      "offset": 3011
+    },
+    {
+      "id": "h-3ab1c15c45b5c7c6c2c2",
+      "kind": "heading",
+      "offset": 3800
+    }
+  ],
+  "body": "# Windows 线程调度与优先级机制\n\n> [!abstract] 前置知识\n> **架构界定**：本文中引用的结构体偏移量及调度链表地址均基于 **x86 (32位)** 架构（如 WinXP / Win7）。\n> 阅读本笔记前，建议先了解：[Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)\n\n在 Windows 内核中，线程具有 3 种基本状态：**运行**、**就绪**、**等待**。\n\n- **运行状态**：正在运行的线程由当前 CPU 的 `_KPCR` 结构体成员 `CurrentThread` 记录。\n- **就绪状态与等待状态**：Windows 内核为了高效调度与管理，维护了 **33 个全局状态链表**（32 个就绪链表 + 1 个全局等待链表）。\n\n## 33 \"个\"全局状态链表\n\n### 全局等待链表 (KiWaitListHead)\n\n当线程调用 `Sleep`、`WaitForSingleObject` 等阻塞函数时，会从运行态变为等待（阻塞）态，CPU 剥夺其执行权，并将其链入相应对象的等待链表以及全局等待链表中。\n\n等待状态的线程管理机制比较特殊。在内核中，只要对象包含类型为 `_DISPATCHER_HEADER` 的 `Header` 成员，该对象即为“可等待对象”。当线程等待某个对象时，内核会分配一个 `_KWAIT_BLOCK`（等待块），并将此块**同时插入两个链表**：\n\n1. **插入到对象的私有 `WaitListHead`**：用于在对象状态变为“触发”（Signaled）时，快速查找到并唤醒对应的线程。\n2. **插入到全局等待链表 `KiWaitListHead`**：将分散在无数个对象私有链表上的等待线程，以统一维度重新组织。\n\n> [!info] 全局等待链表的工程意义\n> 既然已经有了对象的私有等待链表用于唤醒，为何还需要全局链表？\n> 其本质目的并非为了“调度唤醒”，而是为了**内核全局管理、调试与资源清理**。例如，若某个线程被强杀或出现异常，内核可以通过遍历全局等待链表，快速清理其残留在各个可等待对象私有链表中的节点。\n\n等待链表是一个双向链表，以全局等待链表为例：其表头由内核全局变量 `KiWaitListHead` 维护。在 WinDbg 中查看表头，可以看到其 `Flink` 和 `Blink` 指针：\n\n![bace704e26d157a9d087599e4b07aeb7&#95;MD5&#46;jpg](/notes/n-498bf4275ad54e118f3c199952e3257b/media/83c5271204b16037cc306ffd9868d763e332621f22172f69b27b2c34b3cf2d4c.jpg)\n\n> [!tip] 结构体反向寻址\n> 链表节点实际挂载的是 `_KTHREAD` 结构体在 `0x60` 偏移处的 `WaitListEntry` 成员。因此，若要计算线程结构体的首地址，需将链表节点地址减去 `0x60`。\n\n\n### 就绪链表 (KiDispatcherReadyListHead)\n\n内核维护了 32 个就绪状态的调度链表，对应 0~31 共 32 个优先级，这也反映了 Windows 采用的是**多级反馈队列调度方式**。\n\n全局变量 `KiDispatcherReadyListHead` 是 `_LIST_ENTRY` 元素的数组，可以通过它找到 32 个就绪链表的头结点：\n\n![0b884b5f8522308a28e73d75ab80d061&#95;MD5&#46;jpg](/notes/n-498bf4275ad54e118f3c199952e3257b/media/21e99205ec7d8fe48499e6bba3ae1d8248be035b3968185654bff21a70ebfb33.jpg)\n\n就绪线程链入的也是 `_KTHREAD` 在 `0x60` 偏移处，此时它的名字叫 `SwapListEntry`（**注**：`0x60` 偏移是一个共用体 `union`，在不同状态下它既是 `WaitListEntry` 也是 `SwapListEntry`）。\n\n![01ad22cf14e71180bc90f02b05d649a3&#95;MD5&#46;jpg](/notes/n-498bf4275ad54e118f3c199952e3257b/media/93c552d277973c11a659196c95a6f09dcb6dcea09934a318f2e338e58544d03d.jpg)\n\n## 线程优先级调度与空闲线程\n\n无论是主动让出还是时间片到期被剥夺，内核均通过 `KiFindReadyThread` 函数来确立下一个执行线程。该函数依赖 32 个调度链表的优先级顺序（31~0 递减）进行扫描。\n\n### 优先级位图加速机制 (`_KiReadySummary`)\n\n若每次调度都从 31 级遍历至 0 级链表，寻找不为空的就绪链表，会产生巨大的性能开销。\n\n为此，Windows 内核引入了一个 `DWORD`（32位）类型的全局掩码变量 `_KiReadySummary` 作为位图加速器。\n\n当线程挂入或移出调度链表时，内核会同步更新该位图：\n- 若某优先级链表不为空，则将 `_KiReadySummary` 对应的二进制位置为 1。\n- 若某优先级链表变为空，则置为 0。\n\n如此一来，调度器只需一条诸如 `bsr`（Bit Scan Reverse）的位扫描指令，即可瞬间定位到当前含有就绪线程的最高优先级链表。\n\n如下图所示，若变量二进制中第 30 和 29 位为 1，代表只有这两个优先级的链表内存在就绪线程。\n\n![878f4b7f2bba86f4dd99b6ed6eef194c&#95;MD5&#46;jpg](/notes/n-498bf4275ad54e118f3c199952e3257b/media/ec76692ff5491b064871b0a87b67ae77fbd241ca2e49882a813a2379a4553fff.jpg)\n\n> [!info] 就绪链表的判空逻辑\n> 调度器通过全局变量 `KiDispatcherReadyListHead` 找到 32 个就绪链表的头结点（链表头）。由于就绪链表是双向循环链表，判断其是否为空的底层逻辑为：判断头结点的 `Flink`（前向指针）和 `Blink`（后向指针）是否都指向头结点自身。\n> ![232e28f063ad3f64394173dde55542ca&#95;MD5&#46;jpg](/notes/n-498bf4275ad54e118f3c199952e3257b/media/d66cc9a7ce33e3d1bbd56264021230ab71036d23b46bc5719a694f390de4f85d.jpg)\n\n### 空闲线程 (IdleThread) 兜底\n\n在极端情况下，若 `_KiReadySummary` 为 0（即 32 个调度链表全部为空），CPU 将无事可做。此时，内核会直接调度 `_KPCR.PrcbData.IdleThread` 所指向的**空闲线程**（系统为每颗物理核心静态分配的专属占位线程）。\n\n在 IDA 中观察系统底层核心切换函数 `KiSwapThread` 对 `KiFindReadyThread`（查找就绪线程）的调用逻辑：若 `KiFindReadyThread` 返回结果为空（即没有找到任何就绪线程），程序会执行跳转分支：\n\n![edc72a5e30fe692f5d53a9551484c119&#95;MD5&#46;jpg](/notes/n-498bf4275ad54e118f3c199952e3257b/media/932a6518284ae8367869b4b2e3b5c17317995ce70146cdaeac69503d0013150a.jpg)\n\n该跳转分支，直接将 `_KPRCB` 中记录的 `IdleThread` 指针提取至 `EAX` 寄存器，然后跳转至线程切换逻辑处，将其作为目标线程执行（执行底层切换，详见 [SwapContext 的堆栈切换](/notes/n-62ec151e205b44f0b53cdb19ecec5280/#h-f74ed608a49887527743)）：\n![1941c2f3e2c5659e79a416a1420a5d4e&#95;MD5&#46;jpg](/notes/n-498bf4275ad54e118f3c199952e3257b/media/a82ba3ba723685610f41440c58491964d3c40c9ca2589d247d94708495b1d9ca.jpg)\n\n---\n\n## 相关链接\n\n- [Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)——时间片与优先级触发切换后的动作\n",
+  "id": "498bf427-5ad5-4e11-8f3c-199952e3257b",
+  "metadata": {
+    "tags": [
+      "os/windows/thread",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows 线程调度与优先级机制"
+  },
+  "resources": [
+    "21e99205ec7d8fe48499e6bba3ae1d8248be035b3968185654bff21a70ebfb33.jpg",
+    "83c5271204b16037cc306ffd9868d763e332621f22172f69b27b2c34b3cf2d4c.jpg",
+    "932a6518284ae8367869b4b2e3b5c17317995ce70146cdaeac69503d0013150a.jpg",
+    "93c552d277973c11a659196c95a6f09dcb6dcea09934a318f2e338e58544d03d.jpg",
+    "a82ba3ba723685610f41440c58491964d3c40c9ca2589d247d94708495b1d9ca.jpg",
+    "d66cc9a7ce33e3d1bbd56264021230ab71036d23b46bc5719a694f390de4f85d.jpg",
+    "ec76692ff5491b064871b0a87b67ae77fbd241ca2e49882a813a2379a4553fff.jpg"
+  ],
+  "url": "/notes/n-498bf4275ad54e118f3c199952e3257b/"
+}

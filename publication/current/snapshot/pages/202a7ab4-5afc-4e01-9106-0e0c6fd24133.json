@@ -1,0 +1,109 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-74eb9d0e302e4943dbbf",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-becba68d31e6e9f0d570",
+      "kind": "heading",
+      "offset": 202
+    },
+    {
+      "id": "h-3dd8b4ed1bf11713ebff",
+      "kind": "heading",
+      "offset": 216
+    },
+    {
+      "id": "h-5ae7c0f3d3d0a865408c",
+      "kind": "heading",
+      "offset": 878
+    },
+    {
+      "id": "h-cc54944d4db939239f86",
+      "kind": "heading",
+      "offset": 1749
+    },
+    {
+      "id": "h-f39f654ca4135a654bf2",
+      "kind": "heading",
+      "offset": 1767
+    },
+    {
+      "id": "h-8463fd36117b924c6930",
+      "kind": "heading",
+      "offset": 2783
+    },
+    {
+      "id": "h-ea76c025268d27d396be",
+      "kind": "heading",
+      "offset": 6355
+    },
+    {
+      "id": "h-a3657073c8661cbdcff0",
+      "kind": "heading",
+      "offset": 6373
+    },
+    {
+      "id": "h-7a92e4991d4ac9769236",
+      "kind": "heading",
+      "offset": 7037
+    },
+    {
+      "id": "h-06164edd4fad867520e0",
+      "kind": "heading",
+      "offset": 8075
+    },
+    {
+      "id": "h-866f5b346c30c40ec0bf",
+      "kind": "heading",
+      "offset": 8446
+    },
+    {
+      "id": "h-b4433202445186ebfc12",
+      "kind": "heading",
+      "offset": 8458
+    },
+    {
+      "id": "h-0c5d2a3790d5baeb8730",
+      "kind": "heading",
+      "offset": 8550
+    },
+    {
+      "id": "h-b92ae9cab639e83654dd",
+      "kind": "heading",
+      "offset": 9007
+    },
+    {
+      "id": "h-e097cc9142553e292814",
+      "kind": "heading",
+      "offset": 9240
+    }
+  ],
+  "body": "# Windows 物理页管理\n\n除了管理虚拟地址空间的空闲与否，物理页也需要进行管理。\n\nWindows 从两个层次组织正在使用和暂时未使用的物理页：\n1. 系统层面通过 PFN 数据库和状态链表描述、分类所有物理页；\n2. 进程层面通过工作集记录当前驻留在内存中的虚拟页面。\n\n下面先说明系统如何描述和组织物理页，再通过 WinDbg 实验验证链表关系，最后补充进程工作集这一视角。\n\n## 物理内存\n\n### 可使用的物理内存\n\n物理内存以 4KB 大小分页进行管理。以一台 2GB 内存的虚拟机为例，可以在任务管理器中看到物理内存总数接近 2048×1024 KB：\n\n![cc85c80748d3d0063ced165170b463b2&#95;MD5&#46;png](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/e6a6d3c307a037490801d24617d3b7e65d43d07d12b375eb71a4d70520b2c343.png)\n\n![e9329ab8e92ac58a86a5daf4148078ed&#95;MD5&#46;png](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/d76a47ae8e1ca79c697c27b27ecc438fdc67dfb5b9b849c85f3fb6a57b255565.png)\n\n这块物理内存能有多少物理页？将总数除以 4：\n\n![46cd29c1f8fb42b011b91865a08b7bf9&#95;MD5&#46;png](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/7a304c11fb5d19b1acc17952121dfe9f83bee83fa3baa020841de3774dfe73db.png)\n\n即约 524138 个物理页（十进制），转为十六进制为 `0x7FF6A`。\n\n### 可识别的物理内存\n\n能识别多少物理内存，取决于所使用的分页模式：\n- **10-10-12 分页**：页表项（PTE）大小为 **32 位（4 字节）**，高 20 位用来表示页框号，低十位表示属性。\n- **2-9-9-12 分页**：页表项（PTE）大小为 **64 位（8 字节）**，除去表示属性的位，可以表示的页框号范围非常非常大，但是 Windows 只用了一部分，即受限的 2-9-9-12 分页。\n> 用于表示页框号的位数越多，能表示的物理页范围就越大，也就是能映射的物理地址空间范围更大。\n\n\n**32 位操作系统最多可以识别 64GB 物理内存**（通过 PAE 机制，受限的 2-9-9-12 分页模式），但操作系统会进行限制。例如 Windows XP 只能识别 4GB 物理内存（10-10-12 分页模式），Windows Server 2003 服务器版本可以识别 4GB 以上，可以看到这是商业限制。\n> 可以通过 HOOK 系统函数来突破 Windows XP 的 4GB 限制。\n\n> [!NOTE]\n> 在 Windows XP 32 位操作系统中，即使是2-9-9-12分页模式，也仍然无法超越4GB，这是因为在内核中（`Ntoskrnl.exe` 模块），存在一个名为 `MmAddPhysicalMemoryEx` 的函数。该函数调用了 `ExVerifySuite` 函数，其限制了操作系统无法识别超过4GB的情况。关于 `ExVerifySuite` 函数的详细分析超出了当前学习的范围，请自行进行进一步研究。\n> \n> ![b374bc27488adb649ed44e26d9eb6ec2&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/25c2791b6911002438545be2abb57e8fc9e05af2df6d16af4c6dce9d7c9d9021.jpg)\n> \n\n## 系统层面：PFN 数据库与状态链表\n\n### 每页描述：PFN 数据库\n\n在操作系统中，存在一个全局数组，用于记录所有物理页的信息。\n\n```text\n数组指针：_MMPFN* MmPfnDatabase\n数组长度：MmNumberOfPhysicalPages\n```\n\n每一个物理页都是该全局数组的一个成员，对应一个 `_MMPFN` 结构体：\n\n```text\nkd> dt _MMPFN\nnt!_MMPFN\n +0x000 u1               : __unnamed\n +0x004 PteAddress       : Ptr32 _MMPTE\n +0x008 u2               : __unnamed\n +0x00c u3               : __unnamed\n +0x010 OriginalPte      : _MMPTE\n +0x018 u4               : __unnamed\n```\n\n该结构体包含多个 `union` 成员（`u1`、`u2`、`u3`），同一存储空间会随物理页的当前状态和用途被解释为不同含义。\n> 完整结构在附录。\n\n\n本篇正文主要关注三个成员：\n\n- `u1.Flink`：页面作为链表成员时，记录下一个物理页的 PFN。\n- `u2.Blink`：页面作为链表成员时，记录上一个物理页的 PFN。\n- `u3.e1.PageLocation`：记录物理页当前所处的状态。\n\n如下图所示，我们可以在WinDbg中查看该全局数组指针（`0x81086000`）：\n\n![faf3c0183fd8d2270aa7b9c09a5aaf3e&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/950ab0b6049fcf236dedc9a6e8c585e3b9f0977cdb5c3d8350aebb395d72c286.jpg)\n\n指向 `_MMPFN` 结构体数组，该表的成员大小为 `0x1C`（操作系统版本决定），每个物理页都对应该数组的一个表项：`MmNumberOfPhysicalPages` 存储的值表示物理页的总数，每个 `_MMPFN` 结构体用来描述一个物理页，因此就让每个物理页与全局数组中每个 `_MMPFN` 结构体按顺序对应，即页框号就是它在数组里面的索引。\n\n### 按状态组织：全局页链表\n\n物理页有很多种状态，在 `_MMPFN.u3.e1` 处的结构是一个位段（`_MMPFNENTRY`），其结构如下：\n\n```text\nkd> dt _MMPFNENTRY\nnt!_MMPFNENTRY\n +0x000 Modified         : Pos 0, 1 Bit\n +0x000 ReadInProgress   : Pos 1, 1 Bit\n +0x000 WriteInProgress  : Pos 2, 1 Bit\n +0x000 PrototypePte     : Pos 3, 1 Bit\n +0x000 PageColor        : Pos 4, 3 Bits\n +0x000 ParityError      : Pos 7, 1 Bit\n +0x000 PageLocation     : Pos 8, 3 Bits\n +0x000 RemovalRequested : Pos 11, 1 Bit\n +0x000 CacheAttribute   : Pos 12, 2 Bits\n +0x000 Rom              : Pos 14, 1 Bit\n +0x000 LockCharged      : Pos 15, 1 Bit\n +0x000 DontUse          : Pos 16, 16 Bits\n```\n\n其中成员 `PageLocation` 表示了当前物理页的状态，每一种状态对应一个链表，该链表串着所有当前状态的物理页。\n\n\n成员 `PageLocation` 不同取值时表示的含义和对应链表如下：\n\n| 取值  | 对应的全局链表                       | 状态类型    | 含义                                                                                                                                                                                                       |\n| --- | ----------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| 0   | `MmZeroedPageListHead`          | 零化      | 表示页面是空闲的，不属于任何工作集。零化链表中的每个物理页的内容已经被全部清零，即所有数据被初始化为零。                                                                                                                                                     |\n| 1   | `MmFreePageListHead`            | 空闲      | 表示页面是空闲的，不属于任何工作集。物理页是周转使用的，页中的数据可能包含不确定的内容。当系统处于空闲状态时，有专门的线程从该链表中获取物理页，并将其清零后放入零化链表。                                                                                                                    |\n| 2   | `MmStandbyPageListHead`         | 备用      | 这种页面原本属于某个进程或系统工作集，但现在已从工作集中移除。这些页面包含的数据仍然对原来的工作集有效，原来工作集中的页表项 `PTE` 仍指向该页面，但已被标记为无效的正在转移的 `PTE`。**这种状态是导致缺页异常的主要原因之一。****简而言之**：当系统内存不够的时候，操作系统会把物理内存中的数据交换到硬盘上，此时页面不是直接挂到空闲链表上去，而是挂到备用链表上，虽然释放了，但里边的内容还是有意义的。 |\n| 3   | `MmModifiedPageListHead`        | 修改      | 类似于备用状态，页面已从原来的工作集中移除，但页面的内容已被修改。原来工作集中的 `PTE` 仍然指向该物理页面，但已被标记为无效的正在转移的 `PTE`。如果系统要回收此类页面以供其他用途，则必须将页面的内容写入磁盘。                                                                                                  |\n| 4   | `MmModifiedNoWritePageListHead` | 已修改但不写出 | 类似于已修改状态，但区别在于内存管理器不会将页面的内容写入磁盘。这种状态通常用于临时修改的数据，系统不需要将其持久化到磁盘中，以提高性能。                                                                                                                                    |\n| 5   | `MmBadPageListHead`             | 损坏      | 表示页面发生了硬件错误，系统不再使用该页面。这种页面通常被标记为无效页，不再分配给任何进程或工作集。                                                                                                                                                       |\n都可以表示为空闲的物理页\n\n\n每个链表的结构如下：\n\n```c\ntypedef struct _MMPFNLIST {\n    PFN_NUMBER Total;     // 链表中的物理页数量\n    MMLISTS ListName;     // 链表类型\n    PFN_NUMBER Flink;     // 第一个物理页的 PFN\n    PFN_NUMBER Blink;     // 最后一个物理页的 PFN\n} MMPFNLIST, *PMMPFNLIST;\n```\n\n```c\nMMPFNLIST MmZeroedPageListHead = {0, ZeroedPageList, LIST_HEAD, LIST_HEAD};\nMMPFNLIST MmFreePageListHead = {0, FreePageList, LIST_HEAD, LIST_HEAD};\nMMPFNLIST MmStandbyPageListHead = {0, StandbyPageList, LIST_HEAD, LIST_HEAD};\nMMPFNLIST MmModifiedPageListHead = {0, ModifiedPageList, LIST_HEAD, LIST_HEAD};\nMMPFNLIST MmModifiedNoWritePageListHead = {0, ModifiedNoWritePageList, LIST_HEAD, LIST_HEAD};\nMMPFNLIST MmBadPageListHead = {0, BadPageList, LIST_HEAD, LIST_HEAD};\nMMPFNLIST MmRomPageListHead = {0, StandbyPageList, LIST_HEAD, LIST_HEAD};\n```\n\n### WinDbg 验证：遍历零化页链表\n\n#### 实验目标与首个页面定位\n\n我们了解到所有物理页都记录在一个全局数组中，每个物理页对应一个 `_MMPFN` 物理页描述结构，空闲的物理页有6种状态，并分别对应一个全局链表。现在我们将把这些知识点联系在一起，并通过一个实验来巩固所学。我们以零化链表为例，来查询该链表上的所有物理页。\n\n直接在WinDbg中通过指令：`dd MmZeroedPageListHead`，来找到链表头索引：\n\n![0778860ed6bf1e166b70f055b4b49be2&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/bcd5b4e3d568068c1c38164cefd6fd1fa75674e487e56fb615059e97fe85f23c.jpg)\n\n接着我们只要通过指令：`dd 0x81086000 + 0x1c * 0x0001a7a8`，即之前所说的公式，找到 `_MMPFN` 结构体，再根据 `PageLocation`（0xC偏移位结构体成员的成员）确认这是一个零化物理页：\n\n![6360b049e30957b24f5ec42304c57d44&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/f4d5179addf59cbbe4e170c44cd50254c9f7b7f73a0253774d7f35750031d8d9.jpg)\n\n#### 沿 `Flink` 遍历链表\n\n而在这里我们找到了一个零化物理页，想要找到第二个该怎么办？同一块存储空间会随着物理页当前状态和用途，被解释成不同成员。不同状态物理页的结构体 `_MMPFN` 对应的成员意义如下图所示：\n\n![2fccaebe102b488d675c80dd23c56c92&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/50079413ff529d92e5ac40cd46e2a259ef02e8c225659ab07ab30eab3ca0e9a1.jpg)\n\n所以我们再回到 `_MMPFN` 结构体上，它的成员 `u1` 可以表示为 `Flink`，`u2` 可以表示为 `Blink`：\n\n![eda52233fd7bbde42c6b3aedbb6f9aef&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/9006bf8fdd998003b404b66ca91be2824ac01b9ff4d9f5347b4246b5c09cc9ea.jpg)\n\n因此我们可以来看下当前结构体，`u1` 是有值的，`u2` 是没有值，那么我们就可以通过 `u1` 来找到下一个零化物理页对应的结构体：\n> 因为我们使用的是 `_MMPFNLIST.Flink`。\n\n![30ce830507762c3aa69a906b7c71cb0d&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/bb89d7a50ec2acbe5742b667d9f0e39cdfebbe8ea111450a82244fa5484c0027.jpg)\n\n即通过指令：`dd 0x81086000 + 0x1c * 0x0007c7a8`（`Flink`），成功找到了另一个零化物理页 `_MMPFN` 结构体：\n\n![b09bbf73e446a9598029c0fa397b0bd5&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/1685ed85ec6b500546a1f5a83c6be6cc566d63f28c88e2bbe74ebd5011d0633c.jpg)\n\n#### 观察结果\n\n那么也就表示在当前描述零化物理页的 `_MMPFN` 结构体中，`u1`、`u2` 成员就分别代表了 `Flink`、`Blink`，通过这两个成员将所有零化物理页串成一个链表。\n\n![70f8cab1f627f9d748c5cf4f72d2699a&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/a94db714654ce95560adb99d6c982f8fa87700965c2cd25ba501219830d8e080.jpg)\n`MmZeroedPageListHead` 的 `Flink` 和 `Blink` 指向的第一个 `_MMPFN` 分别是 `Blink` 成员和 `Flink` 成员没有值。\n\n## 进程层面：工作集中的驻留页面\n\n### 工作集的含义\n\n物理页分为两大类：空闲页、活动页，我们了解了空闲页再来看一下活动页。活动页是针对一个具体的进程而言，其实就是它的工作集——该进程当前驻留在内存中的页面。\n\n### 工作集的结构入口\n\n首先任意打开一个进程，定位到进程结构体 `0x1f8` 偏移位，有一个 `Vm` 成员，是 `_MMSUPPORT` 结构体，该结构体下有一个 `VmWorkingSetList` 成员，它记录着当前进程相关的工作集信息：\n\n![ac15d48d03139076f4937abc27346b4d&#95;MD5&#46;jpg](/notes/n-202a7ab45afc4e0191060e0c6fd24133/media/e56bf3bc2b8e03c36c20d7bd9a731bb935183f23443b73871ea408531f4087a7.jpg)\n\n`VmWorkingSetList` 对应的结构体 `_MMWSL` 还有一个 `Wsle` 成员，`Wsle` 是一个指向 `_MMWSLE` 数组的指针；数组中的每个有效 `_MMWSLE` 表项描述工作集中的一个**虚拟页面**。\n\n\n> **这部分教程一笔带过，想要具体了解可以阅读《Windows内核原理与实现》。**\n\n## 总结\n\n- PFN 数据库使用 `_MMPFN` 表项描述每一个物理页，PFN 就是相应表项的数组索引。\n- `PageLocation` 表示物理页当前的状态，同状态页面通过对应的全局链表组织。\n- 页面作为链表成员时，`u1.Flink` 和 `u2.Blink` 用于连接相邻的 `_MMPFN`。\n- 从进程视角看，活动页与工作集有关，`_MMWSL.Wsle` 指向描述工作集虚拟页面的 `_MMWSLE` 数组。\n\n## 附录：完整的 `_MMPFN` 定义\n\n```c\ntypedef struct _MMPFN\n{\n  union\n  {\n\t  PFN_NUMBER Flink;\n\t  ULONG WsIndex;            // 该页面在进程工作集链表中的索引\n\t  PKEVENT Event;\n\t  NTSTATUS ReadStatus;\n\t  SINGLE_LIST_ENTRY NextStackPfn;\n\t  SWAPENTRY SwapEntry;\n  } u1;\n  PMMPTE PteAddress;            // 执行此页面的PTE的虚拟地址\n  union\n  {\n\t  PFN_NUMBER Blink;\n\t  ULONG_PTR ShareCount;        // 指向该页面的PTE数量\n  } u2;\n  union\n  {\n\t  struct\n\t  {\n\t\t  USHORT ReferenceCount;    // 代表这个页面必须要保留在内存中的引用计数\n\t\t  MMPFNENTRY e1;\n\t  };\n\t  struct\n\t  {\n\t\t  USHORT ReferenceCount;\n\t\t  USHORT ShortFlags;\n\t  } e2;\n  } u3;\n  union\n  {\n\t  MMPTE OriginalPte;        // 包含了指向此页面的PTE的原始内容\n\t  LONG AweReferenceCount;\n\t  PMM_RMAP_ENTRY RmapListHead;\n  };\n  union\n  {\n\t  ULONG_PTR EntireFrame;\n\t  struct\n\t  {\n\t\t  ULONG_PTR PteFrame:25;\n\t\t  ULONG_PTR InPageError:1;\n\t\t  ULONG_PTR VerifierAllocation:1;\n\t\t  ULONG_PTR AweAllocation:1;\n\t\t  ULONG_PTR Priority:3;\n\t\t  ULONG_PTR MustBeCached:1;\n\t  };\n  } u4;                // 指向该页面的PTE所在的页表页面的物理页帧编号，以及一些标志位\n}\n```\n",
+  "id": "202a7ab4-5afc-4e01-9106-0e0c6fd24133",
+  "metadata": {
+    "tags": [
+      "os/windows/mm",
+      "reverse/windows"
+    ],
+    "title": "Windows 物理页管理"
+  },
+  "resources": [
+    "1685ed85ec6b500546a1f5a83c6be6cc566d63f28c88e2bbe74ebd5011d0633c.jpg",
+    "25c2791b6911002438545be2abb57e8fc9e05af2df6d16af4c6dce9d7c9d9021.jpg",
+    "50079413ff529d92e5ac40cd46e2a259ef02e8c225659ab07ab30eab3ca0e9a1.jpg",
+    "7a304c11fb5d19b1acc17952121dfe9f83bee83fa3baa020841de3774dfe73db.png",
+    "9006bf8fdd998003b404b66ca91be2824ac01b9ff4d9f5347b4246b5c09cc9ea.jpg",
+    "950ab0b6049fcf236dedc9a6e8c585e3b9f0977cdb5c3d8350aebb395d72c286.jpg",
+    "a94db714654ce95560adb99d6c982f8fa87700965c2cd25ba501219830d8e080.jpg",
+    "bb89d7a50ec2acbe5742b667d9f0e39cdfebbe8ea111450a82244fa5484c0027.jpg",
+    "bcd5b4e3d568068c1c38164cefd6fd1fa75674e487e56fb615059e97fe85f23c.jpg",
+    "d76a47ae8e1ca79c697c27b27ecc438fdc67dfb5b9b849c85f3fb6a57b255565.png",
+    "e56bf3bc2b8e03c36c20d7bd9a731bb935183f23443b73871ea408531f4087a7.jpg",
+    "e6a6d3c307a037490801d24617d3b7e65d43d07d12b375eb71a4d70520b2c343.png",
+    "f4d5179addf59cbbe4e170c44cd50254c9f7b7f73a0253774d7f35750031d8d9.jpg"
+  ],
+  "url": "/notes/n-202a7ab45afc4e0191060e0c6fd24133/"
+}

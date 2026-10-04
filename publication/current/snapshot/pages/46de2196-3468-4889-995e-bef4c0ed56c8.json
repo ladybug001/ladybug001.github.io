@@ -1,0 +1,19 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-387728dede0ba0b03365",
+      "kind": "heading",
+      "offset": 18
+    }
+  ],
+  "body": "# C++ 成员初始化列表与父类构造\n\n在继承场景中，创建派生类对象时，会先构造其中的**基类子对象**。如果派生类构造函数没有显式指定如何初始化基类，编译器就会尝试调用基类的无参构造函数。\n> 相关内容：[C&#43;&#43; 构造函数与析构函数](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/#h-c49ebc715d8674a7bf8c)\n\n以该代码为例：\n```cpp\n#include <stdio.h>\n\nclass Person {\nprivate:\n    int Age;\n    int Sex;\n\npublic:\n    Person() {}\n\n    Person(int Age, int Sex) {\n        this->Age = Age;\n        this->Sex = Sex;\n    }\n\n    void Work() {\n        printf(\"Person:Work()\");\n    }\n};\n\nclass Teacher : public Person {\nprivate:\n    int Level;\n\npublic:\n    Teacher() {}\n\n    Teacher(int Level) {\n        this->Level = Level;\n    }\n};\n```\n\n如上代码中，如果要使用 `Teacher` 创建对象，同时还要使用父类 `Person` 的某种成员初始化方式来初始化继承得到的 `Age` 和 `Sex` 要怎么办呢？\n> 注意：`Base::foo()` 含义是子类调用父类的成员函数，但 `Base::Base()` 则是创建一个匿名的 `Base` 类实例，而不是使用父类无参构造函数初始化子类。\n\n\n为了解决此场景的问题，C++ 为此提供了成员初始化列表语法：\n\n```cpp\nTeacher(int Age, int Sex, int Level) : Person(Age, Sex), Level(Level) {\n}\n```\n\n这里的语法要点是：在构造函数参数列表之后写冒号 `:`，随后依次写出需要初始化的**基类**或**成员**。其中：\n- `Person(Age, Sex)` 用于调用父类的有参构造函数，而不是创建父类对象。\n- `Level(Level)` 用于直接初始化成员变量 `Level`。\n\n可以看到成员初始化列表不只用于父类构造，也用于普通成员的初始化。\n\n\n**总结如下**：\n1. 派生类对象创建时，基类子对象总是先于派生类自身部分构造。\n2. 若派生类构造函数不显式指定基类初始化方式，编译器会尝试调用基类无参构造函数。\n3. 若要调用父类的有参构造函数，必须使用成员初始化列表，而不能在构造函数体内补写。\n4. 成员初始化列表不仅用于基类初始化，也用于普通成员初始化。\n5. `const` 成员、引用成员以及没有无参构造函数的成员类型，通常都要求使用成员初始化列表完成初始化。\n\n\n",
+  "id": "46de2196-3468-4889-995e-bef4c0ed56c8",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 成员初始化列表与父类构造"
+  },
+  "resources": [],
+  "url": "/notes/n-46de219634684889995ebef4c0ed56c8/"
+}

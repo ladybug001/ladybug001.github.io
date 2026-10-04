@@ -1,0 +1,96 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-aa4e2c93897778065c69",
+      "kind": "heading",
+      "offset": 11
+    },
+    {
+      "id": "h-57d48d17e0b05cf3fded",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-8e0d8e5360cf65f53ca1",
+      "kind": "heading",
+      "offset": 490
+    },
+    {
+      "id": "h-f31b6d67a26c9a53c5d9",
+      "kind": "heading",
+      "offset": 650
+    },
+    {
+      "id": "h-bdc0edf26a42ebc409c5",
+      "kind": "heading",
+      "offset": 745
+    },
+    {
+      "id": "h-58d91e84d863e58e3889",
+      "kind": "heading",
+      "offset": 855
+    },
+    {
+      "id": "h-46954949c76a6e8d8d13",
+      "kind": "heading",
+      "offset": 1281
+    },
+    {
+      "id": "h-2f2b55b2f474c8741e41",
+      "kind": "heading",
+      "offset": 1581
+    },
+    {
+      "id": "h-9d9e13aad35f264cf582",
+      "kind": "heading",
+      "offset": 1674
+    },
+    {
+      "id": "h-9b629692a1d190abef41",
+      "kind": "heading",
+      "offset": 1778
+    },
+    {
+      "id": "h-9be3622ab0510382f180",
+      "kind": "heading",
+      "offset": 1878
+    },
+    {
+      "id": "h-a97ed7de641bb35436e7",
+      "kind": "heading",
+      "offset": 2144
+    },
+    {
+      "id": "h-7863083a1a6c603b15a2",
+      "kind": "heading",
+      "offset": 2281
+    },
+    {
+      "id": "h-3d555bcff6bc07c49b04",
+      "kind": "heading",
+      "offset": 2656
+    },
+    {
+      "id": "h-ecd6c641673499dc862a",
+      "kind": "heading",
+      "offset": 2904
+    }
+  ],
+  "body": "# x86 标志寄存器\n\n## 前言\n\n标志寄存器是 CPU 中极其重要的组成部分，用于反映运算结果特征及控制指令执行流。在 `DTDebug`（或 `OllyDbg` / `x64dbg`）中，可直接查看标志寄存器的实时状态：\n\n![](/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/media/3bd3e0fcdb80701fd0ebb937b2eeae3b73b0fee01df4e4c64b3ce21770f676bf.png)\n\n- **16 位标志寄存器**：`FLAGS`\n- **32 位标志寄存器**：`EFLAGS`（Extended FLAGS，是 `FLAGS` 的 32 位扩展形式，低 16 位与 `FLAGS` 对应）\n\n两者的结构如下图所示：\n\n![](/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/media/72b41da7a7c4eb1bc595fa272d9ff1aaa8f97603ad286bc2c55a7116100f4d4e.jpeg)\n\n## 标志位分类\n\n1. **条件标志位**：`SF`、`ZF`、`OF`、`CF`、`AF`、`PF`\n\t- CPU 在执行完一条算术或逻辑运算指令后自动设置，反映运算结果的特征。\n2. **控制标志位**：`DF`、`IF`、`TF`\n\t- 由程序主动设置，用于控制 CPU 的运行方式和工作状态。\n\n---\n\n## 条件标志位详解\n\nCPU 并不关心操作数是否为有符号数——它只负责执行运算，并同时按照各标志位的判定规则更新所有相关标志。计算完毕后，具体依赖哪个标志位来解释结果，由后续的汇编指令决定。\n\n### 零标志\n\n**零标志（Zero Flag，`ZF`）**：`ZF` 由结果是否为 0 决定：结果为 0，则 `ZF=1`；否则 `ZF=0`。\n\n**来源**：从硬件实现上，可视为对结果各位做“或后取反”。\n\n### 溢出标志\n\n**溢出标志（Overflow Flag，`OF`）**：用于判断**有符号数**运算结果是否超出其表示范围。若 `OF=1`，说明有符号运算结果不可信。\n\n\n**目的**：检测同号相加时的溢出——正数相加不可能得到负数，负数相加不可能得到正数。异号相加绝对不会溢出，如：\n- **加法**：两个同符号数相加，结果符号与操作数相反，则 `OF=1`。\n- **减法**：被减数与减数符号不同，且结果符号与减数相同，则 `OF=1`。\n\n**溢出标志来源逻辑**：\n1. 最高位进位与次高位进位相异或。\n2. **双符号位判定法**：对操作数进行符号位扩展，相当于将数据变为 n+1 位参与运算，然后通过两个符号位相异或来判定 n 位是否足以表示结果。其核心逻辑与单符号位方法一致：验证结果的符号是否与操作数的符号矛盾。\n\n> [!NOTE] 有符号溢出条件\n> 有符号数的溢出只发生在**同号相加**和**异号相减**的情况下。\n\n### 进位标志\n\n**进位标志（Carry Flag，`CF`）**：运算结果的最高有效位产生进位（加法）或借位（减法）时，`CF=1`。主要用于表示**无符号数**运算的溢出情况。\n\n**目的**：检测无符号数运算是否超出表示范围：加法时判断是否产生进位，减法时判断是否不够减（借位）。\n\n**进位标志来源逻辑**：加法器中的减法标志和最高位的进位异或。\n\n> [!NOTE] 进位与溢出的互补性\n> `CF` 弥补了 `OF` 无法判定\"不够减\"等无符号场景的不足。\n\n> [!NOTE] 无符号溢出条件\n> 无符号数均为正值，同号相加与任意相减都可能溢出，与有符号数的溢出条件有本质区别。\n\n### 符号标志\n\n**符号标志（Sign Flag，`SF`）**：反映运算结果的最高位。若最高位为 1，则 `SF=1`；否则 `SF=0`。在有符号数运算中，最高位即为符号位。\n\n### 奇偶标志\n\n**奇偶标志（Parity Flag，`PF`）**：反映运算结果**低 8 位**中 `1` 的个数。若为偶数则 `PF=1`；否则 `PF=0`。主要用于早期通信中的奇偶校验。\n\n### 辅助进位标志\n\n**辅助进位标志（Auxiliary Carry Flag，`AF`）**：字节运算时，低 4 位向高 4 位产生进位或借位时，`AF=1`。主要用于 BCD 运算的调整。\n\n### 核心注意事项\n\n- **进位 vs 溢出**：进位（`CF`）针对无符号数运算，溢出（`OF`）针对有符号数运算。两者独立更新，互不影响。\n- **结果有效性**：当 `CF=1` 时，说明当前操作数宽度下的无符号结果发生了溢出，说明结果已超出寄存器所能表示的有符号范围；若发生的是进位，即加法溢出，事实上可将 CF 作为更高位的进位继续利用。\n- **数据类型决策**：在汇编层面，数据本身没有类型属性，其语义由程序员选择的指令决定——关注 `CF` 则视为无符号运算，关注 `OF` 则视为有符号运算。\n\n---\n\n## 标志位与执行流控制\n\n汇编语言中没有高级语言的 `if`、`while` 等关键字。程序的逻辑分支主要通过以下组合实现：\n\n1. **标志寄存器状态**（由算术/逻辑指令自动更新）\n2. **JCC 指令**（Jump on Condition Code，条件跳转指令族）\n\n### 指令示例\n\n执行 `ADD` 指令后，若结果非 0，则 `ZF=0`。后续的 JCC 指令（如 `JNZ`）会根据 `ZF` 的值决定是否跳转。\n\n![82b4bc57db008a9d646b168c18a3aedd&#95;MD5&#46;png](/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/media/8e383e8cc7945f8275b1c7ccdce913f7561954583607e484e273df5d4d82e55c.png)\n\n\n> [!IMPORTANT]\n> **JCC 指令很多，关键在于记住几个与标志位有关的：JZ（ZF=1）、JC（CF=1）、JO（OF=1）、JS（SF=1），以及它们的相反指令 JNX（对应标志位为 0 的情况）。**\n\n\n---\n\n## 操作标志寄存器的专用指令\n\n- `LAHF`（Load AH with Flags）：将 `EFLAGS` 的低 8 位（包含 `SF`、`ZF`、`AF`、`PF`、`CF`）装入 `AH` 寄存器。\n- `SAHF`（Store AH into Flags）：将 `AH` 的值写入 `EFLAGS` 的低 8 位。\n- `PUSHF` / `PUSHFD`：将 16 位 / 32 位标志寄存器压入栈。\n- `POPF` / `POPFD`：将栈顶数据弹出至 16 位 / 32 位标志寄存器。\n\n### 实验观察\n\n![7ba3ba542bf615ac2b56c0e17ae71bcc&#95;MD5&#46;png](/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/media/18e77b17483fa23614aea3653fe2ef68306016b144477bebe101a9053e285732.png)\n\n将 `EAX` 置为 0，并将 `CF` 和 `PF` 设置为 1。调用 `LAHF` 后观察 `AH` 的变化：\n\n1. **标志位位分布**：`EFLAGS` 的低 8 位结构为 `[SF][ZF][0][AF][0][PF][1][CF]`（其中位 1 固定为 1）。\n2. **计算过程**：\n\t- 若 `CF=1`（位 0）、`PF=1`（位 2）、固定位为 1（位 1），其余为 0。\n\t- 二进制结果：`00000111` $\\rightarrow$ 十六进制 `0x07`。\n3. **结果确认**：执行 `LAHF` 后，`AH` 的值为 `0x07`。若观察 `EAX` 寄存器，其低 16 位（`AX`）将显示为 `0x0700`。\n\n![99db31d6f7d17d32d072760078d24637&#95;MD5&#46;png](/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/media/0d8ba5a4423174c2fbb0b8df199e0bf4fd188424d0e916c67edc0896ee85742f.png)\n",
+  "id": "934fac7b-cc29-4e55-9fa8-e1ef17a99d5f",
+  "metadata": {
+    "tags": [
+      "arch/x86",
+      "cs/computer-organization"
+    ],
+    "title": "x86 标志寄存器"
+  },
+  "resources": [
+    "0d8ba5a4423174c2fbb0b8df199e0bf4fd188424d0e916c67edc0896ee85742f.png",
+    "18e77b17483fa23614aea3653fe2ef68306016b144477bebe101a9053e285732.png",
+    "3bd3e0fcdb80701fd0ebb937b2eeae3b73b0fee01df4e4c64b3ce21770f676bf.png",
+    "72b41da7a7c4eb1bc595fa272d9ff1aaa8f97603ad286bc2c55a7116100f4d4e.jpeg",
+    "8e383e8cc7945f8275b1c7ccdce913f7561954583607e484e273df5d4d82e55c.png"
+  ],
+  "url": "/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/"
+}

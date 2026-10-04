@@ -1,0 +1,91 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-e12213afdbadc154120d",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-1302d67034a7cac0a2f5",
+      "kind": "heading",
+      "offset": 55
+    },
+    {
+      "id": "h-4a21430cbf70b35a96a8",
+      "kind": "heading",
+      "offset": 427
+    },
+    {
+      "id": "h-a81aa401867f8f21bb13",
+      "kind": "heading",
+      "offset": 2218
+    },
+    {
+      "id": "h-9f6ce900f4c9715cd4b6",
+      "kind": "heading",
+      "offset": 2663
+    },
+    {
+      "id": "h-d0c900d1c26f14439bb9",
+      "kind": "heading",
+      "offset": 2818
+    },
+    {
+      "id": "h-ed9763c687acb67c682a",
+      "kind": "heading",
+      "offset": 2988
+    },
+    {
+      "id": "h-00a014358adfd7aa0f31",
+      "kind": "heading",
+      "offset": 3849
+    },
+    {
+      "id": "h-4c0c45b52c9659ab6357",
+      "kind": "heading",
+      "offset": 3920
+    },
+    {
+      "id": "h-7a629950b569a3a6136f",
+      "kind": "heading",
+      "offset": 4548
+    },
+    {
+      "id": "h-64ca1ac56f0363be3e4b",
+      "kind": "heading",
+      "offset": 6655
+    },
+    {
+      "id": "h-e8eb0048601f7bc7d0ff",
+      "kind": "heading",
+      "offset": 8358
+    },
+    {
+      "id": "h-16047e0b74b967be330d",
+      "kind": "heading",
+      "offset": 8377
+    },
+    {
+      "id": "h-d26d2daf7d7e882090da",
+      "kind": "heading",
+      "offset": 8693
+    },
+    {
+      "id": "h-7421386e9af6b1bd5012",
+      "kind": "heading",
+      "offset": 8989
+    }
+  ],
+  "body": "# Android 应用从组件声明到界面交互\n\n## 设计思想：Android 与 Win32 系统的机制差异\n\n经典 Win32 程序以进程为中心，由程序掌控全局（进入 `WinMain` 后自行注册并创建窗口）：\n\n```text\nCreateProcess → WinMain() → CreateWindowEx() → 运行 GetMessage() 循环\n```\n\n**Android 则以组件为中心。** 由于系统需在进程创建前响应启动界面的请求，组件必须独立于进程存在（在 `AndroidManifest.xml` 中静态注册）。\n\n这是一种**控制反转**：应用不再拥有控制全局的 `main` 函数入口，而是提供离散组件（如 `Activity`）。Linux 内核不认识组件，由 Android Framework (System Server) 决定进程创建、组件实例化和生命周期回调。\n\n### 为什么组件要在 XML 中声明\n\n**“系统先决定启动组件，然后组件所在进程才出现”。** “显示界面”是最终目的，“创建进程”只是系统为达成目的执行的**前置基础设施准备**。APK 本质上更像是“向系统提供一份可被独立调度的能力清单”。\n\n这份清单主要包含四大核心组件：\n```text\nActivity (界面交互)\nService (后台计算)\nBroadcastReceiver (事件响应)\nContentProvider (数据共享)\n```\n\n![5cc48cec5e654c6e1926cb25f0459b8a&#95;MD5&#46;jpg](/notes/n-3e717d798d4e4a66875e4734b91d9e25/media/c08575f7ee65bca9d655c2d0577e669a884c2347b832ff6d8655e162d93a2ccd.jpg)\n\n开发者必须在 `AndroidManifest.xml` 中向系统提供这份清单，例如声明 `Activity`：\n\n```xml\n        <activity  \n            android:label=\"@string/app_name\"  \n            android:name=\"com.zj.wuaipojie.ui.MainActivity\"  \n            android:exported=\"true\">  <!--当前Activity是否可以被另一个Application的组件启动：true允许被启动；false不允许被启动-->\n            <intent-filter>  \n                <!--android.intent.action.MAIN表示作为主activity启动-->\n                <action  \n                    android:name=\"android.intent.action.MAIN\" />  \n                <!--android.intent.category.LAUNCHER表示这个activity为当前应用程序优先级最高的Activity-->\n                <category  \n                    android:name=\"android.intent.category.LAUNCHER\" />  \n                </intent-filter>  \n        </activity>  \n```\n\n**1. 静止期建立索引**\n应用安装或系统开机时，`PackageManagerService`（PKMS）解析 APK 的 `AndroidManifest.xml`，将所有声明的组件提取并注册到系统内存的索引表中。\n\n**2. 运行期检查与调度**\n如下方时序所示，当调用 `startActivity(intent)` 时，跨进程请求首先到达 `ActivityTaskManagerService`（ATMS，Android 10 之后从 AMS 剥离）。ATMS 会通过 `PKMS.resolveIntent()` 查阅上述索引表，校验该组件是否存在、`exported` 属性以及权限要求。只有校验通过，系统才会拉起进程并实例化组件。\n\n```text\nAndroid 调度链路：\n\n系统\n │\n │ 我要启动 com.xxx.MainActivity\n ↓\nAMS / ATMS\n │\n ├─ 查 Manifest 索引：Activity 是否存在？权限是否满足？\n │\n ├─ 如果 App 未启动 → 先创建 App 进程\n │\n ↓\nApplicationThread\n │\n ↓\nActivityThread (实例化组件 -> onCreate)\n```\n\n**例外：动态广播**\n`Context.registerReceiver()` 绕过了 PKMS 的静态解析，直接在 AMS 内存中注册。代价是其生命周期与注册它的进程绑定，无法像静态声明那样由系统冷唤醒。\n\n### 为什么界面布局在 XML 中声明\n\nAndroid 传统 UI 也采用 XML 声明式设计，机制类似浏览器解析 HTML。\n\n调用 `setContentView(resId)` 时，系统解析该 XML 数据，遇 View 标签即反射创建实例。底层均维护类似 DOM 树的节点结构（传统为 `View` 树，Compose 为 `LayoutNode` 树）。区别在于，传统模式通过 `findViewById` 直接命令操纵节点，而 Compose 隐藏了节点引用，由状态驱动底层树自动刷新。\n\n**替代方案：**\n- **编程式创建**：直接 `new` View 并 `addView()`，无反射，但失去资源限定符（横屏/平板/深色模式）的系统自动切换。\n- **Jetpack Compose**：声明式 UI，不使用 XML 和 `LayoutInflater`，`@Composable` 函数在编译期转换为 `LayoutNode` 树。\n\n---\n## 通信与调度：Binder 与 Looper 的协作\n\n系统跨进程调控组件，依赖的是 Binder (RPC) 机制。\n\n系统服务（如 ATMS）不能直接调用应用进程内的对象，而是通过 Binder 向应用发送控制指令。应用进程启动时，会向系统注册 Binder 服务端对象（`ApplicationThread`）专门接收“遥控”指令。\n\n### 消息循环机制\n\nBinder 指令最初到达应用的 **Binder 线程池**。由于 Android 规定**不能在非 UI 线程操作 UI 或执行生命周期跳转**，Binder 线程会将系统指令（如 `ClientTransaction`）发送到主线程的 `MessageQueue` 排队。\n\n#### Looper 解剖：高层通知与底层事件的汇合\n\n不同于 Windows 的统一消息队列，Android 主线程实际上在处理两路汇合事件：\n\n1. **Java Looper (高层消息)**：处理 Binder 线程发来的 Java `Message`（四大组件生命周期回调、UI 绘制更新等）。\n2. **Native Looper (底层事件)**：处理底层文件描述符（fd）事件，如屏幕触摸。\n\n**底层休眠与监听机制**\n主线程调用 `MessageQueue.next()` 获取消息时，若当前无高层 Java 消息，并不会让 CPU 空转，而是陷入 Native 层的 `epoll_wait` 休眠。休眠期间，它同时监听两个关键的文件描述符（FD）：\n- `mWakeEventFd`（用于接收 Java 层新消息的唤醒信号）\n- `InputChannel Socket FD`（用于接收跨进程的触摸输入事件）\n\n**被唤醒后的分支执行**\n一旦任一来源有数据，内核即唤醒主线程：\n- **若是 `mWakeEventFd` 有数据**：说明 Binder 线程塞入了新的高层指令。Native 层读取 8 字节清空标记后，返回 Java 层继续处理 Handler 任务。\n- **若是 `InputChannel Socket FD` 有数据**：说明用户触摸了屏幕（系统输入系统 `InputDispatcher` 通过跨进程 Socket 发来了数据）。Native 层的 `InputConsumer` 反序列化事件后，通过 JNI 回调 Java 层的 `InputEventReceiver.dispatchInputEvent()`，将原始触摸事件抛给界面的 View 树。\n\n> 类比参考：[Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/)\n\n---\n## 完整场景串联示例\n\n我们来看一个连续的完整场景：**冷启动应用 → 渲染界面 → 用户点击按钮 → 跳转第二个 Activity**。\n\n### 核心调度角色\n\n在阅读完整的启动时序之前，需要先界定在 App 进程中负责响应调度的四个核心对象：\n\n- **`ApplicationThread`（跨进程接线员）**：\n  - 它并非线程，而是一个 Binder 服务端对象（继承自 `IApplicationThread.Stub`）。作为系统服务（AMS/ATMS）伸向应用进程的“神经末梢”，它专门在 Binder 线程池中接收跨进程的“遥控”指令，并将指令转发给主线程。\n- **`ActivityThread`（进程大管家）**：\n  - 它同样不是线程，而是包含 `main()` 函数的普通 Java 类，是应用进程的绝对主控中心。它开启并维护了主线程的 `Looper` 消息循环，负责接收 `ApplicationThread` 传来的指令，具体执行创建 `Application`、实例化 `Activity` 及生命周期调度。\n- **`Application`（全局运行环境）**：\n  - 代表整个 App 的全局上下文（Context）。在冷启动时被 `ActivityThread` 第一个反射实例化，生命周期等同于整个进程，常用于保存全局状态或进行全局 SDK 初始化。\n- **`Activity`（局部界面单元）**：\n  - 代表一个具体的独立屏幕界面与交互控制器。作为系统调度的最小界面单元，它被实例化后负责挂载 View 树并响应用户的点击输入。\n\n### 冷启动与界面渲染\n\n1. **启动入口**：Launcher 捕获桌面点击，通过 Binder 发送 `startActivity(Intent)` 给 ATMS。\n2. **跨进程报到与排查**：系统检查应用对应的 Linux 进程是否存活。\n    - 存活（热启动）：跳过进程创建，复用现有进程调度页面。\n    - 不存在（冷启动）：进程环境尚未建立，AMS 通知 Zygote 进程 `fork()` 出全新子进程。新进程执行 `ActivityThread.main()` 开启主线程 Looper，通过 Binder 向 AMS 报到 (`AMS.attachApplication`)。\n3. **检索配置并下发**：AMS 获取应用信息，向应用的 Binder 线程池下发绑定指令 (`ApplicationThread.bindApplication`)。\n4. **内核唤醒主线程**：Binder 线程调用 `ActivityThread.H.sendMessage()` 将消息入队，并写入 `eventfd`，唤醒挂起在 `epoll_wait` 的主线程。\n5. **消息派发与处理**：主线程通过 `Handler.dispatchMessage()` 处理 `BIND_APPLICATION` 消息，在 `ActivityThread.handleBindApplication()` 中完成 `ClassLoader` 创建和 `Application` 实例化。\n6. **持续轮询与绘制展示**：ATMS 下发启动页面事务 (`ActivityThread.performLaunchActivity`)，主线程反射创建 `MainActivity` 实例，回调 `onCreate()` $\\to$ `onStart()` $\\to$ `onResume()`，绘制上屏。此后主线程继续在 `Looper.loop()` 中轮询。\n\n```mermaid\nsequenceDiagram\n    autonumber\n    participant UI as 应用主线程 (UI)\n    participant Binder as 应用 Binder 线程池\n    participant AMS as 系统服务 (AMS/ATMS)\n\n    Note over UI: ActivityThread.main() 启动<br/>Looper.prepareMainLooper()\n    \n    UI->>AMS: AMS.attachApplication(mAppThread)<br/>(跨进程报到并传递句柄)\n    \n    Note over UI: 进入消息循环 Looper.loop()<br/>挂起在 epoll_wait 休眠 (放弃 CPU)\n    \n    Note over AMS: 检索 PMS 获取 AppBindData<br/>(含 APK 路径、类名等)\n    AMS->>Binder: ApplicationThread.bindApplication(data)<br/>(跨进程下发配置)\n    \n    Note over Binder: 线程切换，将消息入队：<br/>ActivityThread.H.sendMessage()<br/>写入 eventfd 唤醒管道\n    \n    Binder-->>UI: 内核唤醒主线程\n    \n    Note over UI: 从 nativePollOnce() 唤醒退出<br/>Handler.dispatchMessage()\n    \n    Note over UI: ActivityThread.handleBindApplication()<br/>1. 创建 PathClassLoader<br/>2. 反射实例化 Application<br/>3. Application.attachBaseContext()<br/>4. ActivityThread.installContentProviders()<br/>5. Application.onCreate()\n    \n    Note over UI: 持续轮询：<br/>继续在 Looper.loop() 中等待后续消息\n```\n\n> [!QUESTION] 点击桌面图标默认触发的是 `MainActivity` 的启动 Intent，为什么在不杀后台的情况下再次点击图标，进入的却是上次离开时的子页面，而不是重新打开 `MainActivity`？\n> 桌面点击发出的 `Intent` 默认附带了 `FLAG_ACTIVITY_NEW_TASK` 标志。系统（ATMS）接收到请求后，会优先检索该应用是否已存在处于后台的**任务栈（Task）**；若存在且未被清理，直接将原有页面调用链的任务栈**整体调至前台**，恢复栈顶页面现场。\n\n### 按钮交互与页面跳转\n\n假设我们在界面上点击了一个按钮，触发跳转新页面的代码如下：\n\n```java\n// MainActivity.java\nButton button = findViewById(R.id.btnOpenSecond);\nbutton.setOnClickListener(v -> {\n    Intent intent = new Intent(MainActivity.this, SecondActivity.class);\n    startActivity(intent);\n});\n```\n\n\n```java\npublic class SecondActivity extends AppCompatActivity {\n\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_second);\n    }\n}\n```\n\n\n用户点下这个 Button 后，底层发生了什么？\n\n**1. 两级事件寻址（宏观对比）**\nWindows 每个控件（如按钮）都是独立窗口，由操作系统直接定位此次鼠标消息该送入哪个窗口的队列。\n而 Android 中一个 `Activity` 只有一个顶级窗口（Window）。寻址需要两级配合：\n- **系统层命中**（`InputDispatcher`）：只负责识别“这个触摸属于这个 App Window”。\n- **应用层命中**（View Hierarchy）：进入 App 后，由 Java 层的 View 树完成内部定位，判断“具体点中了哪个 Button”。\n> 参考：[Windows 窗口消息机制](/notes/n-588dd991e500491c94d1853fffca6bdb/#h-6ff14874ef40bd95509b)\n\n**2. 系统到进程的投递链路**\n内核输入子系统产生硬件事件 $\\to$ Android Native 层的 `InputReader` 读取 $\\to$ 交给 `InputDispatcher` 确定焦点窗口 $\\to$ 通过该窗口对应的跨进程 `InputChannel`（Socket）发送到目标 App 进程。\n\n**3. 进程内的控件定位**\n目标 App 进程底层通过 `epoll_wait` 监听到 `InputChannel` 数据并唤醒后，`InputEventReceiver` 读取事件，通过 JNI 回调上抛给 Java 层的视图根节点，开始层层分发测试：\n\n`InputEventReceiver.dispatchInputEvent()`  \n→ `ViewRootImpl.enqueueInputEvent()`  \n→ `View.dispatchPointerEvent()`  \n→ `ViewGroup.dispatchTouchEvent()`\n\n`ViewGroup` 在传递过程中会根据触摸坐标与子 View 的边界进行命中测试。\n\n**4. 响应事件与跨进程跳转**\n当坐标最终命中目标 `Button`，且按钮收到 `ACTION_UP` 事件满足有效点击条件时，系统调用 `Button.performClick()`，进而触发我们注册的 `OnClickListener.onClick()`。\n\n此时执行了 `startActivity(intent)`。接下来的流程再次跨出进程：\n请求通过 Binder 发送至 `system_server` 的 ATMS。ATMS 完成权限与任务栈检查后，再通过 Binder 下发启动指令给应用，应用主线程取出指令并由 `ActivityThread` 实例化 `SecondActivity`，最终渲染出第二个页面。\n\n---\n## 逆向视角的启发\n\n### 跳过广告 Activity\n\n**广告弹出流程**：启动 `Activity` → 广告 `Activity` → 主页 `Activity`\n\n**跳过广告的思路**：\n\n1. **修改加载时间**：广告页常通过 `Handler.postDelayed()` 或 `CountDownTimer` 倒计时，将延迟改为 0。\n2. **修改 Intent 目标类名**：将跳转逻辑中的 `AdActivity.class` 改为 `MainActivity.class`。\n    - *理论依据*：由于 Android 界面跳转由 ATMS 解析 `Intent` 调度，直接篡改发往 ATMS 的目标类名，可从底层拦截跳转链路。\n\n### 去除更新弹窗\n\n**常规逻辑**：App 启动时获取服务器最新版本号，对比本地 `versionCode`。\n\n**修改方法**：\n\n1. **修改 XML versionCode**：将 `AndroidManifest.xml` 中的 `versionCode` 改为极大值。\n2. **Hook 弹窗**（推荐算法助手定位）：通过 Hook 拦截 `Dialog.show()` 或判断逻辑。\n3. **修改 DEX 弹窗代码**：直接修改 `smali` 的判断条件或删除调用。\n4. **抓包修改响应体**（或路由器拦截）：将服务端返回版本号修改为与本地一致。\n\n### 修改 APP 界面布局\n\n**修改思路**：\n1. **定位控件**：通过开发助手 App 获取目标元素的特征（系统布局、ID 等）。\n2. **MT 管理器搜索**：根据 ID 搜索反编译出的 XML 资源。\n3. **修改代码隐藏元素**：\n\n```xml\n<!-- 隐藏元素 -->\nandroid:visibility=\"gone\"  \n```\n",
+  "id": "3e717d79-8d4e-4a66-875e-4734b91d9e25",
+  "metadata": {
+    "tags": [
+      "os/android"
+    ],
+    "title": "Android 组件与界面交互"
+  },
+  "resources": [
+    "c08575f7ee65bca9d655c2d0577e669a884c2347b832ff6d8655e162d93a2ccd.jpg"
+  ],
+  "url": "/notes/n-3e717d798d4e4a66875e4734b91d9e25/"
+}

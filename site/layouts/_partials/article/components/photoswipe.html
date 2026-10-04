@@ -1,0 +1,54 @@
+{{- /* Stack's PhotoSwipe 5.4.4, served locally; no visitor-side CDN request.
+       Upstream: https://github.com/dimsemenov/PhotoSwipe (MIT).
+       Local vendored bytes are verified before publishing. No network at build
+       or viewing time; only line endings were normalized on import. */ -}}
+{{- $specs := slice
+    (dict "name" "photoswipe.css" "sha" "bb5e956812a813e1bd5be5d7641cc78d05d7e7d3f7ab10187bc2725d70b52c94")
+    (dict "name" "photoswipe.esm.min.js" "sha" "542069771beb34dc461cdb9374da8af643c591ebf65d8ec36331dd9a0681ebd4")
+    (dict "name" "photoswipe-lightbox.esm.min.js" "sha" "b82c385604f90cc77082d8e1bd4f5ef7c9d3da62d95dcc3ff1691a4eb0dddd12")
+-}}
+{{- $files := dict -}}
+{{- $license := resources.Get "vendor/photoswipe-5.4.4/LICENSE" -}}
+{{- range $specs -}}
+    {{- $path := printf "vendor/photoswipe-5.4.4/%s" .name -}}
+    {{- $resource := resources.Get $path -}}
+    {{- if not $resource -}}{{- errorf "Missing PhotoSwipe asset: %s" .name -}}{{- end -}}
+    {{- if ne (crypto.SHA256 $resource.Content) .sha -}}{{- errorf "Changed PhotoSwipe asset: %s" .name -}}{{- end -}}
+    {{- $local := resources.FromString $path (printf "/*!\n%s\n*/\n%s" $license.Content $resource.Content) -}}
+    {{- $files = merge $files (dict .name $local.RelPermalink) -}}
+{{- end -}}
+<link rel="stylesheet" href="{{ index $files "photoswipe.css" }}">
+<script type="module">
+    import PhotoSwipeLightbox from '{{ index $files "photoswipe-lightbox.esm.min.js" }}';
+    const content = document.querySelector('.article-content');
+    if (content) {
+        const viewer = new PhotoSwipeLightbox({
+            pswpModule: () => import('{{ index $files "photoswipe.esm.min.js" }}'),
+            closeTitle: '关闭', zoomTitle: '放大或缩小',
+            arrowPrevTitle: '上一张', arrowNextTitle: '下一张',
+            errorMsg: '图片暂时无法加载',
+        });
+        viewer.init();
+        for (const image of content.querySelectorAll('img')) {
+            // Preserve authored image links; the wrapper also opens the original
+            // if the viewer is unavailable or the user uses Ctrl/Cmd-click.
+            if (image.closest('a')) continue;
+            const link = document.createElement('a');
+            link.href = image.src;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.className = 'image-link';
+            link.setAttribute('aria-label', '放大图片：' + (image.alt || '正文图片'));
+            image.replaceWith(link);
+            link.appendChild(image);
+            link.addEventListener('click', event => {
+                if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+                if (!image.naturalWidth || !image.naturalHeight) return;
+                event.preventDefault();
+                // Natural dimensions also support SVG; keep the body layout intact.
+                viewer.loadAndOpen(0, [{ src: image.currentSrc || image.src,
+                    width: image.naturalWidth, height: image.naturalHeight, alt: image.alt }]);
+            });
+        }
+    }
+</script>

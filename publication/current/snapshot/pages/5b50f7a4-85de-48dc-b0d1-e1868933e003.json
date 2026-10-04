@@ -1,0 +1,137 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-a9fd5a2c9274a4b1dd26",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-c0c9ebb1eeae5a3cc177",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-934cbdd90f5e396c95ce",
+      "kind": "heading",
+      "offset": 44
+    },
+    {
+      "id": "h-b6c50a55f5d5b76acf6d",
+      "kind": "heading",
+      "offset": 539
+    },
+    {
+      "id": "h-d310266e5fbe16cedc3e",
+      "kind": "heading",
+      "offset": 761
+    },
+    {
+      "id": "h-1849e51be5d7224591d3",
+      "kind": "heading",
+      "offset": 1119
+    },
+    {
+      "id": "h-48719f3bf9b6cd89a85c",
+      "kind": "heading",
+      "offset": 1131
+    },
+    {
+      "id": "h-e30816c94b89c9abc3f1",
+      "kind": "heading",
+      "offset": 3072
+    },
+    {
+      "id": "h-0cb82c1faf5da9aa5aa4",
+      "kind": "heading",
+      "offset": 3093
+    },
+    {
+      "id": "h-dbc603c4c4b54af2452d",
+      "kind": "heading",
+      "offset": 3935
+    },
+    {
+      "id": "h-c3db21750b9b3cf870d5",
+      "kind": "heading",
+      "offset": 4849
+    },
+    {
+      "id": "h-86282040a06f677cec09",
+      "kind": "heading",
+      "offset": 5311
+    },
+    {
+      "id": "h-293137f0af96bb8be7d8",
+      "kind": "heading",
+      "offset": 6451
+    },
+    {
+      "id": "h-2e19e0293955cbdc625d",
+      "kind": "heading",
+      "offset": 7745
+    },
+    {
+      "id": "h-95e0a1c4ea4bc6c457f0",
+      "kind": "heading",
+      "offset": 7760
+    },
+    {
+      "id": "h-8f375723010889e0f45e",
+      "kind": "heading",
+      "offset": 8179
+    },
+    {
+      "id": "h-e52b9da26b9708399824",
+      "kind": "heading",
+      "offset": 9649
+    },
+    {
+      "id": "h-1d6430bb0a7f2cab7194",
+      "kind": "heading",
+      "offset": 10388
+    },
+    {
+      "id": "h-1440503c701af018f805",
+      "kind": "heading",
+      "offset": 10435
+    },
+    {
+      "id": "h-7054c00f939342cc8255",
+      "kind": "heading",
+      "offset": 10664
+    },
+    {
+      "id": "h-16f1ccfbc3ab47748a8a",
+      "kind": "heading",
+      "offset": 12506
+    },
+    {
+      "id": "h-51ab67de1128cb07de64",
+      "kind": "heading",
+      "offset": 12535
+    }
+  ],
+  "body": "# Windows 窗口程序\n## 窗口程序架构基础\n\n### Win32 子系统调用链\n\n在 Windows 开发中，控制台程序与图形化界面程序在底层架构上存在显著差异。\n\n从系统 API 的调用链来看：\n- **控制台/系统函数**：如进程、线程管理，主要接口来源于 `kernel32.dll`，在内核中的对应函数由 `ntoskrnl.exe` 提供。\n- **图形化界面函数**：主要接口来源于 `user32.dll`、`gdi32.dll`，内核中的对应函数由 `win32k.sys` 提供。\n> 相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n![d72a4c9019882075ae957cc6c9955145&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/d533a6123a3e6af2d4b78135596c75d460e79125887f9e0803dca85d101be67a.png)\n\n### `user32.dll` 与 `gdi32.dll` 的分工\n\n- **GUI 编程 (`user32.dll`)**：用于使用操作系统预定义的标准界面组件（按钮、菜单、窗口等）。\n- **GDI 编程 (`gdi32.dll`)**：图形设备接口，用于实现底层绘图逻辑（如绘制自定义几何图形、花朵等），涉及更精细的像素级操作。\n\n> 参考：[Windows GDI](/notes/n-b415a25acde7408d9926f7a5612f432c/)\n\n### 窗口句柄 `HWND` 与窗口句柄表\n\n图形界面引入了 `HWND`——即窗口句柄，窗口句柄和其它类型的句柄不同，该句柄不属于进程的局部句柄表（参考：[Windows 句柄机制](/notes/n-399db2c150e54f6db70dc0058623ffb0/)），而是属于专门存放窗口对象的全局窗口句柄表（全局且唯一的），**所以同一个窗口句柄值在不同的进程中都可以使用**：\n\n![cfe104e5844b603b46e34ffc562f32a1&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/778edeb7e8deb843a69c07997510773c74d5b5761af6ba917906140f918af0a6.png)\n\n## 窗口程序的创建流程\n\n### 完整代码实现\n\n首先新建项目，在 `Visual C++ 6.0` 中，新建工程并选择 **Win32 Application**。\n\n> 控制台程序以 `main` 为入口，而 Win32 程序则以 `WinMain` 为入口。\n\n![aef8eb1ba4a7038f1ba3e8949c9454a3&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/4db6e44de42203f151828d4ffb6f7f68bd51a48fbc9ca579188092ab12310b93.png)\n\n项目需包含核心头文件 `Windows.h`：\n\n![ba9bf48b0b69d58cb82468e1b687f30a&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/adaff66fbd161465b41172043d1bdcd11e1456fd91df27e3325af81dcb7d9bac.png)\n\n`Windows.cpp`：\n\n```cpp\n#include \"stdafx.h\"\n#include <stdio.h>\n\n// 1. 窗口回调函数定义\nLRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {\n    // 必须调用默认消息处理函数，确保系统逻辑（如最小化、关闭）正常执行\n    return DefWindowProc(hwnd, uMsg, wParam, lParam);\n}\n\nint APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {\n    char szOutBuff[0x80];\n\n    // 阶段一：注册窗口类\n    TCHAR className[] = TEXT(\"My First Window\");\n    WNDCLASS wndClass = {0};\n    wndClass.hbrBackground = (HBRUSH)COLOR_BACKGROUND; // 设置背景色\n    wndClass.lpszClassName = className;              // 设置类名\n    wndClass.hInstance = hInstance;                  // 绑定模块地址\n    gHinstance = hInstance;\n    wndClass.lpfnWndProc = WindowProc;               // 指定窗口过程函数\n\t\t\n    RegisterClass(&wndClass);\n\n    // 阶段二：创建并显示窗口\n    HWND hWnd = CreateWindow(className, TEXT(\"My Window\"), WS_OVERLAPPEDWINDOW,\n                             10, 10, 600, 300, NULL, NULL, hInstance, NULL);\n\n    if (hWnd == NULL) {\n        sprintf(szOutBuff, \"Error: %d\", GetLastError());\n        OutputDebugString(szOutBuff);\n        return 0;\n    }\n\n    ShowWindow(hWnd, SW_SHOW);\n\n    // 阶段三：消息循环\n    MSG msg;\n    BOOL bRet;\n    while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) {\n        if (bRet == -1) {\n            return 0;\n        } else {\n            TranslateMessage(&msg); // 转换消息\n            DispatchMessage(&msg);  // 分发消息至 WindowProc\n        }\n    }\n    return 0;\n}\n```\n\n### 核心流程与代码解析\n\n#### 入口函数：`WinMain`\n\n`WinMain` 是窗口程序的入口点，其标准签名如下：\n\n```cpp\nint WINAPI WinMain(\n    HINSTANCE hInstance,     // 当前模块句柄（本质上是模块在进程空间中的基地址）\n    HINSTANCE hPrevInstance, // 在 Win32 环境下恒为 NULL（Win16 遗留参数）\n    LPSTR lpCmdLine,         // 命令行参数\n    int nCmdShow             // 窗口显示状态\n);\n```\n\n- **`HINSTANCE hInstance`**：模块句柄。在 Win32 中，该句柄的本质是该模块（`.exe` 或 `.dll`）被加载到进程空间后的**内存基地址 (`Image Base`)**。\n- **`HINSTANCE hPrevInstance`**：历史残留参数。在 16 位 Windows 系统中用于指向该程序的上一个实例，在 Win32 及现代架构中**恒为 `NULL`**。\n- **`LPSTR lpCmdLine`**：由父进程（通常是 Shell 或 `CreateProcess` 调用者）传递的原始命令行字符串。\n- **`int nCmdShow`**：指定窗口的初始显示状态（如最大化、最小化、隐藏等），对应 `STARTUPINFO` 结构中的配置（由 `CreateProcess` 调用者指定）。\n> 后两个参数的来源，参考 [CreateProcess 函数概览](/notes/n-c2ee979bfba343668b3e7567f93782c4/)\n\n> [!tip] 调用约定与来源\n> `WINAPI` 宏定义了 `__stdcall` 调用约定。`lpCmdLine` 与 `nCmdShow` 的值源自 `CreateProcess` API 中对应的参数。\n\n##### 窗口消息循环\n\nWindows 窗口程序是**消息驱动**的，所有的事件交互（如鼠标/键盘动作、窗口焦点改变）都被抽象成事件，包装成 `MSG` 结构体并投入到对应主线程的“消息队列”中，程序在主函数中通过死循环不断提取消息并处理，以此驱动程序逻辑和界面更新：\n\n```cpp\n// 阶段三：消息循环\nMSG msg;      // MSG 用于存储获取到的消息\nBOOL bRet;\n// GetMessage 函数从当前线程的消息队列中提出消息。当接收到退出程序的 WM_QUIT 消息时返回 0，导致循环体结束。\nwhile ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) {\n    if (bRet == -1) {\n        // 发生严重错误导致函数失败时返回 -1\n        return 0;\n    } else {\n        TranslateMessage(&msg); // 转换键盘消息（例如将按键按下 WM_KEYDOWN 和弹起 WM_KEYUP 结合生成字符消息 WM_CHAR）\n        DispatchMessage(&msg);  // 系统内部将此消息路由传递给该消息归属窗口所绑定的 WindowProc (窗口回调函数) 处理\n    }\n}\n```\n\n**核心函数解读：**\n- **`GetMessage(&msg, ...)`**：阻塞式获取消息。只要消息队列里为空，线程便会放弃时间片资源切入挂起休眠态，从而防止在无事可做的死循环中耗尽 CPU 的 100% 性能。\n\t- 与之相对的 `PeekMessage` 是非阻塞的，无论有无消息都会立即返回。\n- **`TranslateMessage`**：进行底层虚拟按键转换等预处理逻辑，可能产生新的字符消息投递到线程队列中。\n- **`DispatchMessage`**：分发消息的中转枢纽，调用注册窗口类时传递给 `lpfnWndProc` 的 `WindowProc` 函数，执行相应的 `switch-case` 核心处理逻辑。\n\n##### 窗口过程函数\n\n消息类型有许多，我们的窗口过程函数时候只需要对关注的消息类型进行处理，其他的我们都交给默认的消息处理函数，即 `DefWindowProc`：\n```cpp\nLRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {\n    // 调用一个默认的消息处理函数，关闭、最小化、最大化都是由默认消息处理函数处理的\n    return DefWindowProc(hwnd, uMsg, wParam, lParam);\n}\n```\n\n完整的流程图示：\n\n![de159f02fed72fa2fe5ba49624cd0657&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/76a097de09fd7f68faaeffc22ea512a915133dbd350a8a9c09ce76b733a14c73.png)\n\n\n#### 注册窗口类\n\n在创建窗口之前，必须先通过定义 `WNDCLASS` 结构体并调用 `RegisterClass` 函数向系统注册窗口类型。\n\n```cpp\n// RegisterClass 函数声明\nATOM WINAPI RegisterClass(\n  _In_ const WNDCLASS *lpWndClass\n);\n\n// WNDCLASS 结构体定义\ntypedef struct tagWNDCLASS {\n  UINT      style;\n  WNDPROC   lpfnWndProc;\n  int       cbClsExtra;\n  int       cbWndExtra;\n  HINSTANCE hInstance;\n  HICON     hIcon;\n  HCURSOR   hCursor;\n  HBRUSH    hbrBackground;\n  LPCTSTR   lpszMenuName;\n  LPCTSTR   lpszClassName;\n} WNDCLASS, *PWNDCLASS, *NPWNDCLASS, *LPWNDCLASS;\n```\n\n**`WNDCLASS` 核心成员说明：**\n- **`style`**：窗口类的样式（如 `CS_HREDRAW | CS_VREDRAW` 表示大小改变时自动重绘窗口界面）。\n- **`lpfnWndProc`**：**窗口过程回调函数指针 (`Window Procedure`)**。这是处理该类窗口所有分发消息（如 `WM_CREATE`、`WM_PAINT`）的绝对核心中枢。\n- **`cbClsExtra` / `cbWndExtra`**：系统为窗口类/窗口实例预留的附加内存空间大小，常用于存储自定义数据（通常填 `0`）。\n- **`hInstance`**：标识注册该窗口类的应用程序（或模块）实例句柄。\n- **`hIcon` / `hCursor` / `hbrBackground`**：预定义的图标对象、默认鼠标光标形式及背景画刷句柄。\n- **`lpszMenuName`**：绑定的菜单资源名称。\n- **`lpszClassName`**：窗口类的唯一标识字符串名称，后续在 `CreateWindow` 时将作为索引目标查找该类的描述块。\n\n> [!NOTE] 为什么要注册窗口类？\n> 相当于一个模板。注册窗口类是向 `user32.dll` 核心模块提交一张“设计图”，规定了由该类派生的窗口外观样式、默认行为模式，最重要的是绑定了**拦截并接管自身产生的所有系统级操作的 `WindowProc` 回调地址**。\n\n#### 创建与显示窗口\n\n注册窗口类后，调用 `CreateWindow`（宽字符下宏展开为 `CreateWindowW`，内部常映射至内核级的 `CreateWindowEx`）函数不仅能够在内存中分配窗口对象模型，还会返回系统分配的全局唯一窗口句柄 `HWND`。\n\n```cpp\n// CreateWindow 函数声明 (本质是一个宏，映射至 CreateWindowA 或 CreateWindowW)\nHWND WINAPI CreateWindow(\n  _In_opt_ LPCTSTR lpClassName,\n  _In_opt_ LPCTSTR lpWindowName,\n  _In_     DWORD dwStyle,\n  _In_     int x,\n  _In_     int y,\n  _In_     int nWidth,\n  _In_     int nHeight,\n  _In_opt_ HWND hWndParent,\n  _In_opt_ HMENU hMenu,\n  _In_opt_ HINSTANCE hInstance,\n  _In_opt_ LPVOID lpParam\n);\n```\n\n**参数定义及技术意义：**\n- **`lpClassName`**：待实例化的目标窗口类名（系统依据此名称匹配前面由 `WNDCLASS.lpszClassName` 提交的信息）。\n- **`lpWindowName`**：窗口显示的标题。在普通重叠窗口中表示系统非客户区渲染的标题栏文字。(什么是(非)客户区，参考：[MFC 键盘与鼠标消息处理](/notes/n-a8306eb080294d6d894a9ec5e1053d67/#h-20dc6d43cca89f83c05e))\n- **`dwStyle`**：窗口对象的具体外观样式与行为特征掩码组合。如 `WS_OVERLAPPEDWINDOW` 代表一个涵盖标题栏、缩放按钮的基础框架；若创建原生子控件则常组合 `WS_CHILD | WS_VISIBLE`。\n- **`x`, `y`, `nWidth`, `nHeight`**：窗口在屏幕（或子控件基于父窗口客户区）的相对坐标及初始尺寸（传入 `CW_USEDEFAULT` 让系统自适应排列）。\n- **`hWndParent`**：父类窗口句柄。若是主窗体则传 `NULL`；若作为按钮、编辑框等子窗口，则必须绑定父句柄以构建 Z 序层级结构树。\n- **`hMenu`**：窗口关联的主菜单句柄。值得注意的是，如果当前申请的是**子窗口**，该字段会发生语义重载，退化为被系统视作**子窗口的整数控件 ID**（例如 `(HMENU)0x101`）。\n- **`hInstance`**：指明创建该窗口所属的进程模块实例环境。\n- **`lpParam`**：作为 `WM_CREATE` 消息中附带的 `CREATESTRUCT` 结构体的扩展指针参数传入，供窗口初创阶段获取特定的进程级或业务级状态信息。\n\n## 典型消息处理\n\n### 窗口销毁与进程退出\n\n若仅点击关闭按钮，窗口对象销毁但**所在进程并不会自然退出**。程序将卡死在内存中。必须拦截 `WM_DESTROY` 并投递 `WM_QUIT` 让消息循环跳出：\n\n```cpp\nLRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {\n    switch (uMsg) {\n        // 当该窗口确认被销毁前，投递退出信号终止消息循环，释放进程\n        case WM_DESTROY:\n            PostQuitMessage(0); // 这句代码本质就是向队列丢进去一个 WM_QUIT\n            break;\n    }\n    return DefWindowProc(hwnd, uMsg, wParam, lParam);\n}\n```\n\n### 键盘消息与字符转换\n\n当用户按下键盘时，系统产生的是 `WM_KEYDOWN` 消息，其中携带的是虚拟键码（以 ASCII 对应的十进制值表示），通过拦截 `WM_KEYDOWN` 和解析其 `wParam` 即可处理按键控制逻辑：\n\n```cpp\ncase WM_KEYDOWN: {\n    char szOutBuff[0x80];\n    // wParam 存储虚拟键码，字符 'a' 对应的键码为 0x41\n    sprintf(szOutBuff, \"keycode: %x \\n\", wParam);\n    OutputDebugString(szOutBuff);\n    break;\n}\n```\n\n![dada9dcb8f79152ef92c2c78121e3b94&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/ec4bfa5c841f37ebc97f25ce74da64cf9be1a059c2dee602dffdc18ebba149c7.png)\n\n如上图所示，得到的虚拟键码是 `0x41`（对应字符 a），这种方式只能捕获物理按键的按下事件（`WM_KEYDOWN`），无法直接获取最终的文本输入。若要识别经过系统输入法或键盘状态（如大小写、Shift 等）处理后的实际字符，需要调用 `TranslateMessage` 函数。\n\n---\n\n`TranslateMessage` 会检查该按键是否对应一个可显示字符，如果是，则会根据当前的键盘状态**额外**向消息队列投递一条 `WM_CHAR` 消息，其中携带的是对应的字符值。原始的 `WM_KEYDOWN` 消息不受影响，仍然会被正常派发。\n> 因此，`TranslateMessage` 函数的使用与否对结果影响不大，它只是额外生成了一条便于处理字符输入的消息。\n\n\n我们添加 `TranslateMessage` 函数调用和对 `WM_CHAR` 消息的处理，就可以输出对应的字符而不是数值了：\n \n![02ddc11d09f9fceeb1e21f48b0a2514e&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/517a835ff81218db4db2c96b481960dabf02ecb688e794d49a3c8a9607b3dda6.png)\n![7bc087f8890d52d095046b304b7e4ca1&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/9126473f3037ab927760a52e7e5e97829e527acd1efae9e0a29665df65a58437.png)\n\n\n> [!important] 避免重复处理\n> 使用 `TranslateMessage` 后，原始的 `WM_KEYDOWN` 仍然会被 `DispatchMessage()` 正常派发，同时 `TranslateMessage()` 还可能额外生成 `WM_CHAR`。因此，在窗口过程函数中应当**区分处理目的**：需要处理物理按键（包括功能键等非字符键）时使用 `WM_KEYDOWN`，需要处理字符输入时使用 `WM_CHAR`，不要在两者中做重复的字符处理逻辑。\n\n## 消息分类\n\n调用窗口过程函数时传递的消息参数，其来源通常为：硬件设备（键盘/鼠标）、其他应用程序投递、内核回调。\n\n为便于管理，系统对这些消息进行分类——分配了不同的编号边界：\n> **提示**：窗口消息的本质是通知窗口处理函数特定的事件已发生。对消息进行分类主要是为了工程上的管理与理解，无需被繁杂的概念束缚。\n\n- **标准消息**：除 `WM_COMMAND` 外，所有以 `WM_` 开头的系统级基础消息（系统保留区）。它们通常用于通知窗口状态改变或响应标准交互（键盘、鼠标等）。\n- **命令消息 (`WM_COMMAND`)**：由菜单、工具栏按钮及加速键等触发。主要用于**子控件向父窗口汇报事件**。\n\t- **控件通知机制**：子控件本质上也是独立的系统窗口，拥有自己的过程回调。为了给父窗口提供接管子控件行为的机会，子控件把动作通过通知消息反射给父级（例如：在打开一个组合框 `ComboBox` 时，父窗口可以在此时拦截通知并动态填充数据）。\n- **通知消息 (`WM_NOTIFY`)**：由于 `WM_COMMAND` 仅依靠 `WPARAM` / `LPARAM` 传递数据，信息量局限。随着 `ListView` 等复杂控件出现，微软引入 `WM_NOTIFY`，它通过传递**结构体指针**从而携带丰沛的上下文状态数据。\n- **自定义消息 (`WM_USER`)**：系统保留了一段安全 ID 区间供开发者定义。此类消息主要用于进程内不同窗口模块间的自定义通信。开发者可通过 `PostMessage` 或 `SendMessage` 发送与拦截处理，**Windows 系统底层绝不会主动占用或发送此类自定义消息**。\n\n## 子窗口控件与事件处理\n\n一旦理解了消息投递流转原理，在使用复杂控件界面时就会得心应手。\n\n### 预定义窗口类概述\n\n- Windows 事先写好并全局注册了一些特殊的 `WNDCLASS` 窗口类，称为**子控件（如 `BUTTON` 按钮类，`EDIT` 文本框类，`COMBOBOX` 等）**。\n- 这些控件自身有封装好的 `WindowProc`，会自动描绘 UI、处理诸如文本选取等鼠标消息。当它们状态改变（如按钮被单击），它们会通过发送 `WM_COMMAND` / `WM_NOTIFY` 汇报给自己的**父窗口句柄**。\n\n### 案例：子控件的消息交互\n\n子控件也可以通过 `CreateWindow` 直接在父窗口（常于其收到 `WM_CREATE` 的初建阶段）进行实例化：\n\n```cpp\n#define CWA_EDIT 0x100      // 自定义的编辑框 Control ID\n#define CWA_BUTTON_0 0x101  // 自定义的按钮 Control ID\n\nHINSTANCE gHinstance;\n\nLRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {\n    switch (uMsg) {\n        case WM_CREATE: {\n            // 例化属于系统类的 EDIT 编辑框控件 (绑定父窗口 hwnd, 传入唯一的 HMENU 作为它的 ID)\n            CreateWindow(TEXT(\"EDIT\"), TEXT(\"\"), \n                         WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_MULTILINE,\n                         0, 0, 400, 300, hwnd, (HMENU)CWA_EDIT, gHinstance, NULL);\n\n            // 例化按钮控件\n            CreateWindow(TEXT(\"BUTTON\"), TEXT(\"获取文本\"), \n                         WS_CHILD | WS_VISIBLE,\n                         450, 100, 80, 20, hwnd, (HMENU)CWA_BUTTON_0, gHinstance, NULL);\n            break;\n        }\n\n        case WM_COMMAND: {\n            // 父窗口在这集中截获属于自己的控件发来的动作信号\n            // 依据 WPARAM 的低 16 位匹配对应控件的 标识 ID\n            switch (LOWORD(wParam)) {\n                case CWA_BUTTON_0: {\n                    TCHAR szBuffer[0x80];\n                    GetDlgItemText(hwnd, (int)CWA_EDIT, szBuffer, 0x80); // 向编辑框询价\n                    MessageBox(NULL, szBuffer, TEXT(\"子控件反馈的内容\"), MB_OK); // 弹出结果\n                    break;\n                }\n            }\n            break;\n        }\n    }\n    return DefWindowProc(hwnd, uMsg, wParam, lParam);\n}\n```\n\n![437fab848155846267b9f101f2916752&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/1e303251fa2976ee67e5035148c3827c97f44f18b97f120be7c317491c57e632.png)\n\n> [!info] 进阶预习\n> 每种系统自带封装的控件类的样式 `Style` 定义不同，行为也不同，详情须持续参阅 MSDN 中关于 `CreateWindow` 各预定义类的内容。\n\n![8ea16f0d9c60fcf39debe4fe02ce7f2e&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/1291d636d4b43b2336da6283b4da564d9cabed56270608937969d4249016fbe3.png)\n\n## 附录：调试技巧\n\n### `OutputDebugString` 的使用\n\n在窗口程序中无法直接使用 `printf`。应使用 `OutputDebugString` 函数**向调试器发送字符串**：\n\n```cpp\nvoid OutputDebugString(\n    LPCTSTR lpOutputString // 指向待输出调试字符串的指针\n);\n```\n\n若需格式化输出，应结合 `sprintf`（需包含 `stdio.h`）使用：\n\n```cpp\nDWORD dwAddr = (DWORD)hInstance;\nchar szOutBuff[0x80];\nsprintf(szOutBuff, \"hInstance address: %x \\n\", dwAddr);\nOutputDebugString(szOutBuff);\n```\n\n运行后，输出信息将出现在 IDE 的 Debug 输出框中：\n\n![a8e1ba0cb7ebd11cd9ae349456d25e41&#95;MD5&#46;png](/notes/n-5b50f7a485de48dcb0d1e1868933e003/media/a4efb77ab0211660873095f8720eeac58568db1875d0a255ff1ffce6b4968024.png)\n",
+  "id": "5b50f7a4-85de-48dc-b0d1-e1868933e003",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "lang/cpp"
+    ],
+    "title": "Windows 窗口程序"
+  },
+  "resources": [
+    "1291d636d4b43b2336da6283b4da564d9cabed56270608937969d4249016fbe3.png",
+    "1e303251fa2976ee67e5035148c3827c97f44f18b97f120be7c317491c57e632.png",
+    "4db6e44de42203f151828d4ffb6f7f68bd51a48fbc9ca579188092ab12310b93.png",
+    "517a835ff81218db4db2c96b481960dabf02ecb688e794d49a3c8a9607b3dda6.png",
+    "76a097de09fd7f68faaeffc22ea512a915133dbd350a8a9c09ce76b733a14c73.png",
+    "778edeb7e8deb843a69c07997510773c74d5b5761af6ba917906140f918af0a6.png",
+    "9126473f3037ab927760a52e7e5e97829e527acd1efae9e0a29665df65a58437.png",
+    "a4efb77ab0211660873095f8720eeac58568db1875d0a255ff1ffce6b4968024.png",
+    "adaff66fbd161465b41172043d1bdcd11e1456fd91df27e3325af81dcb7d9bac.png",
+    "d533a6123a3e6af2d4b78135596c75d460e79125887f9e0803dca85d101be67a.png",
+    "ec4bfa5c841f37ebc97f25ce74da64cf9be1a059c2dee602dffdc18ebba149c7.png"
+  ],
+  "url": "/notes/n-5b50f7a485de48dcb0d1e1868933e003/"
+}

@@ -1,0 +1,70 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-45263219591462dd9c54",
+      "kind": "heading",
+      "offset": 29
+    },
+    {
+      "id": "h-4ef84a8c068dce4a0e0e",
+      "kind": "heading",
+      "offset": 138
+    },
+    {
+      "id": "h-9e9c42c4dac960f50e10",
+      "kind": "heading",
+      "offset": 555
+    },
+    {
+      "id": "h-1e68d8ddf8c8592aec0d",
+      "kind": "heading",
+      "offset": 3392
+    },
+    {
+      "id": "h-c1c181be550081e42fdb",
+      "kind": "heading",
+      "offset": 3405
+    },
+    {
+      "id": "h-8be661038c1886f26ea6",
+      "kind": "heading",
+      "offset": 3762
+    },
+    {
+      "id": "h-d2eed5c7e375651fbfc7",
+      "kind": "heading",
+      "offset": 4145
+    },
+    {
+      "id": "h-31b3244d5aa14105fd5f",
+      "kind": "heading",
+      "offset": 5427
+    },
+    {
+      "id": "h-d09f94c081e921aa59cc",
+      "kind": "heading",
+      "offset": 5816
+    }
+  ],
+  "body": "# Windows 进程创建（05）：PEB 创建与初始化\n\n> [!note] 相关笔记\n> 本组笔记总览见 [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)。\n\n## 前言\n\nPEB 是位于用户地址空间的进程环境块，`EPROCESS->Peb` 只是内核保存的用户态 PEB 地址。\n\n新映像路径会调用 `MmCreatePeb`，在目标进程用户地址空间中创建 PEB，映射 NLS 表，填充映像、调试、heap、版本和代码页相关字段，并依据 PE 结构补充 PEB 字段。clone 路径不调用 `MmCreatePeb` 新建 PEB，而是在 `PspCreateProcess` 中继承父进程 PEB 虚拟地址，并通过 `MmCopyVirtualMemory` 修补初始字段，必要时依赖 COW 分离页面。\n\n> [!NOTE] 不要把 PEB 和 PCB 混淆\n> PEB：用户地址空间结构，给 `ntdll`、loader、Win32 用户态运行库使用。\n> PCB/KPROCESS：内核调度对象，嵌入在 `EPROCESS.Pcb` 中，给调度器和地址空间切换使用。\n## PEB 结构体\n\n\n```\nkd> dt _peb\nnt!_PEB\n   +0x000 InheritedAddressSpace : UChar\n   +0x001 ReadImageFileExecOptions : UChar\n   +0x002 BeingDebugged    : UChar\n   +0x003 SpareBool        : UChar\n   +0x004 Mutant           : Ptr32 Void\n   +0x008 ImageBaseAddress : Ptr32 Void\n   +0x00c Ldr              : Ptr32 _PEB_LDR_DATA\n   +0x010 ProcessParameters : Ptr32 _RTL_USER_PROCESS_PARAMETERS\n   +0x014 SubSystemData    : Ptr32 Void\n   +0x018 ProcessHeap      : Ptr32 Void\n   +0x01c FastPebLock      : Ptr32 _RTL_CRITICAL_SECTION\n   +0x020 FastPebLockRoutine : Ptr32 Void\n   +0x024 FastPebUnlockRoutine : Ptr32 Void\n   +0x028 EnvironmentUpdateCount : Uint4B\n   +0x02c KernelCallbackTable : Ptr32 Void\n   +0x030 SystemReserved   : [1] Uint4B\n   +0x034 AtlThunkSListPtr32 : Uint4B\n   +0x038 FreeList         : Ptr32 _PEB_FREE_BLOCK\n   +0x03c TlsExpansionCounter : Uint4B\n   +0x040 TlsBitmap        : Ptr32 Void\n   +0x044 TlsBitmapBits    : [2] Uint4B\n   +0x04c ReadOnlySharedMemoryBase : Ptr32 Void\n   +0x050 ReadOnlySharedMemoryHeap : Ptr32 Void\n   +0x054 ReadOnlyStaticServerData : Ptr32 Ptr32 Void\n   +0x058 AnsiCodePageData : Ptr32 Void\n   +0x05c OemCodePageData  : Ptr32 Void\n   +0x060 UnicodeCaseTableData : Ptr32 Void\n   +0x064 NumberOfProcessors : Uint4B\n   +0x068 NtGlobalFlag     : Uint4B\n   +0x070 CriticalSectionTimeout : _LARGE_INTEGER\n   +0x078 HeapSegmentReserve : Uint4B\n   +0x07c HeapSegmentCommit : Uint4B\n   +0x080 HeapDeCommitTotalFreeThreshold : Uint4B\n   +0x084 HeapDeCommitFreeBlockThreshold : Uint4B\n   +0x088 NumberOfHeaps    : Uint4B\n   +0x08c MaximumNumberOfHeaps : Uint4B\n   +0x090 ProcessHeaps     : Ptr32 Ptr32 Void\n   +0x094 GdiSharedHandleTable : Ptr32 Void\n   +0x098 ProcessStarterHelper : Ptr32 Void\n   +0x09c GdiDCAttributeList : Uint4B\n   +0x0a0 LoaderLock       : Ptr32 Void\n   +0x0a4 OSMajorVersion   : Uint4B\n   +0x0a8 OSMinorVersion   : Uint4B\n   +0x0ac OSBuildNumber    : Uint2B\n   +0x0ae OSCSDVersion     : Uint2B\n   +0x0b0 OSPlatformId     : Uint4B\n   +0x0b4 ImageSubsystem   : Uint4B\n   +0x0b8 ImageSubsystemMajorVersion : Uint4B\n   +0x0bc ImageSubsystemMinorVersion : Uint4B\n   +0x0c0 ImageProcessAffinityMask : Uint4B\n   +0x0c4 GdiHandleBuffer  : [34] Uint4B\n   +0x14c PostProcessInitRoutine : Ptr32     void \n   +0x150 TlsExpansionBitmap : Ptr32 Void\n   +0x154 TlsExpansionBitmapBits : [32] Uint4B\n   +0x1d4 SessionId        : Uint4B\n   +0x1d8 AppCompatFlags   : _ULARGE_INTEGER\n   +0x1e0 AppCompatFlagsUser : _ULARGE_INTEGER\n   +0x1e8 pShimData        : Ptr32 Void\n   +0x1ec AppCompatInfo    : Ptr32 Void\n   +0x1f0 CSDVersion       : _UNICODE_STRING\n   +0x1f8 ActivationContextData : Ptr32 Void\n   +0x1fc ProcessAssemblyStorageMap : Ptr32 Void\n   +0x200 SystemDefaultActivationContextData : Ptr32 Void\n   +0x204 SystemAssemblyStorageMap : Ptr32 Void\n   +0x208 MinimumStackCommit : Uint4B\n```\n\n## MmCreatePeb 函数\n\n### 附加到目标进程\n\n![577ef942d3c993c2b4f775f2e0ec7848&#95;MD5&#46;jpg](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/media/5fd9b3a6253f53ef49c802ea93f6e344a0b4865b25c826f7eec212a4712174bd.jpg)\n\n为什么要 `KeAttachProcess`？\n\n也可以由内核显式分配物理页作为 PEB 的支撑，并手动扣除资源配额。但这样并不方便，因为 Windows 已经有完善的缺页处理机制，可以直接复用缺页异常处理。\n\n**这里的思路是**：附加到目标进程地址空间，申请一片虚拟内存，读/写该区域，触发缺页异常，进而分配物理页并完成相关资源记账。\n\n### 创建 PEB 页面\n\n`MmCreatePeb` 调用：\n\n![6ae75824b2b876f9c35a70edd21bb3ca&#95;MD5&#46;jpg](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/media/288b5e3205f4141a099733356604760c928f1c5a686b15270b9eb937fc4ecdc2.jpg)\n\n`MiCreatePebOrTeb` 负责在用户地址空间中为 PEB/TEB 这类结构建立合适的虚拟地址区域和页面。它会创建并插入 VAD 节点，类似于调用 `VirtualAlloc` 分配一片内存，真正访问时再调页。\n\n> 相关参考：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)\n\n### NLS 表映射\n\n![4ae43b531c5ad3822460d05e15612a07&#95;MD5&#46;jpg](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/media/7f957f07ff2a9152404d4b5d2bbc456eb7a35409d46993e10967a5b7fd520d54.jpg)\n\n`MmCreatePeb` 会把系统初始化阶段创建好的 NLS section 映射到新进程。映射成功后，PEB 中会保存三个指针：\n\n|字段|使用场景例子|\n|---|---|\n|`AnsiCodePageData`|`CreateFileA(\"你好.txt\")` 这类 A 版本 API 需要把 ANSI 字节串转成 Unicode 路径|\n|`OemCodePageData`|`RtlOemStringToUnicodeString` 把 OEM 编码字节串转成 Unicode|\n|`UnicodeCaseTableData`|`RtlUpcaseUnicodeString` / 不区分大小写比较时，把 Unicode 字符转成统一大小写|\n\n例子：\n```\n程序调用 CreateFileA(\"你好.txt\")\n        |\n        v\nWin32/ntdll 需要把 A 字符串转成 Unicode\n        |\n        v\n根据 PEB->AnsiCodePageData 查 ANSI code page 表\n        |\n        v\n字节序列 C4 E3 BA C3 ...  -> Unicode 字符串 L\"你好.txt\"\n        |\n        v\n最终传给 NtCreateFile 的是 UNICODE_STRING\n```\n\n再看 `OemCodePageData`：\n\n```\n某个旧式 OEM 字节串\n        |\n        v\nRtlOemStringToUnicodeString\n        |\n        v\n根据 PEB->OemCodePageData 查 OEM code page 表\n        |\n        v\nOEM 字节串 -> Unicode 字符串\n```\n\n再看 `UnicodeCaseTableData`：\n\n```\n比较 L\"Readme.txt\" 和 L\"README.TXT\"\n        |\n        v\n需要做大小写无关比较\n        |\n        v\n根据 PEB->UnicodeCaseTableData 做 Unicode 大小写转换\n        |\n        v\n统一大小写后再比较\n```\n\n\n**显示屏幕上的字形是后续字体系统的事**：\n\n```text\n编码字节 -> Unicode 码点 -> 字体 glyph -> 像素\n```\n\nNLS 表主要负责前两步之间的转换规则。\n\n### 初始化 PEB\n\n之后就是成员属性的初始化：\n\n![d23217fe06badfba9f717752b1775e6d&#95;MD5&#46;jpg](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/media/42c3acb9bfe3da55083c3a355c6aac1c775d02a7f779cf9042eb3ce662883f46.jpg)\n\n本文重点关注的是上面提到的三个字符表指针，以及 `BeingDebugged` 和 `SessionId` 字段。`ImageBaseAddress`、`ProcessParameters`、`Ldr`、`ProcessHeap`、`NtGlobalFlag` 等字段同样重要，但分别属于映像映射、参数注入、加载器和堆初始化主题，本文暂不展开。\n\n### PE Header 与 Load Config\n\n随后，`MmCreatePeb` 会读取主映像 PE Header：\n\n![a17840a8a90e83c02e0b46a43308698b&#95;MD5&#46;jpg](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/media/1f25870da7b21028f4b5f176dd07c8dd40b39e32e6da53f9139606f7aca19e25.jpg)\n\n然后读取 Load Config：\n\n![c50290722601643666708433a7eaa3fe&#95;MD5&#46;jpg](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/media/83f0d184fadf545a65207443e04d6e4a2f63a22d4a7cb975ccb9ab6acc78121b.jpg)\n\n这些信息用于初始化子系统版本、process affinity 等字段；heap 参数则来自前面初始化 PEB 时使用的内核全局参数。\n\n如果映像标记了 `IMAGE_FILE_UP_SYSTEM_ONLY`，说明这个映像不是 MP safe，只适合单处理器语义。内核会给它分配一个轮转的处理器 affinity：\n\n![d6983e47ec1eb8b88af07927f8ac3851&#95;MD5&#46;jpg](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/media/3509bfe86c2454b64806f8a87eb2fd87571f22a379ebb276995a485d43aff103.jpg)\n\n否则，如果映像的 Load Config 里提供了 `ProcessAffinityMask`，则写入该值。\n",
+  "id": "a12e6469-a8a6-48e2-a2f0-b0c6d1b6abaa",
+  "metadata": {
+    "tags": [
+      "os/windows/mm",
+      "reverse/windows",
+      "arch/x86",
+      "lang/c"
+    ],
+    "title": "Windows 进程创建（05）：PEB 创建与初始化"
+  },
+  "resources": [
+    "1f25870da7b21028f4b5f176dd07c8dd40b39e32e6da53f9139606f7aca19e25.jpg",
+    "288b5e3205f4141a099733356604760c928f1c5a686b15270b9eb937fc4ecdc2.jpg",
+    "3509bfe86c2454b64806f8a87eb2fd87571f22a379ebb276995a485d43aff103.jpg",
+    "42c3acb9bfe3da55083c3a355c6aac1c775d02a7f779cf9042eb3ce662883f46.jpg",
+    "5fd9b3a6253f53ef49c802ea93f6e344a0b4865b25c826f7eec212a4712174bd.jpg",
+    "7f957f07ff2a9152404d4b5d2bbc456eb7a35409d46993e10967a5b7fd520d54.jpg",
+    "83f0d184fadf545a65207443e04d6e4a2f63a22d4a7cb975ccb9ab6acc78121b.jpg"
+  ],
+  "url": "/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/"
+}

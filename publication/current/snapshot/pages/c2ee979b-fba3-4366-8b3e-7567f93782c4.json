@@ -1,0 +1,60 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-bd94edd331bb6ac812ff",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-99e2bc3b4b3fe7d43a4f",
+      "kind": "heading",
+      "offset": 250
+    },
+    {
+      "id": "h-abe9171bc59109e2b1c5",
+      "kind": "heading",
+      "offset": 1318
+    },
+    {
+      "id": "h-bf447974a8a9039b9dd0",
+      "kind": "heading",
+      "offset": 1637
+    },
+    {
+      "id": "h-1566212ee4bac1d1af75",
+      "kind": "heading",
+      "offset": 1992
+    },
+    {
+      "id": "h-2ce7fea251c490f385d0",
+      "kind": "heading",
+      "offset": 2852
+    },
+    {
+      "id": "h-d4656c80d9129f0d7301",
+      "kind": "heading",
+      "offset": 2978
+    },
+    {
+      "id": "h-fb47b7db47ad44ad5b59",
+      "kind": "heading",
+      "offset": 3244
+    }
+  ],
+  "body": "# CreateProcess 函数概览\n\n`CreateProcess` 是 Windows 中最常用的进程创建 API。普通用户在桌面双击程序时，通常由 `explorer.exe` 作为父进程发起创建；开发者在代码中启动子进程时，也通常从 `CreateProcess` 这一层进入。\n\n这篇笔记只作为入口卡片，重点说明 `CreateProcess` 能控制哪些创建参数、宏观上完成哪些工作，以及它在逆向分析中常见的一个关注点：`STARTUPINFO` 反调试。\n\n## 函数原型与关键参数\n\n`CreateProcess` 的标准原型如下：\n\n```c\nBOOL CreateProcess(\n    LPCTSTR lpApplicationName,                 // 模块/可执行文件路径，可为 NULL\n    LPTSTR lpCommandLine,                      // 命令行字符串，可包含程序路径和参数\n    LPSECURITY_ATTRIBUTES lpProcessAttributes, // 进程句柄安全属性\n    LPSECURITY_ATTRIBUTES lpThreadAttributes,  // 线程句柄安全属性\n    BOOL bInheritHandles,                      // 是否继承父进程中可继承的句柄\n    DWORD dwCreationFlags,                     // 创建标志，例如 CREATE_SUSPENDED\n    LPVOID lpEnvironment,                      // 环境变量块，NULL 表示继承父进程环境\n    LPCTSTR lpCurrentDirectory,                // 当前工作目录，NULL 表示继承父进程当前目录\n    LPSTARTUPINFO lpStartupInfo,               // 启动信息，包括窗口、桌面、标准句柄等\n    LPPROCESS_INFORMATION lpProcessInformation // 输出进程/线程句柄以及 PID/TID\n);\n```\n\n几个参数尤其容易影响后续行为：\n\n- `lpApplicationName` 和 `lpCommandLine`：决定系统如何定位要启动的程序。前者显式指定模块路径；后者既可能包含程序路径，也可能包含参数。\n- `dwCreationFlags`：决定是否调试、是否挂起、是否新建控制台、是否使用特殊优先级等。\n- `lpEnvironment` 和 `lpCurrentDirectory`：决定子进程看到的环境变量和当前目录。\n- `lpStartupInfo`：决定窗口显示、桌面、标准句柄重定向等启动属性。\n- `lpProcessInformation`：接收创建成功后的进程句柄、线程句柄、PID 和 TID。\n\n### A/W 版本与内部入口\n\n开发时使用的 `CreateProcess` 实际上是一个宏，会根据项目字符集配置展开为：\n> 相关内容参考：[Windows A&#47;W 接口选择](/notes/n-9f8bef2496124e2da6233056a60e88ca/#h-95566c2188c35789fe75)\n```cpp\nCreateProcessA\n```\n\n或：\n\n```cpp\nCreateProcessW\n```\n\n二者都位于 `C:\\WINDOWS\\system32\\kernel32.dll` 中。通常情况下，`CreateProcessA` 会先把 ANSI 字符串参数转换为宽字符形式，再进入宽字符版本相关路径；\n\n## 它解决什么问题\n\n`CreateProcess` 的核心作用是：**创建一个新进程及其主线程，并允许调用者指定这个新进程的启动环境**。\n\n调用者可以控制的内容包括：\n\n- 目标程序路径与命令行参数。\n- 进程和线程安全属性。\n- 是否继承父进程句柄。\n- 创建标志，例如是否挂起创建、是否新建控制台、是否进入调试模式。\n- 子进程环境变量块。\n- 子进程当前工作目录。\n- 标准输入、标准输出、标准错误输出的重定向。\n- 窗口显示、桌面、标题等启动信息。\n- 返回给调用者的进程句柄、线程句柄、PID 和 TID。\n\n因此，学习 `CreateProcess` 时不必死记每个参数的填法，更重要的是理解它提供了哪些“创建控制点”。具体参数值可以结合 MSDN / Windows SDK 文档查询。\n\n\n## 宏观创建链路\n\n从宏观角度看，一次普通 Win32 进程创建最终会完成以下工作：\n\n1. **映射 EXE 文件**：在进程独立的虚拟内存空间（低 2GB 用户态空间）中为其映像分配物理资源。\n2. **创建内核对象**：在系统内核空间（高 2GB 内核态空间）中，生成与之对应的进程管理结构体 `EPROCESS`。\n3. **映射核心子系统**：将操作系统基础子系统的 `DLL` 映射进空间（如 `ntdll.dll`）。\n4. **创建线程对象**：由于进程只是承担资源的容器，真正执行代码的是线程。所以内核会为其创建主线程管理结构体 `ETHREAD`（高 2GB 内核态空间）。\n5. **系统启动主线程**：\n    - 主线程会首先进入基础模块的初始化工作（如执行 `ntdll` 中的 `LdrInitializeThunk` 等，遍历导入表完成各类依赖 `DLL` 的挂载）。\n    - 各种依赖映射完毕后，跳入映像文件的真正入口点（`OEP` / `main`），线程开始正式执行业务逻辑代码。\n\n![d92cc54d87974f4ff864bec47fd3cfdd&#95;MD5&#46;jpg](/notes/n-c2ee979bfba343668b3e7567f93782c4/media/eaba00c0c1bc0d2fae382cc2855a82d720800131c760091daeef9249c3f822bf.jpg)\n\n> **概念重申**：如上图所示，进程在架构本质上只是“空间”上的概念，它只用于提供代码、数据及句柄等系统资源的容器；真正调度并利用这些资源执行机器指令的是线程。每个进程在其生命周期中，必须至少拥有一个线程（主线程）。\n\n需要注意的是，“低 2GB 用户态空间 / 高 2GB 内核态空间”这类说法主要适用于典型 32 位 Windows 默认地址空间模型。遇到 `/3GB`、PAE、64 位系统或 WoW64 场景时，需要按对应系统环境重新判断。\n### 深入了解\n\n如果要进一步了解 Windows 进程创建的各阶段及相关分析，可参考：[Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)\n\n## 常见安全与逆向关注点\n\n`CreateProcess` 在逆向和安全分析中常见的观察点包括：\n\n- `CREATE_SUSPENDED`：挂起创建，便于在主线程运行前修改进程内存或上下文。\n- `DEBUG_PROCESS` / `DEBUG_ONLY_THIS_PROCESS`：调试方式创建进程。\n- 句柄继承：可能影响子进程是否继承管道、文件、事件等对象。\n- 标准句柄重定向：常用于命令执行、管道通信和子进程控制。\n- `STARTUPINFO`：既影响窗口/桌面/标准句柄，也可能留下调试器启动痕迹。\n\n### STARTUPINFO 反调试\n\n\n在 `CreateProcess()` 被调用来创建新进程之时，参数中包含一个 `STARTUPINFO`（启动信息）的结构体。这个结构体主要是用来指定被拉起进程其主窗口（如果有的话）的一些初始化状态及位置信息。我们可以观察一下 `STARTUPINFO` 结构体的底层成员组合：\n\n```c\ntypedef struct _STARTUPINFOA {\n    DWORD cb;               // 结构体大小\n    LPSTR lpReserved;\n    LPSTR lpDesktop;\n    LPSTR lpTitle;\n    DWORD dwX;              // 窗口位置 X\n    DWORD dwY;              // 窗口位置 Y\n    DWORD dwXSize;          // 窗口宽度\n    DWORD dwYSize;          // 窗口高度\n    DWORD dwXCountChars;    // 字符数 X（对于控制台应用）\n    DWORD dwYCountChars;    // 字符数 Y（对于控制台应用）\n    DWORD dwFillAttribute;  // 文本及北京填充属性\n    DWORD dwFlags;          // 特征位掩码标志\n    WORD wShowWindow;       // 显示状态\n    WORD cbReserved2;\n    LPBYTE lpReserved2;\n    HANDLE hStdInput;\n    HANDLE hStdOutput;\n    HANDLE hStdError;\n} STARTUPINFOA, *LPSTARTUPINFOA;\n```\n\n**对抗原理**：\n正常业务逻辑下由 `explorer.exe` 等父进程双击创建子进程时，通常这些用于 UI 的特性参数并不会全被设置，常常被系统默认使用 `ZeroMemory` 函数初始化为一个全 0 结构。但当我们被第三方的**用户态调试工具**拉起去附加启动该程序进行动态分析时，情况是否会有所不同？\n\n我们可以通过在自进程体内调用 `GetStartupInfo` 接口，把这几个原本默认隐藏为全 0 的 `DWORD` 成员强制打印出来分析：\n\n```c\n#include \"stdafx.h\"\n#include <windows.h>\n#include <stdlib.h>\n\nint main(int argc, char* argv[])\n{\n    STARTUPINFO si;\n    ZeroMemory(&si, sizeof(si));\n    si.cb = sizeof(si); // 这是规范：获取系统结构体前，必须将当前编译平台计算出的大小赋值到首 DWORD 参数 cb 里去\n\n    GetStartupInfo(&si);\n\n    // 重点监测那些调试器喜欢暗自“动了手脚”的窗口特征位参数\n    printf(\"%d %d %d %d %d %d %d %d\\n\", si.dwX, si.dwY, si.dwXSize, si.dwYSize, si.dwXCountChars, si.dwYCountChars, si.dwFillAttribute, si.dwFlags);\n\n    system(\"pause\");\n    return 0;\n}\n```\n\n结果进行对照：左侧为脱离调试器环境下正常手动打开运行的情况；右侧是在专业反汇编调试工具如 `DTDebug` 或 `x64dbg` 环境下附带运行的情况：\n\n![a579a2b6e1b9510e8fe21e67d2c414d9&#95;MD5&#46;png](/notes/n-c2ee979bfba343668b3e7567f93782c4/media/42b77a020f7dda43af71bbffe21954d86ac86a09d8148ac9b3ba261db07a3260.png)\n\n我们可以直观地观察到，当在调试工具架构下启动进程时，系统中的 `STARTUPINFO` 的几个参数发生了被动篡改（不再为 0）：`si.dwXSize`、`si.dwYSize`、`si.dwXCountChars`、`si.dwFillAttribute` 以及 `si.dwFlags`。\n\n由于绝大多数的轻度调试器并不会在拉起目标文件前特意去手工擦除这些遗漏痕迹。\n\n因此，在编写木马或是做安全加壳软件时，完全可以根据**系统运行时自检上述值是否为 0** 的逻辑作为一条判别特征来执行“隐匿版”反向反调试操作（即，检测到被注入附加后即切断主要逻辑挂起）：\n\n![1fb84b98c5dda82e66e6c096f8eb22d9&#95;MD5&#46;png](/notes/n-c2ee979bfba343668b3e7567f93782c4/media/4e8510a015f81507096978ab27918c43c86bf5affe0ed0c32d511b559c737746.png)\n\n> [!NOTE] 局限性\n> 通过判定这些特征变量是否为 0 来界定当前程序“是否正在被附加调试”的逻辑，本质上**并不绝对严谨**。因为存在部分合法进程在正常用途下也会导致 `STARTUPINFO` 中的这些属性值不全为 0。但将其用作对抗一些通用且配置低级的调试器环境中的辅助防护探测点仍是可以值得部署的。\n\n\n",
+  "id": "c2ee979b-fba3-4366-8b3e-7567f93782c4",
+  "metadata": {
+    "tags": [
+      "os/windows/process",
+      "reverse/windows/bypass"
+    ],
+    "title": "CreateProcess 函数概览",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "42b77a020f7dda43af71bbffe21954d86ac86a09d8148ac9b3ba261db07a3260.png",
+    "4e8510a015f81507096978ab27918c43c86bf5affe0ed0c32d511b559c737746.png",
+    "eaba00c0c1bc0d2fae382cc2855a82d720800131c760091daeef9249c3f822bf.jpg"
+  ],
+  "url": "/notes/n-c2ee979bfba343668b3e7567f93782c4/"
+}

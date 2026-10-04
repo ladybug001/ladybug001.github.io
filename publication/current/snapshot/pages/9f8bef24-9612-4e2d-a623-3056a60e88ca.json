@@ -1,0 +1,63 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-a6da326902568874f353",
+      "kind": "heading",
+      "offset": 29
+    },
+    {
+      "id": "h-3f5ddd217261a9277e9e",
+      "kind": "heading",
+      "offset": 40
+    },
+    {
+      "id": "h-6305bdae6d1db748ea3b",
+      "kind": "heading",
+      "offset": 251
+    },
+    {
+      "id": "h-863ae857a257c60b0dd7",
+      "kind": "heading",
+      "offset": 386
+    },
+    {
+      "id": "h-d8db3625e80efa3c5e26",
+      "kind": "heading",
+      "offset": 1012
+    },
+    {
+      "id": "h-feb5d7d18fb7bc8022c5",
+      "kind": "heading",
+      "offset": 1840
+    },
+    {
+      "id": "h-0181d89d7cf058fa6140",
+      "kind": "heading",
+      "offset": 2123
+    },
+    {
+      "id": "h-95566c2188c35789fe75",
+      "kind": "heading",
+      "offset": 2832
+    }
+  ],
+  "body": "# C、C++ 字符串编码与 Windows A、W 接口\n\n## 字符集&编码\n\n什么是字符集和编码？\n\n字符集描述“有哪些字符”；编码描述“这些字符在内存或文件中如何表示”。以 `Unicode` 为例，它是字符集合与标准体系；`UTF-8`、`UTF-16`、`UTF-32` 才是常见的具体编码形式。\n> 相关内容参考：[计算机基础&#65306;字符集与字符编码](/notes/n-4a987656b6dc40e4991208df376a3e3d/)，总结得很完善。\n\n## 窄字符和宽字符\n\n**问题**：我们在源代码中指定的字符串字面量，在实际程序中是以什么编码存储的？为什么？\n\n这件事要看编译器如何解释源文件（即源文件解码），以及它为字符串字面量选择什么目标编码（即字面量编码）。\n\n以 C、C++为例，常把字符串分为窄字符和宽字符。\n\n### 窄字符\n\n对于没有前缀的普通字符串字面量，默认就是窄字符（**可以通过配置编译器使其为宽字符**）：\n\n```cpp\nchar strBuff[] = \"中国\";\n```\n\n在这里，`中国` 是窄字符串字面量，最终写入 `strBuff` 的字节序列取决于编译器对普通字符串字面量的编码策略。\n\n很多情况下，它会同时受到以下因素影响：\n- 源代码文件本身的编码方式，例如 `UTF-8`、`UTF-16` 或者 ANSI 编码。\n- 编译器如何解释源文件字符集\n- 编译器为普通字符串字面量选择的执行字符集或窄字符串字面量编码\n> **一般而言**：源代码文件本身使用的编码方式就是普通字符最终在程序中的编码方式。即编译器不去解析/转换源代码文件中的字符串编码，直接拿来使用。\n\n\n**有个问题**：因为窄字符使用的编码方式可能是变长编码，也就是每个字符占用的字节数不一样，这导致你没法逐个处理各字符，只能逐 BYTE 处理字符串，很不方便。\n\n> [!NOTE] Title\n> \"ANSI 编码\" 是一种错误说法，ANSI 是一个组织，并不是一种编码方式，在微软的语境中实际是指活动代码页编码，实际可能是 `GBK` 等具体编码方式。什么是活动代码页编码：[计算机基础&#65306;字符集与字符编码](/notes/n-4a987656b6dc40e4991208df376a3e3d/#h-733df5ba6215eedbb276)\n\n### 宽字符\n\n为了满足需要逐个处理字符的场景，我们希望使用定长编码，因为这样通过固定步长就可以得到下一个字符，那使用什么编码方式呢：宽字符使用 UTF-16(占用 2 个或 4 个字节)或 UTF-32(占用 4 个字节)编码。\n> 有人可能会问：UTF-16 不是变长的吗？是的，但因为该编码对几乎所有常用字符的编码长度都是相同的，所以可以视其为“定长”。\n\n宽字符的大小是固定的，C/C++ 提供的宽字符变量类型有： `wchar_t`、`char16_t`、`char32_t` 等\n- `wchar_t`：Windows 下通常是 2 字节，很多 Unix/Linux 环境下通常是 4 字节。\n- `char16_t`：用于存放 `UTF-16` 编码单元，即 2 字节。\n- `char32_t`：用于存放 `UTF-32` 编码单元，即 4 字节。\n\n可以使用字符前缀来声明字符串字面量使用宽字符编码，使用示例：\n```cpp\n#include <iostream>\n\nint main() {\n    // `wchar_t` 的宽度和编码取决于实现；\n    // Windows 下通常是 2 字节，常见为 UTF-16 编码单元；\n    // 很多 Unix/Linux 环境下通常是 4 字节。\n    wchar_t wStr[] = L\"你好\";\n\n    // C++11 明确指定 UTF-16 编码单元\n    char16_t u16Str[] = u\"你好\";\n\n    // C++11 明确指定 UTF-32 编码单元\n    char32_t u32Str[] = U\"你好\";\n\n    return 0;\n}\n```\n\n加上 `L` 前缀后，字面量的元素类型会变成 `wchar_t`。因此即使是英文字符，每个元素占用的也是 `sizeof(wchar_t)` 字节，而不是 1 字节。\n\n### 两者在内存中的差异\n\n如下图所示中的普通字符串（窄字符串）使用 GBK 编码，而宽字符串使用的是 UTF-16 编码：\n\n![5dedcf5bf4334c019cbc588e272c16cd&#95;MD5&#46;png](/notes/n-9f8bef2496124e2da6233056a60e88ca/media/ef5ec83e7ecba351ae863b0c021f81396cb750ff439699e5de903289755377ce.png)\n\n图中体现了：\n1. GBK 编码下，每个字符占用的长度不同\n2. 每个宽字符占用 2 字节。\n\n#### 获取字符串长度\n\n获取两种字符串字面量的长度：\n\n```cpp\nchar strBuff[] = \"China\";\nwchar_t strBuff1[] = L\"China\";\n\nstrlen(strBuff);    // 返回窄字符串在 '\\0' 之前的字节数\nwcslen(strBuff1);   // 返回宽字符串在 L'\\0' 之前的 `wchar_t` 元素个数\n```\n\n这里要注意：\n\n- `strlen()` 统计的是字节数，不是“逻辑字符数”；如果窄字符串采用 `UTF-8` 或 `GBK` 这类多字节编码，**结果往往不等于人眼看到的字符数量**\n- `wcslen()` 统计的是 `wchar_t` 元素个数；如果底层使用 `UTF-16`，遇到代理项对时，**结果也不一定等于 Unicode 字符数**\n\n因此，`strlen()` 和 `wcslen()` 本质上统计的都是各自编码单元序列的长度，而不是抽象意义上的“字符个数”。\n\n其它普通字符函数相对应的宽字符版本函数：\n![2de1050393a7f2fa2b475f7e4dfce849&#95;MD5&#46;png](/notes/n-9f8bef2496124e2da6233056a60e88ca/media/9842586fd9a5d5033a09f3845533036b7a0127344d167937122494c2018bf5e1.png)\n> **总结**：在 C/C++中，字符串使用\"ANSI 编码\"会有移植性问题，因此最好使用宽字节字符串(实际为 UTF-16 LE 编码方式)。\n\n### A_W 版本字符串函数\n\n因为普通字符和宽字符在内存中的存储方式、大小不一样，所以**在 Windows 中与字符串有关的函数通常都有两个版本**，以 `MessageBox` 为例，分为 `MessageBoxW` 和 `MessageBoxA`：\n\n![92b0e97db9234d95dbbca3ebbc56b74c&#95;MD5&#46;png](/notes/n-9f8bef2496124e2da6233056a60e88ca/media/8b006dc5b43a0b63e1cbf8d74c523eb66a88fc295a4eebd7399b5e25f467a790.png)\n\n可以看到其通过判定是否定义了 `UNICODE` 宏决定调用 `MessageBoxW` 还是 `MessageBoxA`。\n\n> [!INFO] VS 中配置字符串字面量的编码方式\n> 在 VS 设置中选择\"使用Unicode字符集\"会定义两个宏：`UNICODE` 和 `_UNICODE`，某些函数和宏依赖这两个宏定义决定字符串编码的方式和调用哪个版本的函数等 ![](/notes/n-9f8bef2496124e2da6233056a60e88ca/media/7d1fd348aec1eebac034a17977c304f9a82097186b98aa1004b331d26ef07889.jpeg) ![](/notes/n-9f8bef2496124e2da6233056a60e88ca/media/17ab5c26f454265bd2fe7d76f059007f82238768ffa465b75aaf8aca77cfeed3.jpeg)\n> \n\n很多 `A` 版本函数本质上会先把窄字符串转换为 `UTF-16` 再转调对应的 `W` 版本（但并不是所有都是如此，比如 `CreateWindowExA()` 和 `CreateWindowExW()`），所以从效率角度出发更推荐直接使用 `W` 版本。转换原理参考：[Windows 进程创建&#65288;05&#65289;&#65306;PEB 创建与初始化](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/#h-d2eed5c7e375651fbfc7)\n> 另外，Windows NT 内核使用的是宽字符，这样更统一，不需要一个国家一个 Windows 版本，这也是为什么进行内核开发时与字符串有关的函数都是 `W` 版本。\n",
+  "id": "9f8bef24-9612-4e2d-a623-3056a60e88ca",
+  "metadata": {
+    "tags": [
+      "lang/c",
+      "lang/cpp",
+      "cs/encoding",
+      "os/windows"
+    ],
+    "title": "C、C++ 字符串编码与 Windows A、W 接口"
+  },
+  "resources": [
+    "17ab5c26f454265bd2fe7d76f059007f82238768ffa465b75aaf8aca77cfeed3.jpeg",
+    "7d1fd348aec1eebac034a17977c304f9a82097186b98aa1004b331d26ef07889.jpeg",
+    "8b006dc5b43a0b63e1cbf8d74c523eb66a88fc295a4eebd7399b5e25f467a790.png",
+    "9842586fd9a5d5033a09f3845533036b7a0127344d167937122494c2018bf5e1.png",
+    "ef5ec83e7ecba351ae863b0c021f81396cb750ff439699e5de903289755377ce.png"
+  ],
+  "url": "/notes/n-9f8bef2496124e2da6233056a60e88ca/"
+}

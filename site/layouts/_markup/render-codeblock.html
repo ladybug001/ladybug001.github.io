@@ -1,0 +1,4 @@
+{{- /* Stable block anchors and stock Hugo highlighting. Mermaid stays code. */ -}}
+{{- with .Attributes.id -}}<div id="{{ . }}">{{- end -}}
+{{- highlight .Inner .Type (dict "noClasses" false) -}}
+{{- with .Attributes.id -}}</div>{{- end -}}

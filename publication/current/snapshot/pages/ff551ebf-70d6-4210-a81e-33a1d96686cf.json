@@ -1,0 +1,56 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3ec7f1b1418d9a81b5f2",
+      "kind": "heading",
+      "offset": 9
+    },
+    {
+      "id": "h-6fd82b362e53307e7c99",
+      "kind": "heading",
+      "offset": 103
+    },
+    {
+      "id": "h-bd215bd6f4a4fa193adf",
+      "kind": "heading",
+      "offset": 405
+    },
+    {
+      "id": "h-51e503d5e70bf8764cf7",
+      "kind": "heading",
+      "offset": 1059
+    },
+    {
+      "id": "h-3fb1ddc8ca6c6e859a35",
+      "kind": "heading",
+      "offset": 1625
+    },
+    {
+      "id": "h-7c0f20245c5a7bea8904",
+      "kind": "heading",
+      "offset": 1848
+    },
+    {
+      "id": "h-9d7854eb0161c165dd34",
+      "kind": "heading",
+      "offset": 2177
+    },
+    {
+      "id": "h-eb3b19bf7a69e2f249df",
+      "kind": "heading",
+      "offset": 2499
+    }
+  ],
+  "body": "# STL 迭代器\n\n上级：[C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/)\n\n## STL 迭代器简介\n\n迭代器可以看作“高级指针”，它模仿指针的操作方式，用于指向容器中的某个元素，它是容器和算法之间的桥梁。\n\n通过迭代器可以：\n\n- 读取它指向的元素。\n- 在允许的情况下修改它指向的元素。\n\n下图展示了迭代器在 `STL` 中所处的位置：\n\n![18ae59242e350214e2a4108bee503420&#95;MD5&#46;jpg](/notes/n-ff551ebf70d64210a81e33a1d96686cf/media/d43025612532b0150f5638e03eb9c5e556034565aedb461f93f058e9cce09212.jpg)\n\n## 迭代器的使用\n\n定义容器迭代器常见有两种方式：\n\n```cpp\nvector<int>::iterator vIt;         // 非常量迭代器\nvector<int>::const_iterator vCit;  // 常量迭代器\n```\n\n访问迭代器指向元素的方式如下：\n\n```cpp\n*vIt;\n```\n\n不同容器支持的迭代器能力不同，这直接影响它们能否使用某些算法。例如，`sort()` 要求随机访问迭代器，因此不能直接作用在 `list` 上，`list` 只能使用自己的 `sort()` 成员函数。\n\n迭代器按能力从弱到强分为五种：\n1. **输入迭代器**：只读，单向向前移动，适合顺序读取元素，不可多次遍历（如对输入流的遍历）。\n2. **输出迭代器**：只写，单向向前移动，适合顺序写入元素，不可多次遍历（如向输出流写入）。\n3. **前向迭代器**：可读可写，单向向前移动，可多次遍历。\n4. **双向迭代器**：在前向迭代器基础上，增加了向后移动的能力，即 `p--`、`--p`\n5. **随机访问迭代器**：在双向迭代器基础上，增加了任意跳转和下标访问能力。\n> 编号大的迭代器拥有编号小的迭代器能力。注意：所有迭代器都能向前移动，即 `p++`、`++p`。\n\n随机访问迭代器能进行： \n```cpp\np += i;\np -= i;\np + i;\np - i;\np[i];\np < p1;\np <= p1;\np > p1;\np >= p1;\n```\n\n## 无序关联容器的迭代器\n\n`unordered_set`、`unordered_multiset`、`unordered_map`、`unordered_multimap` 这类无序关联容器，底层通常基于哈希表实现。它们的迭代器和 `set` / `map` 这一类有序关联容器有一个关键差异：\n\n1. 有序关联容器通常提供**双向迭代器**（我的理解： 平衡搜索树，借助完全二叉树的线性存储结构，可以实现快速访问其子节点、父节点）。\n2. 无序关联容器通常只提供**前向迭代器**。\n\n这意味着：\n\n- 可以使用 `++it` 或 `it++` 向前遍历。\n- 不可以使用 `--it` 回退。\n- 不可以使用 `it + 3`、`it - 1`、`it[n]` 这类随机访问操作。\n\n例如，下面这些写法是合法的：\n\n```cpp\nunordered_set<int>::iterator usIt;\nunordered_map<int, string>::iterator umIt;\n\n++usIt;\numIt++;\n```\n\n而下面这些写法就不适用于 `unordered_*` 容器：\n\n```cpp\n// --usIt;\n// umIt + 3;\n// sort(us.begin(), us.end());\n```\n\n### 遍历顺序的特点\n\n无序关联容器中的元素**不会按键值自动排序**，因此：\n\n1. 遍历顺序通常既不是插入顺序，也不是从小到大顺序。\n2. 同样一组数据，在不同实现或不同重哈希（`rehash`）后，遍历顺序都可能变化。\n3. 如果业务逻辑依赖稳定顺序或有序范围语义，就不适合直接依赖 `unordered_*` 容器迭代器遍历结果。\n\n换句话说：`unordered_*` 容器适合快速查找，但不适合拿来当“天然有序”的遍历结构。\n\n### 迭代器失效的注意点\n\n无序关联容器还有一个很容易踩坑的点：**重哈希可能使迭代器失效**。\n> **重哈希**：当哈希表中元素数量增多，导致冲突变多或装载因子过大时，重新分配更大的桶数组，并把原有元素重新计算哈希位置、重新放入新桶中的过程。\n\n通常可以先记下面这组规则：\n\n1. `erase()` 通常只会使指向被删除元素的迭代器失效。\n2. `insert()` / `emplace()` 如果触发了重哈希，可能使所有迭代器失效。\n3. `rehash()` / `reserve()` 改变桶结构后，通常也会使迭代器失效。\n\n因此，如果你一边遍历 `unordered_*` 容器，一边插入新元素，就要特别小心当前迭代器是否仍然有效。\n\n## 不同容器支持的迭代器类别\n\n不同容器支持的迭代器类别如下：\n\n| 容器 | 迭代器类别 |\n|---|---|\n| `vector` | 随机访问 |\n| `deque` | 随机访问 |\n| `list` | 双向 |\n| `set` / `multiset` | 双向 |\n| `map` / `multimap` | 双向 |\n| `unordered_set` / `unordered_multiset` | 前向 |\n| `unordered_map` / `unordered_multimap` | 前向 |\n| `stack` | 不支持 |\n| `queue` | 不支持 |\n| `priority_queue` | 不支持 |\n\n## 使用建议\n\n可以用下面这组规则快速区分：\n\n1. 如果算法要求随机访问迭代器，例如 `sort()`，那就只能直接用于 `vector`、`deque` 等容器，不能直接用于 `list`、`set`、`map` 或 `unordered_*`。\n2. 如果你需要按键值有序遍历，优先考虑 `set` / `map`。\n3. 如果你更看重平均查找效率，不关心遍历顺序，则通常优先考虑 `unordered_set` / `unordered_map`。\n4. 如果后续需要排序展示 `unordered_*` 容器中的结果，通常做法是先拷贝到 `vector` 中，再调用 `sort()`。\n",
+  "id": "ff551ebf-70d6-4210-a81e-33a1d96686cf",
+  "metadata": {
+    "tags": [
+      "lang/cpp/stl"
+    ],
+    "title": "C++ STL 迭代器"
+  },
+  "resources": [
+    "d43025612532b0150f5638e03eb9c5e556034565aedb461f93f058e9cce09212.jpg"
+  ],
+  "url": "/notes/n-ff551ebf70d64210a81e33a1d96686cf/"
+}

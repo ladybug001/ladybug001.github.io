@@ -1,0 +1,61 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-347427198bd574e3556c",
+      "kind": "heading",
+      "offset": 4
+    },
+    {
+      "id": "h-f26e7e2bb7df8f7a7f80",
+      "kind": "heading",
+      "offset": 245
+    },
+    {
+      "id": "h-fdac659284f0bd994f85",
+      "kind": "heading",
+      "offset": 303
+    },
+    {
+      "id": "h-4612adf0e7e936c84938",
+      "kind": "heading",
+      "offset": 1530
+    },
+    {
+      "id": "h-bf6dd89d7ddbb8f48e84",
+      "kind": "heading",
+      "offset": 1700
+    },
+    {
+      "id": "h-a83b9f74d6f7c44002a0",
+      "kind": "heading",
+      "offset": 2047
+    },
+    {
+      "id": "h-1c09444febe2f5b2e2aa",
+      "kind": "heading",
+      "offset": 2407
+    },
+    {
+      "id": "h-509fad6b4edfee453834",
+      "kind": "heading",
+      "offset": 2420
+    },
+    {
+      "id": "h-3cfa9f07e7e555c91a91",
+      "kind": "heading",
+      "offset": 2767
+    },
+    {
+      "id": "h-06dc9cd71389dfa38e5f",
+      "kind": "heading",
+      "offset": 3579
+    }
+  ],
+  "body": "# 介绍\n\nBabel 是一款工具，能将 JS 代码转换为 AST，通过 AST 我们可以实现去混淆。\n> AST（Abstract Syntax Tree），中文抽象语法树，简称语法树（Syntax Tree），是源代码的抽象语法结构的树状表现形式，树上的每个节点都表示源代码中的一种结构。语法树不是某一种编程语言独有的，JavaScript、Python、Java、Golang 等几乎所有编程语言都有语法树。但做逆向学会了 AST，在解混淆时可以如鱼得水。\n\n\n# babel环境安装\n\n在当前项目下执行：`npm install @babel/core --save-dev`\n\n# 常用AST模板\n\n\n```js\n// 现在生成package.json文件会使用ES6语法，在ES6语法中使用require需要下面这两行，并且需要在当前项目的`package.json`新加：\"type\": \"module\",\n\n// 也可以删除项目下的package.json等文件使用ES5语法，然后直接注释下面两行也可。\n\nimport {createRequire} from 'module';\nconst require = createRequire(import.meta.url);\n\n// ================================================\n// 解析代码为AST\nconst {parse} = require(\"@babel/parser\");\n// 遍历AST\nconst traverse = require(\"@babel/traverse\").default;\n// 生成Node节点，或者判断是否为某种类型的Node节点\nconst types = require(\"@babel/types\");\n// AST生成代码\nconst generator = require(\"@babel/generator\").default;\n\nconst fs = require(\"fs\");\n\n// 上面是AST普遍包含的代码\n\n\n\n// 要AST解析的代码\n//const code = 'const a = v + 2;';\nconst code =fs.readFileSync(\"waitDecode.js\", { encoding: \"utf-8\" });\n// AST解析\nconst ast = parse(code,{sourceType: \"module\"});\n\n  \n// 在这里针对要处理的节点编写逻辑代码。\nconst visitor = {\n  BinaryExpression(path) {\n    const {confident, value} = path.evaluate();\n    if (confident) {\n      console.log(value); // 输出 3\n    }\n  }\n}\n\n// 按照编写的逻辑去遍历AST树\ntraverse(ast, visitor);\n\n\n// 将ast转成js代码，{jsescOption: {\"minimal\": true}} unicode -> 中文\nlet c = generator(ast, {jsescOption: {\"minimal\": true}}).code;\nconsole.log(c)\n// 把修改后的代码保存\nfs.writeFile('dou_yin_decode.js', c, (err) => {\n\n});\n\n```\n\n\n# Visitor的写法\nenter：**进入节点的阶段**\n\nexit：**离开节点的阶段**\n\n假设如下所示是进出节点的顺序：\n```\nA\n\tB\n\t\tC\n\t\t\tD\n\t\t\t\tE\n\t\t\t\t\tF\n\t\t\t\t\tF\n\t\t\t\tE\n\t\t\tD\n\t\tC\n\tB\nA\n```\n采用`enter`则遍历顺序为：ABCDEF\n采用`exit`的遍历顺序为：FEDCBA\n\n\n## 常规写法\n常规写法的执行时机是`enter`\n\n```js\n// 一种\nconst visitor = {\nBinaryExpression:function{\n\t\tconsole.log(\"=========\")\n\t\t},\n\t\t\n}\n```\n\n```js\n// 一种\nconst visitor = {\nBinaryExpression(path){\n\t\tconsole.log(\"=========\")\n\t\t},\n\t\t\n}\n\n\n```\n\n```js\nconst visitor = {\n'FunctionExpression|BinaryExpression': function (path){\n        console.log('...')\n    }\n}\n\n```\n\n## 指定遍历时机\n```js\n// 一种\nconst visitor = {\n\tenter:{\n\t\n\t}\n\texit:{\n\t\n\t}\n}\n```\n\n\n```js\n\n// 一种\nconst visitor = {\nBinaryExpression:{\n\t\tenter:function(path){\n\t\t\tconsole.log(\"=============\")\n\t\t},\n\t\texit:function(path){\n\t\t\tconsole.log(\"=============\")\n\t\t\n\t\t}\n\t\t},\n\t\t\n}\n// \n\n```\n\n```js\nconst visitor = {\n    FunctionExpression: {\n        enter: [fun1, fun2]\n    }\n}\n```\n\n\n\n\n\n# 常用函数\n\n## 替换&插入&删除\n参数是Node对象\n- `path.replaceWith(node)`：用指定的 AST 节点替换当前节点，返回替换后的节点。\n- `path.replaceWithMultiple(nodes)`：用指定的 AST 节点数组替换当前节点，返回替换后的节点数组。\n- `path.insertBefore(nodes)`：在当前节点前插入指定的 AST 节点或节点数组。\n- `path.insertAfter(nodes)`：在当前节点后插入指定的 AST 节点或节点数组。\n- `path.remove()`：从 AST 中删除当前节点。\n- `path.replaceWithSourceString(code_str)`用文本代码去替换当前节点\n\n## 作用域`scope`相关函数\n- `path.scope.path`获取当前节点作用域的path对象\n- `path.scope.block`获取当前节点作用域的Node对象\n>注意：这个函数可以提取作用域的Node对象，但是不适用于函数，函数需要通过`path.scope.parent.block`获取父级作用域才行。\n\n- `path.scope.getBinding(name)`获取`name`变量的作用域绑定，返回一个Binding对象。\n>一般对于变量名称的修改，都是通过Binding对象修改的。Binding对象部分参数：\n>`referenced` ：表示是否被其他地方引用\n>`references` ：被引用的次数\n>`referencesPaths` ：被引用的path会放到这个里面\n- `path.scope.getOwnBinding()`获取当前节点自己的绑定，不报父级作用域中的标识符。\n- `path.scope.traverse()`跟引入的模块`traverse`的效果相同。\n- `path.scope.rename(old_Name,new_Name)`把旧标识符变成新标识符\n- `path.scope.dump()`打印当前作用域\n- `path.scope.hasBinding('a')`查询是否有标识符a的绑定。一般可以用getBinding代替啦\n- `path.scope.getAllBindings()`获取当前节点所有绑定，返回一个对象。\n- `path.scope.hasReference('a')`查询节点是否有a标识符的引用\n- `path.scope.getBindingIdentifier('a')`获取Identifier本身\n- `path.scope.crawl()` 重构scope，在某种情况下会报错，不过还是**建议在每一个插件的最后一行加上**。\n## 其它\n- `path.stop()`停止当前的遍历，不再继续向下遍历\n- `types.valueToNode(value)`数值变成Node节点\n-  `path.parent`获取当前节点的父节点Node\n- `path.parentPath`获取当前节点的父节点Path\n```js\npath.parent===path.parentPath.node\n```\n- `path.findParent(function1)`找父节点。\n```js\nfunction1 = function(result){\n\nreturn result.isExpressionstatement()\n}\npath.findParent(function1)//一直像上找父节点，直到某一节点传入function1后返回的是True为止。\n```\n- `path.find(function1)`与findParent相似，区别在于是否包含自己。\n- `path.getFunctionParent(function1)`向上找函数\n- `path.getStatementParent(function1)`向上遍历语法树，找到目标节点为止。\n- `path.container`返回当前节点所在容器的Node节点`容器:在AST语法中被谁包含，谁就是这个节点的容器`\n- `path.inList`判断容器是否为数组。\n- `path.key`获取当前节点在容器中的索引。\n- `path.listkey`获取当前容器的名称。\n>如果当前节点所在的容器是一个对象，那么path.key是名称，path.listkey为undefine\n- `path.getsibling(index)`获取当前容器索引为index的Node节点\n```js\ncosnt code = [1,2,3,4,5]\nconst visitor={\nNumericLiteral(path){\n//打印出5个数组索引0对应的值\nconsole.log(path.getsibling(0)+'');\n}\n}；\n```\n- `path.pushContainer(newNode)`在容器后插入Node节点，可以是数组\n- `path.unShiftContainer(newNode)`在容器前插入Node节点，可以是数组\n- `path.evaluate()`计算表达式在当前作用域的计算值\n```js \n\nconst code = 'const a = v + 2;';\n\nconst visitor   = {\n\n  BinaryExpression(path){\n\n    console.log('===================')\n\n    const {confident, value} = path.evaluate();\n\n    if (confident) {\n\n      console.log(value); // 输出 3\n  }},\n}\n```\n- `path.getPrevSibling()`用来获取当前节点的上一个兄弟节点。\n- `path.getNextSibling()`用来获取当前节点的下一个兄弟节点。\n",
+  "id": "3a98fb1d-58b6-4535-a242-8da160df96ad",
+  "metadata": {
+    "title": "Babel"
+  },
+  "resources": [],
+  "url": "/notes/n-3a98fb1d58b64535a2428da160df96ad/"
+}

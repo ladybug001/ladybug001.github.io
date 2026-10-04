@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-0f603ea71dfa1931a70a",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-473b3f84b73a27bb0c77",
+      "kind": "heading",
+      "offset": 71
+    },
+    {
+      "id": "h-94c3e5d09ba7bf03d891",
+      "kind": "heading",
+      "offset": 423
+    },
+    {
+      "id": "h-648182e364c2260628b6",
+      "kind": "heading",
+      "offset": 712
+    },
+    {
+      "id": "h-963ac1eb725462ae48d5",
+      "kind": "heading",
+      "offset": 990
+    }
+  ],
+  "body": "# MFC 框架开发 (MOC)\n\n> MFC 开发与实现原理：先创建窗口、对话框和控件，再分析资源绑定、类机制与消息映射。\n\n## 开发入门\n\n1. [MFC 开发基础](/notes/n-581da27d7b3646a1b1298f1432e2939d/) — 了解框架组成并创建第一个程序。\n2. [Windows 窗口程序](/notes/n-5b50f7a485de48dcb0d1e1868933e003/) — 补充 MFC 封装的 Win32 窗口、消息循环与窗口过程。\n3. [MFC 对话框与控件](/notes/n-60887c23e81547e6a416ad0cbf121244/) — 理解对话框工程结构、控件访问与内容更新。\n4. [MFC 键盘与鼠标消息处理](/notes/n-a8306eb080294d6d894a9ec5e1053d67/) — 编写窗口区域、键盘与鼠标事件处理。\n\n## 资源绑定与框架原理\n\n- [Windows PE 资源目录的开发应用](/notes/n-8e673494e6614944a92b23ea454ba7f1/) — 了解资源 ID、资源描述与创建 UI 的底层接口。\n- [MFC 界面资源与控件绑定机制](/notes/n-a77f7fc29093465ca81acd7917861fc4/) — 在理解对话框工程后追踪资源、控件与代码的绑定。\n- [MFC 框架原理](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/) — 在具备开发基础后分析 RTTI、动态创建、消息映射与传递。\n\n## 绘图与文件操作\n\n- [Windows GDI](/notes/n-b415a25acde7408d9926f7a5612f432c/) — CDC 封装的底层图形设备接口。\n- [MFC CDC 绘图与坐标映射](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/) — 查阅 CDC、`CPaintDC`、`CClientDC`、绘图对象与坐标映射。\n- [MFC CFile 类](/notes/n-b7b0be5834a24d3a8b6a05670b631fbc/) — 文件读写与相关封装，按需要查阅。\n\n## 前置与相关入口\n\n- [C&#43;&#43; 面向对象编程 &#40;MOC&#41;](/notes/n-0a0112f464fc4c52937fc3acc6f4f4b1/) — 类生命周期、继承、多态与 RTTI。\n- VC&#43;&#43; 6&#46;0 安装与配置 — 对应旧版课程示例的开发环境。\n- [C&#43;&#43; Qt 开发基础](/notes/n-56644eca51734b9598ae47556aafe1ad/) — 对照另一种 C++ GUI 框架。\n- [Windows 窗口与消息机制 &#40;MOC&#41;](/notes/n-8c532b91a6f94e15b533cc55499ce34f/) — 下钻系统消息路由与回调。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 返回 Windows 领域入口。\n",
+  "id": "705b8d5b-7602-4611-84eb-ca4a316e97cd",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows",
+      "lang/cpp/mfc"
+    ],
+    "title": "MFC 框架开发 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-705b8d5b7602461184ebca4a316e97cd/"
+}

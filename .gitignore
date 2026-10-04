@@ -1,22 +1,8 @@
 .DS_Store
 .gitignore
-node_modules
 public
-prof
-tsconfig.tsbuildinfo
-.obsidian
-.quartz-cache
-private/
-.replit
-replit.nix
-.quartz/
-quartz/cli/tui/dist/
-.turbo/
 
 .local/
-.npm-cache/
-.pnpm-store/
-pnpm-lock.yaml
 
 # Independent publisher: generated output is never a second content source.
 .generated/
@@ -36,6 +22,7 @@ __pycache__/
 !/.github/workflows/
 /.github/workflows/*
 !/.github/workflows/hugo-ci.yml
+!/.github/workflows/hugo-pages.yml
 !/pipeline/
 # Local operating notes contain machine/Vault paths; use public CI docs instead.
 /pipeline/README.md
@@ -44,7 +31,11 @@ __pycache__/
 /publication/*
 !/publication/README.md
 !/publication/fixture/
+!/publication/current/
 !/docs/
 /docs/*
 !/docs/hugo-ci.md
 !/docs/hugo-publication.md
+!/docs/hugo-stack.md
+!/site/
+!/preview.ps1

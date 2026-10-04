@@ -1,0 +1,51 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-ab667af2afeb646483f6",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-0efddade40ab78b74062",
+      "kind": "heading",
+      "offset": 97
+    },
+    {
+      "id": "h-9d9b9e1482c8acbd7e19",
+      "kind": "heading",
+      "offset": 396
+    },
+    {
+      "id": "h-cc10ccc1b1d033c41880",
+      "kind": "heading",
+      "offset": 796
+    },
+    {
+      "id": "h-21b74f1d59cf1b4469c1",
+      "kind": "heading",
+      "offset": 1191
+    },
+    {
+      "id": "h-9123c3eb2b41d03f534d",
+      "kind": "heading",
+      "offset": 1648
+    },
+    {
+      "id": "h-3549ad5fccf99a74a31b",
+      "kind": "heading",
+      "offset": 2040
+    }
+  ],
+  "body": "# Windows 调试与逆向分析 (MOC)\n\n从调试关系、事件、断点与异常理解调试器如何控制目标，再进入静态识别、动态跟踪和案例分析。用户态调试与内核双机调试分开准备环境。\n\n## 前置知识\n\n- [x86&#47;x64 体系结构](/notes/n-d80046d2d0bb4ae49616fceabab1054a/) — 指令、标志寄存器、权限与异常基础。\n- [C&#65295;C&#43;&#43; 语言基础 &#40;MOC&#41;](/notes/n-38d58bba673d4ca996b87b58f8d04951/) — 编译链接、类型布局与资源管理。\n- [Windows 进程与线程管理 &#40;MOC&#41;](/notes/n-1909310e1a5e499cb337d28521607edb/) — 对象、线程上下文与生命周期。\n\n## 调试模型与异常\n\n1. [Windows 调试关系与调试事件机制](/notes/n-534116c45bce417bac764b15cc9c1f99/) — 建立调试对象、进程关系与事件处理模型。\n2. [Windows 断点与单步执行机制](/notes/n-16a0bec58f144135a48b03e4ac71452a/) — 区分软件、内存、硬件断点和单步触发方式。\n3. [Windows 异常处理机制 &#40;MOC&#41;](/notes/n-46c2bfd4baf7445db160d3a9c39163bc/) — 深入异常产生、分发、VEH、SEH 与用户态处理。\n4. [OD 验证&#65306;用户态异常的一次机会与二次机会](/notes/n-1477ec63df444763ab8200c27fda5815/) — 用实验验证调试器和进程异常处理的先后关系。\n\n## 工具与环境\n\n- [IDA](/notes/n-ea6d689d9d0242a194a24743b6065e0c/) — 静态分析、反汇编与相关操作。\n- [WinDbg](/notes/n-a3d1192722d148b6ade29801cde5c370/) — 符号、内核结构与调试操作。\n- [Windows 双机调试环境配置](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/) — 准备宿主机、目标机与调试通道。\n- [CE](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/) — 数据扫描、指针定位与自动汇编。\n- [易语言逆向与调试插件](/notes/n-5ba3ecdc6ef947a08d2770abc969e143/) — 通用调试插件、易语言辅助工具与 Hook 排查。\n\n## 文件、函数与执行流分析\n\n- [Windows PE 与逆向工程 &#40;MOC&#41;](/notes/n-c3b3e9cd34d44e929aaae83f6caebbec/) — PE、加载、Dump、注入与 Hook 的专题路线。\n- [FLIRT 静态库函数识别](/notes/n-afb27cef15c740d1ba20120c6d7b8c59/) — 识别静态库函数以减少无效跟踪。\n- [内存 Dump 与 IAT 修复](/notes/n-38c4387ae06647ceb7af501ef428d8c8/) — 从运行中的映像恢复静态分析入口。\n- [Trampoline Hook](/notes/n-fa12fc7baceb44f2aabe21ea5fedee59/) — 理解原指令搬移、跳转与执行流恢复。\n- [易语言运行机制与逆向](/notes/n-ce3b03df129c4b5abaaff4f2538ec2f9/) — 结合编译链接、窗口事件与支持库特征寻找切入点。\n\n## 地址与 FPS 案例\n\n- [逆向&#65306;静态地址&#12289;动态地址与基址](/notes/n-8f71f7d8dbe14e5fa753c2604b51f152/) — 区分模块地址与动态对象地址。\n- 堆中相关数据的邻近分布 — 利用分配关系辅助对象定位。\n- [FPS 游戏逆向通用思路](/notes/n-126b8566fd6b4d268317586a51557ddb/) — 查阅数值、玩家、实体、矩阵与可见性分析。\n- FPS逆向记录&#65306;Assault Cube — 基础实践与源码对照。\n- FPS逆向记录&#65306;CSGO — 对照复杂引擎接口、网络变量和对象结构。\n- [计算机图形渲染 &#40;MOC&#41;](/notes/n-393b72b990e24666976344a7457cf128/) — 补充矩阵、投影与绘制知识。\n\n## 相关入口\n\n- [Windows 驱动开发 &#40;MOC&#41;](/notes/n-0d5d90f7fa004030baa7ded0fecae31b/) — 内核实验与综合项目。\n- [Android 运行机制与逆向 &#40;MOC&#41;](/notes/n-2b992cf7b1934491bd31a57f0b3266ac/) — 另一平台的运行机制、动态调试与 Hook。\n- [Web 逆向与爬虫实践 &#40;MOC&#41;](/notes/n-d2343212ccba41979e43c9b7ebf43968/) — 浏览器代码、请求与环境分析。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 返回 Windows 领域入口。\n",
+  "id": "da63b3ac-0bcb-46c7-bb4d-b1de80503df3",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows",
+      "reverse/windows"
+    ],
+    "title": "Windows 调试与逆向分析 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-da63b3ac0bcb46c7bb4db1de80503df3/"
+}

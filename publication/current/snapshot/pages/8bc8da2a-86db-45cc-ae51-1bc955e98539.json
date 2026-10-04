@@ -1,0 +1,36 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-fd395545a25fab0e73e5",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-c6485b17f851c07c3760",
+      "kind": "heading",
+      "offset": 63
+    },
+    {
+      "id": "h-583438db9f34546401d8",
+      "kind": "heading",
+      "offset": 317
+    },
+    {
+      "id": "h-bee6927d43b6989e3311",
+      "kind": "heading",
+      "offset": 480
+    }
+  ],
+  "body": "# 编程语言理论 (MOC)\n\n> 语言无关的编程抽象概念：从语言设计哲学、执行机制到并发与迭代抽象。\n\n## 规范与执行机制\n\n1. [编程语言&#65306;规范与实现分离](/notes/n-dca8dc00e8664e00ab4a00c31b2a057c/)\n2. [编程语言&#65306;虚拟机与解释器的设计逻辑](/notes/n-39ae179fbe1a486892410bf946f9e63c/)\n3. [编程语言&#65306;主流语言虚拟机实现机制](/notes/n-567af75912274b75a32d6eb63cbfdaa6/) — JVM / CPython / V8 等实例\n## 迭代、协程与异步\n\n1. [编程语言&#65306;迭代器的原理](/notes/n-1120995a4e7743639fe022c5319e2db8/)\n2. [编程语言&#65306;协程的原理](/notes/n-3b7b3a9754c243b79a632f73f849de64/)\n3. 异步编程的本质与实现机制\n\n## 具体语言实现\n\n- [JavaScript 语言机制 &#40;MOC&#41;](/notes/n-06ad026c16634c2b9d0b578a0d0a62d0/) — JS 中协程/迭代器/异步的具体实现\n- [Python 语言特性 &#40;MOC&#41;](/notes/n-55594aaf52804fedaae2178afc0581e1/) — Python 中协程/迭代器/异步的具体实现\n\n- [Java 与 JVM 运行机制 &#40;MOC&#41;](/notes/n-d80736f80c16419c85c2511be976a2d5/) — JVM 的类文件、类加载、运行时内存与反射。\n- [C&#65295;C&#43;&#43; 语言基础 &#40;MOC&#41;](/notes/n-38d58bba673d4ca996b87b58f8d04951/) — 对照编译链接与直接机器码执行。\n- [Windows 同步与异步执行 &#40;MOC&#41;](/notes/n-fd806559a13b474392ec786d7b239b4b/) — 对照操作系统的等待、通知与回调机制。\n",
+  "id": "8bc8da2a-86db-45cc-ae51-1bc955e98539",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "cs"
+    ],
+    "title": "编程语言理论 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-8bc8da2a86db45ccae511bc955e98539/"
+}

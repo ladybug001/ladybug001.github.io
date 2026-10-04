@@ -1,0 +1,72 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-8c21b3b84e82e7ad3c49",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-6a4fe12f54869e87d17f",
+      "kind": "heading",
+      "offset": 28
+    },
+    {
+      "id": "h-d7263fea7609957620fd",
+      "kind": "heading",
+      "offset": 213
+    },
+    {
+      "id": "h-aa83235af1b1466738b3",
+      "kind": "heading",
+      "offset": 345
+    },
+    {
+      "id": "h-35ee994ae1677a8dcf46",
+      "kind": "heading",
+      "offset": 1526
+    },
+    {
+      "id": "h-3a50635756a576c43ed8",
+      "kind": "heading",
+      "offset": 1694
+    },
+    {
+      "id": "h-b3de3f6a9c80974295ee",
+      "kind": "heading",
+      "offset": 2225
+    },
+    {
+      "id": "h-1cff630697c378476b5f",
+      "kind": "heading",
+      "offset": 2587
+    },
+    {
+      "id": "h-a1135acd3213928f9a5e",
+      "kind": "heading",
+      "offset": 2603
+    },
+    {
+      "id": "h-c464c6fbe060e7e09096",
+      "kind": "heading",
+      "offset": 3331
+    },
+    {
+      "id": "h-ad093368b8bd2a925404",
+      "kind": "heading",
+      "offset": 3750
+    }
+  ],
+  "body": "\n# C++ RTTI 机制\n\n## RTTI 核心概念\n\n**RTTI** (Run-Time Type Information) 是 C++ 在运行时发现和使用对象类型信息的机制，也是实现 C++运行时多态的关键机制，参考：[C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/#h-799019a7718651ead8ba)。\n\n### 核心前提：多态类型\n\nRTTI 仅对**多态类型**（至少包含一个虚函数的类）有效。\n- **底层原因**：编译器将 RTTI 信息物理上存储在虚函数表 (`vtable`) 的元数据区域。非多态类没有虚表，因此无法在运行时追溯其派生类型。\n\n### 解决的核心痛点：安全的向下转型\n\n在多态继承体系中，类型转换的“安全性”具有明显的不对称性：\n\n1. **向上转型 (Upcasting：派生类 → 基类)**\n    - **编译期可判定且安全**。编译器已知继承关系与对象布局，派生类对象内存中必然包含对应的基类子对象。\n    - *例*：若 `C` 继承自 `A`，将 `C*` 转为 `A*` 始终成立；必要时编译器会自动做指针偏移调整（多继承下尤为常见）。\n2. **向下转型 (Downcasting：基类 → 派生类)**\n    - **编译期无法保证**。`A*` 可能指向 `A` 本身，也可能指向继承树上的任意派生类型；仅凭静态类型无法确定其运行时真实类型。\n    - *例*：若 `B` 与 `C` 都继承自 `A`，当一个 `A*` 实际指向 `C` 对象时，把它强转为 `B*` 是错误的：即便编译通过，也可能得到无效指针并引发未定义行为。\n\n> **核心逻辑总结**：\n> **向上转型**：一个儿子肯定知道他的父亲是谁。（确定性 -> 静态检查）\n> **向下转型**：一个父亲可能有多个儿子，看着父亲无法确定他具体是哪个儿子。（不确定性 -> 需要 RTTI 动态检查）\n\n**无 RTTI 的风险 (static_cast)**：\n\n```cpp\nvoid tryBark(const Animal* a) {\n    // 风险：如果 a 实际上指向的是 Cat，强转为 Dog 后调用 bark() 会崩溃或逻辑错误\n    // static_cast 仅做编译期检查，运行时不验证\n    const Dog* dog = static_cast<const Dog*>(a); \n    dog->bark();\n}\n\ntryBark(pCat); // UB (Undefined Behavior)\n```\n\n**有 RTTI 的方案 (dynamic_cast)**：\n\n`dynamic_cast` 依赖 RTTI 在运行时核实对象的真实身份。\n\n```cpp\nvoid tryBark(const Animal* a) {\n    // dynamic_cast 运行时检查：如果转换不安全，返回 nullptr\n    const Dog* dog = dynamic_cast<const Dog*>(a);\n    if (dog != nullptr) {\n        dog->bark(); // 安全执行\n    }\n}\n```\n\n> 参考：[C&#43;&#43; 类型转换](/notes/n-1e07b0b5c4054451a329d0c233154c29/#h-4c683390032e7462e52f)\n\n---\n## RTTI 的底层实现（不同编译器）\n\n虽然 C++ 标准未强制规定实现细节，但主流编译器（GCC, MSVC, Clang）的实现逻辑基本一致：\n\n**虚函数表关联**：在虚函数表 (`vtable`) 的索引为 `-1`（即首地址前一个位置）处，存储一个指针，该指针指向的结构，就存储其 RTTI 信息。\n\n### MSVC (x 86/x 64) 实现：COL 机制\n\nMSVC 使用 **COL (Complete Object Locator)** 来管理 RTTI。其核心是一个多级链表结构。\n\n**内存布局图解**：\n![](/notes/n-05b15a525c2c46f5b96d1ac648d63387/media/c3500bee4cd0acb40fcd715741a674ae5e8e33a5200714e50ee8521b035692c7.jpg)\n\n- **COL (Complete Object Locator)**：存储在虚表指针 (`vptr`) 之前的偏移位置。它包含指向 `TypeDescriptor`（类型名）和 `ClassHierarchyDescriptor`（继承层次）的指针。\n- **继承链存储**：如果类 `C` 继承自 `A` 和 `B`，`C` 的 RTTI 信息中会记录基类 `A` 和 `B` 的 `TypeDescriptor` 以及它们相对于 `C` 首地址的**内存偏移量**。这就是 `dynamic_cast` 能够实现**交叉转换 (Cross-cast)**（如 `A*` 转 `B*`）的依据。\n\n### GCC/Clang 实现：VTable 负偏移\n\nGCC 和 Clang 遵循 `Itanium C++ ABI`，实现相对直接。\n\n**内存布局图解**：\n![c517c863c1984c53456f7fc09ec651f3&#95;MD5&#46;jpg](/notes/n-05b15a525c2c46f5b96d1ac648d63387/media/b461acc00e3c31df33775bb28b4c8a6ebc9aac80184b5ddcf103cc6dda19a3af.jpg)\n\n- **实现逻辑**：虚表指针 `pVT` 指向虚表的第一个函数地址。而在 `pVT[-1]` 处，直接存储了一个指向 `std::type_info` 对象（通常是其子类如 `__si_class_type_info`）的指针。\n\n---\n\n## RTTI 的核心操作\n\n### typeid 运算符\n\n```cpp\n#include <typeinfo>\n\nvoid checkType(const Animal* a) {\n    // 比较运行时的精确类型\n    if (typeid(*a) == typeid(Dog)) {\n        std::cout << \"This is a dog.\" << std::endl;\n    }\n}\n```\n\n`typeid(obj)` 返回一个 `std::type_info` 类型对象的常量引用，代表该表达式的运行时类型。其内存布局通常包含一个虚表指针（指向 `type_info` 的虚表）和一个数据字段（存储 Mangled Name）。\n\n- **实现差异**：\n    - **MSVC**：返回指向 `TypeDescriptor` 的引用(指针)。\n\t    - 例：返回上述 `Class C` 的 `Type Descriptor`。\n    - **GCC/Clang**：返回指向 `type_info` (或其派生类) 的引用(指针)。\n\t    - 例：返回上述 `Class C_AB` 的 `type_info` 指针。\n> 可以让 AI 给出代码，编译运行得到证实。\n\n\n虽然 `std::type_info` 每个编译器的具体实现都不同，但具体行为相似，**关键成员**：\n- `name()`：返回类型名。GCC 需使用 `abi::__cxa_demangle` 解码混淆名（Mangled Name），MSVC 返回可读名称。\n- `operator==`：比较两个 `type_info` 是否代表同一类型。\n\n### dynamic_cast 运算符\n\n> 参考：[C&#43;&#43; 类型转换](/notes/n-1e07b0b5c4054451a329d0c233154c29/#h-4c683390032e7462e52f)\n\n这是 RTTI 最重型的应用。其执行逻辑如下：\n1. **定位**：找到当前对象的“最派生类” (Most Derived Object) 的 RTTI。\n2. **搜索**：在 RTTI 的继承层次图中搜索目标类型。\n3. **修正**：如果路径存在，根据记录的 `offset` 调整指针值；否则返回 `nullptr`。\n\n> **示例**：RTTI 记录了**派生类完整的继承链条及其偏移量**。例如 A 继承自 B 和 C，A 的 RTTI 就会记录 B 和 C 的信息。当尝试从 B 转换为 A（或 C）时，`dynamic_cast` 会查询 RTTI，确认转换路径合法后，计算并应用正确的内存偏移。\n\n---\n\n\n## 性能与开销总结\n\n| 维度 | RTTI 开销 | 说明 |\n| :--- | :--- | :--- |\n| **时间** | `typeid`: $O(1)$ <br> `dynamic_cast`: $O(N)$ | 指针偏移读取极快；<br> 动态转换需遍历继承树或字符串比较。 |\n| **空间** | 每个多态类增加 40-100 字节 | 存储类型名字符串及继承关系表。 |\n| **内存** | 每个实例增加 8 字节 | 虚表指针的开销（即使不用 RTTI，多态也需要）。 |\n\n**工程建议**：\n- 在性能敏感（游戏内核、嵌入式）场景中，常开启 `-fno-rtti` 禁用 RTTI 以节省空间。\n- 替代方案：使用 `enum TypeID` 成员变量或虚函数多态来实现类型识别。",
+  "id": "05b15a52-5c2c-46f5-b96d-1ac648d63387",
+  "metadata": {
+    "tags": [
+      "lang/cpp/rtti"
+    ],
+    "title": "C++ RTTI 机制"
+  },
+  "resources": [
+    "b461acc00e3c31df33775bb28b4c8a6ebc9aac80184b5ddcf103cc6dda19a3af.jpg",
+    "c3500bee4cd0acb40fcd715741a674ae5e8e33a5200714e50ee8521b035692c7.jpg"
+  ],
+  "url": "/notes/n-05b15a525c2c46f5b96d1ac648d63387/"
+}

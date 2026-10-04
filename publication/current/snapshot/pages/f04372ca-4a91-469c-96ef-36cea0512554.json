@@ -1,0 +1,44 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-cd3d694f2bf397d82e6b",
+      "kind": "heading",
+      "offset": 156
+    },
+    {
+      "id": "h-6ad3330188a8bee8894c",
+      "kind": "heading",
+      "offset": 167
+    },
+    {
+      "id": "h-b3119af81b933f02f4e4",
+      "kind": "heading",
+      "offset": 478
+    },
+    {
+      "id": "h-ccf9d1d848eef3a04848",
+      "kind": "heading",
+      "offset": 768
+    },
+    {
+      "id": "h-f0e793f506c43ca61d7d",
+      "kind": "heading",
+      "offset": 779
+    },
+    {
+      "id": "h-3801870cbf56932db4ee",
+      "kind": "heading",
+      "offset": 1292
+    }
+  ],
+  "body": "\n参考链接：[【Python】一文弄懂python装饰器（附源码例子）_python 装饰器-CSDN博客](https://blog.csdn.net/zhh763984017/article/details/120072425)\n\n**简单理解：装饰器是一种特殊的函数，它的形参是函数。**\n\n# 无参装饰器\n\n## 非语法糖写法\n```python\nimport time\n\ndef count_time(func):\n    def wrapper():\n        t1 = time.time()\n        func()\n        print(\"执行时间为：\", time.time() - t1)\n \n    return wrapper\n\ndef baiyu():\n    print(\"我是攻城狮白玉\")\n    time.sleep(2)\n \n \nif __name__ == '__main__':\n    baiyu = count_time(baiyu)  \n    baiyu()  \n```\n\n## 语法糖写法\n```python\nimport time\n\ndef count_time(func):\n    def wrapper():\n        t1 = time.time()\n        func()\n        print(\"执行时间为：\", time.time() - t1)\n \n    return wrapper\n\n@count_time\ndef baiyu():\n    print(\"我是攻城狮白玉\")\n    time.sleep(2)\n\n \n \nif __name__ == '__main__':\n    baiyu()  \n```\n# 带参装饰器\n\n## 非语法糖写法\n\n\n```python\nimport time\ndef count_time_args(msg=None):\n    def count_time(func):\n        def wrapper(*args, **kwargs):\n            print(\"开始统计时间\")\n            t1 = time.time()\n            func(*args, **kwargs)\n            print(msg)\n            print(f\"执行时间为：\", time.time() - t1)\n        return wrapper\n    return count_time\n\ndef fun_():\n    print(\"fun_执行\")\n    time.sleep(1)\n\nif __name__ == '__main__':\n    temp_wrapper = count_time_args(msg=\"装饰器传参\")\n    new_fun = temp_wrapper(fun_)\n    new_fun()\n\n```\n## 语法糖写法\n\n\n```python\nimport time\n\ndef count_time_args(msg=None):\n    def count_time(func):\n        def wrapper(*args, **kwargs):\n            print(\"开始统计时间\")\n            t1 = time.time()\n            func(*args, **kwargs)\n            print(msg)\n            print(f\"执行时间为：\", time.time() - t1)\n        return wrapper\n    return count_time\n\n@count_time_args(msg=\"装饰器传参\")\ndef fun_():\n    print(\"fun_执行\")\n    time.sleep(1)\n\nif __name__ == '__main__':\n\tfun_()\n\n```\n",
+  "id": "f04372ca-4a91-469c-96ef-36cea0512554",
+  "metadata": {
+    "tags": [
+      "lang/python"
+    ],
+    "title": "Python 装饰器"
+  },
+  "resources": [],
+  "url": "/notes/n-f04372ca4a91469c96ef36cea0512554/"
+}

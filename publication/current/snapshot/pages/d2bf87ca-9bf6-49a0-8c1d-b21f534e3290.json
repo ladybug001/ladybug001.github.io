@@ -1,0 +1,20 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-008e7c29ecce256d873e",
+      "kind": "heading",
+      "offset": 16
+    }
+  ],
+  "body": "# Shellcode 编写原则\n\n> 最好的隐藏手段是无模块注入，即直接进行**代码注入**，将期望执行的纯指令机器码注入到目标内存中运行。\n\n在移植和应用 Shellcode 的过程中存在一个核心问题：部分底层机器码使用的是**相对寻址**。这会导致当同一段机器码被加载到不同的内存地址（基址位置）时，此类指令所代表的实际寻址目标会发生偏移错误，进而引发程序崩溃。\n\n为了确保自身具有强移植性与地址无关性（`PIC`，Position Independent Code），合格的 Shellcode 代码编写应当严格具备以下特征约束：\n- 严禁包含全局变量。\n- 严禁直接使用常量字符串。\n- 严禁直接进行传统的系统调用（需通过底层手段动态枚举并解析相关 `API` 地址）。\n- 严禁嵌套调用其他无关的外部函数。\n",
+  "id": "d2bf87ca-9bf6-49a0-8c1d-b21f534e3290",
+  "metadata": {
+    "tags": [
+      "arch/x86",
+      "reverse"
+    ],
+    "title": "Shellcode 编写原则"
+  },
+  "resources": [],
+  "url": "/notes/n-d2bf87ca9bf649a08c1db21f534e3290/"
+}

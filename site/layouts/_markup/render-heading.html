@@ -1,0 +1,7 @@
+{{- /* Stock Stack heading links, retaining the converter's explicit anchor IDs. */ -}}
+<h{{ .Level }} id="{{ .Anchor }}">
+    {{- if site.Params.Article.HeadingAnchor -}}
+    <a href="#{{ .Anchor }}" class="header-anchor" aria-label="定位到：{{ .Text | plainify }}"></a>
+    {{- end -}}
+    {{ .Text | safeHTML }}
+</h{{ .Level }}>

@@ -1,0 +1,43 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-9db4741fdbc2b56d0b81",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-ffbb73a187fd8a61a9ef",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-30ba5c7f63dac498f5ca",
+      "kind": "heading",
+      "offset": 444
+    },
+    {
+      "id": "h-4036856e25cc1b39b643",
+      "kind": "heading",
+      "offset": 1353
+    },
+    {
+      "id": "h-3c64195e5be087843fcc",
+      "kind": "heading",
+      "offset": 2767
+    }
+  ],
+  "body": "# Windows 内核对象\n\n## 什么是内核对象\n\n在 Windows 中，我们会经常与**内核对象**打交道。例如：进程、线程、文件、互斥体、事件等，它们在操作系统内核中都有一个对应的管理结构体。这些结构体统一由内核负责创建和维护，因此统称为内核对象。\n\n> **示例**：当我们创建一个进程时，操作系统在内核空间（高 2GB）会自动创建一个对应的进程管理结构体，即 `EPROCESS`。\n\n![fe59ebfbb6b48e6f6ebb26fce7c56021&#95;MD5&#46;png](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/media/0a93f658377e5e066da9c1009e2da386b94b238bc1fe4dd58da0bbb65bc52bf6.png)\n\n**内核对象**：本质上是内核空间中的一片内存，如线程对象、进程对象、互斥体对象等，对象有其生命周期，由操作系统负责管理。\n\n## 内核对象标准头\n\n所有内核对象都是 `_OBJECT_HEADER` 结构体中的 `body` 成员，可将其理解为“标准对象头 + 类型专属主体”，对象头保存引用计数、句柄计数、类型和安全信息等管理元数据：\n\n```text\nkd> dt _OBJECT_HEADER\nnt!_OBJECT_HEADER\n   +0x000 PointerCount     : Int4B\n   +0x004 HandleCount      : Int4B\n   +0x004 NextToFree       : Ptr32 Void\n   +0x008 Type             : Ptr32 _OBJECT_TYPE\n   +0x00c NameInfoOffset   : UChar\n   +0x00d HandleInfoOffset : UChar\n   +0x00e QuotaInfoOffset  : UChar\n   +0x00f Flags            : UChar\n   +0x010 ObjectCreateInfo : Ptr32 _OBJECT_CREATE_INFORMATION\n   +0x010 QuotaBlockCharged : Ptr32 Void\n   +0x014 SecurityDescriptor : Ptr32 Void\n   +0x018 Body             : _QUAD     //  Windwos中的对象  都在body部位\n```\n\n![8805b4bacf2499eae8521b1b4f7ad2f8&#95;MD5&#46;jpg](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/media/a9e6458c17893149bd77b0a798e7d1553db548ce43eda46b9a51784aecb0a922.jpg)\n\n给定一个内核对象的地址，找到其 `HEADER` 头部，通过 `Type` 成员，可以判断出这个内核对象的类型：进程对象、线程对象等等。\n\n### 特殊的作用\n\n内核对象头的 `Type` 成员指向该类型对象专属的、全局的 `_OBJECT_TYPE` 结构体：\n\n```text\nkd> dt _OBJECT_TYPE\nntdll!_OBJECT_TYPE\n   +0x000 Mutex            : _ERESOURCE\n   +0x038 TypeList         : _LIST_ENTRY\n   +0x040 Name             : _UNICODE_STRING\n   +0x048 DefaultObject    : Ptr32 Void\n   +0x04c Index            : Uint4B\n   +0x050 TotalNumberOfObjects : Uint4B\n   +0x054 TotalNumberOfHandles : Uint4B\n   +0x058 HighWaterNumberOfObjects : Uint4B\n   +0x05c HighWaterNumberOfHandles : Uint4B\n   +0x060 TypeInfo         : _OBJECT_TYPE_INITIALIZER\n   +0x0ac Key              : Uint4B\n   +0x0b0 ObjectLocks      : [4] _ERESOURCE\n```\n\n该结构体的关键成员 `TypeInfo` 作用之一：存储用于在删除、创建时的回调函数，我们可以 Hook 这些函数，实现对我们内核对象的保护，其结构如下：\n\n```text\nkd> dt _OBJECT_TYPE_INITIALIZER\nntdll!_OBJECT_TYPE_INITIALIZER\n\t……\n\t……\n   +0x02c DumpProcedure    : Ptr32     void \n   +0x030 OpenProcedure    : Ptr32     long \n   +0x034 CloseProcedure   : Ptr32     void \n   +0x038 DeleteProcedure  : Ptr32     void \n   +0x03c ParseProcedure   : Ptr32     long \n   +0x040 SecurityProcedure : Ptr32     long \n   +0x044 QueryNameProcedure : Ptr32     long \n   +0x048 OkayToCloseProcedure : Ptr32     unsigned char\n```\n\n**比如**：当该类型对象的句柄被获得时，就会调用 `OpenProcedure`、`CloseProcedure` 等几个函数。我们可以 Hook 这几个函数，这种方法就叫做**对象挂钩**。CRC 的校验函数通常挂载在这几个位置，对抗手段是修改函数返回值为正确值。\n\n---\n\n另外，对象引用计数也记录在 `_OBJECT_HEADER` 结构体中的 `PointerCounter` 成员中，句柄每被引用一次该值就会 +1，当引用数 = 0 时，系统会在**合适的时机**释放掉该句柄对应的内核对象。\n\n## 内核对象命名空间\n\n创建内核对象的时候，可以为其指定名称，如果指定了名称，它会在内核命名空间中体现，后续可以通过该名字访问该内核对象。\n\n> 相关内容参考：[对象命名空间](/notes/n-fd51c9c5b3534549885452c844b09c8e/#h-f7712a1165d8a2441977)\n\n",
+  "id": "ef7c2f3e-1928-4cc5-8b66-741ae0d5c461",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows"
+    ],
+    "title": "Windows 内核对象"
+  },
+  "resources": [
+    "0a93f658377e5e066da9c1009e2da386b94b238bc1fe4dd58da0bbb65bc52bf6.png",
+    "a9e6458c17893149bd77b0a798e7d1553db548ce43eda46b9a51784aecb0a922.jpg"
+  ],
+  "url": "/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/"
+}

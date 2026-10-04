@@ -1,0 +1,75 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3bdada45571434bac8c3",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-25f6cf5babea4b539667",
+      "kind": "heading",
+      "offset": 78
+    },
+    {
+      "id": "h-21651f5c6221acb56495",
+      "kind": "heading",
+      "offset": 90
+    },
+    {
+      "id": "h-3410356def0ddeecc6d6",
+      "kind": "heading",
+      "offset": 297
+    },
+    {
+      "id": "h-4d4381a1a8d9f0f1d28f",
+      "kind": "heading",
+      "offset": 761
+    },
+    {
+      "id": "h-21408268b7c4afb40990",
+      "kind": "heading",
+      "offset": 1120
+    },
+    {
+      "id": "h-106135a245ffd2ba9259",
+      "kind": "heading",
+      "offset": 1344
+    },
+    {
+      "id": "h-b4129f47f1fe5f89305d",
+      "kind": "heading",
+      "offset": 1354
+    },
+    {
+      "id": "h-8bfaf294095c35896711",
+      "kind": "heading",
+      "offset": 1749
+    },
+    {
+      "id": "h-a9a7c25d9cef6b2d51c3",
+      "kind": "heading",
+      "offset": 1953
+    },
+    {
+      "id": "h-2f30e6bd9db7bed72410",
+      "kind": "heading",
+      "offset": 2164
+    },
+    {
+      "id": "h-a95633ee66930e5971cd",
+      "kind": "heading",
+      "offset": 2403
+    }
+  ],
+  "body": "# Android 抓包技术与反抓包对抗\n\n本文档梳理了 Android 平台下主流的抓包技术方案以及常见的反抓包策略与绕过方法。\n\n## 核心抓包技术方案\n\n### 普通代理抓包\n\n这是最常用的抓包方式，通过中间人（MITM）攻击来拦截和解密 HTTPS 流量。\n\n- **环境配置**:\n\t- 在 PC 上运行 Charles/Fiddler 等抓包软件。\n\t- 手机设置代理指向 PC 的 IP 和端口。\n\t- 手机安装并信任抓包软件的根证书，以解密 HTTPS 流量。\n- **移动端工具**: `HttpCanary`（小黄鸟）等，集成了 VPN 和抓包功能。\n\n### Hook抓包\n\n通过 Hook 应用或系统函数来直接从内存中获取网络请求数据。这是最通用、最强大的抓包方式之一。\n\n- **优点**:\n\t- 无视证书绑定（SSL Pinning）等客户端校验。\n\t- 能够抓取到加密前（发送）和解密后（接收）的明文数据。\n- **缺点**:\n\t- 获取的数据格式原始，不如抓包工具直观，需要自行解析。\n- **核心Hook点**:\n\t- **Java层**:\n\t\t- `Socket` 相关的 `read` / `write` 方法（TCP/UDP）。\n\t\t- `Conscrypt` 或 `OpenSSLSocketImpl` 相关的 `read` / `write` 方法（HTTPS）。\n\t- **Native层**:\n\t\t- `sendto`/`recvfrom` (TCP/UDP)。\n\t\t- `libssl.so` 中的 `SSL_read`/`SSL_write`（HTTPS明文）。\n- **相关工具**: `r0capture`, `eCapture (eBPF)`。\n\n### 流量转发\n\n通过在 Android 系统上创建一个代理服务，将应用的流量重定向到指定的抓包工具（如 Charles, Fiddler）。\n\n- **实现方式**:\n\t- **VPN模式**: VPN 会创建一个虚拟网卡，修改路由表让流量从虚拟网卡经过，从而实现流量转发的目的，**无需Root**。状态栏通常有钥匙图标。\n\t- **iptables模式**: 通过修改系统的 `iptables` 防火墙规则（一般是 NAT 规则）实现应用无感知的透明代理，强制转发所有流量，**需要Root**。\n- **相关工具**: `Postern`, `ProxyDroid`。\n> 相关内容参考：[流量转发软件的工作机制](/notes/n-ec343b88ec79476d9387d16f6eb00578/)\n\n### 网卡抓包\n\n直接在网络接口层（泛指物理层 + 数据链路层）进行原始数据包捕获，能抓到所有流经网卡的数据。\n\n- **优点**:\n\t- 终极抓包方案，能捕获所有通信数据，无任何遗漏。\n- **缺点**:\n\t- 流量是原始的、未解密的（如TLS加密的TCP包），分析难度大。\n\t- 需要自行处理TCP/IP协议栈，对HTTPS等加密流量解密困难。\n- **相关工具**: `Wireshark`, `tcpdump`。\n\n---\n\n## 常见抓包对抗与绕过策略\n\n### 证书校验\n\n- **对抗场景**:\n\t- **SSL Pinning (单向校验)**: 客户端内置了服务器证书或公钥的哈希值，只信任特定的服务器证书，导致中间人攻击（MITM）失败。\n\t  **现象**：打开抓包软件后 APP 不能访问\n\t- **双向校验**: 服务器也要求校验客户端证书（注意，客户端本来就需要校验收到的服务器端证书是否在受信任证书列表中）。\n\t  **现象**：打开抓包软件后 APP 不能访问，但抓包软件上会有服务端返回的错误\n- **绕过策略**:\n\t- **SSL Pinning**: 使用 `Frida` 或 `Xposed` 框架 Hook 掉证书校验逻辑，如 `JustTrustMe` 等工具。\n\t- **双向校验**: 从客户端App中提取出客户端证书（通常为`.p12`或`.bks`格式），并将其导入到抓包工具中。\n\n---\n\n### 应用不走系统代理\n> 现象：打开抓包软件，抓不到包但 APP 能正常访问，关闭抓包软件后 APP 仍然能正常访问\n\n- **对抗场景**: App在代码中指定了 `Proxy.NO_PROXY` 或使用非标准的网络库，忽略用户在系统设置中配置的HTTP代理。\n- **绕过策略**: 使用基于VPN或`iptables`的流量转发工具（如 `Postern`, `ProxyDroid`）来强制全局代理。\n\n### 代码混淆\n> 现象：打开抓包软件后 APP 不能访问\n\n- **对抗场景**: App对网络请求相关的类（如 OkHttp）进行了混淆，导致基于类名和方法名的Hook脚本失效。\n- **绕过策略**:\n  - 使用能自动适配混淆的Hook工具（如 `OkHttpLogger-Frida`）。\n  - 放弃Hook网络框架，转而Hook更底层的系统函数（如 `SSL_read`/`SSL_write`）。\n\n### 非应用层协议\n> 现象：跟不走代理现象相似，配置好代理后打开或关闭抓包软件，APP 都能正常访问，抓包软件也抓不到包。\n\n- **对抗场景**: App不使用HTTP/HTTPS协议，而是通过Socket直接传输自定义的TCP/UDP协议数据，通常是私有加密协议。\n- **绕过策略**:\n  - 使用 `Wireshark` 或 `tcpdump` 进行底层抓包，分析协议格式。\n  - 逆向分析App，找到协议的封包和解包代码，并进行Hook或解密。\n\n---\n\n## 抓包问题排查思路\n\n当遇到抓包失败时，可按以下步骤进行分析：\n\n1.  **检查代理和证书**: 确认代理设置正确，抓包工具证书已正确安装并被信任。\n2.  **识别SSL Pinning**: 如果只有目标App无法联网，其他App正常，很可能是SSL Pinning。使用 `Frida/Xposed` 工具进行绕过。\n3.  **强制全局代理**: 如果抓包工具完全抓不到目标App的包，但App联网正常，说明它可能不走系统代理。使用 `Postern` 等工具强制转发流量。\n4.  **检查VPN检测**: 少数App会检测VPN状态并拒绝联网，可尝试Hook相关检测代码。\n5.  **考虑代码混淆或私有协议**: 如果以上方法均无效，问题可能更复杂，需要深入逆向分析。\n",
+  "id": "898d5cfc-be05-4ff4-81fe-086af87ff59d",
+  "metadata": {
+    "tags": [
+      "reverse/android",
+      "cs/network"
+    ],
+    "title": "Android 抓包技术与反抓包对抗"
+  },
+  "resources": [],
+  "url": "/notes/n-898d5cfcbe054ff481fe086af87ff59d/"
+}

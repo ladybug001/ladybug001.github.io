@@ -1,0 +1,9 @@
+{
+ "compilerOptions": {
+  "paths": {
+   "*": [
+    "..\\..\\.local\\themes\\stack-19a3222b91d6ad924733c05b-hugo\\themes-4f09d077019aa60c345c8ace\\stack\\assets\\*"
+   ]
+  }
+ }
+}

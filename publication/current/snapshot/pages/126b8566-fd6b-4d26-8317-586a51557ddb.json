@@ -1,0 +1,84 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-abedee2c932725f4f017",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-d714c422f890c26a4ba9",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-2db9a8c7fe65cca048e7",
+      "kind": "heading",
+      "offset": 115
+    },
+    {
+      "id": "h-949777c9027f53721c6c",
+      "kind": "heading",
+      "offset": 243
+    },
+    {
+      "id": "h-eaa45b82016a95a1da0d",
+      "kind": "heading",
+      "offset": 520
+    },
+    {
+      "id": "h-f22c69f3a76250a2fd18",
+      "kind": "heading",
+      "offset": 710
+    },
+    {
+      "id": "h-2ca5c3b61ac77fdf9691",
+      "kind": "heading",
+      "offset": 1375
+    },
+    {
+      "id": "h-39f94b62f1b7e64debfd",
+      "kind": "heading",
+      "offset": 1385
+    },
+    {
+      "id": "h-8addfdc8978242a1aeb9",
+      "kind": "heading",
+      "offset": 1454
+    },
+    {
+      "id": "h-df26fbef3eb278817ef3",
+      "kind": "heading",
+      "offset": 1786
+    },
+    {
+      "id": "h-2c408fe4a3f74810a1eb",
+      "kind": "heading",
+      "offset": 1998
+    },
+    {
+      "id": "h-88a631ae4349e2bd29d0",
+      "kind": "heading",
+      "offset": 2180
+    },
+    {
+      "id": "h-d76ded2a1baf28c35b7c",
+      "kind": "heading",
+      "offset": 2316
+    },
+    {
+      "id": "h-017dc8a50511a9a96d27",
+      "kind": "heading",
+      "offset": 2792
+    }
+  ],
+  "body": "# FPS 游戏逆向通用思路\n\n## 数据持久化\n利用 `CE` 的指针图（`Pointermap`）定位静态基址（`Static Base`），以确保在游戏重启或版本更新（通过偏移修正）后内存访问依然有效。\n\n## 基础数值查找\n\n- **核心逻辑**：排除法。\n- 逆向工程基础：使用 `Cheat Engine`（`CE`）进行内存扫描，详细工具操作参考：[CE](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/)。\n\n## 本地玩家对象查找\n\n- 利用“谁访问了这个地址”（`Find out what accesses this address`）功能，追踪游戏引擎读取生命值（`Health`）地址的代码逻辑。\n- 内存布局规律：生命值通常基于某个基址（`Base Address`）加上特定偏移量（`Offset`）得出。该基址即为本地玩家对象的 `this` 指针。\n\n**注意：** 本地玩家指针（`Local Player Pointer`）始终指向当前客户端操作的角色实例，在内存地址上与存储所有实体的“实体列表”（`Entity List`）具有显著差异。\n\n## 实体列表查找\n\n- **方案 A**：物理特征定位。找到两个机器人（`Bot`）对象的实例地址，并在内存中搜索同时包含这两个地址且物理距离较近的区域（通常表现为对象指针数组）。\n- **方案 B**：`HUD` 渲染逻辑追踪。关注显示击杀信息、金钱、玩家名称的 `ASCII`/`Unicode` 字符串，追踪读取这些数据的汇编指令，反向回溯至遍历实体的循环体。\n\n## 自瞄（Aimbot）\n\n实现自瞄的核心前提是定位影响图形渲染的角度地址（`ViewAngles`），并明确 `Pitch=0、Yaw=0` 时，世界坐标系与摄像机坐标系的方向关系。\n> 参考：FPS逆向记录&#65306;CSGO、FPS逆向记录&#65306;Assault Cube\n\n\n---\n自瞄的原理是计算本地玩家与目标之间的空间向量夹角，并通过修改内存中的视角角度（`ViewAngles`）或调用 `Input` 接口模拟鼠标移动，强制使准心对准目标。\n\n> [!note] 注意：旋转顺序与 View 矩阵\n> 逆向分析时**仅需**关注内存数值，但在图形渲染层面（生成 `View Matrix`）时，旋转顺序至关重要：\n> - **静态欧拉角**（`Static Euler Angles`）：对应外旋（`Extrinsic Rotations`），通常顺序为“先绕 X/Y 轴，再绕 Z 轴”。\n> - **动态欧拉角**（`Dynamic Euler Angles`）：对应内旋（`Intrinsic Rotations`），通常顺序相反，“先转 Z 轴，再转 X/Y 轴”。\n>\n> 人类直觉通常**符合动态欧拉角**逻辑，即先水平转向（`Yaw`），再进行俯仰旋转（`Pitch`）。\n> \n> 详见：[计算机图形渲染&#65306;坐标变换与 MVP 矩阵](/notes/n-8147e4ef0bdc4e69a769e855f66bad49/#h-113cf4657f528bdd2183)\n\n## 图形绘制（ESP）\n\n### 矩阵查找\n\n虽然可以通过数学推导手动构建 `VP Matrix`，但直接从引擎内存中提取已计算好的矩阵效率更高。\n\n#### 查找 View 矩阵\n\n- `OpenGL` 查找参考：FPS逆向记录&#65306;Assault Cube\n- `D3D` 查找参考：FPS逆向记录&#65306;CSGO\n\n> 游戏摄像机通常将 `Pitch` 设为第二旋转次序以规避万向节死锁（参考 [计算机图形渲染&#65306;坐标变换与 MVP 矩阵](/notes/n-8147e4ef0bdc4e69a769e855f66bad49/#h-b2dd23e2c5488934ad3e)）。\n\n**验证找到的是否为 View 矩阵**： `View Matrix` 作为摄像机模型矩阵的逆矩阵，其左上 `3x3` 区域通常为正交矩阵。通过在游戏中转动视角，观察内存数值变动是否符合正交矩阵。\n\n#### 查找 VP 矩阵\n\n在左手系/右手系环境下，投影矩阵（`Projection Matrix`）的 `a43` 元素通常恒为 `-1` 或 `1`。由于 `VP Matrix = P * V`，可以通过已知的 `V` 矩阵在相邻内存区域快速定位 `VP` 矩阵。\n> 原理参考：[计算机图形渲染&#65306;投影矩阵推导](/notes/n-d39dfa36e6764a859d2303387b8616b4/)\n\n### Hook 绘制函数\n\n首先确定游戏采用的渲染 `API`，随后 `Hook` 渲染管线末端的交换缓冲区函数：\n- `OpenGL` 体系：`wglSwapBuffers`。\n- `DirectX`（`D3D`）体系：`EndScene`（`DX9`）或 `Present`（`DX11`/`DX12`）。\n- 逻辑注入：在原始渲染指令执行前后插入自定义绘制代码。\n\n### 绘制逻辑\n\n`WorldToScreen`（`W2S`）是 `ESP` 的算法核心。利用 `VP Matrix` 将敌人的 3D 世界坐标（`vec3`）投影至屏幕 2D 坐标（`vec2`），用于绘制骨骼、方框或 `HealthBar`。\n\n## 可见性检测（TraceRay）\n\n用于判定玩家与目标之间是否存在视线遮挡（`Visible Check`），核心应用场景：\n- 避免自瞄锁定墙后的非法目标。\n- 渲染透视时根据可见状态改变 `ESP` 颜色。\n\n游戏引擎底层必然维护 `TraceRay` 或 `RayCast` 函数，用于处理弹道碰撞与物理检测。\n\n鉴于 FPS 游戏对实时性要求很高，**调用时机分析：**\n1. 玩家触发开火逻辑。\n2. 客户端调用 `TraceRay` 计算瞬时射线碰撞，播放本地音效/特效。\n3. 向服务端发送射击请求；服务端进行二次逻辑校验（若服务器判定路径存在障碍，则无伤害输出）。\n\n**寻找 `TraceRay` 的技术路径：**\n- 思路 A：分析游戏引擎（如 `Source`），参考开源引擎源码或社区技术文档，利用已有经验。\n- 思路 B：受击逻辑溯源。追踪扣除生命值的函数调用链（注：部分游戏如 `AC` 此路径无效，参考：FPS逆向记录&#65306;Assault Cube）。\n- 思路 C：效果溯源。追踪弹道轨迹、弹孔生成或火花特效的触发函数。\n\n## 网络变量管理\n\n**核心逻辑：** 客户端与服务端之间的状态同步依赖于持续的数据交互。当服务端下发权威数据（如玩家坐标更新）时，客户端需要定位到特定字段的内存偏移以执行数据覆盖。虽然传输格式可能类似于 `JSON` 等结构化数据，但底层实现依赖于预定义的偏移量。\n\n**研究思路：** 只要游戏涉及联网状态同步，必然存在类似 `NetVars` 的映射机制。通过监控特定字段（如生命值、护甲值）的写入断点并向上溯源，可以精准定位到属性更新函数，进而解析其底层同步逻辑。\n\n> 参考：FPS逆向记录&#65306;CSGO\n",
+  "id": "126b8566-fd6b-4d26-8317-586a51557ddb",
+  "metadata": {
+    "tags": [
+      "reverse/FPS"
+    ],
+    "title": "FPS 游戏逆向通用思路"
+  },
+  "resources": [],
+  "url": "/notes/n-126b8566fd6b4d268317586a51557ddb/"
+}

@@ -1,0 +1,19 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-9dd2a13bd4318f1064ec",
+      "kind": "heading",
+      "offset": 20
+    }
+  ],
+  "body": "# JavaScript new 关键字\n\n\n`new` 关键字不像 C/C++ 那样在堆上分配内存，它只是语法糖，执行了一套严密的构造流程。\n\n**核心执行步骤**：\n1. **创建对象**：在内存中创建一个全新的空对象（例如命名为 `obj`）。\n2. **链接原型**：将 `obj` 的 `__proto__` 指向构造函数的 `prototype` 属性。\n    * 这一步建立了继承关系，参考 [JavaScript 继承机制](/notes/n-7799fc0e94bd47d092292791e1a5ca69/)。\n3. **绑定上下文**：将构造函数内部的 `this` 绑定到 `obj`，并执行函数体代码。\n    * 这一步用于初始化实例属性（如 `this.name = name`）。\n4. **处理返回值**：\n    * 如果构造函数显式返回一个**对象**（Object 类型），则 `new` 表达式的结果是该返回对象。\n    * 如果构造函数返回**非对象**（如基本类型或无返回），则忽略返回值，默认返回步骤 1 创建的 `obj`。\n\n**代码示例**：\n\n```javascript\nfunction Person(color) {\n    this.color = color;\n    \n    // 默认隐式返回 this\n    // return this\n}\n\nconst john = new Person(\"White\");\nconsole.log(john.color); // \"White\"\n// 验证原型指向\nconsole.log(Object.getPrototypeOf(john) === Person.prototype); // true\n```\n\n---\n",
+  "id": "33724b33-4e2b-4a59-91c1-c1aa900809b3",
+  "metadata": {
+    "tags": [
+      "lang/javascript"
+    ],
+    "title": "JavaScript new 关键字"
+  },
+  "resources": [],
+  "url": "/notes/n-33724b334e2b4a5991c1c1aa900809b3/"
+}

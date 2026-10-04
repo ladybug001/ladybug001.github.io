@@ -1,0 +1,49 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c74de5e7522edc20f76d",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-46aafd0c35892c27110b",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-1013dd7a856feffa421d",
+      "kind": "heading",
+      "offset": 158
+    },
+    {
+      "id": "h-91b91f589e1acebb76ef",
+      "kind": "heading",
+      "offset": 238
+    },
+    {
+      "id": "h-42d0c7e42e10e48043b0",
+      "kind": "heading",
+      "offset": 322
+    },
+    {
+      "id": "h-acc751bc2e9fa78c9841",
+      "kind": "heading",
+      "offset": 417
+    },
+    {
+      "id": "h-f5eb94d964290a67666c",
+      "kind": "heading",
+      "offset": 810
+    }
+  ],
+  "body": "# C++ 类成员的访问控制\n\n## 前言\n\nC++ 中，类成员访问控制主要通过 `public`、`protected`、`private` 三个访问说明符实现。它们控制的是“哪些位置可以直接访问某个成员”。\n> 本质上属于**语言语义层面**和**编译期检查层面**的限制。\n\n\n\n## `public` 关键词\n\n`public` 成员表示公开接口。\n\n- 类外可以访问。\n- 对象实例化后可以直接访问。\n- 派生类中也可以访问。\n\n## `protected` 关键词\n\n`protected` 成员表示受保护接口。\n\n- 类外通过对象实例不能直接访问。\n- 类自身可以访问。\n- 派生类中可以访问。\n\n## `private` 关键词\n\n`private` 成员表示私有实现细节，封装程度最高。\n\n- 类外通过对象实例不能直接访问。\n- 派生类中也不能直接访问。\n- 类自身可以访问。\n\n## 不要混淆成员访问控制与继承方式\n\n上面说的是**成员本身**的访问控制；而 `public` 继承、`protected` 继承、`private` 继承说的是**基类成员进入派生类后的可访问性变化规则**，两者不要混为一谈。\n\n变化规则可以简化为：\n- `public` 继承：基类的 `public` 仍然是 `public`，`protected` 仍然是 `protected`。\n- `protected` 继承：基类的 `public` 和 `protected` 都会变成 `protected`。\n- `private` 继承：基类的 `public` 和 `protected` 都会变成 `private`。\n> 相关内容： [继承方式与访问权限](/notes/n-da561297c8704e938e5625a35698d9eb/#h-341c3da738ad84fbfb38)\n\n## 总结\n\n在默认情况下： \n- `class` 的默认成员访问级别是 `private`。\n- `struct` 的默认成员访问级别是 `public`。\n\n> [!NOTE] 补充说明\n> `public`、`protected`、`private` 以及三种继承方式，主要改变的是**可访问性语义**，而不是对象的物理存储布局。**更准确地说**：在其它条件都不变的前提下，仅修改成员访问说明符或继承方式，不会改变类的大小和成员内存布局。它们是**语言规则与编译期访问控制规则**，\n",
+  "id": "25f6e7fa-1d94-4e22-a872-48457c3cf3ca",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 类成员的访问控制"
+  },
+  "resources": [],
+  "url": "/notes/n-25f6e7fa1d944e22a87248457c3cf3ca/"
+}

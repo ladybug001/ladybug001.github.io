@@ -1,0 +1,100 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-a71d3910e9063132b50a",
+      "kind": "heading",
+      "offset": 11
+    },
+    {
+      "id": "h-1c55be1f249c1af1f935",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-9c613d76ec23bef738dd",
+      "kind": "heading",
+      "offset": 33
+    },
+    {
+      "id": "h-876e71ae010ae91153da",
+      "kind": "heading",
+      "offset": 1063
+    },
+    {
+      "id": "h-c49ebc715d8674a7bf8c",
+      "kind": "heading",
+      "offset": 1391
+    },
+    {
+      "id": "h-6164cb3ddbec76a477d1",
+      "kind": "heading",
+      "offset": 1403
+    },
+    {
+      "id": "h-98f6ed41e355852c2597",
+      "kind": "heading",
+      "offset": 3305
+    },
+    {
+      "id": "h-80e6cea2901c41398824",
+      "kind": "heading",
+      "offset": 4101
+    },
+    {
+      "id": "h-380c605f28e659f38e0f",
+      "kind": "heading",
+      "offset": 4234
+    },
+    {
+      "id": "h-6963f3567d6cb492c12e",
+      "kind": "heading",
+      "offset": 4246
+    },
+    {
+      "id": "h-ff780f28d3b23168735e",
+      "kind": "heading",
+      "offset": 5172
+    },
+    {
+      "id": "h-e616ff1d744c4d91ecec",
+      "kind": "heading",
+      "offset": 5539
+    },
+    {
+      "id": "h-638999017b4a3a4a4385",
+      "kind": "heading",
+      "offset": 6404
+    },
+    {
+      "id": "h-2575bbce31818725e1c1",
+      "kind": "heading",
+      "offset": 6541
+    },
+    {
+      "id": "h-aed084195443bdec40b8",
+      "kind": "heading",
+      "offset": 6848
+    }
+  ],
+  "body": "# 构造函数与析构函数\n\n## 代码示例与输出\n\n### 代码分析\n\n```cpp\n#include <iostream>\n#include <string>\n\nclass Member {\npublic:\n\tMember(int a) { std::cout << \"Member Constructor\" << \" \" << \"num: \" << a << std::endl; }\n};\n\nclass Base1 {\npublic:\n\tMember m{ 1 };\n\tBase1() { std::cout << \"Base1 Constructor\" << std::endl; }\n\tvirtual ~Base1() { std::cout << \"Base1 Destructor\" << std::endl; }\n\tvirtual void myfunc() {};\n};\n\nclass Base2 {\npublic:\n\tMember m{ 2 };\n\t\n\tBase2() { std::cout << \"Base2 Constructor\" << std::endl; }\n\tvirtual ~Base2() { std::cout << \"Base2 Destructor\" << std::endl; }\n\n\tvirtual void myfunc() {};\n};\n\nclass Derived : public Base1, public Base2 {\npublic:\n\tMember m{ 3 };\n\n\tDerived() { std::cout << \"Derived Constructor\" << std::endl; }\n\t~Derived() { std::cout << \"Derived Destructor\" << std::endl; };\n\n\tvoid myfunc() override {};\n};\n\nint main() {\n\tDerived d1;\n\treturn 0;\n}\n```\n\n**继承关系示意图：**\n![a1c09a81930fd2240e9117118f0aa6c2&#95;MD5&#46;jpg](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/e44c1c69ec2d1af027ca3c4d58191896a5d16dc590aeed038ea0e1ec657a7302.jpg)\n\n### 执行结果\n\n- **构造输出：**\n```text\nMember Constructor num: 1\nBase1 Constructor\nMember Constructor num: 2\nBase2 Constructor\nMember Constructor num: 3\nDerived Constructor\n```\n\n- **析构输出：**\n```text\nDerived Destructor\nMember Destructor num: 3\nBase2 Destructor\nMember Destructor num: 2\nBase1 Destructor\nMember Destructor num: 1\n```\n\n---\n\n## 构造函数详解\n\n### 构造函数介绍\n\n```cpp\nstruct Student {\n\tint a;\n\tint b;\n\tStudent() {\n\t\tprintf(\"Look.\");\n\t}\n\tvoid Init(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n};\n```\n\n如上代码中，可以发现存在一个特殊成员函数：它没有返回类型，并且与结构体名称相同。这个函数会在对象初始化时自动调用。\n\n我们先不手动调用它，而是直接创建一个对象，这时会发现该函数被自动执行：\n\n![e0a6fec3ee62b9e141ee4d596471186a&#95;MD5&#46;png](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/80a128776cf30cb01e4ccba358c40313d489cd7808485a955d8c92c222a67f45.png)\n\n这个函数就称为构造函数。\n\n它的汇编代码如下：\n\n![834495e16da99633d6836e20611d0c3a&#95;MD5&#46;png](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/4f24647e38030e0d2d341286756fc470468c9b5809fbac0700302baf7cefd912.png)\n\n如果我们想要在创建对象的时候，自定义初始化成员的值，就可以在**构造函数**上添加参数：\n\n```cpp\nstruct Student {\n\tint a;\n\tint b;\n\tStudent(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n\tvoid Init(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n};\n\nvoid main() {\n\tStudent s(1, 2);\n\treturn;\n}\n```\n\n创建对象的时候，在对象名后面加上括号传入即可；但是这样就会存在一个问题：如果只声明了带参构造函数，那么不传参数时就无法默认构造该类型的对象：\n\n```cpp\nstruct Student {\n\tint a;\n\tint b;\n\tStudent(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n\tvoid Init(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n};\n\nvoid main() {\n\tStudent s;\n\treturn;\n}\n```\n\n编译直接出错：\n\n![7461001cb21da8c474a62885ef5543b9&#95;MD5&#46;png](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/5c45f32de5df6800735cfa5c154deca351dcec29c407a8703c5746aa311b1ea2.png)\n\n这是因为编译器发现你没有传入参数，就会尝试寻找无参构造函数；但这段代码中没有声明，因此需要额外提供一个无参构造函数：\n\n```cpp\n#include <stdio.h>\n\nstruct Student {\n\tint a;\n\tint b;\n\tStudent() {\n\t\tprintf(\"Look.\");\n\t}\n\tStudent(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n\tvoid Init(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n};\n\nvoid main() {\n\tStudent s;\n\treturn;\n}\n```\n\n这样就没有问题了；想传参时可以调用带参构造函数，不想传参时可以使用无参构造函数。\n\n我们总结一下构造函数的特点：\n\n1. 构造函数名称与类名相同。\n2. 构造函数不能写返回类型。\n3. 创建对象时会自动调用，一般用于初始化对象状态。\n4. 构造函数可以重载，也就是可以同时存在多个参数列表不同的构造函数。\n5. 一旦用户显式声明了任意构造函数，编译器通常就不会再为该类隐式生成无参默认构造函数。\n6. 编译器不要求必须显式提供构造函数；若类没有声明任何构造函数，编译器通常会隐式生成默认构造函数。\n\n### 完整的构造函数逻辑\n\n开发者定义的构造函数仅包含业务代码，编译器会在底层插入初始化流程。一个完整的构造函数包含以下逻辑：\n\n1. **递归调用基类构造：** 传入调整后的 `this` 指针（多重继承下涉及偏移计算），级联调用基类构造函数（参考：[C&#43;&#43; 成员初始化列表与父类构造](/notes/n-46de219634684889995ebef4c0ed56c8/)、[C&#43;&#43; 继承与虚继承机制](/notes/n-da561297c8704e938e5625a35698d9eb/)）。\n2. **设置 `vptr`：** 基类构造完成后，将虚函数表指针 `vptr` 更新为当前正在构造类的 `vtable`。\n3. **成员初始化：** 按照声明顺序依次调用成员变量的构造函数。\n4. **执行用户代码：** 最后执行开发者在 `{ ... }` 中编写的业务逻辑。\n\n> **结论：** 虽然 `vtable` 在编译期已确定，但 `vptr` 并非固定指向最终派生类的虚表，而是**随着构造层级动态更新的**。因此，在构造期间调用虚函数**不会触发多态**，只会执行当前类或其基类的版本。\n\n**类 `Derived` 对应的完整构造函数汇编代码示意：**\n![](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/76fbc60fb1d98f932b3ba9b315891ac256dd50bee6dcf7853bcf551f145bbffb.jpg) ![](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/290f9dc62c395557286ed19b78fc015ce417d9353c74109ceb0de71af7edbcd0.jpg)\n\n### 构造顺序\n\n派生类对象的**实际构造顺序**遵循“自底向上”原则：\n\n- 递归调用基类构造函数（完整的构造逻辑）。\n- 初始化派生类成员对象。\n- 执行派生类构造函数体（用户定义部分）。\n\n> **逻辑模型：** 类似于树的**后序遍历**。\n\n---\n\n## 析构函数详解\n\n### 析构函数介绍\n\n析构函数的语法与构造函数相似，但有以下区别：**析构函数名需要在类名或结构体名前加 `~`**、**每个类只能有一个析构函数**、**析构函数不能带普通参数**、**对象结束其生命周期时会自动调用析构函数**。\n\n\n**析构函数函数是在对象销毁前执行**，那么对象会在什么时候销毁呢？可以看下反汇编代码：\n\n\n```cpp\n#include <stdio.h>\n\nstruct Student {\n\tint a;\n\tint b;\n\tStudent() {\n\t\tprintf(\"Look.\");\n\t}\n\tStudent(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n\t~Student() {\n\t\tprintf(\"Look A.\");\n\t}\n\tvoid Init(int a, int b) {\n\t\tthis->a = a;\n\t\tthis->b = b;\n\t}\n};\n\nint main() {\n\tStudent s;\n\treturn 0;\n}\n```\n\n![b93492cf680b64d36b232422652184d7&#95;MD5&#46;png](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/fd1b2629c1ded0fd7a668ca3c4a63bf738907fec7f9fc11728b333fe3c1c0d5f.png)\n\n可以更清晰地看见，局部自动对象的析构通常发生在 `return` 真正完成控制流转移之前。\n\n我们总结一下析构函数：\n\n1. 每个类最多只能定义一个析构函数，不支持按参数列表重载。\n2. 析构函数没有返回类型，也不能写返回值。\n3. 析构函数不能带普通参数。\n4. 主要用于释放对象持有的资源和执行清理工作。\n5. 编译器通常会在需要时隐式生成默认析构函数，因此不要求程序员必须显式提供。\n6. **自动存储期**对象会在离开作用域时析构；**静态存储期**对象会在程序终止阶段析构；**动态存储期**对象通常在执行 `delete` 或 `delete[]` 时析构。\n\n### 完整的析构函数逻辑\n\n与构造函数类似，编译器会自动补全析构逻辑。一个完整的析构函数包含：\n\n- **修复 `vptr`：** 确保 `vptr` 指向当前类的 `vtable`（防止析构中调用虚函数导致未定义行为）。\n- **执行用户代码：** 执行用户定义的析构逻辑。\n- **成员销毁：** 逆序调用成员变量的析构函数。\n- **级联基类：** 修正 `this` 偏移，递归调用基类析构函数（完整的析构逻辑）。\n\n**类 `Derived` 的完整析构函数汇编示意：**\n![](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/d70888a56a4d02080676bc896b77d8ac233d20d48cb3948bfceb313d3a212253.jpg)\n\n### 虚析构函数的实现原理\n\n虚析构函数和普通虚函数一样，都是用于确保在多态场景（基类指针/引用）下能正确调用对应的函数（这里指析构函数）。\n> 相关知识：[C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/)、[C&#43;&#43; 虚函数与虚函数表](/notes/n-7794ffc3e8894de895729386e783249b/)\n\n若类定义了 `virtual` 析构函数，编译器通常生成三类逻辑实体：\n\n1. **虚析构分发器（Deleting Destructor）：** \n\t- 调用真正的 `Complete Object Destructor`。\n\t- 依据 `flags` 参数决定是否执行 `delete` 运算符释放堆内存。\n2. **实体析构逻辑（Complete Object Destructor）：** 即前述“完整的析构函数”。\n3. **Thunk/Wrapper（多重继承特有）：**\n\t- 对于非主基类（如 `Base2`）子对象的虚表项，该位置通常指向一个 `wrapper` 函数，负责修正 `this` 指针偏移后跳转至 `Deleting Destructor`。\n\n**类 `Derived` 虚析构分发器汇编示意：**\n![](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/789e22ecce1b86087ee8495d78ff09d214f282532b28a2f98f8184fa870a1bc8.jpg)\n\n**通过 `Base2` 指针释放 `Derived` 对象时的 Wrapper 函数汇编示意：**\n![](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/media/74da1dc7c18b2a3b03342b233483e4243c3b943c83440cb6ac4f01916d2c8e47.jpg)\n\n### 析构顺序\n\n析构顺序与构造顺序严格**相反**（自顶向下）：\n\n- 执行派生类析构函数体（用户定义部分）。\n- 析构派生类成员对象。\n- 降级 `vptr` 后递归调用基类析构函数（完整的析构逻辑）。\n\n> **逻辑模型：** 类似于树的**先序遍历**。\n\n### 内存回收的时机\n\n内存回收分为两种场景：\n\n1. **栈自动回收：** 作用域结束时自动调用析构函数，不涉及堆内存释放。\n2. **`delete` 运算符回收：**\n\t- **非虚析构：** 先调用析构函数，随后直接释放内存。\n\t- **虚析构：** 通过虚表调用虚析构分发器，由分发器内部决定是否释放内存（传参 `flags` 为 1 时释放）。\n\n> **核心辨析：** `析构函数` 负责资源的反初始化，**“执行析构逻辑”不等同于“内存释放”**。`sizeof(Object)` 所占用的内存是在**整个析构链执行完毕后**，由 `delete` 运算符或栈平衡机制**统一回收**。\n\n---\n\n## 核心要点总结\n\n1. **虚函数行为限制：** 构造与析构期间，`vptr` 始终指向当前执行环境对应的 `vtable`。此阶段**不具备多态特性**。\n2. **虚析构的必要性：** 确保通过基类指针删除对象时，能通过虚表找到正确的 `Deleting Destructor` 入口，防止资源泄漏或 `this` 指针偏移导致的崩溃。\n3. **`this` 指针调整：** 所有偏移纠正均通过编译器**硬编码（Hard-coded）** 实现。由于继承结构在编译期确定，无需依赖 `RTTI`（参考：[C&#43;&#43; RTTI 机制](/notes/n-05b15a525c2c46f5b96d1ac648d63387/)）。\n4. **`vptr` 动态维护：** `vptr` 的赋值、更新与降级同样是由编译器插入的硬编码指令完成，确保对象在不同生命阶段的行为一致性。\n",
+  "id": "1801f0c0-006b-48c4-be79-9a4b8ba4105b",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 构造函数与析构函数"
+  },
+  "resources": [
+    "290f9dc62c395557286ed19b78fc015ce417d9353c74109ceb0de71af7edbcd0.jpg",
+    "4f24647e38030e0d2d341286756fc470468c9b5809fbac0700302baf7cefd912.png",
+    "5c45f32de5df6800735cfa5c154deca351dcec29c407a8703c5746aa311b1ea2.png",
+    "74da1dc7c18b2a3b03342b233483e4243c3b943c83440cb6ac4f01916d2c8e47.jpg",
+    "76fbc60fb1d98f932b3ba9b315891ac256dd50bee6dcf7853bcf551f145bbffb.jpg",
+    "789e22ecce1b86087ee8495d78ff09d214f282532b28a2f98f8184fa870a1bc8.jpg",
+    "80a128776cf30cb01e4ccba358c40313d489cd7808485a955d8c92c222a67f45.png",
+    "d70888a56a4d02080676bc896b77d8ac233d20d48cb3948bfceb313d3a212253.jpg",
+    "e44c1c69ec2d1af027ca3c4d58191896a5d16dc590aeed038ea0e1ec657a7302.jpg",
+    "fd1b2629c1ded0fd7a668ca3c4a63bf738907fec7f9fc11728b333fe3c1c0d5f.png"
+  ],
+  "url": "/notes/n-1801f0c0006b48c4be799a4b8ba4105b/"
+}

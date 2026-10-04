@@ -1,0 +1,102 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3284ed29429d48dc4fb1",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-eec0c9233d3a3b60ac07",
+      "kind": "heading",
+      "offset": 275
+    },
+    {
+      "id": "h-20dc6d43cca89f83c05e",
+      "kind": "heading",
+      "offset": 363
+    },
+    {
+      "id": "h-f43dd82d4e0a8d6c7821",
+      "kind": "heading",
+      "offset": 632
+    },
+    {
+      "id": "h-0513f20aeb261bdd655e",
+      "kind": "heading",
+      "offset": 997
+    },
+    {
+      "id": "h-452410b514d024fb6656",
+      "kind": "heading",
+      "offset": 1006
+    },
+    {
+      "id": "h-e9821d335b1681fee07e",
+      "kind": "heading",
+      "offset": 1574
+    },
+    {
+      "id": "h-0780b5cf5a8fa4e6f080",
+      "kind": "heading",
+      "offset": 2899
+    },
+    {
+      "id": "h-588f6e2c43222a3a51ee",
+      "kind": "heading",
+      "offset": 4003
+    },
+    {
+      "id": "h-2c9a6bd3d523b28ca644",
+      "kind": "heading",
+      "offset": 5558
+    },
+    {
+      "id": "h-73404ed9ec147676475c",
+      "kind": "heading",
+      "offset": 5738
+    },
+    {
+      "id": "h-a57588bcc5438f9cf487",
+      "kind": "heading",
+      "offset": 6237
+    },
+    {
+      "id": "h-a0c5275310f082caafe7",
+      "kind": "heading",
+      "offset": 6348
+    },
+    {
+      "id": "h-33cc52ca34cf92f00823",
+      "kind": "heading",
+      "offset": 7516
+    }
+  ],
+  "body": "# MFC 键盘与鼠标消息处理\n\n相关内容：\n1. [Windows 窗口程序](/notes/n-5b50f7a485de48dcb0d1e1868933e003/)\n2. [MFC 开发基础](/notes/n-581da27d7b3646a1b1298f1432e2939d/)\n3. [MFC 框架原理篇](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/)\n4. [MFC CDC 绘图与坐标映射](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/)\n\n## 鼠标消息\n\n`Windows` 有 20 多种不同的消息用来报告与鼠标有关的输入事件，这些消息分为窗口客户区消息和非客户区消息，通常我们只需要关心客户区消息。\n\n### 窗口的区域划分\n\nWindows 程序的窗口被分为不同的区域，如下图所示：\n![b51b20dba51a9da733653b8ea212be73&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/f5cc0c50c22412ba5a273411783f8c7d4d71cc5cb14bb47854b46417749b6dbb.jpg)\n> 红框中的区域就是客户区；红框之外的区域是非客户区；紫框和红框中间那一部分是基于窗口的非客户区。\n\n\n### 客户区和非客户区鼠标消息\n\n如下表格中是一些鼠标消息的名称及其对应含义：\n\n| 名称 | 含义 |\n| :--- | :--- |\n| `WM_LBUTTONDOWN` | 鼠标左键按下 |\n| `WM_LBUTTONUP` | 鼠标左键抬起 |\n| `WM_LBUTTONDBLCLK` | 鼠标左键双击 |\n| `WM_MBUTTONDOWN` | 鼠标中键被按下 |\n| `WM_MBUTTONUP` | 鼠标中键抬起 |\n| `WM_MBUTTONDBLCLK` | 鼠标中键双击 |\n| `WM_RBUTTONDOWN` | 鼠标右键按下 |\n| `WM_MOUSEMOVE` | 在窗口客户区移动了光标 |\n\n非客户区鼠标消息，它们的名称在 `WM_` 后多了一个 `NC`（Non-client），对应关系非常直观。\n\n### 处理鼠标消息\n#### 客户区\n\n我们之前就已经使用过“鼠标左键按下”这个消息了。\n\n鼠标消息也有对应的消息处理函数，这种函数都是固定的名称和参数，其中参数为：`UINT nFlags, CPoint point`。第二个参数是一个设备坐标（视口）；第一个参数表示控制键状态，可以表示：`Ctrl` 键按下、鼠标左键按下、鼠标中键按下、鼠标右键按下、`Shift` 键按下。\n\n如下图中有其对应解释和相关的宏：\n\n![86fed8fff3ed88937b26c248ff0ac0f8&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/79f1cbfc0ca21b10898ed9b9a12dfa47d7718a2f59523ff6657ce844bc293b6b.jpg)\n\n假设现在我们想要在鼠标左键按下的消息处理函数中，判断当 `Shift` 键被按下时则触发弹框，可以这样写：\n\n```cpp\nvoid CMainWindow::OnLButtonDown(UINT nFlags, CPoint point) {\n    if (nFlags & MK_SHIFT) {\n        AfxMessageBox(\"123\");\n    }\n}\n```\n\n\n#### 非客户区\n\n\n对非客户区消息的处理其实跟客户区的处理没有本质区别，就是名字里头多了 `NC` 这两个字母。\n\n\n比如用于创建消息映射的宏名称的差别：\n![ba496f5380ac699a49c93bd7c1e75ac3&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/a226bb9d609276d04bf6c47966c6ac18ff1a2d28e91f69bde081ebaaef094443.jpg) \n\n相应的消息处理函数的名称的差别：\n![9e85733926b3aca2307633d2609e90e4&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/493179b29b672796913f35a796e8214bef61f8b3722c462d0f133723caf0fd02.jpg)\n\n除了在名字上的轻微差异，在使用上非客户区消息与客户区也一模一样：\n\n![b568eb961d789f9c3889e0dd96bbc80c&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/d890a697eb05bed5de4d6c07ff67a8865dfb39912b66b33fd4f15e1766c2a092.jpg)\n\n但需要注意的是，处理完毕后我们需要调用父类的 `CFrameWnd::OnNcLButtonDown()`。如果不调用，当前消息处理函数将拦截对放大、缩小、关闭等系统按钮的点击逻辑，导致它们失效，一直触发弹框：\n\n![4e6ca385a3bdc29ffc5b52d5a75482c6&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/b173e2d9e74124ff3716f595cdb6ba4d326d99d0a3578bbf6cb3f4790643e38f.jpg)\n\n![cb0e071700623a57035d4e9b84cec48b&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/e45b53b818016e61b7488a923d565c7f8d5cf0125d614849f67703899c5d2040.jpg)\n\n非客户区鼠标消息处理函数的第一个参数可以用来判断具体点击的部位，例如窗口缩小、放大、关闭按钮等：\n\n![04f41f71552b797213b7abfb698c7a45&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/36892fe2ce0123bde5e00ccd8fb415b772676461c7e61c5f00acd2481f31e565.jpg)\n\n### WM_NCHITTEST 消息\n\n> 在上一小节，我们知道非客户区的鼠标点击消息包含点击的窗口部位，但是系统如何知道我们交互的位置是窗口的什么部位呢？是系统保存了所有窗口的部位布局信息？\n\n通过上文图片中的代码注释可以发现，这些宏属于 `WM_NCHITTEST` 和 `MOUSEHOOKSTRUCT` 的\"鼠标位置编码\"。\n\n`WM_NCHITTEST` 是一个消息，其代表的具体事件为：光标移动到窗体或鼠标按下、抬起。\n\n操纵系统正是通过该消息得知交互的是窗口的哪个部位：`WM_NCHITTEST` 消息处理的返回值，表示交互的窗口位置是整个窗口的哪里。而后操纵系统再产生相应类型的鼠标消息，通俗地讲，就是**从消息产生消息**。\n> 这也侧面说明该消息优先于所有其他的客户区域和非客户区域鼠标消息。\n\n> [!INFO] 操纵系统如何获取返回值的？\n> 我们的消息循环不停的处理消息，但是并没有传递处理结果啊？！系统是如何知道 `WM_NCHITTEST` 的结果呢？\n> 这就要介绍 `PostMessage` 和 `SendMessage` 发出的消息，后者是同步调用，即只有在 `WndProc` 返回后才返回，所以系统可以通过该函数获取返回值。\n\n\n通常该消息被 `Windows` 应用程序交给 `DefWindowProc` 函数处理。\n\n我们可以实际使用一下这个消息。首先在消息映射表中加入该消息的映射，其次在类中声明对应的消息处理函数，而后实现该函数即可：\n\n![086e5758e3bb7ba08eeff22312cbf46b&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/97545afbb58e9ca54ae03613556326e6cd4d68996be435660529bda5e1dc064f.jpg)\n\n我们可以将客户区和非客户区做一个转换，以此实现在客户区也可以拖动窗口的功能：\n\n```cpp\nUINT CMainWindow::OnNcHitTest(CPoint point) {\n    UINT ret;\n    // 通过父类获取系统默认消息判断\n    ret = CFrameWnd::OnNcHitTest(point);\n    // 判断鼠标是否在客户区，是的话则将该标识转为标题栏标识 (HTCAPTION)\n    if (ret == HTCLIENT) {\n        ret = HTCAPTION;\n    }\n    return ret;\n}\n```\n\n### 鼠标画线\n\n我们可以先实现一个鼠标画线的需求：要求鼠标左键按下为起点，直到鼠标抬起为终点，两点之间画一条直线。\n\n```cpp\nCPoint testPoint; // 定义一个全局的 CPoint，用于存放鼠标左键按下时的坐标\n\n// 鼠标左键按下的消息处理函数，给全局的 CPoint 赋值\nvoid CMainWindow::OnLButtonDown(UINT nFlags, CPoint point) {\n    testPoint = point;\n}\n\n// 鼠标左键抬起的消息处理函数\nvoid CMainWindow::OnLButtonUp(UINT nFlags, CPoint point) {\n    CClientDC dc(this);\n    dc.MoveTo(testPoint.x, testPoint.y); // 移动起始位置\n    dc.LineTo(point.x, point.y);         // 画线到鼠标抬起的位置\n}\n```\n\n正常画是没有问题的，但是如果我们在客户区按下鼠标，拖拽到**非客户区**或**窗口外**抬起，就不会有直线出现：\n\n![65a24446cc29e10899bb4869f0dd7ba0&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/f6edc1c0c2f13476b9ef2ea5ac3f2183722b925a4623b9dd75e03e25890cd7bc.jpg)\n\n因为光标已经离开客户区域，窗口接收不到鼠标左键抬起的信息。我们可以借助 `SetCapture()` 函数解决此问题。\n> 鼠标在窗口外，消息仍然发给捕获窗口，坐标可能是**负数或大于窗口尺寸**，因为鼠标在客户区外。也就是说 `SetCapture` **改变消息接收窗口，但不改变坐标系**。\n\n该函数的意思是在当前线程的指定窗口里设置鼠标捕获。一旦窗口捕获了鼠标，所有鼠标输入都针对该窗口，无论光标是否在客户区内。对应的释放函数是 `ReleaseCapture()`。\n\n当你不再需要鼠标消息时，应该调用它释放。通常我们会结合 `GetCapture()` 来判断当前捕获鼠标信息的窗口句柄是否是自身窗口。\n\n改写后的代码如下：\n\n```cpp\nCPoint testPoint;\n\nvoid CMainWindow::OnLButtonDown(UINT nFlags, CPoint point) {\n    SetCapture(); // 开始捕获鼠标\n    testPoint = point;\n}\n\nvoid CMainWindow::OnLButtonUp(UINT nFlags, CPoint point) {\n    CClientDC dc(this);\n    dc.MoveTo(testPoint.x, testPoint.y);\n    dc.LineTo(point.x, point.y);\n    \n    if (GetCapture() == this) {\n        ReleaseCapture(); // 释放鼠标捕获\n    }\n}\n```\n\n![2cd7fd8721fbef10deba8618b3b603e8&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/f339293489d7681fb741c340b3af459d008369f7ff14e0d1e234f549445daebb.jpg)\n\n## 键盘消息\n\n`Windows` 通过给拥有输入焦点的窗口发送 `WM_KEYDOWN` 和 `WM_KEYUP` 消息来报告按键被按下或释放的事件。这些消息被称为按键消息。除了 `Alt` 和 `F10` 以外的所有键都产生按键消息（`Alt` 和 `F10` 是系统键，对 `Windows` 有特殊意义，对应 `WM_SYSKEYDOWN` 等）。\n\n### 介绍\n\n键盘消息处理函数的格式一般如下所示：\n\n```cpp\nafx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);\nafx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);\nafx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);\n...\n```\n\n其有三个参数：\n1. `nChar`：虚拟键码（键盘上某个键对应的代码）。\n2. `nRepCnt`：重复击键次数。\n3. `nFlags`：标志位，通过位运算提供附加信息。\n\n第三个参数 `nFlags` 的各个位具有相应含义：\n\n| 位数 | 含义 |\n| :--- | :--- |\n| `0-7` | `OEM` 扫描码 |\n| `8` | 扩展键标志 |\n| `9-12`| 保留 |\n| `14` | 先前状态。先前键被按下为 `1`，抬起为 `0` |\n| `15` | 过渡状态。被按下为 `0`，释放为 `1` |\n### 处理键盘消息\n\n现在我们知道，键盘按下一个键会产生 `WM_KEYDOWN` 和 `WM_KEYUP` 两个消息，因此我们就可以处理 `WM_KEYDOWN` 消息以实现捕获用户输入的逻辑。\n\n\n#### 方式一：WM_KEYDOWN\n\n我们可以通过代码验证第三个参数。建立映射关系并创建处理函数（这里用到的是 `WM_KEYDOWN` 消息）：\n\n![3dc0e66da61adb1b574ab9f9f4d2122f&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/f039ccdf3ea16681a63a416913c211edf7ed12cf33601e8f87d0090241b3ba83.jpg)\n\n首先判断按下的键是否是 `Ctrl` 键，其次通过位运算（右移 14 位并与 1 按位与）来获取该值。我们知道第 14 位获取的是先前状态：\n\n![074731b8db1c597fdeee46d506ba140f&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/13ba945ec9f714e7db81f4cdabcbb36a5b8f83bd34658a458758ed942b37b5c1.jpg)\n\n按一下 `Ctrl` 键然后抬起，结果为 0；如果一直按着 `Ctrl` 键不抬起（触发键盘重复消息），结果就为 1 了：\n\n![b5bd2a5abab2621c35cf3b86cb27eb37&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/369effc9e45bf7518af4f1a88ef383c2c0314fa17914a488ef631e7fc5ec1615.jpg)\n\n所以我们可以根据这个来判断该键在此前是否已经被按下过。\n\n但是一个问题是，通过 `WM_KEYDOWN` 消息对应的处理函数获取的虚拟键码，针对英文字符键永远是大写的：\n\n![5a672ec92d19e95e2a2d2fe248b3828f&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/a0d6673e03e206ca51f6595b262224f43fea7b6fc19c6313a55439b005f620c6.jpg)\n\n![88528a823803cfe489b63333b66f8f92&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/14d1e28c7f4c79a21eb6fe76d544a3319a073a61a9b96ffc644b0bf06be4e1ad.jpg)\n\n**如何获取实际的大小写呢？**\n\n#### 方式二：WM_CHAR\n\n如果对大小写有严格要求，可以使用 `WM_CHAR` 消息及其对应的消息处理函数来获取输入。\n\n`WM_CHAR` 消息是经过 `TranslateMessage` 转换后产生的（**重点**，不是系统产生的），专门用来处理字符输入的，能正确区分大小写。\n\n![584b86833b5a6ff01ac22220b79782f6&#95;MD5&#46;jpg](/notes/n-a8306eb080294d6d894a9ec5e1053d67/media/25d8a4e13a3611d53ba8f13a089295c816418e9fdab0013143b8c0afaf5662af.jpg)\n\n",
+  "id": "a8306eb0-8029-4d6d-894a-9ec5e1053d67",
+  "metadata": {
+    "tags": [
+      "lang/cpp/mfc"
+    ],
+    "title": "MFC 键盘与鼠标消息处理"
+  },
+  "resources": [
+    "13ba945ec9f714e7db81f4cdabcbb36a5b8f83bd34658a458758ed942b37b5c1.jpg",
+    "14d1e28c7f4c79a21eb6fe76d544a3319a073a61a9b96ffc644b0bf06be4e1ad.jpg",
+    "25d8a4e13a3611d53ba8f13a089295c816418e9fdab0013143b8c0afaf5662af.jpg",
+    "36892fe2ce0123bde5e00ccd8fb415b772676461c7e61c5f00acd2481f31e565.jpg",
+    "369effc9e45bf7518af4f1a88ef383c2c0314fa17914a488ef631e7fc5ec1615.jpg",
+    "493179b29b672796913f35a796e8214bef61f8b3722c462d0f133723caf0fd02.jpg",
+    "79f1cbfc0ca21b10898ed9b9a12dfa47d7718a2f59523ff6657ce844bc293b6b.jpg",
+    "97545afbb58e9ca54ae03613556326e6cd4d68996be435660529bda5e1dc064f.jpg",
+    "a0d6673e03e206ca51f6595b262224f43fea7b6fc19c6313a55439b005f620c6.jpg",
+    "a226bb9d609276d04bf6c47966c6ac18ff1a2d28e91f69bde081ebaaef094443.jpg",
+    "b173e2d9e74124ff3716f595cdb6ba4d326d99d0a3578bbf6cb3f4790643e38f.jpg",
+    "d890a697eb05bed5de4d6c07ff67a8865dfb39912b66b33fd4f15e1766c2a092.jpg",
+    "e45b53b818016e61b7488a923d565c7f8d5cf0125d614849f67703899c5d2040.jpg",
+    "f039ccdf3ea16681a63a416913c211edf7ed12cf33601e8f87d0090241b3ba83.jpg",
+    "f339293489d7681fb741c340b3af459d008369f7ff14e0d1e234f549445daebb.jpg",
+    "f5cc0c50c22412ba5a273411783f8c7d4d71cc5cb14bb47854b46417749b6dbb.jpg",
+    "f6edc1c0c2f13476b9ef2ea5ac3f2183722b925a4623b9dd75e03e25890cd7bc.jpg"
+  ],
+  "url": "/notes/n-a8306eb080294d6d894a9ec5e1053d67/"
+}

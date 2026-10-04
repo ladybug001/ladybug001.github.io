@@ -1,0 +1,22 @@
+{{- /* Stack's stock widget, with an explicit taxonomy root (nested tags safe). */ -}}
+{{- $taxonomy := index .Context.Site.Taxonomies .Params.taxonomy -}}
+{{- if $taxonomy -}}
+  {{- $taxonomyPage := .Context.Site.GetPage (printf "/%s" .Params.taxonomy) -}}
+  {{- $limit := 10 -}}
+  {{- if isset .Params "limit" -}}{{- $limit = int .Params.limit -}}{{- end -}}
+  {{- $terms := $taxonomy.ByCount -}}
+  {{- if gt $limit 0 -}}{{- $terms = first $limit $terms -}}{{- end -}}
+  <section class="widget tagCloud{{ if le $limit 0 }} tagCloud--scrollable{{ end }}">
+    <div class="widget-icon">{{ partial "helper/icon" (default .Params.taxonomy .Params.icon) }}</div>
+    <h2 class="widget-title section-title">
+      {{- if and (default true .Params.showLink) $taxonomyPage -}}
+        <a href="{{ $taxonomyPage.RelPermalink }}">{{ .Params.title }}</a>
+      {{- else -}}{{ .Params.title }}{{- end -}}
+    </h2>
+    <div class="tagCloud-tags"{{ if le $limit 0 }} tabindex="0" role="region" aria-label="{{ .Params.title }}"{{ end }}>
+      {{- range $terms -}}
+        <a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a>
+      {{- end -}}
+    </div>
+  </section>
+{{- end -}}

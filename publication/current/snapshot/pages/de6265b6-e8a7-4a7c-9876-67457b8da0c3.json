@@ -1,0 +1,82 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-a037f129104d78d9a4ce",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-e7825006abb05bcc393f",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-534dc8a3c9aa83a253f9",
+      "kind": "heading",
+      "offset": 343
+    },
+    {
+      "id": "h-276061433f9ecd72ffcb",
+      "kind": "heading",
+      "offset": 363
+    },
+    {
+      "id": "h-71873c5a07386af9654e",
+      "kind": "heading",
+      "offset": 891
+    },
+    {
+      "id": "h-29f54c2be72a726a800b",
+      "kind": "heading",
+      "offset": 1606
+    },
+    {
+      "id": "h-cd27016ddb2cebcd3f0e",
+      "kind": "heading",
+      "offset": 2401
+    },
+    {
+      "id": "h-566cb646bddfae7ad1c9",
+      "kind": "heading",
+      "offset": 2681
+    },
+    {
+      "id": "h-13c95a5fca9e90f57104",
+      "kind": "heading",
+      "offset": 2774
+    },
+    {
+      "id": "h-917512dae27f837a7e8e",
+      "kind": "heading",
+      "offset": 3368
+    },
+    {
+      "id": "h-21d345adc51a73594e2a",
+      "kind": "heading",
+      "offset": 3700
+    },
+    {
+      "id": "h-d690cacd00e8ba0781b2",
+      "kind": "heading",
+      "offset": 4158
+    },
+    {
+      "id": "h-6fae1130ed87d773c195",
+      "kind": "heading",
+      "offset": 4478
+    }
+  ],
+  "body": "# Xposed 框架原理\n\n## 概述\n\nXposed 是一个 **Android Hook 框架**。它允许用户在不修改目标 APK 的情况下，通过加载模块改变系统或应用的行为。模块可以拦截 **Java 方法**，修改参数或返回值，也可以替换方法的执行逻辑。\n\n**典型用途**：\n\n- 修改系统 UI（状态栏、通知栏），参考：[上帝模式](https://github.com/kaisar945/Xposed-GodMode)\n- 绕过某些应用的限制（如广告屏蔽、区域限制）\n- 增加自定义功能（如微信防撤回、抢红包）\n- 调试和逆向分析\n- 一键新机，参考：[应用变量](https://github.com/kingsollyu/AppEnv)\n\n## 原生 Xposed\n\n### Android 应用进程启动\n\nAndroid 常规应用进程由 Zygote 派生：Android 启动时，`init` 进程执行 `/system/bin/app_process` 启动 Zygote，Zygote 预加载常用类和资源后监听进程创建请求，当应用需要启动时，Zygote 调用 `fork()` 创建子进程，子进程完成 specialization（设置 UID、SELinux 上下文、进程名等），随后进入 `ActivityThread` 的应用初始化流程。\n\n由于 `fork()` 的子进程继承父进程在该时刻的内存状态，只要在 Zygote 中提前装入 Hook 框架，后续应用进程就能继承这套能力。**Xposed 正是利用这一点，通过介入 Zygote 实现对应用进程的方法 Hook**。\n\n> Linux 中 `fork()` 创建当前进程的子进程，子进程继承父进程在该时刻的内存状态；`execve()` 用指定的可执行文件替换当前进程映像。但 Android 常规应用进程的启动路径由 Zygote 派生、specialization 和现有 Runtime 中的应用初始化组成，`execve()` 不参与这条路径。\n\n### 进入 Zygote\n\n原生 Xposed 替换系统的 `/system/bin/app_process`，替换后的 `app_process` 仍从 ELF 的 Native 入口开始执行，创建 Dalvik/ART Runtime。\n\n只是会把 `XposedBridge.jar` 加入虚拟机的 ClassPath，虚拟机创建完成后，会将 Java 层的启动入口由 `ZygoteInit.main()` 改为 `XposedBridge.main()`，该入口处初始化 Xposed 框架并加载已启用模块，然后调用 `ZygoteInit.main()`，使系统继续执行正常的 Zygote 启动流程。\n> `app_process` 的 Native 代码通过 JNI 进入 `XposedBridge.main()`；Java 层的 `XposedBridge` 也通过 JNI 调用 Native Hook 实现。\n\n注意被替换的是 `app_process` 启动虚拟机后所调用的 Java 入口，不是 ELF 的 `e_entry`；`XposedBridge.jar` 包含 Xposed 的 Java 桥接代码、Hook API 和模块加载逻辑，使这些类在 Zygote 中可用。\n\n\n![Pasted image 20250206154520&#46;png](/notes/n-de6265b6e8a74a7c987667457b8da0c3/media/de9fb3d4d3075b2359c1f6eb0a7bf52d6c7ba3195ea88cf5e830b7d5a6b78c13.png)\n\n### 模块加载与应用回调\n\n**一、 Zygote 启动与模块预加载**\n\n`XposedBridge.main()` 在 Zygote 初始化阶段读取已启用的模块列表，针对每个模块执行以下操作：\n\n1. **解析入口**：从模块 APK 的 `assets/xposed_init` 中读取指定的入口类全限定名。\n2. **类加载与实例化**：使用独立的 `PathClassLoader` 加载模块 DEX 并实例化入口类。参考：[Java ClassLoader 机制](/notes/n-d06529d6c1464564a52c627bc1a3719a/)\n3. **注册回调**：根据入口类实现的接口，将其包装并注册到全局回调集合中（例如，实现 `IXposedHookLoadPackage` 的实例被封装为 `XC_LoadPackage` 回调）。\n\n**二、 进程派生与状态继承**\n\n模块加载完成后，Zygote 继续启动流程（调用 `ZygoteInit.main()`）。此后由 Zygote `fork()` 派生的所有应用进程，均**直接继承**已初始化的 Xposed 运行环境、已加载的模块类及注册的回调列表。\n\n**三、 应用生命周期拦截与分发（以 `IXposedHookLoadPackage` 为例）**\n\n1. 新应用进程启动后，进入标准的 Android 初始化流程。\n2. 当执行至 `ActivityThread.handleBindApplication()` 时，触发 Xposed 预埋的 Hook 点。\n3. Xposed 构造当前应用的上下文参数 `LoadPackageParam`。\n4. 遍历已注册的 `XC_LoadPackage` 回调链，依次调用各模块的 `handleLoadPackage(lpparam)`。\n\n### 作用范围与生效方式\n\n原生 Xposed 没有\"作用域\"的概念。所有启用模块在 Zygote 初始化阶段加载，fork 后每个进程都继承全部模块代码和回调集合，`handleLoadPackage()` 在每个应用进程中都会被执行。\n\n判断当前进程是否需要 Hook 的责任由模块自己承担：\n\n```java\nif (\"com.example.app\".equals(lpparam.packageName)) {\n    // 执行 Hook\n}\n```\n\n模块启用、禁用或更新后需要重启设备，使新的 Zygote 及其后续子进程使用更新后的模块集合；\n\n## LSPosed\n\n相关内容参考：[Lsposed 技术原理探讨 && 基本安装使用](https://www.52pojie.cn/thread-1694093-1-1.html)\n\n### 运行流程\n\n以常见的 Magisk + Zygisk + LSPosed 组合为例，各层职责是：\n\n1. **Magisk** 通过修补 boot 镜像获得 Root 权限，并用 MagiskSU 管理授权。\n\n> 参考：[Android 刷机与 Root](/notes/n-eb9073f394f64c15b44241a6cead74ac/)\n\n2. **Zygisk** 是 Magisk 的 Zygote 注入机制。开启后，Magisk 在 Zygote 进程中加载 `libzygisk.so`，从而获得对 Zygote 及后续 fork 进程的控制。\n> 与原生 Xposed 替换 `app_process` 不同，Zygisk 不修改系统文件，通过 Magisk 的 Native 注入实现。\n\n3. **LSPosed** 作为 Zygisk 模块进入目标进程，初始化以 LSPlant 为核心的 ART Hook 能力，并提供与 Xposed API 兼容的模块运行环境、回调分发和作用域管理。\n\n**区分两种模块**：原生 Xposed 的模块使用 Java API（`XposedBridge`），Zygisk 模块使用 C++ API（`preAppSpecialize`/`postAppSpecialize` 等回调）。两者位于不同层级。\n\n### 作用域与生效方式\n\nLSPosed 为每个 Xposed Module 配置作用域，只向被选中的应用或系统目标注入相应模块——相当于框架层代替模块完成了包名过滤，实现了无需重启即可加载、卸载模块的便利性。\n\n更新与生效机制：\n\n- **框架本身**（LSPosed/Zygisk）：安装、启停或更新通常需要重启系统，使新的框架状态随 Zygote 启动生效。\n- **Xposed Module** 的启用/禁用或修改作用域：只需**重启对应的目标应用进程**即可生效，不必重启整个系统。\n    - `system_server`、系统 UI 或 Zygote 相关目标：由于进程生命周期和影响范围不同，通常需要重启系统。\n\n### 原生 Xposed 与 LSPosed 对照\n\n| 维度 | 原生 Xposed | LSPosed |\n| --- | --- | --- |\n| 介入方式 | 替换 `/system/bin/app_process` | 通过 Magisk/Zygisk 在 Zygote 中加载 Native 模块 |\n| 模块加载位置与时机 | Zygote 初始化阶段（fork 前），所有子进程继承 | specialization 阶段（fork 后），仅在作用域匹配的进程中加载 |\n| 作用域 | 无，所有进程都继承全部模块 | 框架层按模块配置的作用域选择性注入 |\n| 目标进程 | 模块自行在 `handleLoadPackage()` 中按包名过滤 | 框架完成进程过滤，模块可做更细判断 |\n| 配置变更后的生效方式 | 重启设备 | 模块启用/作用域变更只需重启目标应用；框架本身变更需重启系统 |\n\n**原生 Xposed 的底层机制完全支持进程粒度的模块加载**，没有提供作用域功能是**设计选择**，而非技术限制。\n\n### LSPatch\n\nLSPatch 是 LSPosed 的免 Root、单 APK 方案。它把 Xposed API 所需的 DEX 和 SO 注入目标 APK，生成修补并重新签名后的 APK；目标应用运行时加载嵌入的框架与模块，其运行路径独立于系统范围的 Zygote 注入。这种方式只影响被修补的应用，最低支持 Android 9。\n\n目标 APK 会被修改和重签名，可能遇到签名校验、应用更新、Split APK 或厂商兼容性问题。\n\n> **注意区分**：通过 Zygote 注入的系统级 Xposed 框架需要 Root 权限来修改进程创建路径；LSPatch 将框架嵌入单个 APK，不需要 Root，但只作用于被修补的应用。\n\n## 技术演变\n\n| 名称            | 地址                                                                                                   | 支持版本     | 是否需要 root                     |\n| ------------- | ---------------------------------------------------------------------------------------------------- | -------- | ----------------------------- |\n| Xposed        | [https://github.com/rovo89/Xposed](https://github.com/rovo89/Xposed)                                 | 2.3-8.1  | 需要                            |\n| EdXposed      | [https://github.com/ElderDrivers/EdXposed](https://github.com/ElderDrivers/EdXposed)                 | 8.0-11   | 需要                            |\n| LSPosed       | [https://github.com/LSPosed/LSPosed](https://github.com/LSPosed/LSPosed)                             | 8.1-14+  | 需要                            |\n| VirtualXposed | [https://github.com/android-hacker/VirtualXposed](https://github.com/android-hacker/VirtualXposed)   | 5.0-10.0 | 不需要                           |\n| 太极            | [https://www.coolapk.com/apk/me.weishu.exp](https://www.coolapk.com/apk/me.weishu.exp)（酷安分发页）        | 5.0-12   | 阴模式（免 root 虚拟化）不需要；阳模式（系统级）需要 |\n| 两仪            | [https://www.coolapk.com/apk/io.twoyi](https://www.coolapk.com/apk/io.twoyi)                         | 8.1-12   | 不需要                           |\n| 天鉴            | [https://github.com/Katana-Official/SPatch-Update](https://github.com/Katana-Official/SPatch-Update) | 6-12     | 不需要                           |",
+  "id": "de6265b6-e8a7-4a7c-9876-67457b8da0c3",
+  "metadata": {
+    "tags": [
+      "reverse/android",
+      "os/android"
+    ],
+    "title": "Xposed 框架原理"
+  },
+  "resources": [
+    "de9fb3d4d3075b2359c1f6eb0a7bf52d6c7ba3195ea88cf5e830b7d5a6b78c13.png"
+  ],
+  "url": "/notes/n-de6265b6e8a74a7c987667457b8da0c3/"
+}

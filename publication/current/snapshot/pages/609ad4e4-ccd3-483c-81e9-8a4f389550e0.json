@@ -1,0 +1,248 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-00ab965076dcff2ee995",
+      "kind": "heading",
+      "offset": 4
+    },
+    {
+      "id": "h-eb314800305d5b5b0792",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-a70749d444b96743ede9",
+      "kind": "heading",
+      "offset": 141
+    },
+    {
+      "id": "h-b343f7bdf87b26dd501f",
+      "kind": "heading",
+      "offset": 567
+    },
+    {
+      "id": "h-975c11b99e64932dd42d",
+      "kind": "heading",
+      "offset": 667
+    },
+    {
+      "id": "h-5847e7a60d6af75f4052",
+      "kind": "heading",
+      "offset": 726
+    },
+    {
+      "id": "h-6177fbb2e01a17f5eeb4",
+      "kind": "heading",
+      "offset": 740
+    },
+    {
+      "id": "h-9d85262bb2a4c44695c1",
+      "kind": "heading",
+      "offset": 953
+    },
+    {
+      "id": "h-784b32473338e1cdd550",
+      "kind": "heading",
+      "offset": 1143
+    },
+    {
+      "id": "h-d6402ba843a0d2b5abe9",
+      "kind": "heading",
+      "offset": 1439
+    },
+    {
+      "id": "h-7fd91a5684edd89b0087",
+      "kind": "heading",
+      "offset": 1466
+    },
+    {
+      "id": "h-cbe58aec0c01de5bb961",
+      "kind": "heading",
+      "offset": 1478
+    },
+    {
+      "id": "h-6101934e0fbf1c7101a0",
+      "kind": "heading",
+      "offset": 1864
+    },
+    {
+      "id": "h-463593b4fc0aa4f2954b",
+      "kind": "heading",
+      "offset": 2869
+    },
+    {
+      "id": "h-1b8e255ab1dcffed50eb",
+      "kind": "heading",
+      "offset": 3635
+    },
+    {
+      "id": "h-928f6290c08e270b324f",
+      "kind": "heading",
+      "offset": 3659
+    },
+    {
+      "id": "h-d90ed83ee68cca76bdd9",
+      "kind": "heading",
+      "offset": 4184
+    },
+    {
+      "id": "h-8f77a52eda4385ab47e7",
+      "kind": "heading",
+      "offset": 4566
+    },
+    {
+      "id": "h-3eb4142c93a52091ed85",
+      "kind": "heading",
+      "offset": 4853
+    },
+    {
+      "id": "h-d1af029edb0670d16004",
+      "kind": "heading",
+      "offset": 5546
+    },
+    {
+      "id": "h-beae8340f82035fcda86",
+      "kind": "heading",
+      "offset": 5852
+    },
+    {
+      "id": "h-2acf2fb672c1261c2a98",
+      "kind": "heading",
+      "offset": 6340
+    },
+    {
+      "id": "h-de152e8495e4645aedf8",
+      "kind": "heading",
+      "offset": 6355
+    },
+    {
+      "id": "h-9f20207e1eed8e4e0771",
+      "kind": "heading",
+      "offset": 6573
+    },
+    {
+      "id": "h-8fb9344840e37ef11225",
+      "kind": "heading",
+      "offset": 8701
+    },
+    {
+      "id": "h-e344f48e38da79d69371",
+      "kind": "heading",
+      "offset": 10718
+    },
+    {
+      "id": "h-19eec9f6d5d11f978793",
+      "kind": "heading",
+      "offset": 11546
+    },
+    {
+      "id": "h-fa491b0cdf37ce344d45",
+      "kind": "heading",
+      "offset": 11936
+    },
+    {
+      "id": "h-5a26dac296623958f153",
+      "kind": "heading",
+      "offset": 12533
+    },
+    {
+      "id": "h-1cb362e0010ca9fba9bf",
+      "kind": "heading",
+      "offset": 13371
+    },
+    {
+      "id": "h-d82d230f1825d34c5774",
+      "kind": "heading",
+      "offset": 14229
+    },
+    {
+      "id": "h-1b7783dc90206bc3f688",
+      "kind": "heading",
+      "offset": 14323
+    },
+    {
+      "id": "h-306412e14c2415dea416",
+      "kind": "heading",
+      "offset": 14918
+    },
+    {
+      "id": "h-4dfc68b0e8d9e99d7bd8",
+      "kind": "heading",
+      "offset": 15662
+    },
+    {
+      "id": "h-941d45e3a9a4f6f039d9",
+      "kind": "heading",
+      "offset": 16443
+    },
+    {
+      "id": "h-a6612988f3831fbde97e",
+      "kind": "heading",
+      "offset": 16460
+    },
+    {
+      "id": "h-cefc47dc60c746354d45",
+      "kind": "heading",
+      "offset": 16663
+    },
+    {
+      "id": "h-c7ea4f1eaa485fa75ecf",
+      "kind": "heading",
+      "offset": 16805
+    },
+    {
+      "id": "h-faac1d8e389608d2a431",
+      "kind": "heading",
+      "offset": 17055
+    },
+    {
+      "id": "h-a65031446a880f74175d",
+      "kind": "heading",
+      "offset": 17337
+    },
+    {
+      "id": "h-c7b82f46357c12e4db9e",
+      "kind": "heading",
+      "offset": 17586
+    },
+    {
+      "id": "h-306ef65918942eabe5e9",
+      "kind": "heading",
+      "offset": 18591
+    },
+    {
+      "id": "h-232286461c2ab580f816",
+      "kind": "heading",
+      "offset": 18604
+    },
+    {
+      "id": "h-163b5358dcbfdbfe5aea",
+      "kind": "heading",
+      "offset": 18957
+    },
+    {
+      "id": "h-e541b56ea11a829cf6ca",
+      "kind": "heading",
+      "offset": 19264
+    },
+    {
+      "id": "h-65554f3dba852c21af76",
+      "kind": "heading",
+      "offset": 20431
+    },
+    {
+      "id": "h-88696518b549444307f4",
+      "kind": "heading",
+      "offset": 20739
+    }
+  ],
+  "body": "# 常用\n\n## Frida Hook框架模板\n\n```js\nfunction main(){\n    Java.perform(function(){\n        hookTest1();\n    });\n}\nsetImmediate(main);\n```\n\n\n## 常用命令\n\n1. `frida-ps -U`  查看当前手机运行的进程\n2. `frida-ps --help` 查看help指令\n3. Spawn模式HOOK(在启动APP的时候进行HOOK)\n```\nfrida -U -f 进程名 -l hook.js\n```\n4. attach模式HOOK(HOOK执行时，APP已在运行)：\n```\nfrida -U 进程名 -l hook.js\n```\n5. frida_server 自定义端口\n```\nfrida server 默认端口：27042\n\ntaimen:/ $ su\ntaimen:/ # cd data/local/tmp/\ntaimen:/data/local/tmp # ./fs1280 -l 0.0.0.0:6666\n```\n6. `logcat |grep \"D.zj2595\"`日志捕获\n7. `adb connect 127.0.0.1:62001`模拟器端口转发\n\n### 端口转发\n\n```bash\n# cmd命令行运行\nadb forward tcp:27042 tcp:27042\nadb forward tcp:27043 tcp:27043\n```\n\n### 检测是否成功\n\n```bash\n# cmd命令行运行\nfrida-ps -U  #列出手机正在运行的进程\n```\n\n\n\n\n# 前言\n\n## 什么是Frida？\n\nFrida 是一款开源的动态插桩工具，可以插入一些代码到原生App的内存空间去动态地监视和修改其行为，支持Windows、Mac、Linux、Android或者iOS，从安卓层面来讲，可以实现`Java`层和`Native`层`Hook`操作。\n[项目地址](https://github.com/frida/frida)\n[官网及使用文档](https://frida.re/)\n\n\n## Frida与Xposed的对比\n| 工具 | 优点 | 缺点 |\n| :--- | :--- | :--- |\n| Xposed | 直接编写Java代码，Java层hook方便，可打包模块持久化hook | 环境配置繁琐，兼容性较差，难以Hook底层代码。 |\n| Frida | 配置简单，免重启hook。支持Java层和Native层的hook操作 | 持久化hook相对麻烦 |\n\n## 安装Frida\n8. 电脑端配置Python环境：`pip install frida-tools`\n9. [点击下载 Frida-server](https://github.com/frida/frida)   手机执行：`adb push Frida-server /data/local/tmp`  **PS:版本要与pip安装的frida对应！！！**  \n\n```bash\n#  cmd命令行运行\nadb shell\nsu\ncd /data/local/tmp\nchmod 755 frida-server\n./frida-server # 这里填写frida服务的名称\n```\n\n# 使用方法\n## Process、Module、Memory对象\n### Process\n`Process` 对象代表当前被Hook的进程，能获取进程的信息，枚举模块，枚举范围等\n\n| API                       | 含义 |\n|-------------------------------|-------------|\n| `Process.id`                  | 返回附加目标进程的 `PID` |\n| `Process.isDebuggerAttached()`| 检测当前是否对目标程序已经附加 |\n| `Process.enumerateModules()`  | 枚举当前加载的模块，返回模块对象的数组 |\n| `Process.enumerateThreads()`  | 枚举当前所有的线程，返回包含 `id`, `state`, `context` 等属性的对象数组 |\n\n### Module\n`Module` 对象代表一个加载到进程的模块(例如，在 Windows 上的 DLL，或在 Linux/Android 上的 .so 文件),能查询模块的信息，如模块的基址、名称、导入/导出的函数等\n\n| API                                                        | 含义                                                           |\n|------------------------------------------------------------|----------------------------------------------------------------|\n| `Module.load()`                                            | 加载指定so文件，返回一个Module对象                              |\n| `enumerateImports()`                                       | 枚举所有Import库函数，返回Module数组对象                         |\n| `enumerateExports()`                                       | 枚举所有Export库函数，返回Module数组对象                         |\n| `enumerateSymbols()`                                       | 枚举所有Symbol库函数，返回Module数组对象                         |\n| `Module.findExportByName(exportName)、Module.getExportByName(exportName)` | 寻找指定so中export库中的函数地址 |\n| `Module.findBaseAddress(name)、Module.getBaseAddress(name)` | 返回so的基地址 |\n### Memory\n`Memory`是一个工具对象，提供直接读取和修改进程内存的功能，能够读取特定地址的值、写入数据、分配内存等\n\n| 方法                      | 功能                                                        |\n| ------------------------- | ----------------------------------------------------------- |\n| `Memory.copy()`           | 复制内存                                                    |\n| `Memory.scan()`           | 搜索内存中特定模式的数据                                    |\n| `Memory.scanSync()`       | 同上，但返回多个匹配的数据                                  |\n| `Memory.alloc()`          | 在目标进程的堆上申请指定大小的内存，返回一个`NativePointer` |\n| `Memory.writeByteArray()` | 将字节数组写入一个指定内存                                  |\n| `Memory.readByteArray`                          | 读取内存                                                            |\n\n\n\n## JAVA层HOOK\n### Hook普通方法、打印参数和修改返回值\n\n```js\n//定义一个名为hookTest1的函数\nfunction hookTest1(){\n\t//获取一个名为\"类名\"的Java类，并将其实例赋值给JavaScript变量utils\n    var utils = Java.use(\"类名\");\n    //修改\"类名\"的\"method\"方法的实现。这个新的实现会接收两个参数（a和b）\n    utils.method.implementation = function(a, b){\n\t    //将参数a和b的值改为123和456。\n        a = 123;\n        b = 456;\n        //调用修改过的\"method\"方法，并将返回值存储在`retval`变量中\n        var retval = this.method(a, b);\n        //在控制台上打印参数a，b的值以及\"method\"方法的返回值\n        console.log(a, b, retval);\n        //返回\"method\"方法的返回值\n        return retval;\n    }\n}\n\n```\n\n\n### Hook重载参数\n\n```js\n// .overload()\n// .overload('自定义参数')\n// .overload('int')\nfunction hookTest2(){\n    var utils = Java.use(\"com.zj.wuaipojie.Demo\");\n    //overload定义重载函数，根据函数的参数类型填\n    utils.Inner.overload('com.zj.wuaipojie.Demo$Animal','java.lang.String').implementation = function(a，b){\n        b = \"aaaaaaaaaa\";\n        this.Inner(a,b);\n        console.log(b);\n    }\n}\n\n\n\n```\n\n\n### Hook构造函数\n```js\nfunction hookTest3(){\n    var utils = Java.use(\"com.zj.wuaipojie.Demo\");\n    //修改类的构造函数的实现，$init表示构造函数\n    utils.$init.overload('java.lang.String').implementation = function(str){\n        console.log(str);\n        str = \"52\";\n        this.$init(str);\n    }\n}\n\n\n```\n\n\n### Hook属性|字段\n```js\nfunction hookTest5(){\n    Java.perform(function(){\n        //静态字段的修改\n        var utils = Java.use(\"com.zj.wuaipojie.Demo\");\n        //修改类的静态字段\"flag\"的值\n        utils.staticField.value = \"我是被修改的静态变量\";\n        console.log(utils.staticField.value);\n        //非静态字段的修改\n        //使用`Java.choose()`枚举类的所有实例\n        Java.choose(\"com.zj.wuaipojie.Demo\", {\n            onMatch: function(obj){\n\t            //修改实例的非静态字段\"_privateInt\"的值为\"123456\"，并修改非静态字段\"privateInt\"的值为9999。\n                obj._privateInt.value = \"123456\"; //字段名与函数名相同 前面加个下划线\n                obj.privateInt.value = 9999;\n            },\n            onComplete: function(){\n\n            }\n        });\n    });\n    \n}\n```\n\n### Hook内部类\n```js\nfunction hookTest6(){\n    Java.perform(function(){\n        //内部类\n        var innerClass = Java.use(\"com.zj.wuaipojie.Demo$innerClass\");\n        console.log(innerClass);\n        innerClass.$init.implementation = function(){\n            console.log(\"eeeeeeee\");\n        }\n\n    });\n}\n\n```\n\n\n\n### 8.主动调用\n\n静态方法\n```js\nvar ClassName=Java.use(\"com.zj.wuaipojie.Demo\"); \nClassName.privateFunc();\n```\n\n非静态方法\n```js\n    var ret = null;\n    Java.perform(function () {\n        Java.choose(\"com.zj.wuaipojie.Demo\",{    //要hook的类\n            onMatch:function(instance){\n                ret=instance.privateFunc(\"aaaaaaa\"); //要hook的方法\n            },\n            onComplete:function(){\n            \t//console.log(\"result: \" + ret);\n            }\n        });\n    })\n    //return ret;\n\n```\n\n\n\n## Native层HOOK\n\n### SO基址的获取方式\n```js\nvar moduleAddr1 = Process.findModuleByName(\"lib52pojie.so\").base;  \nvar moduleAddr2 = Process.getModuleByName(\"lib52pojie.so\").base;  \nvar moduleAddr3 = Module.findBaseAddress(\"lib52pojie.so\");\n```\n### Hook并打印参数\n10. 整数型、布尔值类型、char类型\n```JS\nfunction hookTest2(){\n    Java.perform(function(){\n        //根据导出函数名打印地址\n        var helloAddr = Module.findExportByName(\"lib52pojie.so\",\"Java_com_zj_wuaipojie_util_SecurityUtil_checkVip\");\n        console.log(helloAddr); \n        if(helloAddr != null){\n\t        //Interceptor.attach是Frida里的一个拦截器\n            Interceptor.attach(helloAddr,{\n\t            //onEnter里可以打印和修改参数\n                onEnter: function(args){  //args传入参数\n                    console.log(args[0]);  //打印第一个参数的值\n                    console.log(this.context.x1);  // 打印寄存器内容\n                    console.log(args[1].toInt32()); //toInt32()转十进制\n\t\t\t\t\tconsole.log(args[2].readCString()); //读取字符串 char类型\n\t\t\t\t\tconsole.log(hexdump(args[2])); //内存dump\n\n                },\n                //onLeave里可以打印和修改返回值\n                onLeave: function(retval){  //retval返回值\n                    console.log(retval);\n                    console.log(\"retval\",retval.toInt32());\n                }\n            })\n        }\n    })\n}\n```\n11. 字符串类型\n```js\nfunction hookTest2(){\n    Java.perform(function(){\n        //根据导出函数名打印地址\n        var helloAddr = Module.findExportByName(\"lib52pojie.so\",\"Java_com_zj_wuaipojie_util_SecurityUtil_vipLevel\");\n        if(helloAddr != null){\n            Interceptor.attach(helloAddr,{\n                //onEnter里可以打印和修改参数\n                onEnter: function(args){  //args传入参数\n                    // 方法一\n                    var jString = Java.cast(args[2], Java.use('java.lang.String'));\n                    console.log(\"参数:\", jString.toString());\n                    // 方法二\n                    var JNIEnv = Java.vm.getEnv();\n                    var originalStrPtr = JNIEnv.getStringUtfChars(args[2], null).readCString();\t\n                    console.log(\"参数:\", originalStrPtr);\t\t\t\t\n                },\n                //onLeave里可以打印和修改返回值\n                onLeave: function(retval){  //retval返回值\n                    var returnedJString = Java.cast(retval, Java.use('java.lang.String'));\n                    console.log(\"返回值:\", returnedJString.toString());\n                }\n            })\n        }\n    })\n}\n\n```\n\n### Hook并修改参数\n12. 整数型修改\n```js\nfunction hookTest3(){\n    Java.perform(function(){\n        //根据导出函数名打印地址\n        var helloAddr = Module.findExportByName(\"lib52pojie.so\",\"func_four\");\n        console.log(helloAddr);\n        if(helloAddr != null){\n            Interceptor.attach(helloAddr,{\n                onEnter: function(args){  //args参数\n                    args[0] = ptr(1000); //第一个参数修改为整数 1000，先转为指针再赋值\n                    console.log(args[0]);\n                      \n                },\n                onLeave: function(retval){  //retval返回值\n                    retval.replace(20000);  //返回值修改\n                    console.log(\"retval\",retval.toInt32());\n                }\n            })\n        }\n    })\n}\n```\n13. 字符串类型修改\n```js\nfunction hookTest2(){\n    Java.perform(function(){\n        //根据导出函数名打印地址\n        var helloAddr = Module.findExportByName(\"lib52pojie.so\",\"Java_com_zj_wuaipojie_util_SecurityUtil_vipLevel\");\n        if(helloAddr != null){\n            Interceptor.attach(helloAddr,{\n                //onEnter里可以打印和修改参数\n                onEnter: function(args){  //args传入参数\n                    var JNIEnv = Java.vm.getEnv();\n                    var originalStrPtr = JNIEnv.getStringUtfChars(args[2], null).readCString();\t\n                    console.log(\"参数:\", originalStrPtr);\n                    var modifiedContent = \"至尊\";\n                    var newJString = JNIEnv.newStringUtf(modifiedContent);\n                    args[2] = newJString;\t\t\t\t\n                },\n                //onLeave里可以打印和修改返回值\n                onLeave: function(retval){  //retval返回值\n                    var returnedJString = Java.cast(retval, Java.use('java.lang.String'));\n                    console.log(\"返回值:\", returnedJString.toString());\n                    var JNIEnv = Java.vm.getEnv();\n                    var modifiedContent = \"无敌\";\n                    var newJString = JNIEnv.newStringUtf(modifiedContent);\n                    retval.replace(newJString);\n                }\n            })\n        }\n    })\n}\n```\n\n\n### Hook未导出函数&函数地址计算\n```js\nfunction hookTest6(){\n    Java.perform(function(){\n        //根据导出函数名打印基址\n        var soAddr = Module.findBaseAddress(\"lib52pojie.so\");\n        console.log(soAddr);\n        var funcaddr = soAddr.add(0x1071C);  \n        console.log(funcaddr);\n        if(funcaddr != null){\n            Interceptor.attach(funcaddr,{\n                onEnter: function(args){  //args参数\n \n                },\n                onLeave: function(retval){  //retval返回值\n                    console.log(retval.toInt32());\n                }\n            })\n        }\n    })\n}\n```\n\n函数地址计算\n14. 安卓里一般32 位的 so 中都是`thumb`指令，64 位的 so 中都是`arm`指令\n15. 通过IDA里的opcode bytes来判断，arm 指令为 4 个字节(options -> general -> Number of opcode bytes (non-graph)  输入4)\n16. thumb 指令函数地址计算方式： so 基址 + 函数在 so 中的偏移 + 1  \n17. arm 指令函数地址计算方式： so 基址 + 函数在 so 中的偏移\n\n\n## Frida_inline Hook\n\n> [!NOTE] 什么是inlinehook？\n> Inline hook（内联钩子）是一种在程序运行时修改函数执行流程的技术。**它通过修改函数的原始代码，将目标函数的执行路径重定向到自定义的代码段，从而实现对目标函数的拦截和修改。**\n简单来说就是可以对任意地址的指令进行hook读写操作\n\n常见inlinehook框架:\n\n18. [Android-Inline-Hook](https://github.com/ele7enxxh/Android-Inline-Hook)\n19. [whale](https://github.com/asLody/whale)\n20. [Dobby](https://github.com/jmpews/Dobby)\n21. [substrate](http://www.cydiasubstrate.com/)\n\n\n### 代码\n**PS**：Frida的inlinehook不是太稳定，崩溃是基操，另外新版的frida兼容性会比较好\n```js\nfunction inline_hook() {\n    var soAddr = Module.findBaseAddress(\"lib52pojie.so\");\n    if (soAddr) {\n        var func_addr = soAddr.add(0x10428);\n        Java.perform(function () {\n            Interceptor.attach(func_addr, {\n                onEnter: function (args) {\n                    console.log(this.context.x22); //注意此时就没有args概念了\n                    this.context.x22 = ptr(1); //赋值方法参考上一节课\n                },\n                onLeave: function (retval) {\n                }\n            }\n            )\n        })\n    }\n}\n\n```\n\n### 其它\n22. 将地址的指令解析成汇编\n```js\nvar soAddr = Module.findBaseAddress(\"lib52pojie.so\");\nvar codeAddr = Instruction.parse(soAddr.add(0x10428));\nconsole.log(codeAddr.toString());\n```\n23. Frida Api\n[arm转hex](https://armconverter.com/)\n```js\nvar soAddr = Module.findBaseAddress(\"lib52pojie.so\");\nvar codeAddr = soAddr.add(0x10428);\nMemory.patchCode(codeAddr, 4, function(code) {\n    const writer = new Arm64Writer(code, { pc: codeAddr });\n    writer.putBytes(hexToBytes(\"20008052\"));\n    writer.flush();\n});\nfunction hexToBytes(str) {\n    var pos = 0;\n    var len = str.length;\n    if (len % 2 != 0) {\n        return null;\n    }\n    len /= 2;\n    var hexA = new Array();\n    for (var i = 0; i < len; i++) {\n        var s = str.substr(pos, 2);\n        var v = parseInt(s, 16);\n        hexA.push(v);\n        pos += 2;\n    }\n    return hexA;\n}\n```\n\n## 主动调用\n\n>使用frida主动调用APP中的函数。\n\n参考链接：[nativefunction](https://frida.re/docs/javascript-api/#nativefunction)\n\n| 数据类型 | 描述             |\n|---------|------------------|\n| void    | 无返回值         |\n| pointer | 指针             |\n| int     | 整数             |\n| long    | 长整数           |\n| char    | 字符             |\n| float   | 浮点数           |\n| double  | 双精度浮点数     |\n| bool    | 布尔值           |\n\n\n```js\nvar funcAddr = Module.findBaseAddress(\"lib52pojie.so\").add(0x1054C);\n//声明函数指针\n//NativeFunction的第一个参数是地址，第二个参数是返回值类型，第三个[]里的是传入的参数类型(有几个就填几个)\nvar aesAddr = new NativeFunction(funcAddr , 'pointer', ['pointer', 'pointer']);\nvar encry_text = Memory.allocUtf8String(\"OOmGYpk6s0qPSXEPp4X31g==\");    //开辟一个指针存放字符串       \nvar key = Memory.allocUtf8String('wuaipojie0123456'); \nconsole.log(aesAddr(encry_text ,key).readCString());\n\n```\n\njni的主动调用\n参考java的主动调用，简单快捷\n\n## Frida常用功能实现\n\n前置知识：[](/notes/n-609ad4e4ccd3483c81e98a4f389550e0/#h-7fd91a5684edd89b0087)\n### 枚举所有的类与类的所有方法\n```js\nfunction hookTest7(){\n    Java.perform(function(){\n        //枚举所有的类与类的所有方法,异步枚举\n        Java.enumerateLoadedClasses({\n            onMatch: function(name,handle){\n\t            //过滤类名\n                if(name.indexOf(\"com.zj.wuaipojie.Demo\") !=-1){\n                    console.log(name);\n                    var clazz =Java.use(name);\n                    console.log(clazz);\n                    var methods = clazz.class.getDeclaredMethods();\n                    console.log(methods);\n                }\n            },\n            onComplete: function(){}\n        })\n    })\n}\n\n```\n\n### 枚举所有方法\n```js\nfunction hookTest8(){\n    Java.perform(function(){\n        var Demo = Java.use(\"com.zj.wuaipojie.Demo\");\n        //getDeclaredMethods枚举所有方法\n        var methods =Demo.class.getDeclaredMethods();\n        for(var j=0; j < methods.length; j++){\n            var methodName = methods[j].getName();\n            console.log(methodName);\n            for(var k=0; k<Demo[methodName].overloads.length;k++){\n                Demo[methodName].overloads[k].implementation = function(){\n                    for(var i=0;i<arguments.length;i++){\n                        console.log(arguments[i]);\n                    }\n                    return this[methodName].apply(this,arguments);\n                }\n            }\n        }\n    })\n}\n\n```\n\n\n### 枚举导入导出表\n\n24. **导出表（Export Table）**：列出了库中可以被其他程序或库访问的所有公开函数和符号的名称。\n25. **导入表（Import Table）**：列出了库需要从其他库中调用的函数和符号的名称。\n\n简而言之，导出表告诉其他程序：“这些是我提供的功能。”，而导入表则表示：“这些是我需要的功能。”。\n\n```js\nfunction hookTest1(){\n    Java.perform(function(){\n        //打印导入表\n        var imports = Module.enumerateImports(\"lib52pojie.so\");\n        for(var i =0; i < imports.length;i++){\n            if(imports[i].name == \"vip\"){\n                console.log(JSON.stringify(imports[i])); //通过JSON.stringify打印object数据\n                console.log(imports[i].address);\n            }\n        }\n        //打印导出表\n        var exports = Module.enumerateExports(\"lib52pojie.so\");\n        for(var i =0; i < exports.length;i++){\n            console.log(JSON.stringify(exports[i]));\n        }\n        \n    })\n}\n```\n\n# Frida辅助工具(Objection)\n\n## 什么是objection\nobjection是基于frida的命令行hook集合工具, 可以让你不写代码, 敲几句命令就可以对java函数的高颗粒度hook, 还支持RPC调用。可以实现诸如内存搜索、类和模块搜索、方法hook打印参数返回值调用栈等常用功能，是一个非常方便的，逆向必备、内存漫游神器。\n\n[项目地址](https://github.com/sensepost/objection)\n## objection环境配置\n\n**Objection已不更新，要和frida的版本匹配**\n\n```\npip install objection==1.11.0\npip install frida-tools==9.2.4   (PS: frida 14.2.18)\n```\n\n## objection快速上手\n\n[Objection的安装和简单使用 - 乔瑞 - 博客园 (cnblogs.com)](https://www.cnblogs.com/qiaorui/p/13455420.html)\n\n\n26. 附加模式注入: `objection -g 包名 explore`\n27. Spawn模拟注入: `objection -g packageName explore --startup-command 'android hooking watch xxx'`\n\n## objection基础api\n28. `memory list modules`   -查看内存中加载的库\n29. `memory list exports so名称` - 查看库的导出函数\n30. `android intent launch_activity 类名` -启动`activity`或`service`(可以用于一些没有验证的activity,在一些简单的ctf中有时候可以出奇效)\n31. `android sslpinning disable` -关闭ssl校验\n32. `android root disable` -关闭root检测 \n\n## android heap\n\n33. `android heap search instances com.android.settings.DisplaySettings` -堆内存中搜索指定类的实例, 可以获取该类的实例id\n34. `android heap execute 0x2526 getPreferenceScreenResId` -直接调用指定实例下的方法\n35. `android heap evaluate 0x2526` -自定义frida脚本, 执行实例的方法\n\n## objection Hook\n\n36. `android hooking list activities或services` -查看内存中加载的activity或services\n37. `android hooking watch class_method com.xxx.xxx.methodName --dump-args --dump-backtrace --dump-return` -hook指定方法, 如果有重载会hook所有重载,如果有疑问可以看 --dump-args : 打印参数 --dump-backtrace : 打印调用栈 --dump-return : 打印返回值 \n38. `android hooking watch class_method java.lang.StringBuilder.toString --dump-return` -获取全部tostring的返回值 \n39. `android hooking watch class_method android.app.Dialog.show --dump-args --dump-backtrace --dump-return` -弹窗\n40. `android hooking watch class com.xxx.xxx ` -hook指定类, 会打印该类下的所以调用 \n41. `android hooking set return_value com.xxx.xxx.methodName false` -设置返回值(只支持bool类型) \n42. `android hooking watch class_method 类名.$init` -hook 类的构造方法\n43. `android hooking list classes` -列出内存中所有的类(结果比静态分析的更准确)\n44. `android hooking search classes` 关键类名 -在内存中所有已加载的类中搜索包含特定关键词的类\n45. `android hooking search methods` 关键方法名 -在内存中所有已加载的类的方法中搜索包含特定关键词的方法(一般不建议使用，特别耗时，还可能崩溃)\n46. `android hooking list class_methods` 类名 -内存漫游类中的所有方法\n\n\n# 其它\n\n## Frida写数据\n\n```js\n//一般写在app的私有目录里，不然会报错:failed to open file (Permission denied)(实际上就是权限不足)\nvar file_path = \"/data/user/0/com.zj.wuaipojie/test.txt\";\nvar file_handle = new File(file_path, \"wb\");\nif (file_handle && file_handle != null) {\n        file_handle.write(data); //写入数据\n        file_handle.flush(); //刷新\n        file_handle.close(); //关闭\n}\n```\n\n\n## 日志输出语法区别\n\n| 日志方法 | 描述 | 区别 |\n|---|---|---|\n| `console.log()` | 使用JavaScript直接进行日志打印 | 多用于在CLI模式中，`console.log()`直接输出到命令行界面，使用户可以实时查看。在RPC模式中，`console.log()`同样输出在命令行，但可能被Python脚本的输出内容掩盖。 |\n| `send()` | Frida的专有方法，用于发送数据或日志到外部Python脚本 | 多用于RPC模式中，它允许JavaScript脚本发送数据到Python脚本，Python脚本可以进一步处理或记录这些数据。 |\n\n## Hook_dlopen\n\n根据so加载流程：[SO 加载与初始化流程](/notes/n-569d0c18845340eea0b3eda45fe9828e/#h-e6a4cd7e51fc7d4c541e)\n\n通过HOOK某几个函数，可以做到检测SO文件的加载：\n47. [dlopen源码](http://aospxref.com/android-8.0.0_r36/xref/bionic/libdl/libdl.c?r=&mo=4035&fi=101#101)\n48. [android_dlopen_ext源码](http://aospxref.com/android-8.0.0_r36/xref/bionic/libdl/libdl.c#146)\n\n```js\nfunction hook_dlopen() {\n    var dlopen = Module.findExportByName(null, \"dlopen\");\n    Interceptor.attach(dlopen, {\n        onEnter: function (args) {\n            var so_name = args[0].readCString();\n            if (so_name.indexOf(\"lib52pojie.so\") >= 0) this.call_hook = true;\n        }, onLeave: function (retval) {\n            if (this.call_hook) hookTest2();\n        }\n    });\n    // 高版本Android系统使用android_dlopen_ext\n    var android_dlopen_ext = Module.findExportByName(null, \"android_dlopen_ext\");\n    Interceptor.attach(android_dlopen_ext, {\n        onEnter: function (args) {\n            var so_name = args[0].readCString();\n            if (so_name.indexOf(\"lib52pojie.so\") >= 0) this.call_hook = true;\n        }, onLeave: function (retval) {\n            if (this.call_hook) hookTest2();\n        }\n    });\n}\n```\n\n\n\n\n## 借助IDA脚本实现一键式hook\n\n通过IDA插件，实现一键生成Frida Hook脚本\n![9511228bcb414549d88b4071ccabc3b6&#95;MD5&#46;jpg](/notes/n-609ad4e4ccd3483c81e98a4f389550e0/media/93bbbc3fd5ca98d2635d16447e5a8491feb9bf9f980fe0cc88450210b5ba629e.jpg)\n\n[IDA&Frida 学习](https://www.52pojie.cn/forum.php?mod=viewthread&tid=1759879&highlight=frida)\n\n\n## Frida Rpc用法\n```python\nimport frida\n\nimport os\n\n  \n\ndef adbforward():\n\n    os.system(\"adb forward tcp:27042 tcp:27042\")\n\n    os.system(\"adb forward tcp:27043 tcp:27043\")\n\n  \n\nhook_code = '''\n\nrpc.exports = {\n\n    gethello: function(str){\n\n        send('heelo');\n\n        Java.perform(function(){\n\n  \n\n            //拿到context上下文\n\n           var currentApplication = Java.use('android.app.ActivityThread').currentApplication();\n\n            var context = currentApplication.getApplicationContext();\n\n  \n  \n\n            var AuthUtils = Java.use('com.coolapk.market.util.AuthUtils');\n\n            //f = tt.$new();\n\n            var sig = AuthUtils.getAS(context, str);\n\n            send(sig);\n\n        }\n\n    )\n\n    }\n\n};\n\n'''\n\n  \n\ndef on_message(message, data):\n\n    if message['type'] == 'send':\n\n        print(message['payload'])\n\n    elif message['type'] == 'error':\n\n        print(message['stack'])\n\n  \n\nprocess = frida.get_usb_device().attach(3970)# 这里填字符串就是通过字符串  填数字就是通过PID\n\nscript = process.create_script(hook_code)\n\nscript.on('message', on_message)\n\nscript.load()\n\nprint(script.exports.gethello('weuhhfb345684533sde6jkfg'))\n```\n",
+  "id": "609ad4e4-ccd3-483c-81e9-8a4f389550e0",
+  "metadata": {
+    "title": "Frida"
+  },
+  "resources": [
+    "93bbbc3fd5ca98d2635d16447e5a8491feb9bf9f980fe0cc88450210b5ba629e.jpg"
+  ],
+  "url": "/notes/n-609ad4e4ccd3483c81e98a4f389550e0/"
+}

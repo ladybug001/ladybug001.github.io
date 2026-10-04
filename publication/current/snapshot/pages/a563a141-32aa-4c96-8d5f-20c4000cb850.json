@@ -1,0 +1,513 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-f46648499e09bdf83ce2",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-5ff627017142847c9f9e",
+      "kind": "heading",
+      "offset": 140
+    },
+    {
+      "id": "h-aba8e2f72828e82ff0f6",
+      "kind": "heading",
+      "offset": 195
+    },
+    {
+      "id": "h-0a63f34777d1b8aa8cc2",
+      "kind": "heading",
+      "offset": 657
+    },
+    {
+      "id": "h-5c43c8de20628b990470",
+      "kind": "heading",
+      "offset": 2903
+    },
+    {
+      "id": "h-cabf10228c3748eba177",
+      "kind": "heading",
+      "offset": 2926
+    },
+    {
+      "id": "h-d51ff87d50577035649f",
+      "kind": "heading",
+      "offset": 2945
+    },
+    {
+      "id": "h-465e72a1cf305329240e",
+      "kind": "heading",
+      "offset": 3319
+    },
+    {
+      "id": "h-06518c44d9bcce9d5eb3",
+      "kind": "heading",
+      "offset": 4410
+    },
+    {
+      "id": "h-0638a622980fb725cde6",
+      "kind": "heading",
+      "offset": 5944
+    },
+    {
+      "id": "h-87d609c8f2c692071034",
+      "kind": "heading",
+      "offset": 6942
+    },
+    {
+      "id": "h-8ad0ec428ce0beb771a8",
+      "kind": "heading",
+      "offset": 8527
+    },
+    {
+      "id": "h-81da72c9ace4f6d13a2b",
+      "kind": "heading",
+      "offset": 9557
+    },
+    {
+      "id": "h-9c68db8aceffb7a63f66",
+      "kind": "heading",
+      "offset": 10837
+    },
+    {
+      "id": "h-7032dda69f7d4f87cea6",
+      "kind": "heading",
+      "offset": 11245
+    },
+    {
+      "id": "h-35143f7183902e4f8b35",
+      "kind": "heading",
+      "offset": 11289
+    },
+    {
+      "id": "h-60a4f628da9eb882f495",
+      "kind": "heading",
+      "offset": 12054
+    },
+    {
+      "id": "h-df7443260c0801bb743a",
+      "kind": "heading",
+      "offset": 12360
+    },
+    {
+      "id": "h-ba6e56d7e5a0b6b0ab71",
+      "kind": "heading",
+      "offset": 12884
+    },
+    {
+      "id": "h-5522d66483f6865d5ef2",
+      "kind": "heading",
+      "offset": 13490
+    },
+    {
+      "id": "h-0de2af780bff77cbba58",
+      "kind": "heading",
+      "offset": 13869
+    },
+    {
+      "id": "h-c61eeca9e03e3bd55ba5",
+      "kind": "heading",
+      "offset": 14513
+    },
+    {
+      "id": "h-7b0bffe37c6d5e09f657",
+      "kind": "heading",
+      "offset": 15320
+    },
+    {
+      "id": "h-2088a0b67fa95455dc89",
+      "kind": "heading",
+      "offset": 17026
+    },
+    {
+      "id": "h-70c8e961256039a8f84d",
+      "kind": "heading",
+      "offset": 17225
+    },
+    {
+      "id": "h-e1c35239a89f272274eb",
+      "kind": "heading",
+      "offset": 17256
+    },
+    {
+      "id": "h-63879935415aa1e752ed",
+      "kind": "heading",
+      "offset": 17412
+    },
+    {
+      "id": "h-373d7693e2303f7932f1",
+      "kind": "heading",
+      "offset": 18412
+    },
+    {
+      "id": "h-fa6bff900d0170c96917",
+      "kind": "heading",
+      "offset": 19496
+    },
+    {
+      "id": "h-d481610a8831e1734930",
+      "kind": "heading",
+      "offset": 19842
+    },
+    {
+      "id": "h-e305997203876f7bd221",
+      "kind": "heading",
+      "offset": 20110
+    },
+    {
+      "id": "h-5382ad87b6ef0834c94f",
+      "kind": "heading",
+      "offset": 20420
+    },
+    {
+      "id": "h-9a9b96263c680d7eb384",
+      "kind": "heading",
+      "offset": 21103
+    },
+    {
+      "id": "h-bca726111321c1aeae77",
+      "kind": "heading",
+      "offset": 21640
+    },
+    {
+      "id": "h-1c653ebce00e9766be4b",
+      "kind": "heading",
+      "offset": 22510
+    },
+    {
+      "id": "h-6f4f9d165ed3971e5471",
+      "kind": "heading",
+      "offset": 22965
+    },
+    {
+      "id": "h-094929fb1190100304c8",
+      "kind": "heading",
+      "offset": 24463
+    },
+    {
+      "id": "h-01cdd8b50e7e67095ce4",
+      "kind": "heading",
+      "offset": 24486
+    },
+    {
+      "id": "h-1daf1e463f0df6b2714c",
+      "kind": "heading",
+      "offset": 25497
+    },
+    {
+      "id": "h-5ecddf2deae575772293",
+      "kind": "heading",
+      "offset": 26596
+    },
+    {
+      "id": "h-4274ae4f0334b7b51eec",
+      "kind": "heading",
+      "offset": 27173
+    },
+    {
+      "id": "h-b2e444ae5c9b4a8af66d",
+      "kind": "heading",
+      "offset": 27983
+    },
+    {
+      "id": "h-cd2b5f7afa7059d786c8",
+      "kind": "heading",
+      "offset": 28257
+    },
+    {
+      "id": "h-92b44d3ccdd14ba3ffe4",
+      "kind": "heading",
+      "offset": 29478
+    },
+    {
+      "id": "h-27deb23a1e0fbed25535",
+      "kind": "heading",
+      "offset": 30692
+    },
+    {
+      "id": "h-b907010aa17844ab08ce",
+      "kind": "heading",
+      "offset": 31302
+    },
+    {
+      "id": "h-7b79c98f25cbec442238",
+      "kind": "heading",
+      "offset": 31818
+    },
+    {
+      "id": "h-e51b1bf165cb7d2b994b",
+      "kind": "heading",
+      "offset": 32218
+    },
+    {
+      "id": "h-0f476996e061e5200317",
+      "kind": "heading",
+      "offset": 32495
+    },
+    {
+      "id": "h-29d63bd1c40b2c5d86e7",
+      "kind": "heading",
+      "offset": 32514
+    },
+    {
+      "id": "h-1c08d990dd77807034ed",
+      "kind": "heading",
+      "offset": 32675
+    },
+    {
+      "id": "h-675568a636caf4f0334e",
+      "kind": "heading",
+      "offset": 33019
+    },
+    {
+      "id": "h-16d64f6ff85a35f3ecef",
+      "kind": "heading",
+      "offset": 33423
+    },
+    {
+      "id": "h-a53f0c34023b99fcf205",
+      "kind": "heading",
+      "offset": 33700
+    },
+    {
+      "id": "h-527482100e065e80b88d",
+      "kind": "heading",
+      "offset": 34192
+    },
+    {
+      "id": "h-3d9371d30819f87072a2",
+      "kind": "heading",
+      "offset": 35454
+    },
+    {
+      "id": "h-40fc5b9d02b446a19273",
+      "kind": "heading",
+      "offset": 36359
+    },
+    {
+      "id": "h-3d8a08d49e35d260a32d",
+      "kind": "heading",
+      "offset": 37213
+    },
+    {
+      "id": "h-697fc9e2a9ecf2462528",
+      "kind": "heading",
+      "offset": 38610
+    },
+    {
+      "id": "h-e87c6b1320d73f15f714",
+      "kind": "heading",
+      "offset": 39754
+    },
+    {
+      "id": "h-12a30ded3da5b376ab5e",
+      "kind": "heading",
+      "offset": 39910
+    },
+    {
+      "id": "h-35f42bb0f10ba1642ecd",
+      "kind": "heading",
+      "offset": 41041
+    },
+    {
+      "id": "h-26392acc53834020e810",
+      "kind": "heading",
+      "offset": 41532
+    },
+    {
+      "id": "h-653c34bb5ee8c1c9a4c0",
+      "kind": "heading",
+      "offset": 41964
+    },
+    {
+      "id": "h-4cd9171539f6b335c781",
+      "kind": "heading",
+      "offset": 43819
+    },
+    {
+      "id": "h-3630536a8ad4f06a0f17",
+      "kind": "heading",
+      "offset": 44883
+    },
+    {
+      "id": "h-ad632096e50cb2f80284",
+      "kind": "heading",
+      "offset": 45391
+    },
+    {
+      "id": "h-fa5005cc1b7577533bb1",
+      "kind": "heading",
+      "offset": 45512
+    },
+    {
+      "id": "h-721bfe2111db74e6c271",
+      "kind": "heading",
+      "offset": 45987
+    },
+    {
+      "id": "h-ec04af7a17b0e191b72f",
+      "kind": "heading",
+      "offset": 46750
+    },
+    {
+      "id": "h-ffb65f5d691b33de29f5",
+      "kind": "heading",
+      "offset": 47915
+    },
+    {
+      "id": "h-f504d1d8fcead51b98c1",
+      "kind": "heading",
+      "offset": 48048
+    },
+    {
+      "id": "h-9ad8997c31ec3fa2659a",
+      "kind": "heading",
+      "offset": 49056
+    },
+    {
+      "id": "h-c3e53083bc20e8a0d01a",
+      "kind": "heading",
+      "offset": 50338
+    },
+    {
+      "id": "h-4bdc1af00f54ebb07d95",
+      "kind": "heading",
+      "offset": 50533
+    },
+    {
+      "id": "h-f9e624fb3a5ee3a31c5a",
+      "kind": "heading",
+      "offset": 50930
+    },
+    {
+      "id": "h-793b3633cc849d99d7c1",
+      "kind": "heading",
+      "offset": 51196
+    },
+    {
+      "id": "h-0803131898bf2cff8004",
+      "kind": "heading",
+      "offset": 51573
+    },
+    {
+      "id": "h-fb3fd127eb65aea5b645",
+      "kind": "heading",
+      "offset": 52865
+    },
+    {
+      "id": "h-1a090df5dff86b07a846",
+      "kind": "heading",
+      "offset": 53152
+    },
+    {
+      "id": "h-081ceecc0387ed37b76a",
+      "kind": "heading",
+      "offset": 53509
+    },
+    {
+      "id": "h-4ca2f801660632c50355",
+      "kind": "heading",
+      "offset": 53632
+    },
+    {
+      "id": "h-3b920917a139c43cce39",
+      "kind": "heading",
+      "offset": 54234
+    },
+    {
+      "id": "h-eeeebaeb6151847e076c",
+      "kind": "heading",
+      "offset": 55074
+    },
+    {
+      "id": "h-f560165bae4ba7f0433e",
+      "kind": "heading",
+      "offset": 55834
+    }
+  ],
+  "body": "# Windows 进程创建（01）：用户态创建流程\n\n> [!note] 阅读导航\n> 本组笔记总览见 [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)。\n\n## 概览与函数签名\n\n分析工具：\n1. IDA\n2. Vmware\n3. Windows XP 虚拟机\n\n### 分析背景与范围\n\n创建子进程时，最先调用的 API 是 `CreateProcess`。它是一个宏，背后会根据字符集展开为 A 或 W 版本；这里以 W 版本为例分析创建过程。\n> 相关内容：[CreateProcess 函数概览](/notes/n-c2ee979bfba343668b3e7567f93782c4/)\n\n\n如下所示是 `CreateProcessW`  函数的完整汇编代码，可以看到直接调用了另一个函数 `_CreateProcessInternalW`，同时多传入了两个参数，**但参数值都是 0**：\n![626550565ae93d17acfa8374123d501a&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/de3f62b50bec2d2186658360fd732c19db32ae9ed9676bcb62470e4fb0143044.jpg)\n\n\n### `_CreateProcessInternalW` 函数原型\n\n\n该函数的签名：\n```c\n// 下方为还原后的近似签名（反编译器部分参数识别为 int，实际应为 Windows SDK 对应的类型）\nint __stdcall CreateProcessInternalW(\n    HANDLE hToken,                           // 用户访问令牌 (CreateProcessAsUser 场景)\n    const WCHAR *lpApplicationName,          // 应用程序路径（可为 NULL）\n    wchar_t *lpCommandLine,                  // 命令行字符串（可为 NULL）\n    LPSECURITY_ATTRIBUTES lpProcessAttributes, // 进程安全属性 SECURITY_ATTRIBUTES\n    LPSECURITY_ATTRIBUTES lpThreadAttributes,  // 线程安全属性 SECURITY_ATTRIBUTES\n    BOOL bInheritHandles,                    // 是否继承父进程中可继承的句柄；本文路径中父进程即当前调用进程\n    DWORD dwCreationFlags,                   // 创建标志 (CREATE_SUSPENDED, DETACHED_PROCESS 等)\n    WCHAR *lpEnvironment,                    // 环境变量块指针（NULL 则继承父进程环境；本文路径中父进程即当前调用进程）\n    const WCHAR *lpCurrentDirectory,         // 子进程工作目录（NULL 则继承父进程当前目录；本文路径中父进程即当前调用进程）\n    const void *lpStartupInfo,               // STARTUPINFO 结构体指针\n    struct _CLIENT_ID *lpProcessInformation, // [输出] PROCESS_INFORMATION 结构体\n    HANDLE *phNewToken                       // [输出] 新 Token 句柄（仅 CreateProcessAsUser）\n);\n```\n\n> **返回值**：`1` (TRUE) 表示成功，`0` (FALSE) 表示失败，失败原因通过 `SetLastError` 设置。\n\n> **输出参数 `lpProcessInformation`**：在函数入口处被清零 (`UniqueProcess = 0, UniqueThread = 0, dwProcessId = 0, dwThreadId = 0`)，仅在所有步骤全部成功后才被填充有效值。\n\n`_CreateProcessInternalW` 的核心逻辑：\n1. 先整理调用者传入的参数，包括创建标志、环境变量块、`STARTUPINFO` 和输出参数。\n2. 进入主循环，根据 `lpApplicationName` 或 `lpCommandLine` 解析目标程序路径，并完成 DOS 路径到 NT 路径的转换。\n3. 打开候选文件，尝试创建 `SEC_IMAGE` 类型的 Section，并根据返回状态区分普通 PE、脚本、DOS/Win16 兼容路径或失败路径。\n4. 如果命中脚本、IFEO、POSIX、VDM/WOW 等包装场景，就改写命令行并重新进入主循环；如果是普通 PE，则继续读取映像元数据并完成安全、架构、子系统和版本校验。\n5. 调用 `NtCreateProcessEx` 创建进程对象和 PEB，再把命令行、工作目录、环境变量、`STARTUPINFO` 等参数写入新进程。\n6. 分配主线程用户栈，初始化线程上下文，调用 `NtCreateThread` 以挂起状态创建主线程。\n7. 向 CSRSS/Base Server 发送创建进程消息完成子系统登记，随后根据 `CREATE_SUSPENDED` 决定是否唤醒主线程，并填充 `PROCESS_INFORMATION`。\n\n接下来分析 `_CreateProcessInternalW`，但使用 IDA 的可视化功能查看，发现逻辑相当复杂：\n![dc296e5d2e7e4b25f74f5e8efe8b725a&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/523c8d4b0fc77daa2388c2b4aeecc6a60809b1c2d4f79909706b2414c774976e.jpg)\n\n流程很复杂，逐行分析汇编成本太高，因此这里使用 IDA 的 F5 功能，通过伪代码和关键调用来把握主线。\n> **注意**：分析时重点关注函数调用，一方面是简化阅读压力；另一方面是区分用户态编排和内核态落地。用户态负责参数整理、路径解析、兼容性处理和 CSRSS 协调；进程对象、地址空间和线程对象等核心内核资源最终由系统调用进入内核完成。\n\n## 阶段一：路径处理与主循环调度阶段\n\n### 阶段 1：参数初始化与创建标志解析\n#### 1.1 参数复制与输出清零\n\n函数开头的一大坨反汇编，主要是初始化局部变量，还有一些赋值。将传入参数赋值给局部变量以便后续处理。\n\n**关键细节 —— 输出参数立即清零**：\n\n![0d1083a8d640865aec1cc6964f420c19&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/89496eada9d0bb506748f7f600d0f56aacb1687a21e637e7caec6ffea53e5014.jpg)\n\n两个输出参数 `lpProcessInformation` 和 `phNewToken` 都被默认设置为 0，这意味着如果函数执行中途失败，调用者拿到的 `PROCESS_INFORMATION` 全部是零值。\n\n#### 1.2 创建标志清理与互斥校验\n\n进入正式创建流程前，因为调用者传入的 `dwCreationFlags` 中有些创建标志位在语义上互斥，不能同时出现所以要做一些检查。\n\n> 完整的 `dwCreationFlags` 标志及本地副本 `dwCreationFlagsa` 的含义如下图所示：\n> ![5e73b26a7a17fe648f3960b0595c2244&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/5d6e0d40ae8562f2c3a42f4e3be0ceed16cacdbba58f8357b8172d5cad48f475.jpg)\n\n**创建标志清理**：\n\n先清理部分内部单独处理的标志：\n\n\n![72857c8770993eb371cb5d63e9a1721e&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/e7a4866218e7f63eb31836b607529bcc435136c1f38ce2b143a40c93afbf1c2f.jpg)\n\n\n**互斥标志校验**：\n\n再检查是否存在互斥组合，例如 `DETACHED_PROCESS (0x8)` 与 `CREATE_NEW_CONSOLE (0x10)` 如果命中非法组合，就 `SetLastError(ERROR_INVALID_PARAMETER)` 并返回失败：\n\n![e095b10f8b4638d2dc6964b6fe102b95&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/afa1659c699edddddf7ffc06e7475f41ae8fd9cd4373cccaff0ce1414fabbade.jpg)\n\n后续还会检查 `CREATE_SEPARATE_WOW_VDM (0x800)` 与 `CREATE_SHARED_WOW_VDM (0x1000)` 是否同时存在：\n![536cdf81bacf35fe8fcb5dea13d27ff4&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/8209bcd4ada4955b82c3ece1e0cc0747460902ab36deeb006345508d3d58e356.jpg)\n\n#### 1.3 优先级类提取\n\n接下来是提取创建标志 `dwCreationFlags` 中的优先级位，并映射为内部编号，然后放入 `v241` 中：\n![8c9482b2c0a86ce6ef0ec3f0f07610ec&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/312f47a65b422e874081e696cfdd03591f697fbd450b837fb2457ff466320d22.jpg)\n\n创建进程时，需指定该进程的优先级类（Priority Class），它描述了该进程内所有线程在 CPU 调度时的基础时间片分配权重和调度优先级，也决定了它能不能抢占别人、被别人抢占。\n> 参考：[Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/)\n\n\n各优先级位的含义见下表：\n> 按照优先级从低到高的顺序来的。\n\n| 标志位      | 常量名                         | 含义                                | v241 值 |\n| -------- | --------------------------- | --------------------------------- | ------ |\n| `0x40`   | IDLE_PRIORITY_CLASS         | 空闲优先级。仅在系统处于空闲状态时才运行（如屏幕保护程序）     | 1      |\n| `0x4000` | BELOW_NORMAL_PRIORITY_CLASS | 低于常规优先级。高于空闲优先级，适合后台密集计算          | 5      |\n| `0x20`   | NORMAL_PRIORITY_CLASS       | 默认优先级。适用于没有任何特殊调度需求的常规进程          | 2      |\n| `0x8000` | ABOVE_NORMAL_PRIORITY_CLASS | 高于常规优先级。低于高优先级，适合前台响应要求高的应用       | 6      |\n| `0x80`   | HIGH_PRIORITY_CLASS         | 高优先级。用于必须立即执行的任务（如任务管理器），需谨慎使用    | 3      |\n| `0x100`  | REALTIME_PRIORITY_CLASS     | 实时优先级。最高优先级，会抢占系统线程（可能导致鼠标/键盘无响应） | 4 或 3  |\n\n> **REALTIME 的特殊处理**：调用 `BasepIsRealtimeAllowed(0)` 检查当前进程（也就是本次调用 `CreateProcessInternalW` 的进程）是否拥有 `SE_INC_BASE_PRIORITY_PRIVILEGE` 权限。有权限 → `v241 = 4`，无权限 → 降级为 `v241 = 3 (HIGH)`。\n\n提取完毕后，使用掩码清除原始标志中的所有优先级相关位：\n![8494b71c0d243740180b9349e029812d&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/f76f56a45e8c50dbf0a3673b12f8d68ebc28a9e56f1cc554d03db1a8116a79cd.jpg)\n\n#### 1.4 Job 对象探测\n\n**补充**：什么是 JOB？Job 对象可以把多个进程作为一个组进行管理，并可对该组设置 CPU 时间、内存、活动进程数量、UI 等限制。若配置了 `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`，当 Job 对象最后一个句柄被关闭时，系统会终止该 Job 中仍存活的进程。\n\n接下来的代码逻辑：\n\n![00bba2dbad75404799f10d837a1ebcb7&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/8e7c32b20cbd70bff586cc51d93f04fb13b544e4e8c882279f9c81b7a673ed4d.jpg)\n\n如果用户没有指定 `CREATE_SEPARATE_WOW_VDM (0x800)`，并且父进程处在 Job 对象中，那么强制去除创建标志中的 `CREATE_SHARED_WOW_VDM`，并且加上 `CREATE_SEPARATE_WOW_VDM` 标志。本文这条 `CreateProcessInternalW` 路径中，父进程就是当前调用进程，所以代码通过查询当前进程来判断父进程的 Job 状态：\n> 什么是 VDM 什么是 WOW，参考：[V86 与 NTVDM 原理](/notes/n-5d9fe21a449d47cda78d3275b62070e0/)\n\n\n**这样做的目的是**：对于处于 Job 中的父进程，如果 Win16 任务继续复用一个还承载其他任务的共享 WOW VDM，则 Job 的资源限制、生命周期管理等可能会影响到其它 VDM 任务。因此这里强制改为独立 VDM 模式，使对应 Win16 任务获得独立的 VDM 进程。\n\n```c\nNtQueryInformationJobObject(0, JobObjectBasicUIRestrictions, JobInformation, 4, 0)\n```\n- **功能**：查询当前进程自身是否在某个 Job 中。\n- **如何判断**：\n\t- 返回值为 `STATUS_ACCESS_DENIED (0xC0000022)` → 不在 Job 中；\n\t- 其他返回 → 在 Job 中。\n\n---\n\n### 阶段 2：环境变量块处理\n\n当 `lpEnvironment != NULL` 且未设置 `CREATE_UNICODE_ENVIRONMENT (0x400)` 标志时，说明传入的是 ANSI 格式环境块，需要转换为 Unicode：\n\n![b9ad4e82fb5534f5b5eac81e7eacf3d4&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/ce5d4195e8b31285772f9cfe6b46f26f89b4fdce08b2655eef131e4cb605b560.jpg)\n\n| 步骤  | 函数调用                                                                   | 说明                                          |\n| --- | ---------------------------------------------------------------------- | ------------------------------------------- |\n| 1   | 手动遍历                                                                   | 逐字节扫描到连续两个 `\\0` 以确定 ANSI 环境块的总长度            |\n| 2   | `NtAllocateVirtualMemory(0xFFFFFFFF, ..., MEM_COMMIT, PAGE_READWRITE)` | 在当前进程分配 2 倍大小的虚拟内存                          |\n| 3   | `RtlAnsiStringToUnicodeString(&DestinationString, &SourceString, 0)`   | ANSI → Unicode 转换（第 3 参数 = 0 表示使用调用者提供的缓冲区） |\n| 4   | 失败时 `NtFreeVirtualMemory(..., MEM_RELEASE)`                            | 释放已分配的虚拟内存                                  |\n\n转换完成后，更新 `Environment` 指针指向 Unicode 格式环境块缓冲区。\n\n> [!QUESTION] 既然 `CreateProcess` 宏会根据项目的字符集配置自动展开为 `CreateProcessA` 或 `CreateProcessW`，那么进入 `CreateProcessInternalW` 时，普通字符串参数不是已经转换为 Unicode 了吗？为什么 `lpEnvironment` 环境块还需要在该函数中单独判断和转换？\n>\n> **解答**：`CreateProcess` 宏的选择机制来自项目字符集相关宏，例如 `UNICODE` / `_UNICODE`。相关背景可参考：[C&#12289;C&#43;&#43; 字符串编码与 Windows A&#12289;W 接口](/notes/n-9f8bef2496124e2da6233056a60e88ca/)。而 `lpEnvironment` 本质上是一个无类型缓冲区指针，内部可能是 ANSI 环境块，也可能是 Unicode 环境块，因此需要调用方通过 `CREATE_UNICODE_ENVIRONMENT` 告知字符串格式。\n\n### 阶段 3：STARTUPINFO 处理\n\n环境变量块处理完后，接下来要整理 `STARTUPINFO`。这个结构体描述了\n1. 子进程的标准输入/输出/错误流的重定向\n2. 对 GUI 进程，决定子进程主窗口弹出的绝对坐标和宽高\n3. 指定进程在哪个桌面上运行（例如安全桌面 `Winlogon` 或默认的 `Default`）。这涉及到 Windows 站（Window Station）和桌面安全隔离。相关参考：[Windows 窗口站与桌面隔离机制](/notes/n-03cb68347b47416b85e51a2da3d3e18c/)\n4. 等等很多内容。\n\n\n先复制 `STARTUPINFO` 结构体到本地缓冲区，并修正其中互斥字段的组合：\n\n![2c0684a447895469598fc13551446b4f&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/bdb6b9f6a8c893819ebde613a6fd5fa76b35a0e0dd8cb8dd81d710ec28620675.jpg)\n\n```c\nif ( (v151[11] & 0x100) != 0 && (v151[11] & 0x600) != 0 )\n  BYTE1(v151[11]) &= ~1u;\n```\n**标志冲突处理**：如果 `STARTUPINFO` 结构体的 `dwFlags` 成员同时设置了 `STARTF_USESTDHANDLES (0x100)` 和 `STARTF_USEHOTKEY (0x200) | STARTF_HASSHELLDATA (0x400)`，则清除 `STARTF_USESTDHANDLES (0x100)`。\n\n\n三个标志位的含义：\n```\nSTARTF_USESTDHANDLES (0x00000100)  启用标准输入/输出/错误句柄\n\nSTARTF_USEHOTKEY (0x00000200) 告诉系统，STARTUPINFO 结构体中的 hStdInput 字段不再作为标准输入句柄，而是被复用来存储一个热键值（Hotkey）。\n\nSTARTF_HASSHELLDATA (0x00000400) 同上，hStdOutput 字段被复用用来存储其它数据。\n```\n> 可以看到，两者间的互斥关系。\n\n\n### 阶段 4：主循环 —— 进程创建尝试的调度框架\n\n前面的参数、环境和启动信息都只是准备工作。真正的创建尝试从这个 `while(1)` 主循环开始：\n\n![049e3166d402af4950964b7326425b58&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/02af300e3b5ae52e6bcd00f7a694f88dc7393407f756182e001000af3883d068.jpg)\n\n可以看到整个函数的大部分逻辑都在循环体内部。这里的 `while` 循环相当于多次“进程创建尝试”：先解析候选路径，再打开文件、创建映像节、读取 PE 信息并进行兼容性判断；如果发现目标需要包装重载，就改写命令行并回到循环开头重新尝试。\n\n后续的分析的代码都属于这个主循环。标题上将其单独列为“主循环调度”，是为了区分两层结构：\n\n- **控制流结构**：主循环负责一次次尝试、失败重试和包装重载。\n- **知识阶段结构**：路径处理、文件解析、进程/线程创建是理解代码时的三个阅读阶段。\n\n主循环的简化控制流可以概括为：\n\n![b2d4427f11c8fc7e6a97ef7ba6ed95ba&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/b1c4d2baf4c26c28e4d828b54acc721c122f19fab402348971203ca7b9df10b9.jpg)\n\n主循环主要用于实现以下几类重试场景：\n\n**场景一：未加引号的空格路径解析**\n\n若输入的命令行字符串为：\n\n```text\nC:\\Program Files\\App\\app.exe -a\n```\n\n循环体内将启动路径切片重试，依次检索：\n1. `C:\\Program` （未找到，继续）\n2. `C:\\Program Files\\App\\app.exe` （`SearchPathW` 命中，锁定可执行文件，提取后续字符串作为参数）\n\n**场景二：非 Win32 PE 脚本文件的包装重载**\n\n若目标为批处理脚本：\n\n```text\ntest.bat arg1\n```\n\n1. 循环内识别到非 PE 格式。\n2. 命令行重写为：`cmd.exe /c test.bat arg1`。\n3. **`continue` 重入循环**，以 `cmd.exe` 作为新目标重新走一遍路径解析流程。\n\n**场景三：16 位 DOS 程序的兼容重载（仅限 32 位系统）**\n\n若目标为老旧的 16 位可执行文件：\n\n```text\nold.exe\n```\n\n1. 循环内识别到 `IMAGE_FILE_HEADER` 不符合 Win32 规范。\n2. 命令行重写为：`ntvdm.exe old.exe`。\n3. **`continue` 重入循环**，以 `ntvdm.exe` 作为新目标重新进入解析逻辑。\n\n#### 4.1 循环开头的资源清理\n\n每次循环迭代开始时，释放上一轮可能残留的资源：\n![ed8a2edc6b4332dfc630a3927f112232&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/665bea5da46e87cc4c7c885ef4aca62de8380af225985765884a362f7dc49944.jpg)\n```c\nRtlFreeHeap(..., Heap);    Heap = 0;         // 释放 SearchPathW 结果缓冲区\nRtlFreeHeap(..., v173);    v173 = 0;         // 释放 NT 路径字符串\nNtClose(FileHandle);       FileHandle = 0;   // 关闭上一轮的文件句柄\n```\n\n#### 4.2 命令行解析\n\n##### 4.2.1 解析入口：先判断是否存在 lpApplicationName\n\n如下图所示，若 `lpApplicationName` 不为 NULL，会向下跳转并直接进入字符编码转换等逻辑；若为 NULL，则需要解析命令行（`lpCommandLine`）。\n\n![7439feef5185e59f2b7e5acb1a242746&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/654930a0f6a946a8907101163928592496d7a96f23c8e2e445b429e05d6adee3.jpg)\n\n两个变量的示例如下：\n\n```c\nlpApplicationName = L\"C:\\\\Program Files\\\\App\\\\app.exe\";\nlpCommandLine     = L\"app.exe -a -b\";\n```\n\n我们是要创建进程，所以关键是找到执行文件的路径，参数的解析是进程启动后自己要进行的。而 `lpApplicationName` 很简单，只有路径；如果调用者显式提供了它，就可以直接进入下一步。否则，系统只能从 `lpCommandLine` 中拆出可执行文件路径。\n\n**注意**：无论 `lpApplicationName` 是否为空，都会拿到执行文件路径然后进入同一个后续处理逻辑。\n> 无论 `lpApplicationName` 是否非空，`lpCommandLine` 它仍会作为目标进程的完整命令行后续被写入进程 PEB 中，并可由目标进程通过 `GetCommandLine` 取得，由程序自身去解析参数。\n\n**后续以 `lpApplicationName == NULL` 为例，继续分析命令行解析流程。**\n\n##### 4.2.2 分配搜索缓冲区\n\n进入命令行解析后，首先通过 `RtlAllocateHeap(..., 0x208)` 分配 520 字节的搜索缓冲区。\n\n![0ef37c650b403e7aa4e15946e13b3f9c&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/d74d0e7afddd6a2ec273f33a4a84de6e38ae9fcce65c2e52d161f243a2e4254b.jpg)\n\n这个缓冲区后面会交给 `SearchPathW` 使用，用来保存搜索得到的完整路径。\n\n##### 4.2.3 判断引号模式：决定路径截断方式\n\n命令行里最麻烦的是空格。下面两个字符串看起来都可能包含路径，但解析方式完全不同：\n\n```text\n\"C:\\Program Files\\MyApp\\app.exe\" -a -b\n```\n和\n```\nC:\\Program Files\\MyApp\\app.exe -a -b\n```\n\n---\n\n若命令行以双引号 `\"`（ASCII 34）开头，说明是引号模式（令 `v178 = 0`），代码继续向下执行，会在下一个 `\"` 处截断字符，**直接得到文件路径**。\n\n若命令行不是以双引号开头，说明是无引号模式（令 `v178 = 1`），代码会跳转到\"截断尝试\"逻辑处，尝试在空格或 Tab 处截断，然后作为文件路径。\n\n![0394e3b728bd0cca5de063006eb8510d&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/81a2180730b6e746318919528be5cd8f787f8a9bf8abf1db6088de1430d14b7b.jpg)\n\n\n##### 4.2.4 调用 SearchPathW：把候选路径解析为完整路径\n\n无论是否带引号，提取出候选路径后都会走到同一个标签处，调用 `SearchPathW` 查找文件并返回完整路径：\n\n![f085a3349d5a7dab2620bf87c4c4e19e&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/1b6f01c9748c59ca2cb78262325b0d3980e81e0b9e4b9539f751f615edce2ea5.jpg)\n\n\n```c\nSearchPathW(NULL, DosPathName, L\".exe\", 0x104, Heap, NULL)\n```\n\n这里几个参数的含义是：\n\n- 参数 1：`NULL` 表示使用系统标准搜索路径，其中会涉及应用程序目录、调用进程当前目录、32 位系统目录、16 位 System 目录、Windows 目录以及 `PATH`。\n- 参数 2：文件路径；它可能是相对路径，所以要通过 `SearchPathW` 尝试寻找。\n- 参数 3：`L\".exe\"` 为默认扩展名。\n- 参数 4：`0x104 = MAX_PATH (260)` 字符。\n- 参数 5：找到后将完整路径写入该缓冲区。\n- 参数 6：可以忽略。\n- 返回值是宽字符个数，乘以 2 后转换为字节数。\n\n##### 4.2.5 排除目录：确认搜索结果必须是文件\n\n![b7b789ede780385d882d29d29a4341ba&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/a27739b7ce960194ce2c1df4981dbaf49c218949b0e5680466973840f91f86fd.jpg)\n\n如果 `SearchPathW` 返回的路径长度在合适区间内，还需要进一步调用 `GetFileAttributesW(Heap)` 检查搜索到的路径是否为目录。\n\n如果命中 `FILE_ATTRIBUTE_DIRECTORY = 0x10`，说明搜索结果是目录而不是可执行文件，此时会将路径长度置为 0，把它视为 `SearchPathW` 搜索失败。\n\n##### 4.2.6 搜索失败后的绝对路径判断与重试\n![3ee176d55aeb65243c1eb7182a833c4b&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/d32bcb8befdf4e1d35e686e187ffca25de69e2fb4c2b5d99664cb673e2815a0a.jpg)\n\n如果返回的路径长度不在正确区间内，则调用 `RtlDetermineDosPathNameType_U(DosPathName)` 判断当前调用 `SearchPathW` 传入的路径是相对路径还是绝对路径。\n\n- 若是相对路径：肯定用不了，跳过 `CreateFileW` 尝试，后续直接进入失败或重试逻辑。\n- 若是绝对路径：说不定能直接使用，尝试调用 `CreateFileW(DosPathName, GENERIC_READ, ..., OPEN_EXISTING, ...)` ，以确认文件是否存在。**注意**：无论是否存在，都会向下进入与相对路径相同的后续判断逻辑。\n\n后续的逻辑会判断字符串是否结束，以及当前是否为引号模式，满足其中之一就进入函数退出流程。否则说明是无引号模式且后续还有字符串，继续移动截断点到下一个空格或 Tab，然后向上跳转重试。\n\n> 可以看到虽然是有无引号最终到达同一个标签，但引号模式没有重试机制，如果失败直接结束，但无引号有重试机会\n\n#### 4.3 WinLogon 安装场景检测与安全标志调整\n\n在 `lpApplicationName == NULL`、并且通过命令行解析和 `SearchPathW` 成功搜索到目标路径之后，代码会调用 `BasepIsSetupInvokedByWinLogon`，判断当前搜索命中的目标是否属于 WinLogon 启动的安装程序场景。如果命中该场景，并且 `dwCreationFlagsa` 的最高位 `CREATE_IGNORE_SYSTEM_DEFAULT (0x80000000)` 尚未设置，就执行：\n\n```c\nHIBYTE(dwCreationFlagsa) |= 0x80u;\n```\n\n`HIBYTE(dwCreationFlagsa)` 操作的是最高字节；因此 `|= 0x80` 设置的是最高位：也就是说如果是 WinLogon 启动的安装程序并且没有设置最高位，则设置最高位。\n\n![5367b714e7653962ba1f73bea8273569&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/d6c0e2e3a241fda4119ae99788033e61a95704e0501b7e48a8b450f1406ada27.jpg)\n\n\n这里的 **\"WinLogon 调用的安装程序（Setup invoked by Winlogon）\"** 不是指普通用户双击运行的安装包，而是指：**由 Winlogon 进程在系统登录前后、首次启动、升级或安装阶段启动的系统安装程序。**\n\n\n```\nWinlogon 启动的安装程序\n            ↓\n设置 dwCreationFlagsa 的最高位标记\n            ↓\n后续创建参数和 CSRSS 消息继续携带该特殊场景信息\n```\n\n#### 4.4 DOS 路径到 NT 路径的转换\n\n到此，说明已经得到了可执行文件的正确路径，也就是说无论是通过 `lpApplicationName` 还是解析 `lpCommandLine`，**最终都会到达这里**：\n- 对于 `lpApplicationName` 是直接跳转这里来执行。\n- 对于 `lpCommandLine` 要对命令行进行路径解析，找出正确的文件路径。\n\n> [!QUESTION] 对于无 `lpApplicationName`，但命令行有引号的情况，为什么不是像有 `lpApplicationName` 时那样直接跳转到此处执行呢？\n> 因为二者的语义不同：`lpApplicationName` 是调用者显式指定的模块路径，系统不需要再从命令行中猜测可执行文件边界；而带引号的 `lpCommandLine` 只是让代码能够确定命令行中候选路径的边界，候选路径本身仍然需要经过 `SearchPathW`、目录排除和失败判断。也就是说，引号模式只是减少了“空格截断重试”的歧义，并不等同于显式传入 `lpApplicationName`。\n\n\n接下来就是到这里进行路径格式转换，将 DOS 格式的路径转换为 NT 格式的路径以及将 DOS 相对路径转换为绝对路径：\n\n![5a8ea017aba84bcbdb000e49edad27e6&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/272b46f55113d3bc9b1d55cae5613e97d8c3b12061ccfc7e2054c3312d99a797.jpg)\n\n| 函数                                                            | 功能                                                  |\n| ------------------------------------------------------------- | --------------------------------------------------- |\n| `RtlDosPathNameToNtPathName_U(DosPathName, &NtPathName, ...)` | DOS 路径 (`C:\\app.exe`) → NT 路径 (`\\??\\C:\\app.exe`)    |\n| `RtlInitUnicodeString(&v219, v14)`                            | 用 DOS 路径初始化 Unicode 字符串结构体。**注意**：不是ANSI转换为Unicode。 |\n| `RtlDetermineDosPathNameType_U(v14)`                          | 判断路径类型（绝对驱动器路径、UNC 路径、相对路径等）                        |\n| `RtlGetFullPathName_U(v14, 0x20A, v172, 0)`                   | 仅对相对路径调用，转换为绝对路径。                                   |\n\n`RtlGetFullPathName_U`函数和`SearchPathW`的区别：\n- 前者是将相对路径拼接当前的工作目录得到绝对路径。\n- 后者是搜索文件，按当前目录、Path的顺序，然后返回绝对路径。\n> 这里 `RtlGetFullPathName_U` 主要是针对走 `lpApplicationName` 逻辑来到这里的情景；因为走 `lpCommandLine` 逻辑到这里的话，已经通过 `SearchPathW` 得到了绝对路径。\n\n**至此，已经得到了最终的、格式正确的应用程序路径。** 接下来开始针对文件内容进行分析。\n\n### 阶段一产物小结\n\n本阶段结束后，后续文件解析逻辑主要依赖这些结果：\n- 清理后的创建标志副本：`dwCreationFlagsa`\n- 已规范化的环境变量块和 `STARTUPINFO` 相关状态\n- 用于相对路径补全或路径类型判断的辅助缓冲区\n- 已确定的 DOS 路径候选：`DosPathName`\n- 转换后的 NT 路径：`NtPathName`\n\n---\n\n## 阶段二：文件解析阶段（仍在主循环内）\n\n### 阶段 5：打开文件与创建映像节 (Section)\n\n路径转换完成后，主循环已经拿到了可以交给 NT 对象管理器使用的路径。接下来要验证这个路径对应的文件是否能作为可执行映像打开，并尝试为它创建 `SEC_IMAGE` 类型的 Section；后续分支基本都围绕这个 Section 创建结果展开。\n\n#### 5.1 NtOpenFile —— 打开可执行文件\n这一小节先把路径转换结果包装成 `OBJECT_ATTRIBUTES`，然后调用 `NtOpenFile` 获取可执行文件句柄。只有文件被成功打开，后面才有条件继续创建映像节。\n![3d654f2f04dd98e2f5e8538034906ccf&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/0794e6f3a42728228ebc3764d8e68f61ac70cef8f551d08cfcd885bac2a81720.jpg)\n> `v151` 为传入的参数 `STARTINFO` 结构体。\n\n调用`NtOpenFile`函数：\n\n```c\nStatus = NtOpenFile(&FileHandle, 0x1000A1u, &ObjectAttributes, &IoStatusBlock, 5u, 0x60u);\n```\n- `0x1000A1` = `SYNCHRONIZE | FILE_EXECUTE | FILE_READ_ATTRIBUTES | FILE_READ_DATA`\n- `5` = `FILE_SHARE_READ | FILE_SHARE_DELETE`\n- `0x60` = `FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT`\n\n如果失败，降级权限重试：\n```c\nStatus = NtOpenFile(&FileHandle, 0x100020u, ...);  // 去掉 FILE_READ_ATTRIBUTES 和 FILE_EXECUTE，降级为 SYNCHRONIZE | FILE_READ_DATA\n```\n\n**细节**：如果 `v151[2]`（即 `STARTUPINFO.lpDesktop`）为空，则从当前进程的 `PEB->ProcessParameters->DesktopInfo` 获取默认值（关于 DesktopInfo 的详细概念，见本阶段最后的补充说明）。相关参考：[Windows 窗口站与桌面隔离机制](/notes/n-03cb68347b47416b85e51a2da3d3e18c/)\n\n#### 5.2 NtCreateSection —— 创建映像节\n\n什么是节对象？Section 是内存管理器用来描述“可映射对象”的内核对象。它既可用于普通内存映射文件和进程间共享内存，也可在 `SEC_IMAGE` 场景下描述 PE 映像的按需映射。\n\n相比将文件一次性读取到内存中，使用 `section` 的方式可以通过 `control area`、`prototype PTE`、`VAD` 等结构实现按需加载。发生缺页时，内存管理器可以根据映射关系定位到文件中的对应内容，再把需要的页调入内存。\n> 相关内容：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)\n\n![4627359569286fe7388595dd59dfecdf&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/70b613cbe6cef093f0d6f669c2ad84467b08475b6204123fc876f742daff30a8.jpg)\n> `v16` 有多种取值，**其值决定了后续分支的走向**。\n\n```c\nv16 = NtCreateSection(&SectionHandle, 0xF001F, 0, 0, 0x10, 0x1000000, FileHandle);\n```\n- **`DesiredAccess = 0xF001F`** (`SECTION_ALL_ACCESS`)：申请该 Section 对象的完全访问权限。\n- **`Win32Protect = 0x10`** (`PAGE_EXECUTE`)：设置页面保护属性为可执行（不可读写），通常在映射纯代码段或配合后续物理页属性调整时使用。\n- **`AllocationAttributes = 0x1000000`** (`SEC_IMAGE`)：核心分配属性。\n\t- `SEC_COMMIT` (`0x08000000`): 立即在页文件中为该 Section 分配物理存储（或提交内存）。常用于共享内存。\n\t- `SEC_IMAGE` (`0x01000000`): **极其重要。** 告诉内核该文件是一个**可执行映像文件（PE 文件）**。内核会按照 PE 头部的 Section Alignment（节对齐）来解析并映射文件。\n\t- `SEC_RESERVE` (`0x04000000`): 只保留虚拟地址空间，不提交物理存储。\n\n---\n\n### 阶段 6：安全策略与应用兼容性检查\n\n`NtCreateSection` 成功只说明文件在格式上可以作为映像节被创建，但还不代表系统允许它运行。进入真正创建进程对象之前，还要经过执行策略、兼容性数据库和 SAFER 软件限制策略等检查；这些检查可能直接阻止创建，也可能产出受限令牌或 Job 句柄，供后续阶段继续处理。\n\n![87ad0d1a8e4d8306c6a76c04f369c446&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/25c863895efe208d53e7eb556d6f1587a43cae4874882f2f00340d9a5f8a07a5.jpg)\n\n\n#### 6.1 BasepIsProcessAllowed\n\n`BasepIsProcessAllowed` 位于 `v16 >= 0` 的成功映像路径上，**仅在 `NtCreateSection` 成功后**即v16>=0 时执行。\n\n```c\nIsProcessAllowed = BasepIsProcessAllowed((size_t)DosPathName);\n```\n- **功能**：执行该版本 `kernel32` 内部的映像运行许可检查。\n- 失败 → `NtClose(SectionHandle)` 然后返回。\n\n#### 6.2 CREATE_FORCEDOS 处理\n\n如果 `dwCreationFlags` 包含 `CREATE_FORCEDOS (0x2000)` 且系统通过内部策略或全局配置开启了“默认全隔离策略 (DefaultSeparateVDM)”。\n\n代码会清除 `CREATE_FORCEDOS` / `CREATE_SHARED_WOW_VDM`，并设置 `CREATE_SEPARATE_WOW_VDM`，使后续 VDM 处理分支倾向于创建独立 ntvdm.exe。并且关闭 Section，然后设置 `v16 = STATUS_INVALID_IMAGE_NOT_MZ`，强制进入 VDM 处理分支（分支 2/4）。\n\n##### 6.2.1 三个标志的含义\n\n`CREATE_SEPARATE_WOW_VDM` 和 `CREATE_SHARED_WOW_VDM` 和 `CREATE_FORCEDOS` 都是针对 16 位程序的，但三个标志的作用对象不一样。\n\n其中：\n```text\nCREATE_SEPARATE_WOW_VDM 0x800\nCREATE_SHARED_WOW_VDM   0x1000\n    ↓\n主要作用于 Win16 / WOW VDM：\n控制 16 位 Windows 程序运行在独立 ntvdm.exe，\n还是共享 ntvdm.exe。\n```\n> `CREATE_SEPARATE_WOW_VDM` 和 `CREATE_SHARED_WOW_VDM` 的语义需要结合具体场景理解：\n> - 如果目标是 Win16 程序，表示创建或使用带 WOW 支持的 VDM；\n> - 如果目标是 DOS 程序，则实际运行的是普通 DOS VDM，而不是 WOW 执行环境。\n\n```\nCREATE_FORCEDOS         0x2000\n    ↓\n主要作用于 Bound App，此类应用程序同时带有 OS/2 与 DOS 兼容入口，CREATE_FORCEDOS 要求强制选择 DOS 路径，而不是 OS/2 路径。\n```\nBound App 可以理解为同时带有 OS/2 与 DOS 兼容启动路径的旧式映像。默认情况下系统可能选择 OS/2 路径；指定 `CREATE_FORCEDOS` 时，则强制选择 DOS 路径。\n\n\n---\n\n#### 6.3 BasepCheckBadapp\n\n如果 v208 (重试标志)是假——即第一次尝试，则还有好几次安全检查：\n![a61337dce138c3b20f43b18e829da044&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/11d09c76307dbd6e94e075a081df28955a1f7548cd02ee064d0941270541e980.jpg)\n\n```c\nv18 = BasepCheckBadapp(FileHandle, NtPathName.Buffer, Environment, &P, &NumberOfBytesToWrite, &v232, &v228);\n```\n- **功能**：Windows 应用兼容性数据库 (AppCompat / Shim) 检查。查询程序是否被标记为\"已知有问题的应用\"。`BasepCheckBadapp` 可以查询应用兼容性数据库并返回兼容性数据或阻止结果，但具体 UI、文案以及硬/软阻止行为必须结合该函数实现和对应系统版本分析，可能会弹窗询问用户是否继续执行等。\n\n#### 6.4 BasepCheckWinSaferRestrictions\n\n完成 AppCompat 检查后，再次检查条件：若 `v208 == 0`（v208是重试标志），且 `CREATE_PRESERVE_CODE_AUTHZ_LEVEL (0x2000000)` 未设置，则还需要判断软件限制策略是否要求阻止或降权运行目标程序：\n> `CREATE_PRESERVE_CODE_AUTHZ_LEVEL` 可以理解为：不要重新计算代码限制级别，直接沿用父进程已经拥有的限制级别；本文路径中父进程即当前调用进程。\n\n```c\nv19 = BasepCheckWinSaferRestrictions(v160, DosPathName, FileHandle, InJob, &Handle, &JobHandle);\n```\n\n`BasepCheckWinSaferRestrictions` 用于执行 Windows **SAFER（Software Restriction Policies，软件限制策略）** 检查，判断目标程序是否允许运行，以及是否需要降权运行。\n\n它可能检查：\n- 组策略中的软件限制策略；\n- 文件路径规则；\n- 文件哈希规则；\n- 发布者/证书规则；\n- Internet 区域规则；\n- 当前用户或指定令牌的身份；\n- `CREATE_PRESERVE_CODE_AUTHZ_LEVEL` 等创建标志。\n\n典型结果有三种：\n```text\n允许正常运行\n    RestrictedToken = NULL\n    JobHandle = NULL\n\n允许但需要降权\n    RestrictedToken = 受限访问令牌\n    JobHandle = 可选的限制性Job对象\n\n禁止运行\n    函数返回失败，CreateProcess终止\n```\n> 这一步和后面的令牌替换、Job 绑定直接相关：如果 SAFER 产出了受限令牌或 Job 句柄，阶段 16 会继续使用这些结果。\n\n---\n\n### 阶段 7：脚本、DOS/Win16 与 VDM-WOW 兼容处理\n\n接下来进入 `v16` 派遣逻辑。这里的 `v16` 来自前面对 `NtCreateSection(..., SEC_IMAGE, FileHandle)` 的调用，表示“把候选文件当作可执行映像节创建”时得到的状态。普通 Win32 PE 会创建成功并进入常规路径；旧式映像、脚本、DOS/Win16 程序或不支持的格式，则会根据 `v16` 的状态码进入不同兼容路径或失败路径。\n\n> 相关内容参考：[V86 与 NTVDM 原理](/notes/n-5d9fe21a449d47cda78d3275b62070e0/)\n\n![e757a063e7cc392bbb37cffb18761c72&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/4488d9840593256f73d212b962b51d26ba699aa7e5379963e3bf80460bf5114c.jpg)\n\n#### 7.1 v16 状态码总览\n\n`v16` 是 Section 创建阶段返回的 `NTSTATUS`。后续代码执行逻辑按状态码分为几类：\n\n| 伪代码分支 | 判断条件                                                                  | 典型含义                   | 后续路径                                                   |\n| ----- | --------------------------------------------------------------------- | ---------------------- | ------------------------------------------------------ |\n| 分支 1  | `v16 >= 0`                                                            | 普通 Win32 PE 映像节创建成功    | 进入 `LABEL_61`，继续 PE 元数据读取和进程创建                         |\n| 分支 2  | `v16 == STATUS_INVALID_IMAGE_NE_FORMAT`                               | NE/旧式 16 位映像相关格式       | 进入 `LABEL_221`，走脚本/DOS/VDM 兼容入口                        |\n| 分支 3  | `v16 <= STATUS_INVALID_IMAGE_LE_FORMAT`                               | LE/OS/2 或更早被判定为不可继续的错误 | 进入 `LABEL_296`，失败返回                                    |\n| 分支 4  | `v16 == STATUS_INVALID_IMAGE_NOT_MZ` 或 `STATUS_INVALID_IMAGE_PROTECT` | 非普通 PE、脚本、DOS/旧式程序候选   | 进入 `LABEL_221`，走脚本/DOS/VDM 兼容入口                        |\n| 分支 5  | `v16 == STATUS_INVALID_IMAGE_WIN_16`                                  | 明确的 Win16/WOW 兼容路径     | 走专门的 Win16/WOW 分支；若设置 `CREATE_FORCEDOS`，转入 `LABEL_221` |\n| 其他    | 其他状态                                                                  | 不能识别或不支持的失败状态          | 通常进入 `LABEL_296`，失败返回                                  |\n\n这里真正需要讨论的只有三个路径：\n\n1. 分支 1 对应的成功路径\n2. **分支 2/4 对应的 `LABEL_221`**。\n3. **分支 5 对应的 Win16/WOW 路径**。\n\n#### 7.2 分支 2/4：脚本、DOS 与普通 VDM 入口\n\n##### 7.2.1 脚本文件的兼容处理\n\n\n分支 2 和分支 4 最终都会进入 `LABEL_221`，这个入口是一个旧式映像/脚本/VDM 的统一入口，实际上分支 5 在某些情况下也会重定向进入 `LABEL_221`。\n\n分析整个函数，得出进入到该逻辑时 `v16` 对应四种可能的取值：\n```\n-1073741520 = 0xC0000130 = STATUS_INVALID_IMAGE_PROTECT\n-1073741541 = 0xC000011B = STATUS_INVALID_IMAGE_NE_FORMAT\n-1073741521 = 0xC000012F = STATUS_INVALID_IMAGE_NOT_MZ\n-1073741519 = 0xC0000131 = STATUS_INVALID_IMAGE_WIN_16\n```\n\n首先，该逻辑的开头会判断文件是否没有 `MZ` 头，即 `STATUS_INVALID_IMAGE_NOT_MZ` ：\n\n![15348e63706403aaf59a45743bce18e2&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/25c573207d324132820396227e9829b64367c9ca80dfe970cb51ea3b689ac3f1.jpg)\n> 其中 `::String` 是全局变量，为 `cmd.exe /c`。\n\n如果没有 `MZ` 头，会判断该文件是不是 `.bat ` 或者 `.cmd ` 结尾的：\n- 若扩展名是 `.bat` 或 `.cmd`：构造新命令行 `cmd.exe /c 原始命令行`，设置 `DosPathName = 0`、`v208 = 1`，回到主循环重新创建 `cmd.exe`。\n- 若扩展名也不是 `.bat/.cmd`：说明该文件既不是可处理的 DOS 应用，也不是可包装的脚本，进入 `LABEL_296` 失败返回。\n\n**这里有一个容易混淆的点**：调用  `BaseIsDosApplication` 函数的目的是排除掉 `STATUS_INVALID_IMAGE_WIN_16`，确保只有 `STATUS_INVALID_IMAGE_NOT_MZ` 会\n继续向下执行。\n\n##### 7.2.2 普通 DOS/VDM 的兼容处理\n\n如果目标被判断为 DOS/旧式 VDM 可处理对象，即 `v16` 对应这三种取值时：\n\n```\n-1073741520 = 0xC0000130 = STATUS_INVALID_IMAGE_PROTECT\n-1073741541 = 0xC000011B = STATUS_INVALID_IMAGE_NE_FORMAT\n-1073741519 = 0xC0000131 = STATUS_INVALID_IMAGE_WIN_16\n```\n\n代码会跳过开头的 `if` 继续向下执行，进入 VDM 协商逻辑：\n\n![0fee32ece794342b88244df551a51c14&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/285806a29cf815210013c8e0344e11039f8cdfd6db4113e53289c45c85f470f8.jpg)\n\n关键调用是：\n\n```c\nBaseCreateVDMEnvironment(Environment, &AnsiString, &v216);\nBaseCheckVDM(IsDosApplication | 0x10, DosPathName, String, lpFileName,\n             &AnsiString, ApiMessage, &v234, dwCreationFlagsa, v151);\n```\n\n`BaseCheckVDM` 的作用不是简单地“创建 ntvdm.exe”。它更像是向 CSRSS/Base Server 查询并登记一个 VDM 任务：\n\n- 传入目标路径、原始命令行、VDM 环境块、创建标志和 `STARTUPINFO`。\n- 让 CSRSS 判断当前任务应该复用已有 VDM，还是需要新建一个 VDM 宿主。\n- 返回 VDM 任务 ID（如 `v234`）以及后续创建/复用所需的状态信息。\n\n由 CSRSS/VDM 管理逻辑决定：\n\n- **复用已有 VDM**：跳到 `LABEL_341` 等后续路径，使用已有 VDM 进程/任务信息收尾。\n- **需要新建 VDM**：调用 `BaseGetVdmConfigInfo(...)` 获取 `ntvdm.exe` 路径和参数，把命令行改写为启动 VDM 宿主，然后设置 `v208 = 1` 回到主循环。\n- **不可用或不允许**：设置错误码并失败返回。\n\n\n#### 7.3 分支 5：Win16/WOW 兼容路径\n\n分支 5 的判断条件是：\n\n```c\nv16 == STATUS_INVALID_IMAGE_WIN_16\n```\n\n**这明确表示该分支为 16 位 Windows 映像处理路径。**\n\n它和分支 2/4 的后续逻辑一样会用到 VDM 环境和 `BaseCheckVDM`，但处理策略不同：这里关注的是 **WOW VDM**，也就是用于承载 Win16 程序的 `ntvdm.exe + WOW` 兼容环境。\n\n\n![efc1552a29dccf822b81b733c78bbf3b&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/23e9b8af190b7c544c162ec6526328bc6c5fb55c408f5c1f6969a9f93c7e7d50.jpg)\n\n> `CREATE_SEPARATE_WOW_VDM` / `CREATE_SHARED_WOW_VDM` 以及 `CREATE_FORCEDOS` 就是在这里发挥的作用。\n\n在代码中可以看到，如果 Win16 分支中设置了 `CREATE_FORCEDOS`，代码会直接 `goto LABEL_221`，把目标按 DOS/普通 VDM 路径处理。\n\n#### 7.4 两个兼容路径的对比\n\n分支 5 和分支 2/4 的差异主要有：\n1. 分支 5 只能处理老式程序兼容问题，分支 2/4 除此之外还可以处理 `.cmd/.bat` 脚本的情况，\n2. **VDM 类型不同**：\n\t1. 分支 5 只能创建支持 WOW 的 VDM：使用 `v179 = 0x20` 或 `0x40`，分别表示共享 WOW VDM 和独立 WOW VDM；\n\t2. 分支 2/4 则使用 `IsDosApplication | 0x10`，这里的 `0x10` 表示普通 DOS VDM 路径的大类，`IsDosApplication` 的低位表示具体旧式程序类型（具体看图中注释），既可以创建普通的 VDM，也可以创建支持 WOW 的 VDM。\n3. **是否共享 VDM**：分支 5 是可以指定共享或新建 VDM， 而分支 2/4 是否复用或新建 VDM 由 CSRSS/VDM 管理逻辑决定。\n4. **失败后的策略不同**：分支 5 如果先尝试共享 VDM 失败，并且错误是 `ACCESS_DENIED`，代码会自动设置 `CREATE_SEPARATE_WOW_VDM`，再尝试独立 WOW VDM。而分支 2/4 没有失败重试机制。\n5. **控制台标志处理不同**：创建新的 VDM 进程前，分支 5 中的代码会清除 `DETACHED_PROCESS` / `CREATE_NEW_CONSOLE`，并设置 `CREATE_NO_WINDOW`，因为 Win16 程序通常有自己的图形界面，所以不需要显示命令行窗口。分支 2/4 检测到 `DETACHED_PROCESS` 标志后则是直接失败。\n> 注意 `CREATE_NO_WINDOW` 和 `DETACHED_PROCESS` 的含义，前者是有控制台但是不显示，后者要求不要创建控制台。\n\n### 阶段 8：读取 PE 头信息并验证子系统/架构\n\n接下来开始分析第一个if分支，该分支逻辑也是重点，所有返回值大于等于 0 的情况都会进入该分支，首先，分支开头会去除掉不合理的创建标志：\n\n![3f9ca50e7f4c226dfd2d1882999eccf2&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/ab9c2fb32d119ace470070428788ae8041a44e920578681a709b18ebd1e3b80a.jpg)\n\n#### 8.1 NtQuerySection 读取映像元数据\n\n映像节创建成功后，系统需要从 Section 中读取目标映像的关键信息。这里拿到的架构、子系统、栈大小和版本号，会决定后续是否能继续创建进程，以及主线程栈和执行环境应该如何初始化。\n![0342318650c1876ef7e1aae066396e1e&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/ec3837126b299e308067166471513d8636035c905cea40951257b9b2852c7073.jpg)\n\n```c\nNtQuerySection(SectionHandle, SectionImageInformation, &SectionInformation, 0x30, 0);\n```\n- **功能**：从 Section 中读取 PE 文件的映像信息（`SECTION_IMAGE_INFORMATION` 结构，0x30 = 48 字节）。\n- **提取的关键字段**：\n  - `v169`：机器架构 (`IMAGE_FILE_MACHINE_I386 = 0x14C`, `AMD64 = 0x8664`, `IA64 = 0x200`)\n  - `v165`：子系统类型 (`2 = GUI`, `3 = CUI`, `7 = POSIX_CUI`)\n  - `v163`/`v164`：栈保留大小 / 栈提交大小\n  - `v167`/`v166`：主版本号 / 次版本号\n  - `v168`：`IMAGE_FILE_CHARACTERISTICS` 标志\n\n> **图 5：PE Optional Header 中的 Subsystem 与版本字段**\n> 下图来自 PE 查看工具中的 **Optional Header** 区域，用来对照 `NtQuerySection` 返回的映像元数据。\n>\n> - `Subsystem` 字段（GUI = 2, CUI = 3）\n> - `MajorSubsystemVersion` / `MinorSubsystemVersion`\n> - `SizeOfStackReserve` / `SizeOfStackCommit`\n>\n> 通过这几个字段，可以把 PE 头中的静态信息和后续 `v165` 子系统判断、版本校验以及主线程栈大小设置对应起来。\n>\n> ![59aacdd7b9524f447dfdcddeb56fd260&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/8dacd7668087bf3ba15c791623017859acd6f4801b15c94ae7f07d4a02325430.jpg)\n\n#### 8.2 IFEO 映像劫持检查\n\n拿到映像路径后，还要检查 IFEO 注册表项。这个机制允许系统或调试器把某个目标程序替换为另一个调试器/包装程序启动，因此如果查询到 `Debugger` 键值，当前候选映像不会继续向下创建，而是重写命令行并回到主循环。\n\n![94d86779f58bde400cf7ff9caef7d2bd&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/6936d507667d672114325a1376235ff87e971ad04cf183d07c04a24c1ea1870d.jpg)\n\n```c\nLdrQueryImageFileExecutionOptions(&NtPathName, L\"Debugger\", 1u, Buffer, 0x208u, 0);\n```\n\n- **功能**：查询注册表 `HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\<程序名>\\Debugger`。\n- **条件**：仅在没有以调试模式 (`DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS`) 启动，或者 PEB 标记了 `ReadImageFileExecOptions` 时查询。\n- **如果 Buffer 非空**（存在 Debugger 键值）：\n  - 拼接新命令行：`Debugger值 + \" \" + 原命令行`。\n  - 关闭当前 Section，设置 `DosPathName = 0`，回到主循环用新的命令行重新执行整个流程。\n  - 这就是著名的 **IFEO 映像劫持**机制。\n\n> **图 6：注册表中的 IFEO 键值**\n> 下图展示 IFEO（Image File Execution Options）在注册表中的位置：\n> `HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options`\n>\n> 其中某个程序名子键下如果存在 `Debugger` 值，`CreateProcessInternalW` 就可能把原始目标改写为调试器/包装程序启动，从而重新进入主循环。\n>\n> ![eda00463f371f61df92d86143c14443b&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/5b55ade07674f3f0dba780da1a7b2de40deda7b56cf9bfbe92702390582c51ac.jpg)\n\n#### 8.3 架构兼容性校验\n\n完成 IFEO 检查后，流程回到目标映像本身：系统要确认该映像的机器架构是否落在当前系统支持的范围内。如果架构不匹配，即使文件和 Section 都已经创建成功，也不能继续进入进程对象创建阶段。\n\n**架构校验**：\n![1b11cc44b86619cb10345dbd245316af&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/bd5144c0f3daea535e1e186ab38ef271543dd5641d580e21a1be768403345536.jpg)\n\n```c\nif ( v169/*机器架构*/ < MEMORY[0x7FFE002C] || v169 > MEMORY[0x7FFE002E] )\n```\n\n`0x7FFE002C` 和 `0x7FFE002E` 是 `SharedUserData` 中用于该架构兼容性判断的机器类型边界。目标机器类型不在范围内时，代码调用 `NtRaiseHardError`，随后根据**当前调用进程 PEB 中的 `ImageSubsystemMajorVersion`** 选择 `ERROR_BAD_EXE_FORMAT (0xC1)` 或 `ERROR_EXE_MACHINE_TYPE_MISMATCH (0xD8)`。\n\n#### 8.4 子系统类型校验\n\n架构匹配之后，还要检查 PE 头中的子系统类型。GUI/CUI 可以继续走普通 Win32 创建路径；POSIX 或其他特殊子系统则可能需要包装命令行或直接失败。\n\n**子系统校验**：\n![5d1e926ba55f21c186216113c6f132d7&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/e0a638099eb793dadb4a32900270b3f385d8c25ee9534f1b57e5913522ee9abb.jpg)\n\n\n- `v165/*子系统类型*/ == 2` (GUI) 或 `v165/*子系统类型*/ == 3` (CUI) → 正常流程。\n- `v165/*子系统类型*/ == 7` (POSIX) → 调用 `BuildSubSysCommandLine(L\"POSIX /P \", ...)` 包装命令行，通过 `posix.exe` 启动，回到主循环重试。\n- 其他 → `SetLastError(ERROR_CHILD_NOT_COMPLETE)`。\n\n#### 8.5 PE 版本兼容性校验\n\n最后还要检查 PE 声明的子系统版本是否被当前系统接受。这个检查相当于文件解析阶段的收尾：只有版本也兼容，才会进入后面的进程对象和主线程创建。\n\n\n![e1ac8cb892e7c4b494195e1f36a8a85f&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/b58dc8f7e66c4e9c1d0cae99fc1e044cf02a4c66dbc83bf8e69b5125c86b2e1f.jpg)\n\n\n```c\nBasepIsImageVersionOk(v167/*主版本号*/, v166/*次版本号*/)\n```\n检查 PE 的 `MajorSubsystemVersion` / `MinorSubsystemVersion` 是否兼容当前系统。不兼容就跳转到函数返回逻辑\n\n### 阶段二产物小结\n\n本阶段结束后，说明候选文件已经通过主循环内的文件和 PE 校验，后续可以创建真正的进程对象。\n\n关键产物包括：\n- 可执行文件句柄：`FileHandle`\n- 映像节句柄：`SectionHandle`\n- `NtQuerySection` 读取到的 `SECTION_IMAGE_INFORMATION`\n- 目标架构、子系统类型、版本号和栈参数等 PE 元数据\n- 兼容性分流结果：普通 Win32 PE 继续创建进程；脚本、DOS/Win16 程序则可能改写命令行并重入主循环\n\n---\n\n\n## 阶段三：进程和线程创建阶段（通过文件校验后）\n\n### 阶段 9：创建进程内核对象\n\n经过路径、文件、Section 和 PE 校验后，流程才真正进入“创建进程对象”的阶段。本阶段会把前面得到的 `SectionHandle`、安全属性、调试端口和创建标志转换成 `NtCreateProcessEx` 所需的参数。\n\n#### 9.1 安全能力探测（CreateProcessAsUserSecure）\n\n创建进程对象前，代码先探测当前系统是否支持更安全的 `CreateProcessAsUserSecure` 路径。这个结果会影响后续安全描述符和创建能力的选择。\n\n![920226243bf881d5635225fd9f19a843&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/1ab0234f71c74325a82b741663f0c72ffd5769e0b835edf1843e3f3d027bca46.jpg)\n\n首先是检查是否支持`CreateProcessAsUserSecure`函数，如果支持就设置某标识位为1（特殊安全创建能力可用）。\n\n---\n\n#### 9.2 进程安全属性转换\n\n然后是处理进程安全属性，将其转换为内核使用，有两种转换路径：\n\n1. 若某些标识被置位，则不使用用户传入的安全描述符，而是采用内核默认安全描述符（`v203=0`）\n2. 否则使用用户传入的安全描述符。\n\n![9f9703824018ed3d5c0c16311b6ad93f&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/8844cfcc7ee155aafb4dd5ef8c8e590bd5ce1d573233199e67d91c8ad2a6fec6.jpg)\n\n```text\nv203：安全描述符指针（0 = 使用内核默认）\nv202 / v204：OBJECT_ATTRIBUTES 相关字段（Length / Attributes）…\n```\n\n---\n\n#### 9.3 创建标志转换（用户标志 → 内核标志）\n\n然后是将传入的标志，转换为内核使用的，用户指定了很多标识位，但内核使用的标识位只有三个，剩下的在该函数内部用于其它判断，所以不需要传入NtCreateProcessEx内部。\n\n![0aff0a00073a65bbc74c4564d0bec947&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/fa08f2a8759b676d1ea28a333c525964299fb5864e434cef1917851f52557c13.jpg)\n\n#### 9.4 调试端口准备\n\n如果调用者要求以调试方式创建子进程，内核进程对象创建时就需要携带调试端口。因此这里会在调用 `NtCreateProcessEx` 前连接当前线程的调试对象，并取出可传入内核的调试端口句柄。\n\n![7386b3e6d649d1fabbe264a885c55ada&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/59e76c22d5c39fe71f379cea3c5c84a6ea1f504cfb100348878b835ea1c9cba3.jpg)\n\n如果 `dwCreationFlags` 包含 `DEBUG_PROCESS (1)` 或 `DEBUG_ONLY_THIS_PROCESS (2)`：\n```c\nDbgUiConnectToDbg()           // 连接到当前线程的调试对象\nDebugPort = DbgUiGetThreadDebugObject()  // 获取调试端口句柄\n```\n\n#### 9.5 NtCreateProcessEx —— 核心内核调用\n\n前面的安全属性、标志、调试端口和映像节都准备好后，终于进入核心系统调用。`NtCreateProcessEx` 负责在内核中创建新进程对象，并把前面创建的映像节映射到目标进程地址空间。\n\n![66836d24100543a61ea28570b2138efb&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/e98371e0ebf4165ab44a93393f615018c52cbf00e3ac4182b6338faec553271a.jpg)\n```c\nNtCreateProcessEx(\n    &ProcessHandle,       // [输出] 新进程句柄\n    0x1F0FFF,             // PROCESS_ALL_ACCESS\n    v161/*OBJECT_ATTRIBUTES*/,  // 含安全描述符（含安全描述符）\n    (HANDLE)0xFFFFFFFF,   // 父进程 = 当前进程\n    Flags,                // bit0 = 请求脱离父进程所在 Job；bit1 = DEBUG_ONLY_THIS_PROCESS；bit2 = 继承父进程中可继承的句柄\n    SectionHandle,        // ★ 映像节句柄（前面创建的）\n    DebugPort,            // 调试端口（如果有）\n    0,                    // ExceptionPort\n    InJob[0]              // 标量状态/布尔参数，不是 Job 句柄\n);\n```\n\n这里的“父进程”指 `NtCreateProcessEx` 的 `ParentProcess` 参数所指定的进程。本文分析的 `CreateProcessInternalW` 路径把该参数传为 `(HANDLE)0xFFFFFFFF`，也就是当前进程，因此在这条具体路径中，父进程恰好就是当前调用进程。\n\n> 相关内容参考：[Windows 进程创建&#65288;02&#65289;&#65306;内核进程对象创建](/notes/n-c95d91895dd0421ebd2799d64b467384/)\n\n**此调用完成后，内核内部发生了以下事情**：\n\n1. 创建 `EPROCESS` / `KPROCESS` 内核结构。\n2. 为新进程分配独立的虚拟地址空间。\n3. 将 `SectionHandle` 对应的 PE 映像映射到新进程的地址空间。\n4. **分配并初始化 PEB**（`MmCreatePeb` 内部函数）→ PEB 此时被创建，但调用进程尚不知道它的地址。\n5. 将 `ntdll.dll` 映射到新进程的地址空间。\n\n> 如果失败就跳转至函数返回逻辑。\n\n#### 9.6 设置进程优先级\n\n进程对象创建成功后，还要把前面从 `dwCreationFlags` 中提取出的优先级类 `v241` 应用到新进程：\n\n![e4f52f58692041e0e9a9d4d7a6bf0e18&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/156fac53132d3da24eaf4b8c2f1e39aca97d48978c7502f0385b2a4f9bad66a7.jpg)\n\n```c\ntypedef struct _PROCESS_PRIORITY_CLASS {\n    BOOLEAN Foreground;     // v240\n    UCHAR PriorityClass;    // v241\n} PROCESS_PRIORITY_CLASS;\n```\n\n如果通过标志提取出了优先级类 `v241 != 0`：\n```c\nNtSetInformationProcess(ProcessHandle, ProcessPriorityClass, &v240, 2);\n```\n特殊处理：如果是 `REALTIME_PRIORITY_CLASS (v241 == 4)`，先调用 `BasepIsRealtimeAllowed(1)` 获取特权，设置完后调用 `BasepReleasePrivilege` 释放。\n\n\n> [!NOTE] `BasepIsRealtimeAllowed(0)` 和 `BasepIsRealtimeAllowed(1)` 的区别？\n> ```text\n> BasepIsRealtimeAllowed(0)\n>     只检查是否允许使用实时优先级；\n>     用于决定 REALTIME 是否降级成 HIGH。\n> \n> BasepIsRealtimeAllowed(1)\n>     在真正设置优先级前临时启用相关权限；\n>     返回的对象/状态之后要交给 BasepReleasePrivilege 释放或恢复。\n> ```\n\n#### 9.7 设置错误模式\n\n优先级设置完后，代码继续处理新进程的错误模式。这个设置决定新进程遇到硬错误或关键错误时是否继承父进程的错误模式，还是回到系统默认行为；本文路径中父进程即当前调用进程。\n![bc00470174e1aa7d7aaf734ca4dd891d&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/20ddc8ecd31667ce81bb3170a1ece2e8908a56f7d73351937c46aa07dd6d0c88.jpg)\n\n\n如果包含 `CREATE_DEFAULT_ERROR_MODE (0x4000000)`：\n```c\nNtSetInformationProcess(ProcessHandle, ProcessDefaultHardErrorMode, &v125, 4);\n```\n\n`NtSetInformationProcess` 在这里修改新进程的默认硬错误处理状态。它表示新进程不继承父进程通过 `SetErrorMode` 设置的错误模式，而采用系统默认错误模式；本文路径中父进程即当前调用进程。\n\n\n> [!NOTE] 什么是错误模式？它和 `LastError` 的区别？\n> - **错误模式**：规定错误发生时系统如何响应。\n> - **LastError**：记录某次 API 失败的具体错误码。\n> 常用错误模式包括：\n> ```c\n> SEM_FAILCRITICALERRORS       // 严重错误直接返回，不弹系统对话框\n> SEM_NOGPFAULTERRORBOX        // 程序崩溃时不显示系统故障对话框\n> SEM_NOOPENFILEERRORBOX       // 打开文件失败时不弹相关对话框\n> SEM_NOALIGNMENTFAULTEXCEPT   // 自动修复内存对齐错误\n> ```\n\n#### 9.8 VDM 入口更新与低地址预留\n\n如果本轮创建的是 `ntvdm.exe` 这类兼容宿主进程，还需要把它和前面向 CSRSS 申请到的 VDM 任务记录关联起来。普通 Win32 进程不会走这部分逻辑；它主要服务于 DOS/Win16 兼容路径。\n\n![0d17154ae82a79a97c607a2721d6bd47&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/fdefec895280a327c4c859626d489454ec01a7b36699d24ed97992c2bec18fb8.jpg)\n\n如果是 VDM 进程也就是创建`ntvdm.exe`进程 (`v179 != 0`)：\n```c\nBaseUpdateVDMEntry(1, &v237, v234, v179);\n```\n`BaseUpdateVDMEntry` 会把新创建的 `ntvdm.exe` 进程句柄与此前由 `BaseCheckVDM` 在 CSRSS/Base Server 中登记或查询得到的 VDM 任务记录关联起来。这里关联的信息包括：\n\n- VDM 进程句柄；\n- VDM 任务 ID `v234`；\n- VDM 类型 `v179`。\n\n所谓 VDM 任务，可以理解为 CSRSS/Base Server 维护的一条“要在某个 NTVDM 兼容环境中运行的 DOS/Win16 任务记录”。它不是普通 NT 子进程，而是 NTVDM 内部要加载和运行的旧式程序任务。\n\n这个任务记录来自前面对 `BaseCheckVDM` 的调用：`BaseCheckVDM` 接收目标路径、原始命令行、环境块、创建标志、STARTUPINFO 等信息，向 CSRSS/Base Server 查询或登记 VDM 任务，并返回任务 ID（如 `v234`）以及后续是复用已有 VDM 还是新建 `ntvdm.exe` 的状态。\n\n> [!NOTE] ntvdm.exe 是如何运行“子进程”的？\n> `ntvdm.exe` 启动后，不会通过 `CreateProcess` 把 DOS/Win16 程序创建成普通 NT 子进程。而是根据 CSRSS/VDM 管理信息取得待运行任务，并在 VDM 内部使用 DOS 或 Win16 对应的加载与执行机制运行 COM、MZ、NE 等旧式映像，目标程序是 VDM 内部任务，不是普通 NT 进程。\n\n---\n\n接着是为VDM进程预留低地址空间（`ntvdm.exe`进程）。\n\n![37820a0e906e9b921adf9fa4dfb574fb&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/93c33afa7d606340111f75a0f8e8f2b5afd502845ff17eb399a16be2291f4a7a.jpg)\n\n为什么要预留？联想实模式，空间大小 1 MB，所以要预留前 1 MB 的虚拟空间。\n> 参考：[x86 裸机实验&#65306;实模式进入保护模式](/notes/n-b8281eab11a94cc19572b938dead1e60/)\n\n---\n\n### 阶段 10：SxS 程序集上下文准备\n\n进程对象创建完成后，还不能立刻创建主线程并运行目标程序。系统还需要为目标映像准备 SxS（Side-by-Side）相关信息，例如 Manifest、配置文件和程序集上下文，这些信息会在后续 CSRSS 消息和加载器初始化中发挥作用。\n\n\n首先是计算各字符串长度的总和，然后申请内存存储这些字符串（NT和DOS路径都有两个版本，共四个）：\n![ed3a37e47065e4de2f402cd6e53af429&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/284441df2cc2db571212b24e18b99ed8e061c52c1d97059a4ad8f1c02ac52666.jpg)\n\n然后初始化五个字符串缓冲区：\n\n![d3c4c6936e2db8e466fad94cebec6381&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/e0f14dcf25d2b25bae292ecc20198c59ae40908e526091c149f75bcd467c474b.jpg)\n\n然后调用 `BasepSxsCreateProcessCsrMessage`，基于**目标映像**的 DOS/NT 路径及预分配缓冲区准备 Manifest、Config 等 SxS 相关路径/消息数据：\n\n![Pasted image 20260619195707&#46;png](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/8299f78fb11326206b1973782bb90f4f306e3aab5a11dfea4e25790ce2ad0aae.png)\n```c\nBasepSxsCreateProcessCsrMessage(...)\n```\n\n- **功能**：解析 PE 文件的 Manifest 清单、策略文件 (Policy)、程序集目录等 SxS 信息，打包进 CSR 消息体中（`v245[5]` 起始的区域）。\n- 这些信息将在后续的 `CsrClientCallServer` 中一并发送给 CSRSS。\n\n**注意**：早期的 SxS 相关清单是以外部 manifest 文件形式存在，现在则是嵌入 PE 资源目录。\n\n> 相关内容参考：[Windows Manifest 与 SxS 机制](/notes/n-33a9f7c06c81400b85e366d475e21ad7/)\n\n---\n### 阶段 11：获取 PEB 地址与参数注入\n\n此时内核已经创建了新进程对象和 PEB，但调用进程还不知道 PEB 的具体地址，也还没有把命令行、环境变量和工作目录写入目标进程。阶段 11 的核心就是先查询 PEB 基址，再把用户态启动参数跨进程注入进去。\n\n#### 11.1 NtQueryInformationProcess —— 获取 PEB 基址\n`NtCreateProcessEx` 创建 PEB 后，调用进程需要通过查询接口拿到这个地址。后续所有写入 `RTL_USER_PROCESS_PARAMETERS` 的操作，都依赖这里得到的 PEB 基址。\n\n![7e32a2b3fcff83852759b2bd50bac8a2&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/7139ef0e261146d710bb77b3488891c0e1e60f18e9b96e50040041ce0c89d001.jpg)\n\n```c\nNtQueryInformationProcess(ProcessHandle, ProcessBasicInformation, ProcessInformation, 0x18, 0);\n```\n- 返回 `PROCESS_BASIC_INFORMATION` 结构（0x18 = 24 字节），其中 `PebBaseAddress` 字段（偏移 +4）包含新进程的 PEB 地址。\n- **`v157 = v175`**：`v175` 即 `ProcessInformation.PebBaseAddress`，这是后续所有跨进程写入操作的锚点。\n\n---\n\n> **图 7：WinDbg 查看 PEB 结构**\n> 下图通过 WinDbg 展示目标进程的 PEB 结构，例如执行：\n>\n> ```text\n> !peb\n> ```\n> 或者使用 `dt ntdll!_PEB @$peb` 查看结构体布局。这里重点关注以下字段：\n> - `ProcessParameters`（偏移 +0x10）—— 即代码中 `v157 + 16` 读取的位置\n> - `ImageBaseAddress`\n> - `Ldr`（加载器数据）\n>\n> 这张图用于说明：`NtCreateProcessEx` 创建 PEB 后，调用进程为什么还要通过 `NtQueryInformationProcess` 取得 PEB 地址，并进一步定位 `PEB + 0x10` 处的 `ProcessParameters` 指针。\n>\n> ![5219ee737a07c675484d28498be9416c&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/baf7fc8bf336aef50f9161ab61853c2f9d555b49149731942c40ef2cb1380105.jpg)\n\n#### 11.2 工作目录校验\n\n在写入进程参数之前，还要先处理 `lpCurrentDirectory`。如果调用者传入了当前目录，系统需要把它转换为绝对路径，并确认它确实是一个存在的目录；否则目标进程启动后会拿到无效工作目录。\n\n![0b192536acf9773555316ae90532970c&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/3de4f45bf93f60b486000d18512401966e95d2fa781b55b11219959491d09155.jpg)\n\n如果 `lpCurrentDirectory != NULL`：\n```c\nGetFullPathNameW(lpFileName, 0x104, v26, &FilePart)\nGetFileAttributesW(v26)   // 验证必须存在且为目录 (FILE_ATTRIBUTE_DIRECTORY)\n```\n失败 → `SetLastError(ERROR_DIRECTORY)` 返回。\n\n#### 11.3 命令行修复\n\n为了让目标进程可以通过 `GetCommandLine` 看到语义正确的完整命令行，进而能够去解析启动参数，需要构造/恢复命令行参数：\n\n![0b1174d1b7ab751990cc7f74b5f5f8f8&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/6de58babe818f50fa97e008dc4705604f1f8e42aa660d625fae57f1718788d72.jpg)\n\n\n**例如**：命令行参数不含双引号且因为含空格而在搜索路径时被截断过，则重新分配内存，给可执行文件路径加上双引号：\n```text\n原始: C:\\Program Files\\app.exe -flag\n修复: \"C:\\Program Files\\app.exe\" -flag\n```\n\n#### 11.4 BasePushProcessParameters —— 跨进程参数注入\n\n当 PEB 地址、工作目录和命令行都准备好后，就可以调用 `BasePushProcessParameters`。这个函数会把工作目录、完整命令行、环境变量和 `STARTUPINFO` 等启动参数打包后写入新进程的 PEB。\n\n![f53a89a79e10af8e74786635240373a5&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/67ab7b765a634a257e2a837803fa59fb8e3e397418ece16d95f8531b9204cb4f.jpg)\n\n\n```c\nBasePushProcessParameters(\n    v140[0],                 // SxS 标志\n    ProcessHandle,           // 目标进程句柄\n    v157,                    // ★ PEB 基址（从 NtQueryInformationProcess 获取）\n    DosPathName,             // 可执行文件路径\n    v147,                    // 工作目录\n    v28,                     // 完整命令行\n    Environment,             // 环境变量块\n    v151,                    // STARTUPINFO\n    dwCreationFlagsa | v126, // 创建标志\n    bInheritHandles,         // 是否继承句柄\n    ...\n);\n```\n\n**此函数内部完成以下关键操作**：\n\n1. 将命令行、环境变量、工作目录、窗口标题等打包成 `RTL_USER_PROCESS_PARAMETERS` 结构体。\n2. 调用 `NtAllocateVirtualMemory` 在**目标进程**中分配内存。\n3. 调用 `NtWriteVirtualMemory` 将参数结构**跨进程写入**目标进程的地址空间。\n4. 修改目标进程 `PEB + 0x10`（`ProcessParameters` 指针），使其指向刚写入的参数结构。\n\n\n> **PEB 赋值时间线**：\n>\n> 1. PEB 在 `NtCreateProcessEx` 内部由**内核**创建并初始化。\n> 2. 调用进程通过 `NtQueryInformationProcess` **查询到** PEB 的地址。\n> 3. 调用进程通过 `BasePushProcessParameters` **向目标进程写入**进程参数。\n\n\n\n> **图 8：WinDbg 查看 RTL_USER_PROCESS_PARAMETERS**\n> 下图展示 `RTL_USER_PROCESS_PARAMETERS` 的关键字段，可在 WinDbg 中执行：\n> ```text\n> dt ntdll!_RTL_USER_PROCESS_PARAMETERS poi(@$peb+0x10)\n> ```\n> 重点关注：\n> - `CommandLine`（命令行）\n> - `ImagePathName`（映像路径）\n> - `Environment`（环境变量块指针）\n> - `CurrentDirectory`（当前工作目录）\n> - `StandardInput` / `StandardOutput` / `StandardError`（标准流句柄，偏移 +24/+28/+32）\n>\n> 这些字段正是 `BasePushProcessParameters` 写入目标进程的启动参数；其中标准流字段也解释了后续 `StuffStdHandle` 为什么要写入固定偏移。\n>\n> ![4a5d7037c8313a1d33a99beed46dc970&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/7f700ad9982b291db9a8495ecffe9c19d6d66a6377394d32b96dd2b0560d0a87.jpg)\n\n---\n\n### 阶段 12：标准流句柄继承\n\nPEB 参数注入完成后，目标进程已经知道自己的命令行、环境和工作目录。但对于控制台程序来说，标准输入、输出、错误输出是否可用也很关键；因此这里会在特定条件下单独复制标准流句柄。\n\n![9c15ef0b1333c4c50f32bb392d4a47e2&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/e82871df878bf4f27fd3c1dc25bca83b5412053e3e93e2191e25e0e5ea981192.jpg)\n\n**触发条件**：非 VDM 进程、未开启全局句柄继承、未指定 `STARTF_USESTDHANDLES`、没有 `DETACHED_PROCESS/CREATE_NEW_CONSOLE`、且目标为 CUI 子系统 (`v165/*子系统类型*/ == 3`)。\n\n```c\nNtReadVirtualMemory(ProcessHandle, (PVOID)(v157 + 16), &v185, 4, 0);\n```\n读取目标进程 PEB 偏移 +16 处的 `ProcessParameters` 指针值。然后：\n\n```c\n// 对 StdIn (偏移 +24), StdOut (偏移 +28), StdErr (偏移 +32) 逐一处理\nStuffStdHandle(ProcessHandle, 调用者的 StandardInput, (PVOID)(v185 + 24));\nStuffStdHandle(ProcessHandle, 调用者的 StandardOutput, (PVOID)(v185 + 28));\nStuffStdHandle(ProcessHandle, 调用者的 StandardError, (PVOID)(v185 + 32));\n```\n- **`StuffStdHandle`** 内部使用 `DuplicateHandle` 将调用者的标准句柄复制到子进程中，并通过 `NtWriteVirtualMemory` 写入子进程的 `ProcessParameters` 对应字段。\n- **过滤条件**：`(句柄值 & 0x10000003) == 3` 用于检测控制台伪句柄（如 `STD_INPUT_HANDLE = (HANDLE)-10` 等经过内核编码后的值，其低位特征为 3），此时不复制。\n\n#### 12.1 单独复制标准流句柄的原因\n\n为什么要判断是否开启全局句柄继承？\n\n本文分析的 `CreateProcessInternalW` 路径中，`NtCreateProcessEx` 的父进程参数传入的是当前进程。因此在这条路径里，**当前调用者就是新进程的父进程**；下面讨论的“父进程标准句柄”和“调用者标准句柄”指向的是同一个进程。\n\n如果是全部继承父进程的可继承句柄（`bInheritHandles == TRUE`），则可以原样复制父进程的标准输入、输出和错误输出的**句柄值**到子进程中；\n\n但如果：\n\n```text\nbInheritHandles == FALSE\n```\n\n这意味着不会复制整个可继承句柄表，但标准流可能是文件、管道或重定向句柄，例如：\n\n```text\nprogram.exe < input.txt > output.txt 2> error.txt\n```\n\n所以对于未开启全局句柄继承的情况，不能只把父进程中的句柄数值直接写过去，因此使用 `StuffStdHandle` 有选择地复制这三个句柄。本文路径中，父进程和当前调用进程是同一个进程。\n\n---\n\n### 阶段 13：线程栈分配与上下文初始化\n\n在创建主线程之前，必须先为它准备用户态栈和初始寄存器上下文。栈决定线程开始执行时可用的调用空间，上下文决定线程第一次被调度到用户态时从哪里进入、带着哪些关键参数进入。\n\n#### 13.1 BaseCreateStack —— 分配线程栈\n\n这一小节根据 PE 头中记录的栈提交大小和保留大小，在目标进程地址空间中分配主线程的用户态栈。\n\n![4aa81b203e817853fde12e25352b5d74&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/51ae40521b3c455940dab33bdc5e81d2ce0bcab8fa21122aa193ab4e669c4303.jpg)\n```c\nBaseCreateStack(ProcessHandle, v164, v29, &UserStack);\n```\n- `v164`：PE 头中的 `SizeOfStackCommit`（栈提交大小）。\n- `v29`：`max(v163, 0x40000)`，即 PE 头的 `SizeOfStackReserve` 与最小值 256KB 取较大者。\n- 在**目标进程**的地址空间中分配用户态堆栈。\n\n#### 13.2 BaseInitializeContext —— 初始化寄存器上下文\n\n栈准备好后，接下来构造主线程的初始 `CONTEXT`。这个上下文并不是简单地把指令指针直接设为程序入口点，而是按系统启动约定进入用户态启动桩，再由加载器完成初始化并转入映像入口。\n\n![8c5cd4823ed11899ea859255ae9d7772&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/b8c15afb6fb5d543d1ab362b59ba6e6f35ebbf6b86475a880a990dfbb592c188.jpg)\n\n```c\nBaseInitializeContext(&ThreadContext, v157, SectionInformation, UserStack.StackBase, 0);\n```\n- `BaseInitializeContext` 构造的是主线程首次进入用户态时使用的启动上下文。`EIP/RIP` 通常先指向系统启动桩/Thunk，而不是直接等同于 PE 映像入口点。映像入口点会被设置到某个寄存器（如 `EBX`）中，供系统启动桩/Thunk使用（比如 `ntdll!LdrInitializeThunk`）。\n- `SectionInformation.TransferAddress` 作为后续应转入的映像入口地址，通过约定的寄存器或启动参数交给启动桩；`ESP/RSP` 栈寄存器则指向刚创建的用户栈。\n- `v157` 是目标进程的 PEB 地址，并按该系统版本的启动约定写入上下文。精确使用哪个寄存器以及各寄存器值，应以 `BaseInitializeContext` 的函数体或创建后的实际 `CONTEXT` 为准。\n\n\n---\n\n### 阶段 14：创建主线程\n\n进程对象、PEB 参数、标准句柄、线程栈和初始上下文都准备好之后，才真正创建主线程。这里还会像创建进程对象时一样先处理线程安全属性，然后调用 `NtCreateThread`。\n\n然后是安全属性的处理逻辑（和 【9.2 进程安全属性转换】的逻辑几乎一样）：\n\n![e5f00bed2e3e60bfec979de537d00a0d&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/95ffd672367a42e5ebfa03d3d5911f3c9dbe332486b8e9b064ccfb4b7849bfec.jpg)\n\n若不满足特定条件则使用用户指定的安全描述符，符合则使用默认的安全描述符。\n\n---\n\n进入到另一个核心调用处，线程的创建：\n\n![025dd184ef3bd8deca0e93ffcafa5be4&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/ac86105e4ad506455814308b3efc60f04a66e0069bbd4c952b818a91892627c4.jpg)\n\n```c\nNtCreateThread(\n    &ThreadHandle,        // [输出] 线程句柄\n    0x1F03FF,             // THREAD_ALL_ACCESS\n    v161/*OBJECT_ATTRIBUTES*/,  // 含安全描述符\n    ProcessHandle,        // 所属进程\n    &ClientId,            // [输出] 包含 PID 和 TID\n    &ThreadContext,       // 寄存器上下文\n    &UserStack,           // 栈信息\n    1                     // ★ CreateSuspended = TRUE（始终挂起创建）\n);\n```\n\n**关键细节**：\n- 最后一个参数始终为 `1`，意味着线程**总是以挂起状态创建**。\n- `ClientId` 在此被填充：`ClientId.UniqueProcess = PID`，`ClientId.UniqueThread = TID`。\n\n> 相关内容参考：[Windows 线程创建&#65288;01&#65289;&#65306;线程创建主流程](/notes/n-928a46ce58c649e289fbf643a9baabe5/)\n\n\n---\n\n### 阶段 15：CSRSS 消息构建与发送\n\n主线程已经创建出来，但它仍处于挂起状态。在线程真正运行之前，客户端还需要把新进程的句柄、PID/TID、控制台信息、VDM 信息和 SxS 元数据发送给 CSRSS/Base Server，让用户态子系统完成登记和必要的启动协调。\n\n#### 15.1 消息构建\n\n这一小节先把 CSRSS 需要的固定字段和变长数据整理进 `BASE_CREATEPROCESS_MSG` 相关缓冲区，为后面的 LPC 调用做准备。\n\n![96015e422734e0db25406da89b269a76&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/91473c0c6ab980c853c05eccc974ee1f718b1f02dd3151e869ad4dbb708b297b.jpg)\n\n\n填充 `v245[]` 数组（即 `BASE_CREATEPROCESS_MSG` 结构体）：\n\n| 字段 | 赋值 | 说明 |\n|------|------|------|\n| `v245[0]` | `__PAIR64__(ThreadHandle, ProcessHandle)` | 高 32 位保存线程句柄，低 32 位保存进程句柄；不是对两个句柄执行按位或 |\n| `v245[1]` | `ClientId` | PID 和 TID |\n| `v245[2]` | `0` | 保留 |\n| `v245[3]` 低位 | `dwCreationFlagsa & ~3` | 创建标志（清除调试位） |\n| `v245[3]` 高位 | `v179` | VDM 类型 |\n| `v245[17]` | `v157` | PEB 基址 |\n| `v245[18]` 低位 | 架构映射值 | 0x14C→0, 0x200→6, 0x8664→9 |\n\n注意：`v245[0]` 原本保存：\n\n```text\n低32位：ProcessHandle\n高32位：ThreadHandle\n```\n\n进程句柄按至少 4 字节对齐，因此最低两位通常为零。这里临时利用句柄低位携带 CSRSS 内部标志（对应1282行-1285行）。\n\n\n准备的消息包括用于 SxS/DLL 版本选择的SxS信息等等：\n\n```text\n新进程和主线程句柄；\nPID/TID；\n创建标志；\nGUI/控制台启动信息；\nVDM/DOS/Win16 信息；\n目标 PEB 地址；\n处理器架构；\nSxS/Manifest/Config 相关数据。\n```\n\n#### 15.2 CsrClientCallServer —— LPC 调用\n\n消息构建完成后，通过 `CsrClientCallServer` 同步发送给 CSRSS。这个调用是用户态 `kernel32` 和 CSRSS/Base Server 之间的关键交界点，失败时需要终止已经创建但尚未运行的新进程。\n![58959560497cb8379e19b1a117a57a23&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/ca63936470428a1da9523aab0a024dcbe9f1381b8e6e03e38d30f09b91e2157b.jpg)\n\n```c\nCsrClientCallServer(ApiMessage, CaptureBuffer, 0x10000, 0x98);\n```\n各个参数的含义：\n- **`ApiMessage`** `[in/out]` **CSR 请求与响应消息体。** 包含新进程/线程的句柄、PID/TID、创建标志、PEB 基址、CPU 架构，以及关联的控制台、VDM 和 SxS 等上下文数据。\n- **`CaptureBuffer`** `[in]` **CSR 捕获缓冲区指针。** 用于封送（Marshal）消息中的变长数据（如 SxS 的 Unicode 字符串路径）。确保跨进程通信时，运行在 System 权限下的 CSRSS 能够安全、合规地读取客户端进程空间中的非固定长度数据。\n- **`0x10000`** (`BASE_CREATEPROCESS`) **CSR API 服务编号（ApiNumber）。** 高 16 位代表服务端子系统索引（`BaseServer`），低 16 位代表具体的功能号，此处对应 **进程创建登记服务**。\n- **`0x98`** **消息体大小。** 指定固定请求参数区的大小（十六进制 `0x98` 对应 152 字节）。\n\n当 `csrss.exe` 接收到该消息后，会在后台触发以下关键子系统初始化行为：\n1. **进程记录构建**：在 CSRSS 内部为新进程分配并创建 `CSR_PROCESS` 结构记录，将其纳入子系统管理。\n2. **控制台分配与继承**：依据当前会话和 `STARTUPINFO` 标志，为子进程分配新的控制台窗口或继承父进程的控制台绑定。本文路径中父进程即当前调用进程。\n3. **SxS 元数据审计**：接收并处理本次创建携带的 SxS/Manifest 配置元数据。\n4. **关机序列注册**：将新进程注册到系统的关机协调列表（Shutdown List）中，以确保系统关机或注销时，该进程能按正确的优先级顺序接收到退出信号。\n\n**失败处理**：如果 `ExitStatus < 0`（CSRSS 返回错误），调用 `NtTerminateProcess(ProcessHandle, ExitStatus)` 终止已创建的进程。\n\n\n---\n\n### 阶段 16：令牌替换与 Job 绑定\n\nCSRSS 登记成功后，流程继续处理前面安全策略阶段留下的结果。如果 SAFER 检查要求降权运行，就替换进程/线程令牌；如果产生了 Job 句柄，就把新进程绑定到对应 Job 中。\n\n什么是令牌？都是进程的权限描述：\n\n```text\n进程的访问令牌\n       +\n目标对象的安全描述符\n```\n\n#### 16.1 BasepReplaceProcessThreadTokens\n\n如果阶段 6 的 SAFER 检查产生了受限令牌 (`Handle != 0`) 且不是 `CreateProcessAsUser` 场景，这里会把该令牌应用到新进程和主线程上，使目标进程以受限制的安全上下文运行。若失败则终止进程。\n![e5dca907406d5ff03c818132159d2519&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/f9e9b11daf758d223f98667abffe71dcdfafb85da5fe846c87542432c3a88d8d.jpg)\n\n> `Handle` 和 `JobHandle` 来自前面的 `BasepCheckWinSaferRestrictions` 函数调用。\n\n#### 16.2 NtAssignProcessToJobObject\n\n如果阶段 6 还产出了 Job 句柄，说明目标进程需要受到 Job 对象的资源限制或生命周期管理。这里把新进程显式加入该 Job；失败时会直接终止新进程。\n\n![50e088b9914f12f42cf04438224ea577&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/6889cc93d73cc8f8094f7f247a2c7eff0d28177a412decc8d1f994090068afdb.jpg)\n\n### 阶段 17：唤醒线程\n\n到这里，新进程已经创建、参数已写入、主线程已创建、CSRSS 已登记，安全令牌和 Job 也处理完毕。最后一步就是根据调用者是否指定 `CREATE_SUSPENDED`，决定是否恢复主线程执行。\n\n![f4c4fb3aa5e1df4656daeb779e6f6322&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/5d17ac872d2b2c4abed5b157d241d9334bcc7c79810d163353f758af44efd185.jpg)\n\n如果用户**没有**指定 `CREATE_SUSPENDED`，则调用 `NtResumeThread` 唤醒主线程。\n\n\n\n---\n\n### 阶段 18：填充输出参数 PROCESS_INFORMATION\n\n如果前面的步骤全部成功，函数需要把新进程和主线程的信息返回给调用者。这里会填充 `PROCESS_INFORMATION`，并把本地句柄变量清零，避免统一清理逻辑把已经交给调用者的句柄关闭掉。\n\n![0e23920d948c88729c790a27d37df3f7&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/dd6d3d44bba2632be3af186f280f166856b7daed7364fde926fedc8a1aa4eb70.jpg)\n\n```c\n// 普通 Win32 进程\nv143->UniqueProcess = ProcessHandle;    // hProcess\nv31->UniqueThread = ThreadHandle;       // hThread\nv31[1] = ClientId;                      // dwProcessId + dwThreadId\n\n// VDM 进程（共享 WOW）\nv143->UniqueProcess = (HANDLE)(v30 | 2);  // 低位标记为 2\n// VDM 进程（独立 WOW / DOS）\nv143->UniqueProcess = (HANDLE)(v30 | 1);  // 低位标记为 1\n```\n\n\n“句柄低位打标签”的技巧，打上的标签在不同上下文中有不同的含义，比如在CSRSS消息和传递给输出参数时：\n```text\nv245 是用于构造 CSRSS 创建进程消息的本地缓冲区，里面保存进程句柄、线程句柄、PID/TID、创建标志、VDM 类型、PEB 地址等信息，随后通过 CsrClientCallServer 发送给 CSRSS。\n\n这里有两种“句柄低位打标签”的用法，需要区分：\n\n- v245[0] 的低位标记属于 CSRSS 消息协议。v245[0] 本身保存 ProcessHandle 和 ThreadHandle，低位标记只用于本次 CsrClientCallServer 通信。\n- PROCESS_INFORMATION.hProcess 的低位标记会返回给调用者，用来表示 VDM/WOW 句柄类型，后续句柄处理逻辑仍会识别它。\n```\n\n---\n\n![a3ad44f45e796eb5625d5ddd50ac6d31&#95;MD5&#46;jpg](/notes/n-a563a14132aa4c968d5f20c4000cb850/media/89b35e7b5f66cc3a81cfe474b76a2851a87da394b7b4c1f5301f54cf2bfb6d08.jpg)\n\n**关键细节**：填充完毕后，本地的 `ProcessHandle` 和 `ThreadHandle` 被置为 `0`，防止在后续清理流程中被错误关闭（句柄的所有权已移交给调用者）。\n\n---\n\n### 阶段 19：统一清理与返回\n\n无论成功还是失败，函数最后都会进入统一清理路径，释放本轮创建过程中分配的缓冲区、Unicode 字符串、文件句柄、Section 句柄、SxS 句柄和兼容性相关对象。成功路径会保留已经移交给调用者的进程/线程句柄；失败路径则需要回滚已创建但不能继续运行的对象。\n\n清理结束后，函数通过布尔返回值向调用者报告本次创建是否成功；失败的具体原因则依赖前面设置的 `LastError`。\n\n```c\nreturn v183;   // 成功时 v183 = 1 (TRUE)\nreturn 0;      // 失败时返回 0 (FALSE)\n```\n\n### 阶段三产物小结\n\n本阶段结束后，成功路径上已经完成一次完整的 Win32 进程创建：\n\n- `NtCreateProcessEx` 创建了新进程对象，并把映像节映射到目标地址空间。\n- `BasePushProcessParameters` 将命令行、环境变量、工作目录等参数写入目标进程 PEB。\n- `NtCreateThread` 创建了主线程，线程初始状态为挂起。\n- `CsrClientCallServer` 将新进程和主线程登记到 CSRSS/Base Server。\n- 如果调用者没有指定 `CREATE_SUSPENDED`，`NtResumeThread` 会恢复主线程执行。\n- `PROCESS_INFORMATION` 被填充，调用者拿到进程句柄、线程句柄、PID 和 TID。\n\n---\n## 总结\n\n`CreateProcessInternalW` 的核心流程可以概括为三件事：先确定本轮创建尝试的目标路径，再判断这个目标文件能否作为可执行映像运行，最后为通过校验的目标搭建进程和主线程运行环境。\n\n### 1. 路径处理：确定本轮尝试的目标\n\n首先检查调用者是否传入 `lpApplicationName`。如果传入了 `lpApplicationName`，说明调用者已经明确指定目标程序路径，系统不再从命令行中猜测可执行文件名，也不再进行基于空格的多次截断重试，而是直接进入路径转换和文件打开环节。\n\n如果没有传入 `lpApplicationName`，系统就需要从 `lpCommandLine` 中解析目标程序路径。\n\n- 如果命令行以双引号开头，则进入引号模式。系统通过下一个双引号确定候选程序路径的边界，然后对该候选路径进行搜索和校验。若路径有效，则进入文件打开环节；若路径无效，则由于引号模式无法继续移动截断点重试，直接进入失败逻辑。\n- 如果命令行没有以双引号开头，则进入无引号模式。系统会尝试在空格或 Tab 处截断命令行，把截断出来的部分当作候选程序路径，并通过 `SearchPathW` 等逻辑判断该路径是否有效。如果当前候选路径失败，则继续扩大截断范围并重试；如果所有候选都失败，则进入失败逻辑；如果某次搜索成功，则进入文件打开环节。\n\n需要注意的是，`lpApplicationName` 非空并不表示路径一定正确，只是表示系统不再从命令行中猜测程序名。真正的路径有效性仍会在后续的 `NtOpenFile` 和 `NtCreateSection` 阶段被检查。\n\n### 2. 文件解析：判断目标能否作为映像运行\n\n路径确定后，系统会将 DOS 路径转换为 NT 路径，然后调用 `NtOpenFile` 打开目标文件。文件打开成功后，再调用 `NtCreateSection(..., SEC_IMAGE, ...)`，尝试把该文件作为可执行映像创建 Section 对象。\n\n`NtCreateSection` 的返回值决定后续分支。\n\n如果 Section 创建成功，说明目标文件可以作为普通 PE 映像继续处理。此后会进行安全策略、应用兼容性、PE 元数据、架构、子系统类型、版本等检查。如果命中 IFEO Debugger 策略，则系统会改写命令行，把 Debugger 作为新的目标程序，然后重新回到前面的路径处理和文件打开流程。\n\n如果 Section 创建失败，但返回值表明目标可能是旧式程序、脚本或兼容性程序，则进入兼容处理逻辑。\n\n- 如果目标是 `.bat` 或 `.cmd` 脚本，系统会把命令行改写为 `cmd.exe /c 原始命令行`，然后重新进入前面的路径处理和文件打开流程。\n- 如果目标是普通 DOS 程序、PIF 或其他旧式 VDM 任务，系统会通过 `BaseCheckVDM` 向 CSRSS/Base Server 查询或登记 VDM 任务，判断应复用已有 VDM，还是构造 `ntvdm.exe` 命令行并重新进入主循环。\n- 如果目标是 Win16 程序，则进入 WOW VDM 处理逻辑。系统会根据 `CREATE_SEPARATE_WOW_VDM` / `CREATE_SHARED_WOW_VDM`、当前 VDM 状态和访问权限，选择共享 WOW VDM 或独立 WOW VDM。共享失败且错误为 `ACCESS_DENIED` 时，可能会自动升级为独立 WOW VDM。\n\n如果 Section 创建失败且目标既不是可兼容处理的旧式程序，也不是脚本或 VDM/WOW 任务，则进入失败逻辑。\n\n### 3. 进程与线程创建：搭建运行环境\n\n只有当目标最终可以作为 PE 映像被创建时，流程才会进入进程和线程创建阶段。\n\n这里“最终可以作为 PE 映像”不一定指最初传入的目标文件本身：\n\n- 如果原始目标是普通 PE，则创建的就是该目标程序。\n- 如果原始目标是 `.bat` 或 `.cmd`，最终创建的通常是 `cmd.exe`。\n- 如果原始目标是 DOS 或 Win16 程序，最终可能创建或复用的是 `ntvdm.exe`，原始旧式程序会作为 VDM 内部任务运行。\n\n进入该阶段后，系统会准备进程安全属性、线程安全属性、调试端口、创建标志等信息，然后调用 `NtCreateProcessEx` 创建进程对象，并基于前面创建的映像 Section 建立新进程地址空间和 PEB。\n\n随后，调用进程会查询新进程的 PEB 地址，并通过 `BasePushProcessParameters` 将命令行、环境变量、当前目录、STARTUPINFO、标准句柄等启动参数写入目标进程。\n\n接着，系统会为主线程创建用户栈，初始化线程上下文，并调用 `NtCreateThread` 创建主线程。主线程创建时默认处于挂起状态。\n\n线程创建完成后，系统还会向 CSRSS/Base Server 发送创建进程消息，传递新进程和主线程句柄、PID/TID、控制台信息、VDM 信息、SxS 信息等，让用户态子系统完成登记和必要的初始化协调。\n\n最后，如果调用者没有指定 `CREATE_SUSPENDED`，系统会调用 `NtResumeThread` 恢复主线程执行；如果指定了 `CREATE_SUSPENDED`，则主线程保持挂起状态。成功路径最终填充 `PROCESS_INFORMATION`，失败路径则进入统一清理和回滚逻辑。\n\n\n### 核心理解\n\n进程更像是一个承载运行环境的容器，保存很多线程都会使用的公共属性，例如映像路径、命令行、工作目录、环境变量、句柄表和地址空间。真正被调度执行的是线程；对于 `CreateProcess` 创建的普通用户进程来说，主线程才是最终把用户代码带入执行状态的实体。\n",
+  "id": "a563a141-32aa-4c96-8d5f-20c4000cb850",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "os/windows/process",
+      "reverse/windows",
+      "arch/x86"
+    ],
+    "title": "Windows 进程创建（01）：用户态创建流程",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "02af300e3b5ae52e6bcd00f7a694f88dc7393407f756182e001000af3883d068.jpg",
+    "0794e6f3a42728228ebc3764d8e68f61ac70cef8f551d08cfcd885bac2a81720.jpg",
+    "11d09c76307dbd6e94e075a081df28955a1f7548cd02ee064d0941270541e980.jpg",
+    "156fac53132d3da24eaf4b8c2f1e39aca97d48978c7502f0385b2a4f9bad66a7.jpg",
+    "1ab0234f71c74325a82b741663f0c72ffd5769e0b835edf1843e3f3d027bca46.jpg",
+    "1b6f01c9748c59ca2cb78262325b0d3980e81e0b9e4b9539f751f615edce2ea5.jpg",
+    "20ddc8ecd31667ce81bb3170a1ece2e8908a56f7d73351937c46aa07dd6d0c88.jpg",
+    "23e9b8af190b7c544c162ec6526328bc6c5fb55c408f5c1f6969a9f93c7e7d50.jpg",
+    "25c573207d324132820396227e9829b64367c9ca80dfe970cb51ea3b689ac3f1.jpg",
+    "25c863895efe208d53e7eb556d6f1587a43cae4874882f2f00340d9a5f8a07a5.jpg",
+    "272b46f55113d3bc9b1d55cae5613e97d8c3b12061ccfc7e2054c3312d99a797.jpg",
+    "284441df2cc2db571212b24e18b99ed8e061c52c1d97059a4ad8f1c02ac52666.jpg",
+    "285806a29cf815210013c8e0344e11039f8cdfd6db4113e53289c45c85f470f8.jpg",
+    "312f47a65b422e874081e696cfdd03591f697fbd450b837fb2457ff466320d22.jpg",
+    "3de4f45bf93f60b486000d18512401966e95d2fa781b55b11219959491d09155.jpg",
+    "4488d9840593256f73d212b962b51d26ba699aa7e5379963e3bf80460bf5114c.jpg",
+    "51ae40521b3c455940dab33bdc5e81d2ce0bcab8fa21122aa193ab4e669c4303.jpg",
+    "523c8d4b0fc77daa2388c2b4aeecc6a60809b1c2d4f79909706b2414c774976e.jpg",
+    "59e76c22d5c39fe71f379cea3c5c84a6ea1f504cfb100348878b835ea1c9cba3.jpg",
+    "5b55ade07674f3f0dba780da1a7b2de40deda7b56cf9bfbe92702390582c51ac.jpg",
+    "5d17ac872d2b2c4abed5b157d241d9334bcc7c79810d163353f758af44efd185.jpg",
+    "5d6e0d40ae8562f2c3a42f4e3be0ceed16cacdbba58f8357b8172d5cad48f475.jpg",
+    "654930a0f6a946a8907101163928592496d7a96f23c8e2e445b429e05d6adee3.jpg",
+    "665bea5da46e87cc4c7c885ef4aca62de8380af225985765884a362f7dc49944.jpg",
+    "67ab7b765a634a257e2a837803fa59fb8e3e397418ece16d95f8531b9204cb4f.jpg",
+    "6889cc93d73cc8f8094f7f247a2c7eff0d28177a412decc8d1f994090068afdb.jpg",
+    "6936d507667d672114325a1376235ff87e971ad04cf183d07c04a24c1ea1870d.jpg",
+    "6de58babe818f50fa97e008dc4705604f1f8e42aa660d625fae57f1718788d72.jpg",
+    "70b613cbe6cef093f0d6f669c2ad84467b08475b6204123fc876f742daff30a8.jpg",
+    "7139ef0e261146d710bb77b3488891c0e1e60f18e9b96e50040041ce0c89d001.jpg",
+    "7f700ad9982b291db9a8495ecffe9c19d6d66a6377394d32b96dd2b0560d0a87.jpg",
+    "81a2180730b6e746318919528be5cd8f787f8a9bf8abf1db6088de1430d14b7b.jpg",
+    "8209bcd4ada4955b82c3ece1e0cc0747460902ab36deeb006345508d3d58e356.jpg",
+    "8299f78fb11326206b1973782bb90f4f306e3aab5a11dfea4e25790ce2ad0aae.png",
+    "8844cfcc7ee155aafb4dd5ef8c8e590bd5ce1d573233199e67d91c8ad2a6fec6.jpg",
+    "89496eada9d0bb506748f7f600d0f56aacb1687a21e637e7caec6ffea53e5014.jpg",
+    "89b35e7b5f66cc3a81cfe474b76a2851a87da394b7b4c1f5301f54cf2bfb6d08.jpg",
+    "8dacd7668087bf3ba15c791623017859acd6f4801b15c94ae7f07d4a02325430.jpg",
+    "8e7c32b20cbd70bff586cc51d93f04fb13b544e4e8c882279f9c81b7a673ed4d.jpg",
+    "91473c0c6ab980c853c05eccc974ee1f718b1f02dd3151e869ad4dbb708b297b.jpg",
+    "93c33afa7d606340111f75a0f8e8f2b5afd502845ff17eb399a16be2291f4a7a.jpg",
+    "95ffd672367a42e5ebfa03d3d5911f3c9dbe332486b8e9b064ccfb4b7849bfec.jpg",
+    "a27739b7ce960194ce2c1df4981dbaf49c218949b0e5680466973840f91f86fd.jpg",
+    "ab9c2fb32d119ace470070428788ae8041a44e920578681a709b18ebd1e3b80a.jpg",
+    "ac86105e4ad506455814308b3efc60f04a66e0069bbd4c952b818a91892627c4.jpg",
+    "afa1659c699edddddf7ffc06e7475f41ae8fd9cd4373cccaff0ce1414fabbade.jpg",
+    "b1c4d2baf4c26c28e4d828b54acc721c122f19fab402348971203ca7b9df10b9.jpg",
+    "b58dc8f7e66c4e9c1d0cae99fc1e044cf02a4c66dbc83bf8e69b5125c86b2e1f.jpg",
+    "b8c15afb6fb5d543d1ab362b59ba6e6f35ebbf6b86475a880a990dfbb592c188.jpg",
+    "baf7fc8bf336aef50f9161ab61853c2f9d555b49149731942c40ef2cb1380105.jpg",
+    "bd5144c0f3daea535e1e186ab38ef271543dd5641d580e21a1be768403345536.jpg",
+    "bdb6b9f6a8c893819ebde613a6fd5fa76b35a0e0dd8cb8dd81d710ec28620675.jpg",
+    "ca63936470428a1da9523aab0a024dcbe9f1381b8e6e03e38d30f09b91e2157b.jpg",
+    "ce5d4195e8b31285772f9cfe6b46f26f89b4fdce08b2655eef131e4cb605b560.jpg",
+    "d32bcb8befdf4e1d35e686e187ffca25de69e2fb4c2b5d99664cb673e2815a0a.jpg",
+    "d6c0e2e3a241fda4119ae99788033e61a95704e0501b7e48a8b450f1406ada27.jpg",
+    "d74d0e7afddd6a2ec273f33a4a84de6e38ae9fcce65c2e52d161f243a2e4254b.jpg",
+    "dd6d3d44bba2632be3af186f280f166856b7daed7364fde926fedc8a1aa4eb70.jpg",
+    "de3f62b50bec2d2186658360fd732c19db32ae9ed9676bcb62470e4fb0143044.jpg",
+    "e0a638099eb793dadb4a32900270b3f385d8c25ee9534f1b57e5913522ee9abb.jpg",
+    "e0f14dcf25d2b25bae292ecc20198c59ae40908e526091c149f75bcd467c474b.jpg",
+    "e7a4866218e7f63eb31836b607529bcc435136c1f38ce2b143a40c93afbf1c2f.jpg",
+    "e82871df878bf4f27fd3c1dc25bca83b5412053e3e93e2191e25e0e5ea981192.jpg",
+    "e98371e0ebf4165ab44a93393f615018c52cbf00e3ac4182b6338faec553271a.jpg",
+    "ec3837126b299e308067166471513d8636035c905cea40951257b9b2852c7073.jpg",
+    "f76f56a45e8c50dbf0a3673b12f8d68ebc28a9e56f1cc554d03db1a8116a79cd.jpg",
+    "f9e9b11daf758d223f98667abffe71dcdfafb85da5fe846c87542432c3a88d8d.jpg",
+    "fa08f2a8759b676d1ea28a333c525964299fb5864e434cef1917851f52557c13.jpg",
+    "fdefec895280a327c4c859626d489454ec01a7b36699d24ed97992c2bec18fb8.jpg"
+  ],
+  "url": "/notes/n-a563a14132aa4c968d5f20c4000cb850/"
+}

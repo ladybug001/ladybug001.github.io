@@ -1,0 +1,32 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-ea5f9a4c74b5aceac23d",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-648980ad4ae5c91beb1f",
+      "kind": "heading",
+      "offset": 792
+    },
+    {
+      "id": "h-9945e56dbd7155c2cf3a",
+      "kind": "heading",
+      "offset": 1485
+    }
+  ],
+  "body": "# Android DEX 文件格式解析\n\n一个 `.dex` 文件可对应多个 `.class` 文件（经过合并与压缩），正常的 Android 构建流程通常是先生成 `.class`，再转换成 `.dex`，而不是直接从 Java/Kotlin 源代码生成 DEX：\n\n```text\nJava / Kotlin 源代码\n        ↓ 编译\n      .class（JVM 字节码，栈式指令体系）\n        ↓ D8 / R8\n       .dex（DEX 字节码，寄存器式指令体系）\n```\n\n1. 两边虽然最终表达的是同一套程序逻辑，但使用的是两套不同的字节码指令体系：JVM 是栈式虚拟机，`.class` 中保存的是基于操作数栈执行的 JVM 字节码；而 DEX 使用的是寄存器式指令模型，因此在生成 `.dex` 时，原来的 JVM 字节码会被转换成 DEX 字节码。\n> 早期 Android 使用 `dx` 完成 `.class → .dex` 的转换，现在主要使用 `D8`；如果开启代码压缩、优化和混淆，则通常由 `R8` 完成相关处理并最终生成 DEX。\n\n2. 在 `.class` 中，每个类都拥有自己独立的常量池。如果 100 个类都引用 `java/lang/String`，那么相关字符串、类型、方法描述等信息可能分别出现在这 100 个 `.class` 的常量池中。DEX 不会简单地把这些常量池直接拼接起来，而是把其中的字符串、类型、方法原型、字段和方法等信息重新整理为整个 DEX 文件共享的，不同的类可以共同引用同一份索引条目，从而减少重复的元数据。\n> 相关内容参考：[JVM Class 文件格式解析](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/)\n\n\n## DEX 文件结构一览\n\n理解了上面的设计思路，再看 DEX 文件结构就比较自然了。DEX 本质上是一套由**全局索引表 + 实际数据区**组成的二进制数据结构，整体非常像\"数据库\"：大量结构之间并不是直接嵌套保存，而是通过 ID 和索引互相引用。\n\n```text\nDEX\n│\n├── Header\n│     └── 告诉你各个核心表在哪里、有多少项\n│\n├── string_ids\n├── type_ids\n├── proto_ids\n├── field_ids\n├── method_ids\n├── class_defs\n│\n└── data 区\n      ├── string_data\n      ├── type_list\n      ├── class_data\n      │      └── encoded_method\n      │             └── code_off ──→ code_item\n      ├── code_item\n      └── map_list\n```\n\n![ed3dc7dae623bf2c1150e0fd67005abf&#95;MD5&#46;jpg](/notes/n-4c20579667134e5a8dcb61db2edc1268/media/8e116d25504ae238e791a9a2589fd80d407f4a31411140f55fa6c6f3b32daaec.jpg)\n\n\n> DEX 设计中的一个重要特点：固定大小的索引结构集中存放，而大量变长数据统一放入 `data` 区。\n\n## 65K 方法引用限制\n\nDEX 由多个 Class 文件合并而来，虽然减少了重复信息，但 `method_ids` 条目更容易积累到接近上限——这个 16 位索引的限制在 `.class` 中同样存在，只是单个 `.class` 通常远远用不完。\n\nDEX 中的方法引用统一放在 `method_ids` 中，而普通方法调用指令中的 `method_idx` 通常只有 16 位，因此一个 DEX 文件最多只能通过这种索引表示 65536 个 `method_ids` 条目。这就是 Android 开发中著名的 **65K Method Reference Limit**。\n\n当方法引用数量超过单个 DEX 的限制时，就需要使用 **MultiDex**，把代码拆分到多个 DEX 文件中：\n\n```text\nclasses.dex\nclasses2.dex\nclasses3.dex\n...\n```\n\n每个 DEX 都拥有自己独立的一套 `method_ids` 索引表，从而绕过单个 DEX 的 65K 限制。\n",
+  "id": "4c205796-6713-4e5a-8dcb-61db2edc1268",
+  "metadata": {
+    "tags": [
+      "os/android",
+      "cs/binary-format"
+    ],
+    "title": "Android DEX 文件格式解析"
+  },
+  "resources": [
+    "8e116d25504ae238e791a9a2589fd80d407f4a31411140f55fa6c6f3b32daaec.jpg"
+  ],
+  "url": "/notes/n-4c20579667134e5a8dcb61db2edc1268/"
+}

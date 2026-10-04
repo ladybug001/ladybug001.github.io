@@ -1,0 +1,76 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-035b906156c8dbbea89e",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-532ecdd6afddebea083e",
+      "kind": "heading",
+      "offset": 38
+    },
+    {
+      "id": "h-e0670ae2758cd5f5a5bd",
+      "kind": "heading",
+      "offset": 45
+    },
+    {
+      "id": "h-3fae86f5e782de39a06e",
+      "kind": "heading",
+      "offset": 425
+    },
+    {
+      "id": "h-24213b41432f8067cc3a",
+      "kind": "heading",
+      "offset": 1298
+    },
+    {
+      "id": "h-455223d0394cb3676b43",
+      "kind": "heading",
+      "offset": 1312
+    },
+    {
+      "id": "h-002807c45adb8db4bfc7",
+      "kind": "heading",
+      "offset": 2057
+    },
+    {
+      "id": "h-3858abebd2eeec93c580",
+      "kind": "heading",
+      "offset": 2236
+    },
+    {
+      "id": "h-3eac07877824b9935048",
+      "kind": "heading",
+      "offset": 2340
+    },
+    {
+      "id": "h-dc3efdb3fde075d80be4",
+      "kind": "heading",
+      "offset": 2752
+    },
+    {
+      "id": "h-da26a10e936d97927eb1",
+      "kind": "heading",
+      "offset": 3118
+    }
+  ],
+  "body": "# Wireshark 解密 TLS 流量\n\n## 浏览器 TLS 数据解密\n### 配置\n1. 配置环境变量 `SSLKEYLOGFILE`：指明一个文件，浏览器会将解密相关的密钥输出到该文件中。![](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/media/d0f1e74672d766decfdafc1d6a1431186b568479c83574082fbbe1839cf1a19c.jpeg)\n2. 配置 Wireshark 读取该文件的内容用于流量解密：编辑=>首选项=>Protocols=>TLS=>最后一栏，选中想要导出至哪个文件 ![](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/media/0dd32fab8776d6a19a3283b32ce668aa83e863c650d23b6486e77e2f87829023.jpeg)\n\n### 原理\n\n1. 对于使用 TLS1.2 加密([TLS 1&#46;2 握手流程](/notes/n-40bfe154a9514003b8b98ef574574c2e/))的HTTPS请求，Chrome 会将请求使用的对称密钥以`CLIENT_RANDOM <ClientRandom> <MasterSecret>`的形式存储到上述指定的文件，其中 `ClientRandom` 用来标识密钥属于哪个HTTPS请求，而 `MasterSecret` 就是最后双方用于通信加密的对称密钥。\n2. 对于使用 TLS1.3 加密([TLS 1&#46;3 握手流程](/notes/n-2f4b0b459c394b46a9995f63ae0c0edb/))的HTTPS请求，在整个握手和通信阶段共用到四个对称密钥，所以Chrome会将这四个密钥都导出：\n\t- `CLIENT_EARLY_TRAFFIC_SECRET <ClientRandom> <secret>`，与 TLS 1.3 的会话恢复（或称 0-RTT 恢复）机制有关，很少使用。\n\t- `CLIENT_HANDSHAKE_TRAFFIC_SECRET <ClientRandom> <secret>`，客户端握手阶段的加密密钥\n\t- `SERVER_HANDSHAKE_TRAFFIC_SECRET <ClientRandom> <secret>`，服务器握手阶段的加密密钥\n\t- `CLIENT_TRAFFIC_SECRET_0 <ClientRandom> <secret>`，数据阶段，客户端用于发送的密钥\n\t- `SERVER_TRAFFIC_SECRET_0 <ClientRandom> <secret>`，数据阶段，服务端用于发送的密钥\n\t- `EXPORTER_SECRET <ClientRandom> <secret>`，导出外部密钥，与 Wireshark 解密数据无直接关系\n\t- 同理，`ClientRandom` 起标识作用。\n\n## 非浏览器 TLS 数据解密\n\n### TLS 1.2 \n\n已知 TLS 1.2 会话密钥的生成依赖三个随机数（[TLS 1&#46;2 握手流程](/notes/n-40bfe154a9514003b8b98ef574574c2e/)），而第三个随机数是被服务器证书的公钥加密后传输的，只要能知道第三个随机数的值，我们就能生成相同的会话密钥解密流量，这需要用到 服务器/代理 证书的私钥。\n\n步骤如下（写下来冗长，具体百度）：\n1. 首先拿到 服务器/代理 包含私钥的证书（纳尼，证书不是只有公钥？往下看）。\n2. 使用 openssl 导出证书的私钥。\n3. 配置 Wireshark 使用私钥解密相应的 TLS 1.2 流量，选择`RSA key list`：![](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/media/0dd32fab8776d6a19a3283b32ce668aa83e863c650d23b6486e77e2f87829023.jpeg)\n\n\n**区分概念：数字证书 vs 密钥容器**\n\n| 类型              | 包含内容          | 用途                |\n| --------------- | ------------- | ----------------- |\n| `.crt` / `.cer` | 证书（仅公钥 + 签名）  | 给他人验证身份           |\n| `.key`          | 仅私钥           | 自己保管，用于签名/解密      |\n| `.pfx` / `.p12` | 私钥 + 公钥证书（打包） | 传输或导出完整身份凭证（加密保护） |\n\n### TLS 1.3\n\nTLS 1.3 即使拿到服务器/代理的私钥也没办法解密流量，因为每次协商密钥使用的都是临时公私钥，证书只起验证身份的作用（[TLS 1&#46;3 握手流程](/notes/n-2f4b0b459c394b46a9995f63ae0c0edb/)），想解密只能使用 `SSLKEYLOGFILE` + Wireshark的方式。\n\n## 流量解密前后对比\n\n>网上使用 TLS 协议的网站发送的数据包不够简洁和直观，为此自己使用 Nginx 搭建使用 TLS 1.X 协议的HTTPS网站进行抓包对比。Nginx 搭建 HTTPS 网站\n\n### TLS 1.2\n测试网址： https://tls-v1-2.badssl.com:1012/\n\n解密之前：![f6453c5c4e6065ebaef5f73af6d2ebe2&#95;MD5&#46;jpeg](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/media/32a1e538b4eaaa8bf8b89778a21a5d2f9132047e97d9c03dc3918a6cc3bf6ef2.jpeg)\n\n解密之后：![82e08fb7061c1dbd7924c3bfcfdcda93&#95;MD5&#46;jpeg](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/media/8fc6b886072b1c6be6e65b45968058e6163d067445b78560b1da398aee80276b.jpeg)\n\n\n\n### TLS 1.3 \n\n解密前：![753dac6c9065c1094f68e57e3397938b&#95;MD5&#46;jpeg](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/media/95dafc15ef4955aa50ba1ae5a30ea2e28443754dcedd8a0ee76c04e541a214ce.jpeg)\n\n\n解密后：![fd7f1a5ef0e23163c6b654bf5c7173ea&#95;MD5&#46;jpeg](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/media/72b2280337020857991b541af1d77a89003b10d43703a1e7b4469d2b69c30124.jpeg)\n\n\n\n## 相关链接\n- [Wireshark解密HTTPS数据流 - 池温希傲 - 博客园](https://www.cnblogs.com/aucy/p/9082429.html)\n- [Wireshark解密SSL/TLS数据包](https://blog.csdn.net/laing92/article/details/104360950)\n",
+  "id": "6467e004-4e4f-47bb-bf01-cd124ac7d1e0",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "Wireshark 解密 TLS 流量"
+  },
+  "resources": [
+    "0dd32fab8776d6a19a3283b32ce668aa83e863c650d23b6486e77e2f87829023.jpeg",
+    "32a1e538b4eaaa8bf8b89778a21a5d2f9132047e97d9c03dc3918a6cc3bf6ef2.jpeg",
+    "72b2280337020857991b541af1d77a89003b10d43703a1e7b4469d2b69c30124.jpeg",
+    "8fc6b886072b1c6be6e65b45968058e6163d067445b78560b1da398aee80276b.jpeg",
+    "95dafc15ef4955aa50ba1ae5a30ea2e28443754dcedd8a0ee76c04e541a214ce.jpeg",
+    "d0f1e74672d766decfdafc1d6a1431186b568479c83574082fbbe1839cf1a19c.jpeg"
+  ],
+  "url": "/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/"
+}

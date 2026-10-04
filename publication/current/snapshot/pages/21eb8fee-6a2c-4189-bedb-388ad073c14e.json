@@ -1,0 +1,52 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-77939e5a54a58192ff6e",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-5b819b2a20d89a889691",
+      "kind": "heading",
+      "offset": 347
+    },
+    {
+      "id": "h-6ad78e6bc6b27d361f66",
+      "kind": "heading",
+      "offset": 675
+    },
+    {
+      "id": "h-7882683f306f1b0a52d4",
+      "kind": "heading",
+      "offset": 1822
+    },
+    {
+      "id": "h-d51c076f7dd6e41f38f1",
+      "kind": "heading",
+      "offset": 1976
+    },
+    {
+      "id": "h-69acea095a02388d7824",
+      "kind": "heading",
+      "offset": 2940
+    }
+  ],
+  "body": "# Windows 进程挂靠与跨进程读写机制\n\n> [!abstract] 前置知识与架构声明\n> **前置知识**：建议先阅读 [Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)、[Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)。\n> **架构声明**：本文中引用的结构体硬编码偏移（如 `+0x44`、`+0x220` 等）基于特定的 x86 历史版本（如 Win7 32位）。在 x64 及新版 Win10+ 中，偏移量已发生巨大改变，但底层的挂靠核心逻辑依然相同。\n\n## 进程与线程的内存纽带 (Cr3)\n\n在操作系统的底层设计中，**进程本质上只负责为线程提供运行环境和系统资源（尤其是内存地址空间），而真正负责物理执行指令的实体是线程**。\n\n当线程执行如下汇编代码进行内存访问时：\n\n```asm\nMOV EAX, DWORD PTR DS:[0x12345678]\n```\n\nCPU 必须通过当前核心的 `Cr3` 寄存器（页目录表基址）去解析线性地址 `0x12345678` 对应的物理内存。而这个 `Cr3` 的值，正是来源于该线程所属的进程结构体 `_KPROCESS.DirectoryTableBase`。**换言之，正是进程通过 `Cr3` 寄存器，界定了线程能看到和操作的虚拟内存范围**。\n\n### `_ETHREAD` 中的进程指针\n\n既然线程依赖于进程提供的内存环境，那么在底层的 `_ETHREAD` 结构体中，必然存在反向寻址到其所属进程的指针。在 Windows 中，存在两个关键的进程指针：\n\n1. `_ETHREAD.ThreadsProcess` (`+0x220` 偏移处)\n2. `_ETHREAD.Tcb.ApcState.Process` (`+0x44` 偏移处)\n\n![f49a6c94301bfcd92b05fcf19c90596a&#95;MD5&#46;jpg](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/media/c2ba37eb484371fce3b8870d7c06db4afa3aa7ae159becbe406512515163593f.jpg)\n\n> [!important] 这两个指针的区别与用途\n> - **`ThreadsProcess (+0x220)`**：静态属性，表明当前线程是**由哪个进程所创建的**（无论发生何种情况，该指针始终指向原进程）。\n> - **`ApcState.Process (+0x44)`**：动态属性，表明当前线程此时此刻**正在使用哪个进程的内存资源（Cr3）**。\n>\n> 正常情况下，这两个指针指向同一个 `_EPROCESS`。\n\n在内核底层的上下文切换函数 `SwapContext`（详见 [Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/#h-f74ed608a49887527743)）中，系统正是通过比对新旧线程的 **`ApcState.Process (+0x44)`** 成员来判断是否属于同一进程。\n\n![014d8f3cf88e35e6ca8ef8c2f6423a99&#95;MD5&#46;jpg](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/media/78d0a9cda6a7dfc746deb5f8e9ca117628e37aede8a90b2fe952c2522bbedf68.jpg)\n\n如果所属进程不同，则会提取目标进程的页目录基址，执行 `Cr3` 物理切换。\n![2e45cf60e36f26d800f82446f37f1536&#95;MD5&#46;jpg](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/media/50627b76a9a802d8987cfafdd1dd4cd8ef72774055f22aa23dd9243410b9d9dc.jpg)\n\n## 进程挂靠原理与跨进程读写\n\n正常情况下，A 进程中的线程只能访问 A 的内存空间。如果为了调试或内存扫描等目的，强制将当前线程使用的 `Cr3` 修改为其他毫无关联进程（如 B 进程）的 `DirectoryTableBase`，这种手法便称为**进程挂靠（Process Attach）**。\n\n### 直接修改 Cr3 的局限性\n\n一种最原始的挂靠思路是通过汇编指令直接覆盖 `Cr3`，例如实现 A 进程读取 B 进程的数据：\n\n```asm\nmov cr3, B.DirectoryTableBase          // 强制切换至 B 进程内存空间\nmov eax, dword ptr ds:[0x12345678]     // 读取 B 进程内存数据\nmov dword ptr ds:[0x00401234], eax     // 跨进程拷贝数据（通常通过内核共享内存中转）\nmov cr3, A.DirectoryTableBase          // 切换回原进程空间\n```\n\n**这种裸写 `Cr3` 的方式存在致命缺陷**：\n如果由于时间片耗尽等原因，在挂靠期间发生了线程调度，当前线程会被切出；当它被重新调度回来时，内核态的 `SwapContext` 函数会读取该线程 `_ETHREAD` 结构中的 `ApcState.Process (+0x44)` 成员，并**强行将 `Cr3` 恢复为原 A 进程的页目录基址**。这会导致挂靠瞬间失效，进而可能引发内存访问异常。\n\n\n> [!caution] 裸写 CR3 配合 CLI 的陷阱\n> 理论上，在挂靠前使用 `CLI` 指令关闭硬件中断，且在这期间不调用任何可能引发阻塞和重新调度的系统 API。从而确保裸写 CR3 期间不被切走。\n> \n> 但在实战中，这极其危险：\n> 1. **缺页异常（Page Fault）死锁**：目标用户态内存极有可能被换页到了磁盘上（Pagefile）。如果在关中断的状态下访问该内存引发缺页异常，系统由于无法响应磁盘 I/O 的硬件中断来找回页面，会立刻导致 **`IRQL_NOT_LESS_OR_EQUAL` 蓝屏崩溃**。\n> 2. **多核（SMP）冲突**：`CLI` 只能屏蔽当前所在的单颗 CPU 核心的中断，根本无法阻止其他核心在此时释放或破坏目标进程的内存结构。\n> \n> *这是内核开发的一条红线：绝不应在关闭中断（或处于 DISPATCH_LEVEL 以上的高 IRQL 时）去访问任何未锁定的、可能发生缺页的用户态虚拟内存。*\n\n### 系统级挂靠方案 (NtReadVirtualMemory 函数)\n\n为了避免直接修改 `Cr3` 被调度器冲刷的问题，Windows 官方在进行跨进程内存读写（如 `NtReadVirtualMemory` / `NtWriteVirtualMemory`）时，采用了一套极其严谨的挂靠动作。\n\n追踪其内部核心调用链：\n```text\nNtReadVirtualMemory -> _MmCopyVirtualMemory -> _MiDoPoolCopy -> _KeStackAttachProcess -> _KiAttachProcess -> _KiSwapProcess\n```\n\n在最底层的 `_KiSwapProcess` 步骤中，除了物理修改 `Cr3` 以外：\n\n![91e1e8a91db8cc9b1710d71a363cb94f&#95;MD5&#46;jpg](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/media/eb8285d88fbb976e09e80ca6bd2aadadfa48b16d9dd27a77ba1da0364afd2ce4.jpg)\n\n**系统还会将目标进程的 `_EPROCESS` 结构体基址，同步更新到当前线程的 `_ETHREAD.Tcb.ApcState.Process (+0x44)` 成员中。**\n> 前面说过，这个 `ApcState.Process` 是调度器在做线程切换时用来判断“该载入哪个进程的页表”的唯一依据。\n![39f1affefe4f7e9a7a94a68e430175a7&#95;MD5&#46;jpg](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/media/78e679a5f783903c81ddc0e8ddbae28fc3db8af2440b2ffb2f805b91f59fcbff.jpg)\n\n通过这种“欺骗”的手段，即使在挂靠期间发生了线程调度，当该线程被恢复执行时，`SwapContext` 也会去读取已经被篡改的 `ApcState.Process` 成员，从而理所应当地将 `Cr3` 维持在挂靠的目标进程页表上，彻底消除了挂靠失效的风险。\n\n> [!tip] 闭环：如何安全还原挂靠？(SavedApcState)\n> 在修改 `ApcState` 欺骗调度器之前，`KeStackAttachProcess` 会将当前线程原始的 `ApcState` 完整备份到 `_KTHREAD` 的 **`SavedApcState`** 成员中。\n> 当跨进程读写完毕，系统调用 `KeUnstackDetachProcess` 准备脱离挂靠时，内核直接把 `SavedApcState` 的备份数据覆盖回 `ApcState`，以此实现安全、无缝的脱离还原。\n\n> [!tip] 跨进程数据交换的内存中转站\n> 在挂靠至目标进程读取数据后，为了将数据带回原进程，系统通常利用所有进程共享的**高 2GB 内核空间**（如内核池内存）作为临时数据中转站。跨进程 API 也是在此分配临时内存来进行缓冲拷贝的。\n\n",
+  "id": "21eb8fee-6a2c-4189-bedb-388ad073c14e",
+  "metadata": {
+    "tags": [
+      "os/windows/process",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows 进程挂靠与跨进程读写机制"
+  },
+  "resources": [
+    "50627b76a9a802d8987cfafdd1dd4cd8ef72774055f22aa23dd9243410b9d9dc.jpg",
+    "78d0a9cda6a7dfc746deb5f8e9ca117628e37aede8a90b2fe952c2522bbedf68.jpg",
+    "78e679a5f783903c81ddc0e8ddbae28fc3db8af2440b2ffb2f805b91f59fcbff.jpg",
+    "c2ba37eb484371fce3b8870d7c06db4afa3aa7ae159becbe406512515163593f.jpg",
+    "eb8285d88fbb976e09e80ca6bd2aadadfa48b16d9dd27a77ba1da0364afd2ce4.jpg"
+  ],
+  "url": "/notes/n-21eb8fee6a2c4189bedb388ad073c14e/"
+}

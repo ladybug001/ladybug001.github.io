@@ -1,0 +1,50 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-a48993e01ddd90fddb15",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-3cec9b838d0c15db2bae",
+      "kind": "heading",
+      "offset": 90
+    },
+    {
+      "id": "h-522c2e7b359476b7401a",
+      "kind": "heading",
+      "offset": 273
+    },
+    {
+      "id": "h-972fcc5e81240990aa40",
+      "kind": "heading",
+      "offset": 481
+    },
+    {
+      "id": "h-f783f629143c8ca61565",
+      "kind": "heading",
+      "offset": 829
+    },
+    {
+      "id": "h-6d1c203c5cd39b63a660",
+      "kind": "heading",
+      "offset": 930
+    },
+    {
+      "id": "h-90ec7e480dc10c8505e0",
+      "kind": "heading",
+      "offset": 1241
+    }
+  ],
+  "body": "# C++ 面向对象编程 (MOC)\n\n> 涵盖 C++ 面向对象编程的核心机制：从类的构造与析构、访问控制，到继承与多态的底层实现，再到泛型编程的模板机制。\n\n## 对象生命周期\n\n1. [C&#43;&#43; 构造函数与析构函数](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/) — 对象生命周期的起点与终点\n2. [C&#43;&#43; 成员初始化列表与父类构造](/notes/n-46de219634684889995ebef4c0ed56c8/) — 构造细节与初始化顺序\n## 访问与继承\n\n1. [C&#43;&#43; 类成员的访问控制](/notes/n-25f6e7fa1d944e22a87248457c3cf3ca/) — public / protected / private 权限体系\n2. [C&#43;&#43; 继承与虚继承机制](/notes/n-da561297c8704e938e5625a35698d9eb/) — 继承体系与虚继承解决菱形问题\n## 运行时多态与类型识别\n\n1. [C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/)\n2. [C&#43;&#43; 虚函数与虚函数表](/notes/n-7794ffc3e8894de895729386e783249b/) — 运行时多态的实现。\n3. [C&#43;&#43; 多重继承下的虚函数重写](/notes/n-280e5cee71ff44e39a7c81ac3dc78743/) — 多继承场景下的虚函数覆盖、`this` 修正与 thunk\n4. [C&#43;&#43; RTTI 机制](/notes/n-05b15a525c2c46f5b96d1ac648d63387/) — 运行时类型识别，依赖虚函数表\n## 模板与标准库\n\n- [C&#43;&#43; 模板机制](/notes/n-ee8743c7e4904a32b0036908655eae75/) — 泛型编程与编译期多态，作为通往 STL 的分支\n\n## 相关笔记\n\n- [C&#43;&#43; static 与 const 关键字](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/) — static/const 在类中的特殊语义\n- [C&#65295;C&#43;&#43; 语言基础 &#40;MOC&#41;](/notes/n-38d58bba673d4ca996b87b58f8d04951/) — C/C++ 共通的底层语言机制\n- [C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/) — 基于模板的标准库\n\n## 实现与逆向应用\n\n- [COM 组件技术 &#40;MOC&#41;](/notes/n-2929ad8ff2e64326bfd419aab6791065/) — 观察接口、虚函数表与多重继承在组件中的应用。\n- [FPS 游戏逆向通用思路](/notes/n-126b8566fd6b4d268317586a51557ddb/) — 将对象布局、虚函数与类型识别用于游戏对象分析。\n",
+  "id": "0a0112f4-64fc-4c52-937f-c3acc6f4f4b1",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "lang/cpp"
+    ],
+    "title": "C++ 面向对象编程 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-0a0112f464fc4c52937fc3acc6f4f4b1/"
+}

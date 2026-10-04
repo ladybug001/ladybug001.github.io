@@ -1,0 +1,53 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b237620d04df8343741d",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-176d3856eb349f9610a9",
+      "kind": "heading",
+      "offset": 32
+    },
+    {
+      "id": "h-b49b9f65a76e1ce2236c",
+      "kind": "heading",
+      "offset": 243
+    },
+    {
+      "id": "h-054e3ed20edd374e886e",
+      "kind": "heading",
+      "offset": 861
+    },
+    {
+      "id": "h-be2dc4b519554bd5d8b4",
+      "kind": "heading",
+      "offset": 1833
+    },
+    {
+      "id": "h-8acab6ac28b90824076b",
+      "kind": "heading",
+      "offset": 2077
+    },
+    {
+      "id": "h-be80b2b944a3e2d348db",
+      "kind": "heading",
+      "offset": 4670
+    }
+  ],
+  "body": "# 计算机网络：UDP 协议与套接字开发\n\n## UDP 是什么\n\n`UDP` 是 `User Datagram Protocol` 的缩写，中文通常译为**用户数据报协议**。和 `TCP` 一样，`UDP` 也属于传输层协议。\n\n`UDP` 提供的是一种最小化的报文传输能力：它在 `IP` 的主机到主机交付能力之上，增加了端口号、长度字段和校验和，从而把数据交付到具体应用进程。它不建立连接，也不在协议层保证可靠交付、按序交付、去重、流量控制或拥塞控制。\n\n## UDP 首部结构\n\n![63f6b385051c2cce889afa2abff4dba3&#95;MD5&#46;jpg](/notes/n-4435a512e6634510acdb3e397906087e/media/11cd27b88bb8d676f9ae7f17b15d51c984e1966baedc45b7ce7b295c075a9e11.jpg)\n\n结合上图可以看到，`UDP` 首部固定为 `8` 字节，字段包括：\n\n1. **源端口（Source Port）**：发送方端口。该字段在 `RFC 768` 中是可选语义；不使用时可以为 `0`。\n2. **目的端口（Destination Port）**：接收方端口，用于把数据报分发给目标应用进程。\n3. **长度（Length）**：整个 `UDP` 数据报长度，包含 `UDP` 首部和数据，最小值为 `8`。\n4. **校验和（Checksum）**：覆盖 `UDP` 伪首部、`UDP` 首部和数据。伪首部包含源地址、目的地址、协议号和 `UDP` 长度，用于降低误投递风险。\n\n可以看到 `UDP` 和 `IP` 的**最大区别**就是 `UDP` 多了对端口的复用/分用。\n\n同时，`UDP` 和 `TCP` 一样，首部里都没有“上层协议类型”字段。基于 `UDP` 的应用协议通常需要结合端口号、业务上下文和自身数据格式解析负载内容。\n\n\n## UDP 与 TCP 对比\n\n`TCP` 和 `UDP` 都属于传输层协议，两者的**最大共同点**是都借助端口号区分不同应用进程。\n\n`UDP` 的特点是：\n\n- **无连接**：发送数据之前，通信双方通常不需要像 `TCP` 那样通过三次握手建立连接并同步状态。发送端只要知道目标 `IP` 地址和端口，就可以直接发送一个数据报。\n- **面向报文**：一次 `sendto()` 对应一个 `UDP` 数据报；一次 `recvfrom()` 通常取出一个完整数据报，或在缓冲区不足时触发截断/报文过大错误。这一点和 `TCP` 的字节流语义不同。\n- **协议开销小**：`UDP` 首部固定只有 `8` 字节，协议层状态和处理开销都比 `TCP` 更小。\n- **不保证到达**：数据报可能在网络中丢失。\n- **不保证按序**：多个数据报可能乱序到达。\n- **不保证去重**：同一个数据报理论上可能被重复交付。\n- **不内置重传与拥塞控制**：`UDP` 协议本身不提供像 `TCP` 那样的确认应答、超时重传、流量控制和拥塞控制。\n\n可以看到，`UDP` 的许多协议特征基本和 `TCP` 反着来：它牺牲了协议层可靠性，换取更低开销、更明确的报文边界。这也是 `UDP` 常出现在实时音视频、在线游戏等更看重时延或报文边界场景里的原因。\n\n![6be6e3da547cbc1453ba3910b6745cc6&#95;MD5&#46;jpg](/notes/n-4435a512e6634510acdb3e397906087e/media/36e899dfb14907ebb52969d58da717a763b563138f586d306046562c415b1198.jpg)\n\n\n应用层完全可以在 `UDP` 之上自行实现序号、确认、重传、窗口、拥塞控制和加密等机制，从而做出一套带有“类 `TCP` 可靠性”甚至不同可靠性取舍的传输逻辑。现实中，`QUIC` 就是典型例子：它运行在 `UDP` 之上，但自己实现了连接管理、可靠传输、流量控制、拥塞控制和安全能力。\n\n\n> [!NOTE] 面向报文和面向字节\n> 面向报文/面向字节流本质上是协议抽象，是设计思想上的选择，并不是 `TCP` 有缺陷无法实现面向报文。\n\n## UDP 负载的大小限制\n\n`UDP` 面向报文，但这不代表数据报可以无限大。单个 `UDP` 数据报过大时，可能触发 `IP` 分片；而一旦其中任意分片丢失，整个原始数据报就无法完整重组。因此实际工程里通常会主动控制单个 `UDP` 数据报的大小，尽量避免依赖 `IP` 分片。\n> 参考：[计算机网络&#65306;IPv4 首部与分片](/notes/n-959ecb43b92a47b18202c6f1d72ff78a/#h-70f1df4962d285294826)\n\n\n## 实践：接收 UDP 数据\n\n在 `UDP` 中，“服务器端”和“客户端”的概念比 `TCP` 弱一些，因为协议本身没有连接建立过程，也没有 `listen()`、`accept()` 这种固定的建连步骤。不过在具体业务里，我们仍然会按角色分工，继续使用“服务端/客户端”这种说法。\n\n典型的 `UDP` 服务端流程如下：\n\n1. 初始化 `Winsock`\n2. 创建套接字\n3. 绑定套接字\n4. 收发数据\n5. 关闭套接字\n\n这里仍然需要 `bind()`，原因不是“建立连接”，而是**让本机占住一个确定的端口**用于通信。\n\n服务端实际代码如下：\n\n```cpp\n#include <winsock2.h>\n#include <stdio.h>\n#include <string.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n\nint main(int argc, char* argv[])\n{\n    // 0. 初始化\n    WORD wsVersion = MAKEWORD(2, 2);\n    WSADATA wsaData = {0};\n    if (WSAStartup(wsVersion, &wsaData) != 0) {\n        return 1;\n    }\n\n    // 1. 创建套接字\n    SOCKET sSocket = socket(AF_INET, SOCK_DGRAM, 0);\n    if (sSocket == INVALID_SOCKET) {\n        printf(\"套接字创建失败!\\n\");\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"套接字创建成功!\\n\");\n    }\n\n    // 2. 绑定套接字\n    sockaddr_in sockAddrInfo = {0};\n    sockAddrInfo.sin_addr.S_un.S_addr = inet_addr(\"172.16.176.5\");\n    sockAddrInfo.sin_port = htons(2118);\n    sockAddrInfo.sin_family = AF_INET;\n\n    int bRes = bind(sSocket, (sockaddr*)&sockAddrInfo, sizeof(sockAddrInfo));\n    if (bRes == SOCKET_ERROR) {\n        printf(\"绑定失败!\\n\");\n        closesocket(sSocket);\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"绑定成功!\\n\");\n    }\n\n    // 3. 收发数据\n    char recvBuf[100] = {0};\n    while (true) {\n        int ret = recvfrom(sSocket, recvBuf, sizeof(recvBuf) - 1, 0, NULL, NULL);\n        if (ret == SOCKET_ERROR) {\n            printf(\"接收失败!\\n\");\n            break;\n        }\n\n        recvBuf[ret] = '\\0'; // 当前示例把数据按字符串处理\n        if (ret != 0) {\n            printf(\"Recv Data: %s\\n\", recvBuf);\n        }\n        memset(recvBuf, 0, sizeof(recvBuf));\n    }\n\n    // 4. 关闭套接字\n    closesocket(sSocket);\n    WSACleanup();\n    return 0;\n}\n```\n\n相比 `TCP`，这里少了 `listen()`、`accept()`、`connect()`、`shutdown()` 等面向连接流程的代码；创建套接字时使用的类型也变成了 `SOCK_DGRAM`。\n\n这里还需要了解一个新函数 `recvfrom()`，它用于接收一个 `UDP` 数据报：\n\n```cpp\nint recvfrom(\n    SOCKET s,                 // 套接字\n    char* buf,                // 输出参数，接收缓冲区\n    int len,                  // 缓冲区长度\n    int flags,                // 调用标志，通常写 0\n    struct sockaddr* from,    // 输出参数，可用于接收发送方地址\n    int* fromlen              // 输入输出参数，表示地址结构长度\n);\n```\n\n关于 `recvfrom()`，有几个点要特别注意：\n\n- 如果只关心收到的数据，不关心是谁发来的，那么 `from` 和 `fromlen` 可以直接写 `NULL`。\n- 如果后续需要给发送方回包，或者要按发送方地址做访问控制、会话区分，就不能把这两个参数写成 `NULL`，而应该让内核把对端地址填出来。\n- `recvfrom()` 一次最多返回一个数据报。在 `Winsock` 中，如果面向消息的套接字收到的数据报大于缓冲区，`recvfrom()` 会返回 `SOCKET_ERROR`，错误码为 `WSAEMSGSIZE`；对于 `UDP` 这类不可靠协议，超出缓冲区的部分会丢失。\n- 和 `TCP` 不同，`recvfrom()` 返回 `0` 并不表示“连接关闭”。在 `UDP` 里，它可以只是收到了一个长度为 `0` 的合法数据报。当前示例只是简单地忽略了这种情况。\n\n## 实践：发送 UDP 数据\n\n理解了服务端之后，再来看客户端会简单很多。典型流程如下：\n\n1. 初始化 `Winsock`\n2. 创建套接字\n3. 发送数据\n4. 关闭套接字\n\n这里没有显式 `bind()`，因为很多 `UDP` 客户端并不需要固定本地端口。只要第一次发送时交给系统，系统通常就会自动分配一个临时端口。\n\n实际代码如下：\n\n```cpp\n#include <winsock2.h>\n#include <stdio.h>\n#include <string.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n\nint main(int argc, char* argv[])\n{\n    // 0. 初始化\n    WORD wsVersion = MAKEWORD(2, 2);\n    WSADATA wsaData = {0};\n    if (WSAStartup(wsVersion, &wsaData) != 0) {\n        return 1;\n    }\n\n    // 1. 创建套接字\n    SOCKET cSocket = socket(AF_INET, SOCK_DGRAM, 0);\n    if (cSocket == INVALID_SOCKET) {\n        printf(\"套接字创建失败!\\n\");\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"套接字创建成功!\\n\");\n    }\n\n    // 2. 收发数据\n    printf(\"Input: \");\n    char sendBuf[100] = {0};\n    scanf(\"%99s\", sendBuf);\n\n    sockaddr_in sockAddrInfo = {0};\n    sockAddrInfo.sin_addr.S_un.S_addr = inet_addr(\"127.0.0.1\");\n    sockAddrInfo.sin_port = htons(2118);\n    sockAddrInfo.sin_family = AF_INET;\n\n    sendto(cSocket, sendBuf, strlen(sendBuf) + 1, 0, (sockaddr*)&sockAddrInfo, sizeof(sockAddrInfo));\n\n    // 3. 关闭套接字\n    closesocket(cSocket);\n    WSACleanup();\n    return 0;\n}\n```\n\n与服务端不同，这里用到了 `sendto()`，它负责把一个数据报发送给指定目标地址：\n\n```cpp\nint sendto(\n    SOCKET s,                  // 套接字\n    const char* buf,           // 发送缓冲区\n    int len,                   // 发送数据长度\n    int flags,                 // 调用标志，通常写 0\n    const struct sockaddr* to, // 目标地址\n    int tolen                  // 地址结构长度\n);\n```\n\n这里要特别注意几点：\n\n- `sendto()` 需要明确指定“发给谁”，因此必须提供目标 `IP` 和端口。\n- `sendto()` 返回成功，并不等于“对方已经收到”。它通常只表示当前数据报已经成功交给本机协议栈处理。\n- 发送长度不应该固定写成缓冲区总大小，否则可能把未使用的字节一并发出去。若当前示例按字符串处理，通常写 `strlen(sendBuf) + 1` 更合适。\n- 真实工程里应该检查 `sendto()` 返回值和错误码，不能直接假设发送一定成功。\n\n当前示例只是“单向发送”版本，所以客户端发完就退出了。如果业务需要做请求-响应，客户端同样可以继续调用 `recvfrom()` 等待服务端回包；服务端也需要在 `recvfrom()` 中拿到发送方地址，再用 `sendto()` 把响应发回去。\n",
+  "id": "4435a512-e663-4510-acdb-3e397906087e",
+  "metadata": {
+    "tags": [
+      "cs/network",
+      "lang/cpp"
+    ],
+    "title": "计算机网络：UDP 协议与套接字开发"
+  },
+  "resources": [
+    "11cd27b88bb8d676f9ae7f17b15d51c984e1966baedc45b7ce7b295c075a9e11.jpg",
+    "36e899dfb14907ebb52969d58da717a763b563138f586d306046562c415b1198.jpg"
+  ],
+  "url": "/notes/n-4435a512e6634510acdb3e397906087e/"
+}

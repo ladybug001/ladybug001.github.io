@@ -1,0 +1,199 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b658786a0c874b09feef",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-d9c40a75dc760c968a17",
+      "kind": "heading",
+      "offset": 488
+    },
+    {
+      "id": "h-1c44f82def4aac8203b2",
+      "kind": "heading",
+      "offset": 1136
+    },
+    {
+      "id": "h-3afebfcbb23d86e750e5",
+      "kind": "heading",
+      "offset": 1164
+    },
+    {
+      "id": "h-20dbc111db0bb2d41954",
+      "kind": "heading",
+      "offset": 2287
+    },
+    {
+      "id": "h-2beab8b33e83c418f1b0",
+      "kind": "heading",
+      "offset": 3347
+    },
+    {
+      "id": "h-fb7e69ca64d1540dbbbb",
+      "kind": "heading",
+      "offset": 3455
+    },
+    {
+      "id": "h-1eb211c0830c09f2c0fb",
+      "kind": "heading",
+      "offset": 3974
+    },
+    {
+      "id": "h-fd18577e7fe050b99e66",
+      "kind": "heading",
+      "offset": 5082
+    },
+    {
+      "id": "h-bc876a859632a526124b",
+      "kind": "heading",
+      "offset": 5330
+    },
+    {
+      "id": "h-39fe22829660785603fa",
+      "kind": "heading",
+      "offset": 5694
+    },
+    {
+      "id": "h-d24cd88e5ef02c5c220f",
+      "kind": "heading",
+      "offset": 6358
+    },
+    {
+      "id": "h-c95fee4dad02bc4ea138",
+      "kind": "heading",
+      "offset": 6939
+    },
+    {
+      "id": "h-85d669bfd3a8a9e30b55",
+      "kind": "heading",
+      "offset": 7831
+    },
+    {
+      "id": "h-6d5eb123ec9443ff4c62",
+      "kind": "heading",
+      "offset": 8249
+    },
+    {
+      "id": "h-c5b9efa942c053ec2b68",
+      "kind": "heading",
+      "offset": 8580
+    },
+    {
+      "id": "h-b57075e208275089fd9a",
+      "kind": "heading",
+      "offset": 9016
+    },
+    {
+      "id": "h-67b64ff6e8c3a00fc9bc",
+      "kind": "heading",
+      "offset": 10620
+    },
+    {
+      "id": "b-s3hn8a",
+      "kind": "block",
+      "offset": 13517
+    },
+    {
+      "id": "h-5ad6185752c4bb9bc537",
+      "kind": "heading",
+      "offset": 16541
+    },
+    {
+      "id": "h-734920f16267c5809add",
+      "kind": "heading",
+      "offset": 16667
+    },
+    {
+      "id": "h-517a916b0e0b1507ba51",
+      "kind": "heading",
+      "offset": 17707
+    },
+    {
+      "id": "h-79ee172c9b33ad50bf55",
+      "kind": "heading",
+      "offset": 17842
+    },
+    {
+      "id": "h-212b2240346bffe0b38d",
+      "kind": "heading",
+      "offset": 18459
+    },
+    {
+      "id": "h-66ce0b76d825e343615e",
+      "kind": "heading",
+      "offset": 19078
+    },
+    {
+      "id": "h-3e58de76f2ed19588f23",
+      "kind": "heading",
+      "offset": 19749
+    },
+    {
+      "id": "h-6a2e5625681459833e8c",
+      "kind": "heading",
+      "offset": 23122
+    }
+  ],
+  "body": "# Windows x86 系统调用与 SSDT\n\n> **来源**：[滴水逆向课程笔记 - Evilchen](https://gh0st.cn/Binary-Learning/Binary-Learning.html) > [中级篇](https://gh0st.cn/Binary-Learning/中级篇.html)\n\n\n本篇笔记沿着一次 Windows API 调用的完整生命周期展开，依次分析：\n1. **3 环调用链追踪**：以 `ReadProcessMemory` 为例，揭示 API → kernel32.dll → ntdll.dll → 系统调用号的传递过程\n2. **3 环进 0 环的机制**：`_KUSER_SHARED_DATA` 如何统一两种进 0 环方式（`INT 0x2E` vs `SYSENTER`）\n3. **保存现场**：进入 0 环后，内核如何通过 `_KTRAP_FRAME` 保存 3 环的寄存器状态\n4. **系统服务分发**：内核如何根据系统调用号在 SSDT 中定位并调用对应的内核函数\n\n## API 与核心 DLL\n\nAPI 函数即应用程序接口（Application Programming Interface），Windows API 主要位于 `C:\\Windows\\System32\\` 目录下的各 DLL 中。\n\n![14d079d61efe428fd856e3d87b5f1b75&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/9812c198c7ef56d4e3dcba69623faaed410de9ecfb88908e708f86b64d5aaeae.jpg)\n\n该目录下有几个重要的 DLL：\n\n| DLL 名称       | 作用                                           |\n| -------------- | ---------------------------------------------- |\n| `kernel32.dll` | 最核心的功能模块，如管理内存、进程和线程       |\n| `user32.dll`   | Windows 用户界面相关 API，如创建窗口、发送消息 |\n| `gdi32.dll`    | 图形设备接口，如画图、显示文本                 |\n| `ntdll.dll`    | 大多数 API 通过该 DLL 进入内核（0 环）         |\n\n## 追踪 3 环函数的调用链\n### 分析 ReadProcessMemory 函数\n\n通过 IDA 查看 `ReadProcessMemory` 在 DLL 文件中的实现。找到 `kernel32.dll` 文件并用 IDA 打开，在 Functions 窗口使用 Ctrl+F 搜索函数：\n\n![c1fdc404ad743badfce88069f43ad049&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/1548d63a20e99d6d0749ff914cdc5d2b87fa5d7922ad4122e53080683b34ac8a.jpg)\n\n双击函数名，在 IDA 的反汇编窗口可以看到该函数的反汇编指令：\n\n![57466a08949bdce04a501198ae31eab6&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/afa149ed5ebe5b0582080f4e64d87c4056086e6e1cdc52e3ac245233be4be95a.jpg)\n\n可以看到它的主要作用是调用导入表的 `NtReadVirtualMemory` 函数。在 IDA 的 Imports 窗口中可以找到该函数（Ctrl+F 搜索），并确认它来自 `ntdll.dll` 模块：\n\n![7f2dc90b5aabfb180c5474660093ecee&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/1494915d1d2cb6a1b755c73c979b9ffa5dd6ebb7f9e473d1399e338fb3c00ddb.jpg)\n\n继续使用 IDA 打开 `ntdll.dll` 查看该函数：它给 `EAX` 赋了一个值（即系统调用号），并给 `EDX` 赋了一个内存地址，该地址指向一个函数，即进入 0 环的关键入口：\n\n![b839f3d13262aa733ccdb2efa9393ee6&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/d15a7efd0c73d2d58410f17144a8bd295d107eafe208cd85c5dc8983bcd22f3c.jpg)\n\n由此可得出结论：许多涉及系统资源管理的 Windows API 的核心实现在 0 环，3 环的 DLL 起到参数打包和系统调用转发的作用。\n\n### 实现 ReadProcessMemory 函数\n\n上面的分析揭示了一个关键事实：3 环 DLL 只是做参数打包和系统调用转发，真正的逻辑在 0 环。为了验证这个结论，下面尝试绕过 `kernel32.dll` 和 `ntdll.dll`，直接用内联汇编构造系统调用，实现一个等价的 `ReadProcessMemory`。\n\n直接按照 IDA 中 `kernel32.dll` 和 `ntdll.dll` 的反汇编代码整合即可，代码如下。**其中提升栈顶的 `SUB` 指令是因为在 Windows API 本身的调用中有两次 `CALL` 指令，第一次 `CALL` 会将栈顶提升 `0x4` 并存入下一行指令地址，所以在最后一次 `CALL` 调用时需要保证 `hProcess` 在 `ESP+4` 的位置而非 `ESP` 的位置**。在最后的汇编指令中也需要手动恢复到原来的栈顶位置：\n\n```c\nvoid MyReadProcessMemory(HANDLE hProcess, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesRead)\n{\n    _asm\n    {\n        // ReadProcessMemory\n        lea eax, [ebp+0x14]\n        push eax\n        push [ebp+0x14]\n        push [ebp+0x10]\n        push [ebp+0xC]\n        push [ebp+0x8]\n\n        // NtReadVirtualMemory\n        sub esp, 0x4\n        mov eax, 0xBA\n        mov edx, 0x7FFE0300\n        call dword ptr [edx]\n        add esp, 0x18\n    }\n}\n```\n\n调用该函数，成功执行，结果如下：\n\n![66eb7e9aaa8eb5f5f6560fd76002bcb9&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/2b3ded789ce756d62620910ef82a98586178fe0a74a4d442a620bd5601fabedf.jpg)\n\n## 3 环进 0 环的机制\n\n了解了 API 在 3 环的体现后，可以手动封装一个 3 环的 API。但 3 环进 0 环的具体细节尚未涉及，本章节将深入分析。\n\n### `_KUSER_SHARED_DATA` 与 `SystemCall`\n\nWindows 定义了一个 `_KUSER_SHARED_DATA` 结构体，该结构体中的数据在应用层和内核层之间共享。在用户层和内核层的地址分别为：`0x7FFE0000`、`0xFFDF0000`。\n\n**它们是两个不同的线性地址（虚拟地址），但映射到同一个物理页**。在用户层对该物理页仅有只读权限，而在内核层拥有读写权限。\n\n在上一章节中，Windows API 使用的地址 `0x7FFE0300` 就属于 `_KUSER_SHARED_DATA` 结构体的一部分。\n\n可以在 WinDbg 中查看该结构体，找到 `0x300` 偏移的成员：\n\n![c1d946ce96d56f473b8bc0372b978b5d&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/bc79da1037ab707e48b3f4fef2705df82e2f20cdf4623836a4a7da9bf079f5d1.jpg)\n\n这个结构体主要两个成员要重点关注：`SystemCall`、`SystemCallReturn`\n\n#### SystemCall 成员\n\n`_KUSER_SHARED_DATA` 偏移 `0x300` 处对应结构体成员 `SystemCall`，其作用是进入 0 环，具体进入 0 环的方式由 CPU 决定：\n- 当 CPU 支持 `SYSENTER` / `SYSEXIT` 指令时，存储的函数地址是 `ntdll!KiFastSystemCall`；\n- 否则使用 `ntdll!KiIntSystemCall` 函数。\n\n判定 CPU 是否支持 `SYSENTER` / `SYSEXIT` 指令：令 `EAX=1` 然后执行 `CPUID` 指令，处理器的特征信息会存放在 `ECX` 和 `EDX` 寄存器中：\n\n![c425d0eff2fe247ca5f2c272ecdf8b1c&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/289ed497724cdbe35db5e7b4539f98fdcc22d2df24afacdbe8a855bec779d5d5.jpg)\n\n其中 `EDX` 包含一个 SEP 位（第 11 位），**该位为 1 表示 CPU 支持 `SYSENTER` / `SYSEXIT` 指令，为 0 则表示不支持**：\n\n![15c2705b32bc80d1841166d010149069&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/ab1fceaadc783ef7478e3efef7f272968f20fd009c557de1d3eb9368f3cca676.jpg)\n\n确认为 1，**表示当前 CPU 支持 `SYSENTER` / `SYSEXIT` 指令**。\n\n因此在当前 CPU 下，`_KUSER_SHARED_DATA` 结构体的 `0x300` 偏移位存储的就是 `ntdll!KiFastSystemCall` 函数的地址。\n\n> [!QUESTION] 为什么不直接使用指令进入 0 环，而要依靠 `SystemCall` 字段？\n> 老 CPU（只支持 `int 0x2e`）；\n> 新 CPU（支持 `sysenter`），且不同厂商 CPU 的快速系统调用实现不同。\n> \n> 通过这个字段可以统一进入 0 环的逻辑：\n> ```asm\n> mov eax, ServiceId\n> mov edx, 7FFE0300h\n> call dword ptr [edx]\n> ```\n\n### 进入 0 环的两种方式\n\n在之前各种\"门\"的学习后，已知权限切换时（3 环进 0 环），`CS`、`SS`、`ESP`、`EIP` 寄存器都会发生变化。\n> 参考：[x86 保护模式分段机制 &#40;MOC&#41;](/notes/n-591f04ba95784267982ebc62f2b0c04d/)\n\n有了这些前置知识，下面来分析 `KiIntSystemCall` 和 `KiFastSystemCall` 这两个进入 0 环的函数有何不同。\n\n#### KiIntSystemCall（INT 0x2E）\n\n通过 WinDbg 打开任意一个 PE 文件，找到 `KiIntSystemCall` 函数：\n\n![6b7df045f9799c261d26ed939591c358&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/428ec3f0f07b3fe7407776766862633cf5a26a43f3dda2e6a155e0dea70206f7.jpg)\n\n代码很简洁：首先将当前参数的指针存储到 `EDX` 寄存器中（系统调用号在 `EAX` 中），然后使用中断门进入 0 环。\n\n> [!IMPORTANT]\n> **所有 API 通过中断门进内核时，使用的中断号（IDT 表中索引值）都是 `0x2E`**。\n\n##### 调用过程分析\n\n手动分析 `INT 0x2E` 进 0 环的过程。首先找到 IDT 表，根据 `0x2E` 索引找到对应的门描述符位置：\n\n![6d36216b753a10383e0ec47e8d0c8669&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/96614aad5e5215984264290ad6a0134da9d5d0f1a8f84758efcc6108bf236941.jpg)\n\n该门描述符的高 32 位第 8 位为 0，表示它是中断门描述符。**通过中断门描述符可以获得 `CS`（低 32 位的第 16 至 31 位，即段选择子）和 `EIP`（高 32 位的第 16 至 31 位拼接低 32 位的第 0 至 15 位，即段内偏移）**，`SS` 和 `ESP` 则基于 TSS 获取。\n\n跟进 `EIP`，会发现它指向内核模块的函数 **`KiSystemService`**：\n![99e2a631bd5f69384effc8ce479fbb20&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/dd9d47d9e56bf0c671ea1509e9f82af39d1d9e553ae43dcd26fe338f4f5e1052.jpg)\n\n至此大致了解了中断门进 0 环的简要流程。\n\n#### KiFastSystemCall（SYSENTER）\n\n`KiFastSystemCall` 函数如下，可以看到它与 `KiIntSystemCall` 没什么区别，只是进入 0 环的方式不是基于中断门，而是使用了 `SYSENTER` 指令：\n\n![8abcc395ba458678c209e03e20cba14c&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/4953a03a6b78d719133915283c68802882678a116c7b05b55d167d20635f27fd.jpg)\n\n\n> [!QUESTION] 为什么要有 `SYSENTER` 指令？\n> 中断门进 0 环需要提供新的 `CS`、`SS`、`ESP`、`EIP`，其中 `CS` 和 `EIP` 在 IDT 表中，而 `SS` 和 `ESP` 在 TSS 中，还需要在堆栈中保存上下文环境，**这些都需要访存，速度相对较慢。**\n> \n> **`SYSENTER` 指令的核心逻辑**：操作系统会提前将 `CS`、`SS`、`ESP`、`EIP` 的值存储在 MSR 寄存器中。该指令执行时，CPU 直接将 MSR 寄存器中的值写入相关寄存器，省去了读取内存的过程，提升了调用速度，**因此称之为快速调用**。\n\n##### 调用过程分析\n\n`SYSENTER` 执行时，CPU 会从三个 MSR（Model-Specific Register）中分别获取内核代码段选择子（CS）、内核栈指针（ESP）以及系统调用入口地址（EIP）。\n\n其中，SS 并不由独立的 MSR 提供，而是由硬件根据 CS 选择子自动计算得到（即 `SS = CS + 0x8`）。整个过程均由处理器硬件完成。\n> 这要求支持 `SYSENTER` 的 CPU，其 CS 对应的段描述符后面要跟着 SS 使用的段描述符。\n\n具体细节可参考 Intel 白皮书第二卷中 `SYSENTER` 指令的说明。\n\n| MSR               | 地址      |\n| ----------------- | ------- |\n| IA32_SYSENTER_CS  | `0x174` |\n| IA32_SYSENTER_ESP | `0x175` |\n| IA32_SYSENTER_EIP | `0x176` |\n\n在操作系统上，可以通过 `RDMSR`/`WRMSR` 指令对 MSR 寄存器进行读写：\n\n![d1a205765166c6a6e3b4085d5f64bd6e&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/e5be1ec2f1b9e42f48d7c823b07f13b5d595494ae1c0f05b58f060c4445731d2.jpg)\n\n跟进 `EIP`，会发现 `SYSENTER` 指令进入 0 环执行的是内核模块的 `KiFastCallEntry` 函数：\n\n![2ce5589b5b7829c2ff7cf7f661019725&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/cc7d1cdd0a1154c1b8922173d9c92fca173026adbc3a52dd595260690af4647f.jpg)\n\n### 小结\n\n| 维度        | KiIntSystemCall（INT 0x2E，中断门） | KiFastSystemCall（SYSENTER，快速调用） |\n| --------- | ----------------------------- | ------------------------------- |\n| CS/EIP 来源 | IDT 中断门描述符                    | MSR 寄存器                         |\n| SS/ESP 来源 | TSS                           | MSR（SS = CS + 0x8）              |\n| 内核入口函数    | `nt!KiSystemService`          | `nt!KiFastCallEntry`            |\n\n## 进入 0 环后：保存现场\n\nAPI 进入 0 环之前需要将 3 环时的寄存器值保存，这样在 0 环以新的寄存器值执行完成后，回到 3 环时才能恢复原先的寄存器状态、还原现场。3 环寄存器的值保存在哪里，就是本章需要学习的保存现场。\n\n> [!NOTE] 权限改变时 CPU 硬件会自动保存部分上下文，为什么内核还需要做额外的保存操作？\n> 硬件自动入栈的仅仅是维持控制流返回的**最小必要状态**（如 `CS:EIP`、`EFLAGS`、`SS:ESP`）；而内核需要在此基础上，手动将其余的通用寄存器和段寄存器状态压栈，从而构建出**完整的线程运行现场**（即 `_KTRAP_FRAME`），以确保 0 环返回 3 环时能无损还原程序的执行原貌。\n\n### 前置知识：三个关键结构体\n\n进入 0 环后，内核需要把 3 环的寄存器状态保存下来，以便返回时恢复现场。这个保存过程涉及三个核心结构体——理解它们的布局和用途，是读懂后续 `KiSystemService` 汇编代码的前提：\n\n- **`_KTRAP_FRAME`**：保存现场的\"容器\"，内核将 3 环寄存器值逐一填入此结构\n- **`_ETHREAD` / `_KTHREAD`**：线程控制块，内核通过它找到当前线程的 `_KTRAP_FRAME` 和系统服务表\n- **`_KPCR`**：每个 CPU 核心都有一个的私有结构体，它存储了与当前核心运行相关的控制数据，在 0 环时 `FS` 段寄存器指向它。通过它进而找到核心当前运行的线程\n\n> `_ETHREAD` 和 `_KPCR` 参考：[Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)\n\n#### `_KTRAP_FRAME`\n\nWindows 并没有使用硬件 TSS 做任务切换，而是用 `_KTRAP_FRAME` 实现了自己的“软件 TSS”，只保留 TSS 用于 Ring3 → Ring0 的内核栈切换（被迫的，因为权限改变时，硬件固定去找 TSS），其他上下文保存和恢复都由软件逻辑完成。\n> 相关内容参考：[x86 硬件任务切换&#65306;TSS 与任务门](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/#h-a9a546738b306c081a72)\n\n在 WinDbg 中可以使用如下命令查看 `_KTrap_Frame` 结构体：\n\n```text\ndt _KTrap_Frame\n```\n\n结构体中成员对应的作用见下图中的文字注释，**该结构体就是保存现场所用到的结构体**：\n\n![bfafb19fe545882568dd09758edeeb5e&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/671be845ecb25fbe1a9b7effa646c1b92ab4fa9c1eead72aae67bd04a1e6de68.jpg)\n\n![3fb3b15d8417660626e57758468f4643&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/7ffa8039232580ad6e340a4aa691c6e50d7cbec10cd7270b4a06c8e27b28b522.jpg)\n\n与保存现场直接相关的关键成员（Windows XP x86）：\n\n| 偏移   | 成员             | 用途                                 |\n| ------ | ---------------- | ------------------------------------ |\n| +0x50  | `SegFs`          | 保存 3 环 `FS` 段寄存器             |\n| +0x54  | `Edi`            | 保存 3 环 `EDI`                      |\n| +0x58  | `Esi`            | 保存 3 环 `ESI`                      |\n| +0x5C  | `Ebx`            | 保存 3 环 `EBX`                      |\n| +0x60  | `Ebp`            | 保存 3 环 `EBP`                      |\n| +0x64  | `ErrCode`        | 错误码（中断门压入或手动对齐 `0x0`） |\n| +0x68  | `Eip`            | 保存 3 环 `EIP`                      |\n| +0x6C  | `SegCs`          | 保存 3 环 `CS`                       |\n| +0x70  | `EFlags`         | 保存 3 环 `EFLAGS`                   |\n| +0x74  | `HardwareEsp`    | 保存 3 环 `ESP`                      |\n| +0x78  | `HardwareSegSs`  | 保存 3 环 `SS`                       |\n\n\n### KiSystemService 保存现场分析\n\n了解完基本的结构体之后，手动分析进入 0 环后的入口函数 `KiSystemService`，看它是如何保存现场的。\n> `KiSystemService` 对应使用 `int 0x2e` 进入 0 环的场景。\n\n**该函数保存现场的过程实际上就是填充 `_KTrap_Frame` 结构体的过程**。\n\n通过 IDA 打开 `C:\\Windows\\System32\\ntoskrnl.exe` 文件，在函数列表中找到 `_KiSystemService` 函数：\n\n![5190e6dfefcba7e6da58e048adcd76c0&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/df6e5a6509b8d0c9eab9b10b0683426c82b065365adb980025c0c44aa25d1743.jpg)\n\n**Step 1：硬件自动压栈**\n\n通过中断门进入 0 环时，硬件会依次压入 `SS`、`ESP`、`EFLAGS`、`CS`、`EIP` 到 0 环栈中。随后 Windows 的中断处理入口会继续向栈中保存通用寄存器和段寄存器，并据此构造 `_KTRAP_FRAME` 结构体。\n\n因此在 `_KiSystemService` 函数执行第一行指令之前，`ESP` 相当于指向 **`_KTrap_Frame`** 的 `0x68` 偏移处。\n\n**Step 2：补齐 ErrCode 并压入通用寄存器**\n\n因为在发生某些异常时（如缺页异常），相比于硬件中断，CPU 还会额外向栈中压入第 6 个值—— `ErrCode`。\n> 参考：[x86 缺页异常与 Windows 缺页处理](/notes/n-85c26c688a7d414f97a72dd67c15f9bb/)\n\n对于 CPU 未压入该值的情况，为了保持逻辑统一，`_KiSystemService` 函数的第一条指令就压入了一个 `0x0` 进行补齐，接着依次压入 `EBP`、`EBX`、`ESI`、`EDI`、`FS`。\n\n![3888febf63bfbf127719668c1f2b2be3&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/6781ab57a81bfbe95a3f834f35caffe98d3322e0b85a00c9a2950c4b3fe6910c.jpg)\n\n**Step 3：加载 KPCR 到 FS 段寄存器**\n\n继续阅读代码：先向 `EBX` 存入 `0x30`，接着以 `0x30` 为段选择子在 GDT 表中找到段描述符并加载到 `FS` 段寄存器中。\n\n![b6e24b381812b30b3f52658ba0ffc74c&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/c88cbcfd311bc4314befd52ae5a08acdca7b8b5845bb3859c7837107f07f3795.jpg)\n\n> [!NOTE] 解析 `0x30` 段选择子\n> 手动分析加载的段描述符：首先拆分段选择子，取第 3 至第 15 位作为索引，再按索引在 GDT 表中找到段描述符。\n> \n> ```text\n> // 0x30 拆分\n> 0000 0000 0011 0000\n> 索引: 0110 -> 0x6\n> 段描述符: ffc093df`f0000001\n> ```\n> \n> ![a878685f55ae4c1454d0fcd9bd939643&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/29e60a9c7ad2f1301f1b962f643b47cfabc9ca190cb89fd788ce8018934107c1.jpg)\n> \n> 根据段描述符的 Base 值 `0xffdff000`，**它指向的就是当前 CPU 的 KPCR 结构**：\n> \n> ![c4adf9e11b9b473b899acab99a68ba36&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/aba29cb636bf1b8080eaa8c0687e77a4f4f5d880e70faa6179114cbc3126b83a.jpg)\n> 相关内容：[x86 段寄存器与描述符体系](/notes/n-9865620a6a12491a86ee4494a0e2a392/#h-4ef1dccd611de24b41bf)\n\n**Step 4：处理 ExceptionList**\n\n然后压入 `FS` 段的 `0x0` 偏移位内容，即 KPCR 结构 `0x0` 偏移位成员 `_NT_TIB->ExceptionList`，接着将当前的 `ExceptionList` 设为 `-1`（即清空）。\n\n![f81491ccdfc81ce3e6ef02b3df5f57db&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/38639b3126050136f486d406f3df41392dfd672966e16492fb9eb6564e56f713.jpg)\n\n![1919257559f59c4560280a736ad15931&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/481bda66b8f7e3472b6a84f15c064facf2524d325d28d992d5cc123d5d02eb74.jpg)\n\n> [!NOTE] 为什么 `KPCR` 中也有一个 `_NT_TIB` 成员？\n> 在 Windows 32 位系统中，`FS` 段寄存器被用作上下文环境指针：在 3 环时指向 `TEB`，进入 0 环后则指向 `KPCR`。将两者的第一个成员均设计为 `NtTib`（即 `NT_TIB` 结构），其最核心的作用是维护**结构化异常处理（SEH）链表**。 无论是编译 3 环程序还是 0 环驱动，编译器对 `try` 块生成的底层汇编逻辑是完全相同的（均基于 `FS` 寄存器获取异常链）。因此，系统必须通过实现**内存布局的兼容**，来确保同一套异常处理机制在用户态和内核态下都能无缝工作。\n> 相关内容参考：[Windows x86 VEH 与 SEH](/notes/n-513b4c801b634b30839654b1a72897cc/)。 \n\n\n**Step 5：获取当前线程并保存先前模式**\n\n接下来，将当前 CPU 执行的线程信息给到 `ESI` 寄存器——即 `FS` 段的 `0x124` 偏移位内容，也就是 `_KPRCB` 结构体的 `0x4` 偏移位成员 `CurrentThread`。\n\n`CurrentThread` 是一个 `_KTHREAD` 结构体，接着压入该结构体的 `0x140` 偏移位成员——即 `PreviousMode`，压入到 `_KTRAP_FRAME` 的 `PreviousPreviousMode` 成员中：\n\n![82d6012682f4e930db446c1184c170fd&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/10a351d54fa37ffd4548fd5d7228ccdafc1dcb0f75fdec7927473c2bd8e4af74.jpg)\n\n![52ad2aa0c4d2042dea263eac4ea3322a&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/9423301ca0e53c0de2813a2e0fe2d920fa1924044cc5b989a864570851b003b7.jpg)\n\n![dff86a6e80560f44538b24c15e3bd1be&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/a23443b2ad0afcd6da2883358db2128fd5417fcaeb0f33b672c0563b0e021e54.jpg)\n\n**Step 6：更新 PreviousMode 并建立 TrapFrame 链表**\n\n接下来的代码首先提升堆栈至指向 `_KTrap_Frame` 结构体的第一个成员，然后将 3 环原来 `CS` 的值（即 `_KTrap_Frame+0x6C` 处）给到 `EBX`。\n\n将 `EBX` 与 `1` 进行与运算以判断调用 0 环函数的来源权限（即 CPL），并将与运算结果存入 `_KTHREAD` 的 `PreviousMode`。\n> **这样做的核心意义在于**：许多系统服务入口函数（如 `Nt*` 系列）既可以由 3 环应用程序触发，也可由 0 环驱动直接调用。内核必须通过区分调用者的“先前模式”来实施不同的安全策略。 比如 `ReadProcessMemory` 对应的底层函数 `NtReadVirtualMemory`：如果检测到 `PreviousMode == 1`（UserMode），它会强制执行安全探查（例如检查指针是否越界进入了高 2GB 的内核空间）；如果为 `0`（KernelMode）则跳过检查。 值得注意的是，如果 0 环代码直接调用该 `Nt` 函数，也会默认继承当前线程的 `PreviousMode` 从而误触发这种安全检查。因此，Windows 为 0 环开发者提供了配套的 `Zw*` 封装函数，它会在底层强行将 `PreviousMode` 置为 `0` 后再转交 `Nt` 函数执行，从而安全、合规地绕过上述安检。\n\n再接下来将栈底指向栈顶位置（都指向 `_KTrap_Frame` 的第一个成员位置），将 `_KTHREAD` 中的 `_KTrap_Frame` 地址取出，临时存放至栈中 `_KTrap_Frame` 结构的 `0x3C` 偏移位（即放入 `EDX` 字段中，将来用于找到旧的 `_KTrap_Frame`）。\n\n使用栈中的 `_KTrap_Frame` 更新 `_KTHREAD` 的 `0x134` 偏移处的字段（也就是更改该线程使用的 `_KTrap_Frame` 结构体）。\n\n![31190528b7ea4e204416e61ddd7b1760&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/a17997a986f2fed3e041e5aeeb4d82c5d7db39e018bd59c8354e8c00b84bf797.jpg)\n\n**Step 7：保存调试状态**\n\n接下来的代码较为简单：将 3 环的 `EBP`、`EIP`、3 环传参指针存入 `_KTrap_Frame` 中调试相关的成员，然后判断当前线程是否开启了调试状态。若开启则跳转，跳转后同样是填充 `_KTrap_Frame` 中调试相关的成员。\n\n![606a066f77055adc1203a593567e522c&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/d89f6541d81dba0b151996e202745356884545c0d5794828a6ca35c377c270c4.jpg)\n\n![76facc9067c4353ea17010fac83ed382&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/a61019de4a803f306b8331bcc3531bf13c1de30470d458c5e23e412a95f4069b.jpg)\n\n**Step 8：进入 KiFastCallEntry 分发系统调用**\n\n再接着跳转到某个代码段，但该代码段属于 `_KiFastCallEntry` 函数：\n\n![d9a8ddc18f8cd46381ddff722a1993d1&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/1ec3c25ee92276a6cd8dc945eec249e11603046a068108153940bfea7e623562.jpg)\n\n可以看到，`KiIntSystemCall`（`int 0x2e`） 和 `KiFastSystemCall`（`sysenter`） 最终都会进入同一套系统服务分发逻辑（位于 `_KiFastCallEntry` 函数中）。\n\n**区别在于**：`int 0x2e` 发生特权级切换时，CPU 会自动在内核栈上保存用户态的 `SS/ESP/EFLAGS/CS/EIP` 等现场，而 `sysenter` 不会自动保存这些状态。因此 Windows 必须通过用户态与内核态之间的约定手工恢复这些信息，并以不同方式构造 `_KTRAP_FRAME`，最终得到等价的线程上下文。\n\n至此，保存现场的过程分析完毕。此时内核已拥有/构造好 3 环的完整上下文（存储在栈中的 `_KTRAP_FRAME`）和系统调用号（存储在 `EAX` 中），接下来的任务就是：**根据系统调用号，在系统服务表中找到对应的内核函数并调用它**。\n\n## 系统服务分发：SSDT（System Service Descriptor Table）\n\n保存现场之后，内核进入系统服务分发阶段。3 环 API 的本质就是调用 0 环函数，而操作系统通过**系统服务表**（System Service Table, SST）建立系统调用号与内核函数之间的映射关系。\n\n### 系统服务表（SST）的结构\n\n系统服务表的结构如下图所示，包含四个成员：\n\n| 成员             | 说明                                                                                           |\n| ---------------- | ---------------------------------------------------------------------------------------------- |\n| `ServiceTable`   | 指向函数地址表的指针，**表内存储的是函数地址，每个成员大小为 4 字节**                          |\n| `Count`          | 当前系统服务表被调用的次数                                                                     |\n| `ServiceLimit`   | 当前系统服务表内存储的函数总数                                                                 |\n| `ArgumentTable`  | 指向函数参数表的指针，表内存储的是函数参数的字节数，**单位是字节，每个成员大小为 1 字节**       |\n\n函数地址表内存储的并非所有内核函数，而是 3 环经常使用的内核函数。**函数地址表和函数参数表是对应关系，即函数地址表的第 N 项的参数字节数就是函数参数表的第 N 项**。\n\n---\n\n在 Windows XP 系统中，系统服务表有两张，下图中绿色、黄色表即体现：\n\n![0a1c34126649728d50eb6bbd2fba00c2&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/3adf19e18f0f479b65225ef794e3fb9b34ea3cab094c6a8684d59226a5dd0631.jpg)\n它们的结构一致，只是存储的函数和参数不同：**前者存储的是常用的内核函数（`Ntoskrnl.exe`），后者存储的是与图形显示及用户界面相关的函数（`Win32k.sys`）**。\n\n### SSDT 结构\n\n系统服务描述符表 SSDT（System Service Descriptor Table），可以理解为**本质上是一个 SST 数组**。\n\n系统中同样有两张 SSDT：SSDT 和 SSDT Shadow。\n\n#### 找到 SSDT 与 SSDT Shadow\n\n内核中有两个全局变量，分别指向 SSDT 和 SSDT Shadow 两张表（数组长度均为 4，每个元素即一个 16 字节的 `SystemServiceTable`）：\n\n1. **`KeServiceDescriptorTable`（已导出）**：非 UI 线程使用。表中只有第一个元素有效，仅包含 `Ntoskrnl.exe` 的系统服务表。\n2. **`KeServiceDescriptorTableShadow`（未导出）**：UI 线程使用。表中有两个元素有效，包含 `Ntoskrnl.exe` 和 `Win32k.sys` 两张系统服务表，后两项保留未用。\n\n\n> [!NOTE] 什么是导出/未导出？\n> PE 文件导出表中存在该名称，可被 `GetProcAddress` 或外部链接找到\n\n\n`KeServiceDescriptorTable` 是内核文件导出的，可以在 `Ntoskrnl.exe` 的导出表中找到：\n\n![548622e1861d9907bd38866bb247ef04&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/fa6e39e2b1eb5501a784662819e04db1be1c3c7ee38ef8bcb2a4b767a66c9822.jpg)\n\n\n##### Windbg 查看 SSDT\n\n可以在 WinDbg 中直接查看这两张 SSDT 表。**原理**：“通过变量名访问”依赖于符号解析。**必须有对应的私有符号文件（PDB）或已知地址**。\n\n\n1. 查看 `KeServiceDescriptorTable`：\n> 包含 4 个系统服务表成员，大小为 64 字节。在此表中，只能看到第一张系统服务表的内容。\n\n![921f59e43cb96ec01d81cf874a9e4335&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/1cbc8ed448f1b2aa30405c654f323409131fd884342a8c78339d45bea49a4be4.jpg)\n\n\n2. 同样，通过 WinDbg 也可查看未导出的 SSDT Shadow：\n> 它有 2 张有效的系统服务表，且其第一个成员（前 16 字节）与 SSDT 的第一个成员内容完全一致。\n\n![5daf1e817fd3ae2e06da7352d357e5bb&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/249558ee7b01e2ce85de3288237f9f00839fa30fb5fa31dfab5240e8e715b068.jpg)\n\n#### 判断线程使用的 SSDT\n\n在进程的线程结构体 `_ETHREAD` 中包含 `_KTHREAD`，该结构体的 `0xE0` 偏移位成员存储着该线程当前所使用的系统服务表的地址：\n\n![533cc1e9638148de22cbb271f9a65ca1&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/b15e03cc0a2c2aa8708f88da186f52983d1b7c7fd988df1137f29e754a40e80b.jpg)\n\n---\n\n- 如果是 UI 线程，该成员指向 SSDT Shadow：\n  ![c444e68d0c621b72ab1df1e789a41bbd&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/95353c1d798c0027b8512fa7318375fc76a5c018a3e1f3c87d4e15a1185c7374.jpg)\n- 如果是非 UI 线程，则指向 SSDT：\n  ![b58780f8bc7454bf7059b91fc453e77a&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/4527a87fa8547ed74e488971ced1e81770015dd8c3713b5b3f4c347530ab0ad2.jpg)\n\n### 系统调用号的解析与函数查找\n\n3 环的 API 调用就是根据系统调用号区分要调用哪个内核函数。\n\n**虽然系统调用号有 32 位（4 字节），但真正使用的只有低 13 位**。这 13 位分成两部分：\n- **第 12 位**：值为 0 则对应第一张表（`Ntoskrnl.exe`），值为 1 则对应第二张表（`Win32k.sys`）。\n- **低 12 位（第 0 至第 11 位）**：对应的函数地址与参数表索引。\n\n![5f0fc2efc616c9e99c72a16b9dc9dabd&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/0396c9f5cadd50753fb92e26d85f1397e9d482f43cd9d6057aef1fd9d56214d7.jpg)\n\n结合前面讲的内容我们知道，无论 `KiSystemService` 还是 `KiFastCallEntry` 最终都会走向相同的服务分发代码，**这块代码即为通过系统调用号查找内核函数的过程**：\n\n**Step 1：确定使用哪张系统服务表**\n\n首先取 3 环传入的系统调用号给到 `EDI`。由于系统调用号实际使用的只有低 13 位（其他位为 0），将 `EDI` 右移 8 位后剩余 5 位，再与 `0x30` 进行与运算，运算结果只有两种：`0x10` 或 `0x0`，将运算结果给到 `ECX`。\n\n由于此时 `ESI` 寄存器指向当前线程的 `_KTHREAD` 结构体，`ESI+0xE0` 指向当前线程的系统服务表首地址。**将与运算结果与该系统服务表地址相加，即可确定取的是第一张还是第二张系统服务表**（系统服务表的宽度为 16 字节，即 `0x10`）。这里的计算方式设计得很精巧。\n\n![24a19cc86fd6998fb0683ef828517523&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/f3acb9e5620c138e47dcdcdf55c346e16d42ba94148365c63e4053603fa6dc8d.jpg)\n\n**Step 2：获取表内索引并判断是否越界**\n\n接着取系统调用号给到 `EBX`。由于已通过第 12 位确定了对应的表，此处将系统调用号与 `0xFFF` 进行与运算（将第 12 位清零），得到表内索引。\n\n随后将 `EDI+8`（即系统服务表的 `ServiceLimit` 成员）与 `EAX`（系统调用号索引）进行比较，判断函数索引是否越界，若越界则跳转至异常处理。\n\n![e9e75e12f8677603b4185a369ebadbde&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/ba713e8ec92bbc4cb6f4bb4a589bff7b06a7700c7e9d12c322e0a5a94f9c1c3b.jpg)\n\n\n图形程序主线程在刚创建时，还是普通线程未转换成 UI 线程，此时 `_KTHREAD.ServiceTable` 指向的是仅有一张有效表的普通 SSDT，其第二张表（对应 `Win32k.sys`）所在的内存全为 0（即 `ServiceLimit` 也是 0）。因此，当它首次发起 UI 系统调用时，必然会因为“索引值 ≥ 0”而触发越界跳转。内核利用这一跳转路径调用 `PsConvertToGuiThread` 函数执行向 UI 线程的转换逻辑，主要步骤：\n1. 扩展内核栈大小为 64 KB，因为普通内核栈只有 12 KB 大小；\n2. 创建一个带有消息队列的结构体 `_THREADINFO`，并将其挂接到 `_KTHREAD` 结构体 `Win32Thread` 成员上；\n3. 将 `Thread.ServiceTable` 指向 `KeServiceDescriptorTableShadow`，此时两个表都可见；\n4. 将所需的内存数据映射到当前进程的地址空间中。\n\n转换完毕后再重新执行真正的系统调用，它巧妙兼容了**普通线程首次调用 UI 函数**的场景。 \n\n> [!QUESTION] 为什么不统一使用 SSDTShadow？为什么线程要单独保存自己使用的 SSDT 表，而不是全局共用？\n> 表指针不仅用于“选表”，也用来判断是否为 GUI 线程。\n\n\n**Step 3：特殊表处理分支**\n\n再将之前的与运算结果与 `0x10` 进行比较，判断系统调用号对应的表。如果与运算结果是 `0x10`，则向下会调用 `_KeGdiFlushUserBatch` 函数（自行查阅手册）；如果为 `0x0` 则跳转。\n\n![432b58082231922c34ca689ab76269d3&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/76dbae26a77def30a435588a34f5acec16bce00c96039cb408170b4a1ed930d1.jpg)\n\n**Step 4：获取参数大小和目标函数地址**\n\n继续向下：将 `_KPCR` 的 `0x638` 偏移处的成员自加 1（即 `_KPRCB` 的 `0x518` 偏移，对应成员 `KeSystemCalls`，这是一个**统计计数器**，用于记录该核心系统调用的发生次数），然后将 `EDX`（就是 3 环的 esp，参考：[](/notes/n-a5e29edced624217af32c21baaee2060/#h-fd18577e7fe050b99e66)）给到 `ESI`。\n> 调用时参数是存储到 3 环的堆栈，如何传递给内核？内核拿到 3 环的 ESP，在 0 环中通过 3 环的 ESP 获取参数。\n\n接着将系统服务表的 `ArgumentTable` 地址给到 `EBX`，用 `XOR` 清空 `ECX`，**根据系统调用号索引获取函数参数的字节数存入** `CL`。\n\n再将系统服务表的 `ServiceTable` 地址给到 `EDI`，**根据系统调用号索引获取需要调用的函数地址**（乘以 4 是因为函数地址宽度为 4 字节）存入 `EBX`。\n\n![d47b8ec7017da1758ba3c2e5f529cb78&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/38b7843d845f986a481142ef6589b70bc1aac1de231e510c4dfdde7da3eb5a35.jpg)\n\n**Step 5：复制参数并调用内核函数**\n\n然后将堆栈**按 `ECX`（函数参数字节数）** 进行提升，为在 0 环将 3 环参数复制进来做准备。\n\n将 **`ECX`（函数参数字节数）** 右移 2 位（即除以 4）得到参数个数，因为 `REP` 指令每次复制 4 字节，循环次数取自 `ECX`。将 `ESP` 给到 `EDI` 以设置循环复制的目的地址。\n\n判断 3 环参数的所在地址是否合法（即是否大于 `_MmUserProbeAddress`），若越界则跳转异常处理。\n> 因为该地址可以被用户修改（通过汇编），如果不做这个判断，会导致任意写漏洞。\n\n否则执行 `REP` 指令完成参数复制，然后调用 `EBX`（即目标内核函数）。\n![5c1f4e07e9b28c0a86769dc84d352d1c&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/1da7be94c9309f19a9f58c9b4cc524346f118868fde8e623cf7184e46a49111f.jpg)\n\n### 实战分析：定位内核函数地址\n\n了解了 SSDT 表后，便可根据系统调用号手动查找对应的内核函数。以 `ReadProcessMemory` 函数为例，其系统调用号为 `0xBA`。\n\n![b839f3d13262aa733ccdb2efa9393ee6&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/d15a7efd0c73d2d58410f17144a8bd295d107eafe208cd85c5dc8983bcd22f3c.jpg)\n\n手动分析过程：先将第一张系统服务表按成员结构进行拆分：\n\n```text\nServiceTable（函数地址表地址）：  80504734\nCount（系统服务表调用次数）：    00000000\nServiceLimit（函数总数）：       0000011c\nArgumentTable（函数参数表地址）：80504ba8\n```\n\n接着根据函数地址表地址带入系统调用号，即可找到内核函数地址。如下图所示，找到了 `ReadProcessMemory` 最终调用的内核函数 `NtReadVirtualMemory`，其汇编代码一目了然：\n\n![6959d7c4da40f1ec4d7dd7924d642a19&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/b178d324341dbf55a596da8a0d6de80ef31e03bde79e10a9d171b7de7fdd3783.jpg)\n\n同样的，通过函数参数表可以查看该函数对应的参数总字节数，为 `0x14`（20 字节），按每个参数 4 字节计算，即有 5 个参数：\n\n![189398dbc00b9ac2425ad479a5ac996b&#95;MD5&#46;jpg](/notes/n-a5e29edced624217af32c21baaee2060/media/32a1e5dd09bf2e15eff02d05beee7c0cf6e9086a05bdca9926ee85b12e4a0940.jpg)\n",
+  "id": "a5e29edc-ed62-4217-af32-c21baaee2060",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows",
+      "arch/x86"
+    ],
+    "title": "Windows x86 系统调用与 SSDT",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "0396c9f5cadd50753fb92e26d85f1397e9d482f43cd9d6057aef1fd9d56214d7.jpg",
+    "10a351d54fa37ffd4548fd5d7228ccdafc1dcb0f75fdec7927473c2bd8e4af74.jpg",
+    "1494915d1d2cb6a1b755c73c979b9ffa5dd6ebb7f9e473d1399e338fb3c00ddb.jpg",
+    "1548d63a20e99d6d0749ff914cdc5d2b87fa5d7922ad4122e53080683b34ac8a.jpg",
+    "1cbc8ed448f1b2aa30405c654f323409131fd884342a8c78339d45bea49a4be4.jpg",
+    "1da7be94c9309f19a9f58c9b4cc524346f118868fde8e623cf7184e46a49111f.jpg",
+    "1ec3c25ee92276a6cd8dc945eec249e11603046a068108153940bfea7e623562.jpg",
+    "249558ee7b01e2ce85de3288237f9f00839fa30fb5fa31dfab5240e8e715b068.jpg",
+    "289ed497724cdbe35db5e7b4539f98fdcc22d2df24afacdbe8a855bec779d5d5.jpg",
+    "29e60a9c7ad2f1301f1b962f643b47cfabc9ca190cb89fd788ce8018934107c1.jpg",
+    "2b3ded789ce756d62620910ef82a98586178fe0a74a4d442a620bd5601fabedf.jpg",
+    "32a1e5dd09bf2e15eff02d05beee7c0cf6e9086a05bdca9926ee85b12e4a0940.jpg",
+    "38639b3126050136f486d406f3df41392dfd672966e16492fb9eb6564e56f713.jpg",
+    "38b7843d845f986a481142ef6589b70bc1aac1de231e510c4dfdde7da3eb5a35.jpg",
+    "3adf19e18f0f479b65225ef794e3fb9b34ea3cab094c6a8684d59226a5dd0631.jpg",
+    "428ec3f0f07b3fe7407776766862633cf5a26a43f3dda2e6a155e0dea70206f7.jpg",
+    "4527a87fa8547ed74e488971ced1e81770015dd8c3713b5b3f4c347530ab0ad2.jpg",
+    "481bda66b8f7e3472b6a84f15c064facf2524d325d28d992d5cc123d5d02eb74.jpg",
+    "4953a03a6b78d719133915283c68802882678a116c7b05b55d167d20635f27fd.jpg",
+    "671be845ecb25fbe1a9b7effa646c1b92ab4fa9c1eead72aae67bd04a1e6de68.jpg",
+    "6781ab57a81bfbe95a3f834f35caffe98d3322e0b85a00c9a2950c4b3fe6910c.jpg",
+    "76dbae26a77def30a435588a34f5acec16bce00c96039cb408170b4a1ed930d1.jpg",
+    "7ffa8039232580ad6e340a4aa691c6e50d7cbec10cd7270b4a06c8e27b28b522.jpg",
+    "9423301ca0e53c0de2813a2e0fe2d920fa1924044cc5b989a864570851b003b7.jpg",
+    "95353c1d798c0027b8512fa7318375fc76a5c018a3e1f3c87d4e15a1185c7374.jpg",
+    "96614aad5e5215984264290ad6a0134da9d5d0f1a8f84758efcc6108bf236941.jpg",
+    "9812c198c7ef56d4e3dcba69623faaed410de9ecfb88908e708f86b64d5aaeae.jpg",
+    "a17997a986f2fed3e041e5aeeb4d82c5d7db39e018bd59c8354e8c00b84bf797.jpg",
+    "a23443b2ad0afcd6da2883358db2128fd5417fcaeb0f33b672c0563b0e021e54.jpg",
+    "a61019de4a803f306b8331bcc3531bf13c1de30470d458c5e23e412a95f4069b.jpg",
+    "ab1fceaadc783ef7478e3efef7f272968f20fd009c557de1d3eb9368f3cca676.jpg",
+    "aba29cb636bf1b8080eaa8c0687e77a4f4f5d880e70faa6179114cbc3126b83a.jpg",
+    "afa149ed5ebe5b0582080f4e64d87c4056086e6e1cdc52e3ac245233be4be95a.jpg",
+    "b15e03cc0a2c2aa8708f88da186f52983d1b7c7fd988df1137f29e754a40e80b.jpg",
+    "b178d324341dbf55a596da8a0d6de80ef31e03bde79e10a9d171b7de7fdd3783.jpg",
+    "ba713e8ec92bbc4cb6f4bb4a589bff7b06a7700c7e9d12c322e0a5a94f9c1c3b.jpg",
+    "bc79da1037ab707e48b3f4fef2705df82e2f20cdf4623836a4a7da9bf079f5d1.jpg",
+    "c88cbcfd311bc4314befd52ae5a08acdca7b8b5845bb3859c7837107f07f3795.jpg",
+    "cc7d1cdd0a1154c1b8922173d9c92fca173026adbc3a52dd595260690af4647f.jpg",
+    "d15a7efd0c73d2d58410f17144a8bd295d107eafe208cd85c5dc8983bcd22f3c.jpg",
+    "d89f6541d81dba0b151996e202745356884545c0d5794828a6ca35c377c270c4.jpg",
+    "dd9d47d9e56bf0c671ea1509e9f82af39d1d9e553ae43dcd26fe338f4f5e1052.jpg",
+    "df6e5a6509b8d0c9eab9b10b0683426c82b065365adb980025c0c44aa25d1743.jpg",
+    "e5be1ec2f1b9e42f48d7c823b07f13b5d595494ae1c0f05b58f060c4445731d2.jpg",
+    "f3acb9e5620c138e47dcdcdf55c346e16d42ba94148365c63e4053603fa6dc8d.jpg",
+    "fa6e39e2b1eb5501a784662819e04db1be1c3c7ee38ef8bcb2a4b767a66c9822.jpg"
+  ],
+  "url": "/notes/n-a5e29edced624217af32c21baaee2060/"
+}

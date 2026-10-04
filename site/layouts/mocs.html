@@ -1,0 +1,17 @@
+{{ define "body-class" }}article-page{{ end }}
+{{ define "main" }}
+  <article class="main-article">
+    <header class="article-header"><div class="article-details"><h1 class="article-title">MOCs</h1></div></header>
+    <section class="article-content">
+      {{ $pages := (where (where .Site.RegularPages "Section" "notes") "Params.moc" true).ByTitle }}
+      {{ with $pages }}
+        <ul>
+          {{ range . }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}
+        </ul>
+      {{ else }}
+        <p>暂无已发布的 MOC 笔记。</p>
+      {{ end }}
+    </section>
+  </article>
+  {{ partialCached "footer/footer" . }}
+{{ end }}

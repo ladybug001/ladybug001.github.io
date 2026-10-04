@@ -1,0 +1,113 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-211985b3655d488dab2f",
+      "kind": "heading",
+      "offset": 9
+    },
+    {
+      "id": "h-4170bf171c4e4b0b763a",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-2fabc822f5d64edffc0b",
+      "kind": "heading",
+      "offset": 317
+    },
+    {
+      "id": "h-7c43890984110bad6a86",
+      "kind": "heading",
+      "offset": 1248
+    },
+    {
+      "id": "h-3f1f36ee5a62ea06ac84",
+      "kind": "heading",
+      "offset": 1464
+    },
+    {
+      "id": "h-b4ac3b35048b53492200",
+      "kind": "heading",
+      "offset": 1475
+    },
+    {
+      "id": "h-2cf3d0796c58da7a4e73",
+      "kind": "heading",
+      "offset": 1768
+    },
+    {
+      "id": "h-987bfca112925f8b8a26",
+      "kind": "heading",
+      "offset": 2664
+    },
+    {
+      "id": "h-e3d8b0a71eb3bc915333",
+      "kind": "heading",
+      "offset": 2681
+    },
+    {
+      "id": "h-812d7748e9922ded703b",
+      "kind": "heading",
+      "offset": 3227
+    },
+    {
+      "id": "h-9fef85f56712c40f8b5c",
+      "kind": "heading",
+      "offset": 3993
+    },
+    {
+      "id": "h-d0f5a9e583f7585501ed",
+      "kind": "heading",
+      "offset": 5579
+    },
+    {
+      "id": "h-b2cb7e07fb401c2a5107",
+      "kind": "heading",
+      "offset": 6602
+    },
+    {
+      "id": "h-cd21025dcfd193abd2dc",
+      "kind": "heading",
+      "offset": 7045
+    },
+    {
+      "id": "h-781fe208969bf32ebb31",
+      "kind": "heading",
+      "offset": 7091
+    },
+    {
+      "id": "h-508106dd32b7285e1a22",
+      "kind": "heading",
+      "offset": 7326
+    }
+  ],
+  "body": "# Qt 基础开发\n\n## Qt 概述\n\nQt 是一个跨平台的 C++ 应用程序开发框架（包含丰富的类库）。它与 MFC 类似，都提供了大量接口以简化 C++ 开发，但两者的实现原理不同。且 Qt 支持跨平台编译运行。\n> Qt 也支持跨编程语言开发，虽然 Qt 本身是用 C++ 编写的，但 Python 开发者可以通过以下两个库来调用 Qt 的功能：**PySide** 和 **PyQt**。这两个库是用 C++实现的 Qt 核心。\n\n了解 Qt 时，通常会接触到 `Qt Creator`，这是一个专为 Qt 打造的 IDE（集成开发环境），类似于 `VC6.0`、`Visual Studio` 等。\n\n### 开发环境配置\n\n进行 Qt 开发环境配置，通常需要安装以下三个组件：\n\n1. **MinGW**：Windows 下的 C/C++ 编译器。下载地址： https://download.qt.io/development_releases/prebuilt/mingw_32/i686-4.8.2-release-posix-dwarf-rt_v3-rev3.7z\n2. **Qt OpenSource**：Qt 的开源版本源代码/库文件。下载地址： https://download.qt.io/archive/qt/4.8/4.8.6/qt-opensource-windows-x86-mingw482-4.8.6-1.exe\n3. **Qt Creator**：官方 IDE。下载地址： https://download.qt.io/development_releases/qtcreator/3.6/3.6.0-rc1/qt-creator-opensource-windows-x86-3.6.0-rc1.exe （需在 https://login.qt.io/register 注册账号）\n\n建议将这三个组件安装在同级目录下：\n\n![115b05de45ff3c1d8cd52838a519d963&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/f17f84bc276b1348b429ecde7d4e529071becb8b8c1ec38402f918228efc034b.jpg)\n\n安装完成后打开 `Qt Creator`，需要在“工具 -> 选项 -> 构建和运行”中配置编译器和 Qt 版本：\n\n![cca9005f087bc6f60fdba48d75aa6f13&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/75a5913e4ebd219d8508eda6bccd2a92b807f5def6e1534fff19e3e2f69c2223.jpg)\n\n### 第一个 Qt 应用\n\n配置完成后，可以直接使用模板创建并运行第一个 Qt 应用：\n\n![4f38bef76d029a4ef93ca50a8e8b3a2c&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/b3927bc0ba306840a441c633772daaa56d832b5cd4025be0edf001c272a9d9e1.jpg)\n\n## 工程创建与首个程序\n\n### 创建空工程\n\n虽然可以通过可视化模板快速创建应用，但与 MFC 类似，模板会引入大量样板代码，不够纯粹，不便于初学者理解底层机制。\n\n因此，建议先创建一个空项目（Empty qmake Project），然后手动添加 C++ 源文件：\n\n![423e95759a4b771f8a0a324c46a631b0&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/41fbc72eaefe8f2fee1dc2f2c5f91aad39b7f7e2641be8868e85a9ada552e9a3.jpg)\n\n### 代码实现\n\n在 C++ 源文件中，使用纯代码的方式构建 Qt 应用：\n\n![96c9a607dcb7347cc31182a3e023c95a&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/2859586018b9a9a41245f3b33766fb6dfa54ffa406be82f57fb358e64fb25c21.jpg)\n\n```cpp\n#include <QApplication> // 代表应用程序本身，等价于 MFC 中的 CWinApp\n#include <QWidget>      // 表示基础窗口，等价于 MFC 中的 CWnd\n\nint main(int argc, char* argv[]) {\n    QApplication app(argc, argv); // 初始化应用程序实例\n\n    QWidget* pWidget = new QWidget(); // 创建窗口对象 \n    pWidget->setWindowTitle(QString(\"Hello, World!\")); // 设置窗口标题，使用 Qt 的字符串类 QString\n    pWidget->show(); // 显示窗口 \n\n    return app.exec(); // 进入消息循环，运行程序\n}\n```\n\n从 MFC 的视角来看，Qt 的基础结构非常相似，但代码量更少，整体结构更简洁。\n\n在 `Qt Creator` 中，将光标悬停在类名或函数上并按下 `F1` 键，即可直接在侧边栏查看对应的帮助文档：\n\n![cf287f922e157e32fa9e47807efbc0a6&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/d37c56e1a6bd0dd705dfab52487ea964767b14fb7cd6340352d3978b880c78a1.jpg)\n\n## 消息映射：信号与槽机制\n### MFC 和 Qt 的对比\n\n在了解 Qt 的信号和槽（Signal & Slot）之前，回顾一下 MFC 的消息映射机制。MFC 通过将自定义消息和对应的处理函数静态注册到消息映射表（Message Map）中，实现消息的分发。这种方式简单直观，便于查找。\n\n![fb3fedec2a2f67da0f8365cd9a5d3bd2&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/b7ce318a7cd501411b2dda3b0ad9cad7fc2484273e9081982de27d3c6989cee8.jpg)\n\n![1664974b7390e82e9c75065306761473&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/ab7ea9146b903bc3f21cff5a261aedae49335a5de08f1264a21ea30f5684606f.jpg)\n\n---\n\n但 MFC 的消息映射是**静态**的，较为死板，无法在运行时动态地添加或卸载消息绑定。Qt 的信号和槽正是为了解决这种灵活性的痛点而诞生的。\n\n### 核心原理\n\n在 Qt 中，控件触发的事件被称为**信号（Signal）**，处理事件的函数被称为**槽（Slot）**。\n\n![353cebae752f84075f5fa39a9b6a8be6&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/595571664e9ee69e278ef56d5afbed2d285239672471b5031049f43d233d60e3.jpg)\n\n在 MFC 中，使用消息映射必须在类中声明 `DECLARE_MESSAGE_MAP` 宏；同理，在 Qt 中，要使用信号与槽机制，必须在类定义的私有区域声明 `Q_OBJECT` 宏：\n\n![6020dc65f5ab718b647da17cb0247fe7&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/756834bbf695183966e3474113a2a7e13ac88f6c4bdc2a069259736c7886c160.jpg)\n\nQt 中信号和槽的运作流程如下：\n\n1. 明确发出信号的控件对象（Sender）。\n2. 明确发出的是哪种信号（Signal）。\n3. 明确接收该信号的控件对象（Receiver）。\n4. 明确信号触发后调用的槽函数（Slot）。\n\n这一套流程是通过 `QObject::connect` 方法进行动态绑定的。同理，可以通过 `QObject::disconnect` 方法在运行时动态解绑。\n\n本质上，MFC 和 Qt 都是对 Win32 消息循环及其处理机制的封装，但 Qt 的信号和槽设计比 MFC 更灵活、更易用。\n\n### 代码实操\n\n使用 `QObject::connect` 方法的基本语法如下：\n\n```cpp\nbool QObject::connect (\n    const QObject * sender,   // 信号发送者\n    const char * signal,      // 信号，如：SIGNAL(pressed())，需使用 SIGNAL 宏包裹\n    const QObject * receiver, // 信号接收者\n    const char * method,      // 槽，如：SLOT(close())，需使用 SLOT 宏包裹\n    Qt::ConnectionType type = Qt::AutoConnection // 连接类型，默认为自动，通常可省略\n);\n```\n\n每个控件都预定义了自己独有的信号和槽（可在帮助文档中查阅）：\n\n![7aa1758eb4803981608fc3cdf39b4975&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/ef599b7b30fbfb2dff687b22fe3b5730ba511aef7679756b0ba7420da558a329.jpg)\n\n以下代码演示了创建两个按钮，并将它们的 `pressed` 信号分别连接到主窗口的 `close`（关闭窗口）和 `showFullScreen`（全屏显示）槽函数上：\n\n```cpp\n#include <QApplication>\n#include <QWidget>\n#include <QPushButton>\n\nint main(int argc, char* argv[]) {\n    QApplication app(argc, argv);\n\n    QWidget* pWidget = new QWidget();\n\n    // 创建按钮，并指定 pWidget 为其父窗口\n    QPushButton* pCloseBtn = new QPushButton(pWidget); \n    QPushButton* pFullScrenBtn = new QPushButton(pWidget); \n\n    pWidget->setWindowTitle(QString(\"Hello, World!\"));\n\n    // 设置按钮在父窗口中的坐标和大小 (x, y, width, height)\n    pCloseBtn->setGeometry(QRect(0, 0, 50, 30)); \n    pCloseBtn->setText(QString(\"Close\"));  \n    \n    pFullScrenBtn->setGeometry(QRect(100, 0, 80, 30));\n    pFullScrenBtn->setText(QString(\"FullScreen\"));\n\n    pWidget->show();\n\n    // 动态绑定信号与槽\n    QObject::connect(pCloseBtn, SIGNAL(pressed()), pWidget, SLOT(close())); \n    QObject::connect(pFullScrenBtn, SIGNAL(pressed()), pWidget, SLOT(showFullScreen()));\n\n    return app.exec();\n}\n```\n\n关于其他控件的信号和槽定义，可随时在 `Qt Creator` 中按 `F1` 查阅官方手册。\n\n## Qt Designer 界面设计\n\n在实际开发中，通常使用 `Qt Designer`（UI 设计器）来进行界面布局，操作方式与 MFC 类似，支持拖拽式控件放置。\n> `Qt Designer` 是一个独立的工具，但它被深度集成在了 `Qt Creator` 之中。双击项目中的 `.ui` 文件时，`Qt Creator` 会自动在内部打开 `Qt Designer` 的界面。\n\n创建一个基于 Qt Widgets 的应用程序项目：\n\n![504aac009a722e600daed244fd32f763&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/5fd4ad8e82d4c48cec7eefcd2c6af3214c3475fdbb863797b1b57115ec3bec1f.jpg)\n\n---\n\n项目创建后，会包含以下核心文件：\n\n1. `Demo.pro`：qmake 工程配置脚本，包含项目配置、模块依赖及源码文件列表。\n2. `mywidget.h`：主窗口类的头文件声明。\n3. `mywidget.cpp`：主窗口类的具体实现。\n4. `main.cpp`：应用程序的入口文件。\n5. `mywidget.ui`：由 XML 描述的 UI 界面文件。\n\n![9c058b97cecaed7a81379582607cc924&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/d4b6d222020a10bd750c50037ec6998d81a5a5ef97b9331dc9e0247e74829557.jpg)\n\n---\n\n观察头文件，有两点关键特征：\n1. 类声明的起始位置包含 `Q_OBJECT` 宏。\n2. 包含一个名为 `ui` 的指针成员（类型为 `Ui::MyWidget`），用于集中管理所有的 UI 子控件。\n\n![45b84624400e90ff06b4d8698f7407f0&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/ad24140d4e820fb5d071eec52cd6ed35dda1815f03052b9cebebd7a0841215b2.jpg)\n\n### 界面布局\n\n双击 `.ui` 文件或点击左侧菜单的“设计”按钮，即可进入 UI 设计器：\n\n![42b648be81c9cb8f86092ce5d26631c1&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/7f03ce9fb4a2c5245d2ad6b8a7b365d39c7679b4e912b5839c4bc7bc2fbd02ab.jpg)\n\n从左侧控件面板将控件拖拽至主界面，并在右侧属性栏修改其 `objectName` 和显示文本：\n\n![35b4eccb46d855684ac92336092065f0&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/bf101959ebefb6358a918a5e0a4146fa260cab83c4c1ec706048cd9390f5c242.jpg)\n\n### 绑定信号与槽\n\n绑定 UI 控件的信号和槽有两种常见方式：可视化绑定和代码绑定。\n\n#### 可视化绑定\n\n在设计器中，按住 `F4` 或点击顶部的信号槽编辑模式图标，直接拖曳控件完成信号与槽的可视化连线配置：\n\n![b5a6165f1175cb12d95140951afc7216&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/bf2df2ff27b8cc33284e5fae57b6cc969ade8d93d16b16bffe1be215bd1e4aea.jpg)\n\n#### 代码绑定\n\n若要实现复杂逻辑（例如：点击 `Submit` 按钮后，将 `TextLabel` 的内容更新为输入框中的文本），需要在代码中自定义槽函数。\n\n首先，在头文件 `mywidget.h` 中声明一个私有的槽方法：\n\n```cpp\nprivate slots:\n    void ChangeText();\n```\n\n其次，在实现文件 `mywidget.cpp` 中编写该方法的逻辑，通过 `ui` 指针访问对应的控件：\n\n```cpp\nvoid MyWidget::ChangeText()\n{\n    // 获取 inputEdit 的文本，并设置到 showLabel 中\n    ui->showLabel->setText(ui->inputEdit->text());\n}\n```\n\n最后，在构造函数中，于 `ui->setupUi(this);` 之后使用 `connect` 将按钮的点击信号与自定义槽函数连接：\n\n```cpp\nMyWidget::MyWidget(QWidget *parent) :\n    QWidget(parent),\n    ui(new Ui::MyWidget)\n{\n    ui->setupUi(this); // 初始化 UI\n\n    // 绑定 Submit 按钮的 pressed 信号到自定义槽 ChangeText\n    connect(ui->submitButton, SIGNAL(pressed()), this, SLOT(ChangeText()));\n}\n```\n\n编译运行，即可看到预期效果：\n\n![6d7b17cfb587ed37adc5fcfb5365ae8a&#95;MD5&#46;jpg](/notes/n-56644eca51734b9598ae47556aafe1ad/media/9b152a844853daff0952bd15dba516437a91ca37b26ad6e57d8a27cabfc22be7.jpg)\n\n",
+  "id": "56644eca-5173-4b95-98ae-47556aafe1ad",
+  "metadata": {
+    "tags": [
+      "lang/cpp/qt"
+    ],
+    "title": "C++ Qt 开发基础"
+  },
+  "resources": [
+    "2859586018b9a9a41245f3b33766fb6dfa54ffa406be82f57fb358e64fb25c21.jpg",
+    "41fbc72eaefe8f2fee1dc2f2c5f91aad39b7f7e2641be8868e85a9ada552e9a3.jpg",
+    "595571664e9ee69e278ef56d5afbed2d285239672471b5031049f43d233d60e3.jpg",
+    "5fd4ad8e82d4c48cec7eefcd2c6af3214c3475fdbb863797b1b57115ec3bec1f.jpg",
+    "756834bbf695183966e3474113a2a7e13ac88f6c4bdc2a069259736c7886c160.jpg",
+    "75a5913e4ebd219d8508eda6bccd2a92b807f5def6e1534fff19e3e2f69c2223.jpg",
+    "7f03ce9fb4a2c5245d2ad6b8a7b365d39c7679b4e912b5839c4bc7bc2fbd02ab.jpg",
+    "9b152a844853daff0952bd15dba516437a91ca37b26ad6e57d8a27cabfc22be7.jpg",
+    "ab7ea9146b903bc3f21cff5a261aedae49335a5de08f1264a21ea30f5684606f.jpg",
+    "ad24140d4e820fb5d071eec52cd6ed35dda1815f03052b9cebebd7a0841215b2.jpg",
+    "b3927bc0ba306840a441c633772daaa56d832b5cd4025be0edf001c272a9d9e1.jpg",
+    "b7ce318a7cd501411b2dda3b0ad9cad7fc2484273e9081982de27d3c6989cee8.jpg",
+    "bf101959ebefb6358a918a5e0a4146fa260cab83c4c1ec706048cd9390f5c242.jpg",
+    "bf2df2ff27b8cc33284e5fae57b6cc969ade8d93d16b16bffe1be215bd1e4aea.jpg",
+    "d37c56e1a6bd0dd705dfab52487ea964767b14fb7cd6340352d3978b880c78a1.jpg",
+    "d4b6d222020a10bd750c50037ec6998d81a5a5ef97b9331dc9e0247e74829557.jpg",
+    "ef599b7b30fbfb2dff687b22fe3b5730ba511aef7679756b0ba7420da558a329.jpg",
+    "f17f84bc276b1348b429ecde7d4e529071becb8b8c1ec38402f918228efc034b.jpg"
+  ],
+  "url": "/notes/n-56644eca51734b9598ae47556aafe1ad/"
+}

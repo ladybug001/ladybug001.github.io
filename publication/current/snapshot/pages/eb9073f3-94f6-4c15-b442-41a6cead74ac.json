@@ -1,0 +1,70 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-0cab39a0c0dd5b81d31c",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-eac3b853114b66d5edd5",
+      "kind": "heading",
+      "offset": 155
+    },
+    {
+      "id": "h-a85466619e113b80b79c",
+      "kind": "heading",
+      "offset": 165
+    },
+    {
+      "id": "h-8d327f6dd840d1f68ade",
+      "kind": "heading",
+      "offset": 489
+    },
+    {
+      "id": "h-b187ea37bc26f8ed333d",
+      "kind": "heading",
+      "offset": 913
+    },
+    {
+      "id": "h-9524bcbb6b3163dbbc29",
+      "kind": "heading",
+      "offset": 1194
+    },
+    {
+      "id": "h-84712f834e8b85a72b99",
+      "kind": "heading",
+      "offset": 1309
+    },
+    {
+      "id": "h-2cfe705364cba03a0044",
+      "kind": "heading",
+      "offset": 1726
+    },
+    {
+      "id": "h-b4b57272b90b7e4f683b",
+      "kind": "heading",
+      "offset": 2299
+    },
+    {
+      "id": "h-fed0c96086d9e3a005c2",
+      "kind": "heading",
+      "offset": 2316
+    },
+    {
+      "id": "h-0c4eddec60d1a11f99b5",
+      "kind": "heading",
+      "offset": 2647
+    }
+  ],
+  "body": "# Android 刷机与 Root\n\n手机从上电到系统运行的过程，与 PC 上 BIOS/UEFI 加载操作系统类似。x86 架构的启动过程参考：[x86 裸机实验&#65306;实模式进入保护模式](/notes/n-b8281eab11a94cc19572b938dead1e60/)。\n\n## 核心概念\n\n### 安卓分区\n\n安卓将磁盘分为多个分区，每个分区承载不同用途（系统内核、用户数据等），常见的有：\n1. `boot` 分区，存放 Linux 内核镜像。\n2. `bootloader` 分区，存放引导加载程序，负责芯片基础硬件初始化，并加载 `boot` 分区中的内核。\n\n刷机的本质就是用指定的镜像文件覆盖这些分区，比如：\n\n- 刷 `boot.img`：覆盖 `boot` 分区\n- 刷 `bootloader.img`：覆盖 `bootloader` 分区\n\n注意：现代安卓设备普遍使用 A/B 分区方案（如 `boot_a`、`boot_b`），系统更新写入非活跃分区，从而实现交替更新与回滚，刷机的时候注意这一点。\n\n### Bootloader 锁\n\nBootloader 是什么：负责加载系统到内存并跳转执行。\n\nBootloader 锁的两层作用：\n\n- **第一层：写屏障。** 锁定的 Bootloader，即使在 Fastboot 模式下也会拒绝向底层分区写入未授权数据的指令——**即不允许刷机**。\n- **第二层：执行屏障。** 在正常开机时，Bootloader 会校验系统镜像的数字签名（信任链/AVB），拦截并拒绝启动被篡改的非官方系统。\n\n可以看到 Bootloader 锁同时控制了是否可以刷机、是否可以加载非官方系统。\n\n**进阶**：Bootloader 解锁失败时的替代方式：\n\n- **硬件级**：物理拆下闪存芯片（eMMC/UFS），用编程器直接读写分区数据，替换为可解锁的 Bootloader。\n- **软件级**：利用底层模式（如高通 9008 EDL 模式），通过工程线缆连接电脑，强行修改标志位或刷入工程版 Bootloader。\n\n### 刷机方式\n\n可以理解安卓有两个操作系统：平时使用的和 Recovery，后者用来对平时使用的系统进行修改。\n> Windows 也是如此，存在一个 Recovery 系统，可以通过分区工具查看。\n\nBootloader 的作用之一就是选择进入哪一个，默认是前者。\n\n常见的刷机方式：\n- **线刷**：依赖电脑数据线和 Bootloader 模式，通过底层指令对物理分区进行镜像块级别的强制覆盖，最彻底，主要用来救砖或降级。\n- **卡刷**：在手机端的 Recovery 模式下，通过解压和执行脚本对系统文件进行替换或修补，主要用于日常升级或刷入补丁。\n\n### 双清\n\n格式化 `userdata` 和 `cache` 分区（挂载点分别为 `/data` 和 `/cache`），目的是在跨系统或降级刷机中防止数据架构冲突。\n\n> 对于线刷默认就会进行双清，而卡刷需要手动指定。\n\n## 刷机实操\n\n- 在手机设置中：打开手机的开发者模式\n- 在开发者选项中打开 OEM 解锁，原因：你随时可以进入 Bootloader 环境，但只有事先开启了 OEM 解锁，Bootloader 才会接受并执行解除 Bootloader 锁的指令。\n- 进入 `bootloader` 模式（`adb` 终端里面执行 `adb reboot bootloader`，等手机重启），执行 `fastboot flashing unlock`（一加设备使用 `fastboot oem unlock-go`）解开 `Bootloader` 锁。\n- 解开后，即可执行 `fastboot flash <分区名> <镜像文件>` 刷入目标系统分区（`boot`、`bootloader` 等）。\n\n> 我的理解：开发者选项中的\"USB 调试\"开关用于启动/允许 `adbd`（ADB daemon）——通过它与电脑通信。\n\n### 踩坑记录：无法上网\n\n- **现象**：手机插上手机卡以及连上 Wi-Fi 都无法上网。经网上搜索得知，大概率是由于 Android 中的联网检测功能不能访问 <http://clients3.google.com/generate_204> 导致。\n- **尝试**：执行了下列命令（用来解决连接上 Wi-Fi 提示\"已连接 但无法访问互联网\"的）：\n    ```bash\n    adb shell settings delete global captive_portal_server\n    adb shell settings put global captive_portal_detection_enabled 0\n    ```\n    执行完成后，开启飞行模式再关闭飞行模式，使设置生效。\n- **结果**：执行上述命令后，尽管提示\"已连接 但无法访问互联网\"，直接通过域名是能够访问百度的。\n\n> [!NOTE] 补充\n> 这个提示本身只说明设备无法访问 `clients3.google.com`（Google 联网检测服务器），并不代表所有网站都不可达。上述命令的作用是关闭系统的联网检测功能，使系统不再尝试访问该服务器，因此不再弹出提示。实际上不执行这些命令、直接打开浏览器访问国内网站大概率也是可行的。\n\n## 获取 Root 权限\n\n### Magisk 原理简述\n\n在 Android 中，默认没有 `su` 命令，Magisk 通过修补 `boot.img`，创建一个覆盖文件系统将 `su`、`magisk` 相关文件挂载到 `/sbin` 或 `/system/bin` 等路径，让系统认为这些文件存在。\n> 前置内容参考：[Linux 进程权限模型](/notes/n-835dfcae9c9d4efc85d0b2d0e3c6c460/)\n\n最终实现：\n1. 普通应用执行 `su` 命令想要提权。\n2. `su` 程序以 root（UID 0）权限被运行，并且手机弹出一个窗口询问你：\"XXX应用请求获取 root 权限，是否允许？\" \n3. 若你点击允许，则会以该权限运行应用想要执行的命令。\n\n### 获取步骤\n\n1. `adb install magisk.apk` — 安装 Magisk 到手机\n2. 解压刷机用的安卓镜像文件，把 `boot.img` 通过 `adb push` 到手机 `/sdcard/download/` — 将原始 boot 镜像传入手机供 Magisk 修补\n3. 打开 Magisk → 安装 → 保持强制加密 → 选择并修补一个镜像文件 → 选中刚刚 push 进手机的 `boot.img`，之后会生成 `magisk_patched-xxxx_xxxx.img` — Magisk 在 boot 镜像中注入 Root 组件\n4. 把生成的 `magisk_patched-xxxx_xxxx.img` 通过 `adb pull` 到电脑 `fastboot.exe` 所在的目录 — 取回修补后的镜像\n5. `adb reboot bootloader` — 手机进入 Bootloader 模式\n6. `fastboot flash boot magisk_patched-23000xxx.img` — 将修补后的 boot 镜像刷入 `boot` 分区\n7. `fastboot reboot` — 重启手机，打开 Magisk 查看，如出现版本号则刷入成功\n\n**核心逻辑**：提取原始 `boot.img` → 用 Magisk 修补 → 将修补后的镜像刷回 `boot` 分区。\n\n> [!NOTE] A/B 设备注意事项\n> 在 A/B 分区设备上，OTA 更新会写入非活跃槽位（不包含 Magisk 修补）。更新后需要重新修补并刷入新槽位的 `boot.img`，否则切换槽位后会丢失 Root。Magisk 应用内的\"安装到未使用的槽位（OTA 后）\"功能可以自动完成此操作。\n",
+  "id": "eb9073f3-94f6-4c15-b442-41a6cead74ac",
+  "metadata": {
+    "tags": [
+      "os/android",
+      "reverse/android"
+    ],
+    "title": "Android 刷机与 Root"
+  },
+  "resources": [],
+  "url": "/notes/n-eb9073f394f64c15b44241a6cead74ac/"
+}

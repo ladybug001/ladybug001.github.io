@@ -1,0 +1,42 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7b1ba28def3a9b1c93d8",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-26d02b0ba1b136bc4a57",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-ed02747eafcbccaf5528",
+      "kind": "heading",
+      "offset": 32
+    },
+    {
+      "id": "h-14f36ee83d9b87b9b69e",
+      "kind": "heading",
+      "offset": 1222
+    },
+    {
+      "id": "h-b516e280434ace60bc0d",
+      "kind": "heading",
+      "offset": 1733
+    }
+  ],
+  "body": "# C++ 模板机制\n\n## 函数模板\n\n### 为什么需要模板\n\n假设有一个冒泡排序函数：\n\n```cpp\nvoid Sort(int* arr, int nLength) {\n    int i, k;\n    for (i = 0; i < nLength; i++) {\n        for (k = 0; k < nLength - 1 - i; k++) {\n            if (arr[k] > arr[k + 1]) {\n                int temp = arr[k];\n                arr[k] = arr[k + 1];\n                arr[k + 1] = temp;\n            }\n        }\n    }\n}\n```\n\n这个版本只能处理 `int` 类型数组。如果希望对 `char`、`double` 或自定义类型执行同样的排序逻辑，就得重复写多份几乎一致的函数实现。\n\n如何避免重复实现呢？C++ 使用模板来解决这个问题。\n\n函数模板的基本语法如下：\n\n```cpp\ntemplate <class 形参名, class 形参名, ...>\n返回类型 函数名(参数列表) {\n    函数体;\n}\n```\n\n这里的 `class` 只是模板形参声明关键字，也常写成 `template <typename T>`。\n\n用模板的方式改写上面的冒泡排序函数：\n\n```cpp\ntemplate<class T>\nvoid Sort(T* arr, int nLength) {\n    int i, k;\n    for (i = 0; i < nLength; i++) {\n        for (k = 0; k < nLength - 1 - i; k++) {\n            if (arr[k] > arr[k + 1]) {\n                T temp = arr[k];\n                arr[k] = arr[k + 1];\n                arr[k + 1] = temp;\n            }\n        }\n    }\n}\n```\n\n这个例子中，只有元素类型需要抽象出来，所以模板参数只有一个 `T`。凡是原先依赖具体类型 `int` 的位置，都改为模板参数 `T` 即可。\n\n\n**要注意**：函数模板并不意味着“任何类型都一定能用”。当前 `Sort()` 的实现依赖以下条件：\n- 类型 `T` 必须支持拷贝或赋值\n- 类型 `T` 必须支持 `operator>`\n\n如果传入的类型不满足这些操作，模板实例化时仍然会报错。也就是说**要具有一定的共性**，才能使用同一个函数模板。\n\n---\n\n### 模板的原理\n\n那么模板的原理是什么，编译器又做了什么工作？我们可以看一下如下代码的反汇编：\n\n![5fa4ee02d7106fd34530e1c22e8a554f&#95;MD5&#46;png](/notes/n-ee8743c7e4904a32b0036908655eae75/media/92602ac005f541f3c6ba2124b4b8df1ad8de22cf56da55b05cdda16cf1c6291b.png)\n\n使用不同类型的数组传入冒泡排序函数，观察一下执行地址：\n\n![7106486ab3d99e035b47e1ff78281583&#95;MD5&#46;png](/notes/n-ee8743c7e4904a32b0036908655eae75/media/0a04fc46244946c0a64d9a56ddf1f0a6bf91e67bbfa5298532332cb210ff7cb9.png)\n\n可以看见，两个函数的地址完全不一样。这说明是编译器为不同的模板实参生成对应的函数版本。也就是说，`Sort<int>` 和 `Sort<char>` 通常会变成两份不同的目标代码。\n\n## 类模板\n\n模板除了可以用于函数，也可以用于类或结构体。其基本格式如下：\n\n```cpp\ntemplate <class 形参名, class 形参名, ...>\nclass 类名 {\n    ...\n};\n```\n\n如下代码中有一个结构体，包含两个成员函数：一个返回较大的值，一个返回较小的值：\n\n```cpp\nstruct Base {\n    int a;\n    int b;\n    char x;\n    char y;\n\n    int Max() {\n        if (a > b) {\n            return a;\n        } else {\n            return b;\n        }\n    }\n\n    char Min() {\n        if (x < y) {\n            return x;\n        } else {\n            return y;\n        }\n    }\n};\n```\n\n但这个结构体已经把成员变量类型固定为 `int` 和 `char`。如果希望它能适配任意可比较类型，就可以使用模板改造这段代码：\n\n```cpp\ntemplate<class T, class M>\nstruct Base {\n    T a;\n    T b;\n    M x;\n    M y;\n\n    T Max() {\n        if (a > b) {\n            return a;\n        } else {\n            return b;\n        }\n    }\n\n    M Min() {\n        if (x < y) {\n            return x;\n        } else {\n            return y;\n        }\n    }\n};\n```\n\n这里 `T` 和 `M` 分别表示两组成员的类型参数。这样，`Base` 就不再绑定某一种具体数据类型，而是变成了一个“类模板”。\n\n如果要使用这个类模板，就需要明确告诉编译器：模板参数 `T`、`M` 分别对应什么类型。因此像 `Base b;` 这样的写法无法编译，因为模板实参没有被指定。\n\n使用如下格式即可：\n\n```cpp\nBase<int, char> b;\n```\n\n这表示用 `int` 替换 `T`，用 `char` 替换 `M`，从而实例化出一个具体类型 `Base<int, char>`。\n",
+  "id": "ee8743c7-e490-4a32-b003-6908655eae75",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 模板机制"
+  },
+  "resources": [
+    "0a04fc46244946c0a64d9a56ddf1f0a6bf91e67bbfa5298532332cb210ff7cb9.png",
+    "92602ac005f541f3c6ba2124b4b8df1ad8de22cf56da55b05cdda16cf1c6291b.png"
+  ],
+  "url": "/notes/n-ee8743c7e4904a32b0036908655eae75/"
+}

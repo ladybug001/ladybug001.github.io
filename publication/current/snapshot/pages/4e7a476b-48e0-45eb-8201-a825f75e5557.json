@@ -1,0 +1,119 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-9fe36d441f2da93c15e3",
+      "kind": "heading",
+      "offset": 31
+    },
+    {
+      "id": "h-2922484789e1b16c47ba",
+      "kind": "heading",
+      "offset": 145
+    },
+    {
+      "id": "h-c76e6068fb9c4bf45916",
+      "kind": "heading",
+      "offset": 365
+    },
+    {
+      "id": "h-25d320bd80cf1d306201",
+      "kind": "heading",
+      "offset": 2124
+    },
+    {
+      "id": "h-ec73cfe236d67d801c54",
+      "kind": "heading",
+      "offset": 3992
+    },
+    {
+      "id": "h-c8d42bf7ce397985a83c",
+      "kind": "heading",
+      "offset": 5453
+    },
+    {
+      "id": "h-fe15669826e3c5ae9e37",
+      "kind": "heading",
+      "offset": 6011
+    },
+    {
+      "id": "h-af70f192024069b1cb3f",
+      "kind": "heading",
+      "offset": 6413
+    },
+    {
+      "id": "h-6c824d06df63d280b5c4",
+      "kind": "heading",
+      "offset": 7628
+    },
+    {
+      "id": "h-e645bf4720bc3ccdfbea",
+      "kind": "heading",
+      "offset": 8583
+    },
+    {
+      "id": "h-13f78fc7a1359563f635",
+      "kind": "heading",
+      "offset": 9592
+    },
+    {
+      "id": "h-f55da77683aae9c5df4a",
+      "kind": "heading",
+      "offset": 10006
+    },
+    {
+      "id": "h-43e088b7ce8259656757",
+      "kind": "heading",
+      "offset": 10236
+    },
+    {
+      "id": "h-8b06b43b802c3091d3eb",
+      "kind": "heading",
+      "offset": 11299
+    },
+    {
+      "id": "h-99126c319dfc06489844",
+      "kind": "heading",
+      "offset": 12053
+    }
+  ],
+  "body": "# Windows 进程创建（03-2）：PAE 地址空间骨架\n\n> [!note] 相关笔记\n> 本组笔记总览见 [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)。\n\n## 1) 分析范围\n\n本文分析 WRK 中 x86 PAE 条件下的 `MmCreateProcessAddressSpace`，重点说明它相对非 PAE 版本的差异。\n> 强烈建议先阅读：[Windows 进程创建&#65288;03&#45;1&#65289;&#65306;非 PAE 地址空间骨架](/notes/n-715b80e32efa4cada011b9dda96e0bca/)\n\n## 2) 阶段一：commit、页颜色与 PAE 顶层结构\n\nPAE 版本开头同样先预收 commit：\n\n![207089fb976a25e55b910eed7cb0ca05&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/cfd936bac6a488ef7dcf6d4698cfe31917b1900b9f5e85e6389a9887774d638e.jpg)\n\n\nPAE 下 `MM_PROCESS_COMMIT_CHARGE` 为 7，与非 PAE 的 4 相比，主要增量来自 PAE 需要额外的 3 张 page directory 层级；\n> `PDPT/PaeTop` 本身由 `MiPaeAllocate` 专门管理，并不是用 `MiRemoveZeroPageMayReleaseLocks` 独占一整张物理页。\n\n\n随后初始化页颜色和 `HyperSpaceLock`，这部分与非 PAE 相同：\n\n![3bd0be143dd6aa81a1d730325add9e5e&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/f1f018c5ba1085cfa5abb74007cc77c28b157669ead0c6f295ff99b63dbcea01.jpg)\n\n接着，PAE 独有步骤出现：\n\n![dfb5ebe9036fca0f4246f68d0132b1e7&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/74322abe20907ee3f1fd8b976f6a70ae3adc21e74e04159b3535549d62336da9.jpg)\n\n\n`MiPaeAllocate` 分配 PAE 顶层 page directory pointer structure，并返回指向同一结构\"两个地址\"：\n- `TopQuad`：`PDPT/PaeTop` 的物理地址，后续写入 `DirectoryTableBase[0]`，可作为 `CR3` 根。\n- `PaeVa`：同一结构在内核中的虚拟地址，当前函数用它写入 `PteEntry[i]`。\n\n> 该结构包含 4 个 `PDPTE`，相关内容参考：[x86 PAE 分页机制](/notes/n-0f53280a204b4365ac0c265d025d4bc0/)。\n\n\n与非 PAE 的差异：\n\n1. 非 PAE 的顶层就是一张普通 page directory 物理页，通过 `MiRemoveZeroPageMayReleaseLocks` 分配。\n2. PAE 的顶层由 `MiPaeAllocate` 从专用 `PAE_ENTRY` 池中分配；一个进程只需要约 32 字节的 `PDPT` 内容，因此 WRK 会把多个进程的 PAE 顶层槽位打包在同一张物理页中管理。\n3. `TopQuad` 必须低于物理 4GB，因为 x86 PAE 下 `CR3` 保存的是该顶层结构的 32 位物理地址。\n\n如果后续物理页检查失败，PAE 版本需要额外释放这份顶层结构：\n> 如果 `PAE_ENTRY` 空闲池为空，会申请物理 4GB 以下的一批页，把每张页切成多个 `PAE_ENTRY` 槽位，首页槽记录该页的元数据，其余槽位挂入 `MiPaeEntrySList` 或 `MiFirstFreePae`。如果首次补充失败，代码会尝试裁剪工作集、刷新页面并延迟后重试；仍然失败时 `MiPaeAllocate` 返回 `0`。\n![c2c617a199efdc018c5ddb018f47245d&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/3cbd2e107ce44638e3076be91cdefdffc7553c5fc122e587173d8f4e7f6a1a73.jpg)\n\n\n## 3) 阶段二：物理资源检查与 page directory 页分配\n\nPAE 版本同样获取 `PFN lock`，并通过 `MI_NONPAGEABLE_MEMORY_AVAILABLE()` 检查 resident available 余量：\n\n![d8162c733e9e51d532f6383d6716cd78&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/eac47c658a76e897beabaf2155d41c4f63659d76638852b229e08efa9ee62a08.jpg)\n\n检查通过后，函数记录 commit 调试信息，并扣减 resident available：\n\n```c\nMM_TRACK_COMMIT (MM_DBG_COMMIT_PROCESS_CREATE, MM_PROCESS_COMMIT_CHARGE);\n\nMI_DECREMENT_RESIDENT_AVAILABLE (MinimumWorkingSetSize,\n                                 MM_RESAVAIL_ALLOCATE_CREATE_PROCESS);\n```\n\n---\n\n新的差异出现在分配 page directory 页时，非 PAE 只分配一张 page directory 页；PAE 会分配四张 `PageDirectories[i]`：\n> 结合 x86 PAE 的 4 个 `PDPTE` 以及本文件中 `PageDirectories[PD_PER_SYSTEM]`、`PaeVa->PteEntry[i]` 的用法，可推导 PAE 下 `PD_PER_SYSTEM` 应为 4。\n![d16115bdc9faec6d1a8a3f0e2eb787ce&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/a5fccb2059d2287de87d6a5e29c14fe54fa0126b5bcb190befd8c55cbd27eb32.jpg)\n\n`PDPT/PaeTop` 已经由前面的 `MiPaeAllocate` 分配，这里分配的是 `PDPTE` 指向的 **page directory 页**。\n\n随后代码把这些 page directory 页写入刚才分配的 `PaeVa` 顶层结构：\n\n![fa9aa36d95f308003d5fb8335dcbfbd8&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/df3b5a462fc30c1c4a96b26ea94c6bd1ba51a92cb63cddac214268cb00fd8e5f.jpg)\n\n这段是 PAE 地址空间创建的核心：\n\n![f081b5178b12280e2b6e4a00a1fe609d&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/a082993ff355f1699725aadd863607e4e9db1f9ff8d62ab560dc05ca372ebefe.jpg)\n\n- `TopQuad`：`PDPT/PaeTop` 的物理地址，写入 `DirectoryTableBase[0]`，后续可作为 `CR3` 根。\n- `PaeVa`：`PDPT/PaeTop` 在内核中的虚拟地址，用于填写或读取 `PteEntry[i]`。\n\n`NewProcess->PaeTop = (PVOID) PaeVa;` 的含义是：把该虚拟地址挂到 `EPROCESS`，便于内核修改 PDPTE。\n> 与非 PAE 相比，PAE 需要额外的字段存储顶级页目录表的虚拟地址，相关内容参考：[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)。\n\n`DirectoryTableBase[0] = TopQuad;` 的含义是：新进程的地址空间根不是某张 page directory 页，而是 PAE 顶层 `PDPT/PaeTop` 的物理地址。\n\n## 4) 阶段三：HyperSpace、VAD bitmap 与 working set list\n\n后续三张基础页的意图与非 PAE 相同。\n\n1. 分配 `HyperSpaceIndex`，作为新进程 `HyperSpace` 的 page table 页。\n\n![52e8cc43f66254136778e73d3a9903f8&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/a98530dfe12218b50c02a5976afdac7daf1d0c42250805b92d1fcd2758b654b6.jpg)\n\n2. 分配 `VadBitMapPage`，映射到固定虚拟地址 `VAD_BITMAP_SPACE`。\n\n![75b6a239590b0176bdead46a5345d251&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/337473e1f6d07ab6532f55365c50bbc44ee87199d1c1abf522eabc6cbfd2ef84.jpg)\n\n3. 分配 `PageContainingWorkingSet`，映射到固定虚拟地址 `MmWorkingSetList`。\n\n![aff2d8849a97c1ef681a975417a3d9f8&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/2725472c7c907da7528a732d4a056134512782587042d79378ae4871c7658b16.jpg)\n\n新的差异出现在 `DirectoryTableBase[1]`：\n\n![ace54157b9ebb875cd80b8eca94c873f&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/4a5ba093f3c5dbc603f9b6a483345bb420541736c4ca50837b44d2cddf24674b.jpg)\n\n非 PAE 下 `DirectoryTableBase[1]` 是 `HyperSpaceIndex << PAGE_SHIFT` 后的物理地址；PAE 下这里保存的是裸 `PFN`：\n\n```text\nPAE:\nDirectoryTableBase[0] = PAE 顶层结构物理地址\nDirectoryTableBase[1] = HyperSpace 页表的 PFN\n\n非 PAE:\nDirectoryTableBase[0] = 顶层 page directory 的物理地址\nDirectoryTableBase[1] = HyperSpace 页表的物理地址\n```\n\n申请完毕后，同样释放 `PFN lock`，并根据 `FlushTbNeeded` 判定是否刷新 `TLB/TB`：\n\n![fcd9ba3d957f9dcac1895164927667d4&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/9b9867b7f750cb9db7a685d4560716a3a4a66a477369fdb601dd623414ae1764.jpg)\n\n## 5) 阶段四：进入地址空间状态 1\n\n状态位设置与非 PAE 相同：\n\n![6f0fe548791511c850db09d5d250ba91&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/091609dab7c74957b6cca89782e70d207d354f6b68484eb5935616dc6273f597.jpg)\n\n状态 1 的含义也相同：基础骨架已经分配，但还没有完成 `MmInitializeProcessAddressSpace` 的完整初始化。差异在于状态 1 对 PAE 来说还多持有一份 `PaeTop` 顶层结构；如果后续失败，删除路径必须额外 `MiPaeFree(PaeVa)`。\n\n随后同样更新相关 `EPROCESS` 字段：\n\n![3f58099d38ee6442105ddbecd390a043&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/d284a6c1265434c171a2e525221f180f3e08c15a9e6cf0263b4f66646ce2911c.jpg)\n\n## 6) 阶段五：初始化 HyperSpace 页表页\n\nPAE 初始化 `HyperSpaceIndex` 的方式与非 PAE 基本一致：先临时映射这张物理页，再写入 `VAD_BITMAP_SPACE` 和 `MmWorkingSetList` 对应的 `PTE`。\n\n![bf498bffd598babb9fe9903b897357fa&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/263a98a2c66f1a1d2bc11997022e4ab16c0a2e2f2f8e7279743e2cbe9141a90c.jpg)\n\n这一阶段的重点是：新进程尚未切换上下文，所以仍然需要借当前进程的 system PTE 或当前进程 `HyperSpace` 临时映射，才能写入新进程尚未启用的物理页。\n\n## 7) 阶段六：初始化最高 GB 的 page directory\n\nPAE 与非 PAE 最大的初始化差异集中在 page directory 页处理。\n\n首先，WRK 只给虚拟地址空间最高 GB 对应的 page directory 页设置 `PteAddress = PDE_BASE`：\n\n![06cfeb7be7e586042eb51b6aa35039e5&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/286cf0109b8fc7066234f0cd353ca3103f77c4cd57457fd0a285a5f243545e7c.jpg)\n\n> 为什么要设置最高 GB 对应 page directory 页的 `PFN` 表项中的 `PteAddress` 为 `0xC0600000`，参考：[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)。\n\n然后把新进程加入 `MmProcessList`，这点与非 PAE 相同：\n\n![f0bbb9ef465ddad5680a5be61908060c&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/82c87d78b3dda1f74c3df55da10533df8068dcb25748774c92705112e8f28297.jpg)\n\n随后临时映射最高 GB 对应的 page directory 页，并复制当前地址空间中 `0xC0000000` 以上的整个 page directory 的页表项：\n\n![61005755b5045df78b7534101169f59c&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/594128d2ea7d83ece1717248293238097507a8afaf6bc15696c2a4b8756fd073.jpg)\n\n这和非 PAE 的处理方式不同：\n\n- 非 PAE：在单张 page directory 中，从 `MmSystemRangeStart` 对应的 `PDE` 开始复制到页目录末尾。\n- PAE：先复制最高 1GB 对应的整个 page directory 页；如果 `MmSystemRangeStart < 0xC0000000`，后续再补充 2GB-3GB 对应的系统 `PDE`。\n> 两者都复制系统虚拟范围对应的 `PDE`，这些 `PDE` 指向下一层页表或大页映射；差异在于非 PAE 只有一张 page directory，而 PAE 按 1GB page directory 页分段复制。\n\n## 8) 阶段七：PAE 页目录自映射\n\n非 PAE 的自映射只需要让页目录中的一个 `PDE` 指向页目录自身。\n\nPAE 版本则需要把 4 张 `PageDirectories[i]` 挂进最高 GB 的页目录自映射窗口：\n\n![39ccbabe4d5cc8f3f717a2c786bbbde1&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/6bc798066e52da40ebd72e6e33b583c87baea64a25fa761a5fce06be884c716c.jpg)\n\n最高 GB 的 page directory 页承担了页表自映射窗口的一部分角色。`PointerPte[i] = TempPte` 让这些 page directory 页可以通过固定虚拟地址窗口被访问。\n> 相关内容参考：[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)\n\n随后填写 `HyperSpace` 对应的PDE：\n\n![4a120ce7f208828e79289b1a635794cf&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/505147d62b973ccbc860ce83ad5203226f8f81699611dd9fc8cc9cbe4e4c5928.jpg)\n\n再清空 `HyperSpace` 后续的 `PDE`：\n> 这里和非 PAE 的语义一致：只建立第一张 `HyperSpace` page table，其它后续范围保持空，等待后续按需扩展。\n\n![178eeea49be8bca0fc0867e64ff1a30e&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/9d8f1d7a5dcff1eea5b7fc75ba84fb2c90f5147859688d70895c9d28a4f59765.jpg)\n\n\n## 9) 阶段八：根据 MmSystemRangeStart 补齐 2GB-3GB 系统 PDE\n\nPAE 版本最后检测当前系统空间是否低于 `0xC0000000`：\n\n![b003edbbcdc979107744e44c1824bfe0&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/fba628fa47c2ce0209da34adf45ba0318311f2f665b75d9d2e04ab76d5ec97d6.jpg)\n\n```c\nif (MmSystemRangeStart < (PVOID) 0xC0000000) {\n    ...\n}\n```\n\n如果 `MmSystemRangeStart < 0xC0000000`，说明 2GB-3GB 也是系统空间，必须复制对应 page directory 中的系统 `PDE`。如果启用 `/3GB`，系统空间从 `0xC0000000` 开始，这个分支不执行。\n\n分支内部通过 `PaeVa->PteEntry[PD_PER_SYSTEM - 2]` 找到 2GB-3GB 对应的 page directory 页：\n\n```c\nPageDirectoryIndex = MI_GET_PAGE_FRAME_FROM_PTE (&PaeVa->PteEntry[PD_PER_SYSTEM - 2]);\n```\n\n然后从 `MmSystemRangeStart` 起复制系统 `PDE`：\n\n```c\nPdeOffset = MiGetPdeOffset (MmSystemRangeStart);\nPointerFillPte = &PointerPte[PdeOffset];\nCurrentAddressSpacePde = MiGetPdeAddress (MmSystemRangeStart);\n\nRtlCopyMemory (PointerFillPte,\n               CurrentAddressSpacePde,\n               PAGE_SIZE - PdeOffset * sizeof (MMPTE));\n```\n\n因此，PAE 版本的系统空间复制策略是：先处理最高 1GB，再根据 `MmSystemRangeStart` 判断是否补齐 2GB-3GB。\n\n## 10) 阶段九：统计和 session 引用\n\n收尾逻辑与非 PAE 相同：\n\n![608d7b2886ef4818d2a88ddcd44b0882&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/356600e0273ab6558376ef646fab8adacb77b777cd953cc0adf7225a288b48c8.jpg)\n\n更新全局进程 commit 统计、然后尝试增加 session space 引用。\n\n仍需注意：`MiSessionAddProcess` 是条件性的。如果当前进程不属于 session，新进程不会挂入 session 链表；如果属于 session，才会增加 session 引用并把新进程挂入 `SessionGlobal->ProcessList`，链表成员是 `SessionProcessLinks`。\n\n## 11) 创建后的地址空间结构\n\n![5b8926c8a7859810b62e7bb0a8a29d72&#95;MD5&#46;jpg](/notes/n-4e7a476b48e045eb8201a825f75e5557/media/9f92234a619c6515fb9deb73b5b75e566806df4ee84817ace18b85ea57441e38.jpg)\n> 注意，图中展示的是 2GB 内核空间下的情况，如果是 3GB 则缩减黄色区域的面积即可。\n## 12) 总体流程\n\n```mermaid\nflowchart TD\n    A[\"预收 commit: MiChargeCommitment(7)\"] --> B[\"初始化页颜色和 HyperSpaceLock\"]\n    B --> C[\"MiPaeAllocate: 分配低 4GB PAE 顶层结构\"]\n    C --> D[\"获取 PFN lock\"]\n    D --> E{\"resident available 是否足够?\"}\n    E -- \"不足\" --> F[\"释放 PFN lock / MiPaeFree / 归还 commit / FALSE\"]\n    E -- \"足够\" --> G[\"扣减 MinimumWorkingSetSize resident available\"]\n    G --> H[\"循环分配 PageDirectories[i]\"]\n    H --> I[\"填充 PaeVa->PteEntry[i]\"]\n    I --> J[\"保存 NewProcess->PaeTop 与 DirectoryTableBase[0]\"]\n    J --> K[\"分配 HyperSpaceIndex / VadBitMapPage / PageContainingWorkingSet\"]\n    K --> L[\"DirectoryTableBase[1] = HyperSpaceIndex PFN\"]\n    L --> M[\"释放 PFN lock / 必要时刷新 TB\"]\n    M --> N[\"AddressSpaceInitialized = 1\"]\n    N --> O[\"初始化 HyperSpace 页表页\"]\n    O --> P[\"初始化最高 GB page directory\"]\n    P --> Q[\"建立 PAE page directory 自映射\"]\n    Q --> R[\"映射 HYPER_SPACE 并清零后续范围\"]\n    R --> S{\"MmSystemRangeStart < 0xC0000000?\"}\n    S -- \"是\" --> T[\"复制 2GB-3GB 系统 PDE\"]\n    S -- \"否\" --> U[\"跳过 2GB-3GB 复制\"]\n    T --> V[\"增加 MmProcessCommit / session 引用 / TRUE\"]\n    U --> V\n```\n\n## 13) 关键设计点总结\n\n1. PAE 的顶层 `PDPT/PaeTop` 不是普通 page directory 页，而是由 `MiPaeAllocate` 分配的低 4GB 小结构。\n2. `MiPaeAllocate` 返回两个视角：`TopQuad` 是物理地址，`PaeVa` 是内核虚拟地址。\n3. `DirectoryTableBase[0]` 保存 `TopQuad`；`DirectoryTableBase[1]` 保存 `HyperSpaceIndex` 的裸 `PFN`。\n4. `MiRemoveZeroPageMayReleaseLocks` 仍用于分配真正的 page directory 页、`HyperSpace` 页表页、`VAD bitmap` 页和 working set list 页。\n5. PAE 的系统 `PDE` 复制按 page directory 页分段：先最高 1GB，必要时再处理 2GB-3GB。\n6. `PD_PER_SYSTEM` 的 PAE 定义在当前工作区不可见，不能直接引用非 PAE 分支中的 `PD_PER_SYSTEM == 1` 解释 `procpae.c`。\n7. PAE 的页目录自映射把 `PageDirectories[i]` 放入最高 GB page directory 的固定槽位，而不是只让单张页目录指向自身。\n\n**PAE 版本的 `MmCreateProcessAddressSpace` 本质上是在非 PAE 的最小地址空间骨架外，增加一个低 4GB 可寻址的 `PDPT/PaeTop` 顶层结构，并把系统空间复制、自映射、删除回收都改造成围绕多级 PAE 页表结构协同工作的形式。**\n\n## 14) 与非 PAE 的核心差异总览\n\n| 项目 | 非 PAE | PAE |\n|---|---|---|\n| 分页层级 | 两级：page directory -> page table | 三级：`PDPT/PaeTop` -> page directory -> page table |\n| 地址划分 | 10-10-12 | 2-9-9-12 |\n| 硬件 `PTE/PDE` 宽度 | 32 位 | 64 位 |\n| 可记录物理页框位数 | 20 位 `PFN` | `HARDWARE_PTE_X86PAE` 中 `PageFrameNumber` 为 26 位 |\n| `MM_PROCESS_COMMIT_CHARGE` | 4 | 7 |\n| 顶层地址空间根 | 一张 page directory 页，`CR3` 指向它 | 低 4GB 物理内存中的 `PDPT/PaeTop` 小结构，`CR3` 指向它 |\n| `DirectoryTableBase[0]` | page directory 物理地址 | `MiPaeAllocate` 返回的 `TopQuad`，即 `PDPT/PaeTop` 物理地址 |\n| `DirectoryTableBase[1]` | `HyperSpace` 页表物理地址 | `HyperSpaceIndex` 的裸 `PFN`，不是左移后的物理地址 |\n| page directory 页 | 顶层就是 page directory | `PDPTE` 指向下一层 page directory 页 |\n| 系统 `PDE` 复制 | 在单张 page directory 中从 `MmSystemRangeStart` 复制到末尾 | 先复制最高 1GB 对应的 page directory，必要时再处理 2GB-3GB |\n\nPAE 版本最容易混淆的点是：`PaeTop` 不是普通 page directory 页，而是 PAE 的 page directory pointer table（`PDPT`）入口结构。`MiPaeAllocate` 返回的 `TopQuad` 必须位于物理 4GB 以下，因为 x86 PAE 下 `CR3` 仍保存该顶层结构的 32 位物理地址。\n\n> WRK 实际还有 `WIN64` 版本的 `MmCreateProcessAddressSpace`。x64 的页表层级、地址空间布局和系统空间共享方式与 x86/PAE 差异较大，本文不展开。\n",
+  "id": "4e7a476b-48e0-45eb-8201-a825f75e5557",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "os/windows/mm",
+      "reverse/windows",
+      "arch/x86",
+      "lang/c"
+    ],
+    "title": "Windows 进程创建（03-2）：PAE 地址空间骨架"
+  },
+  "resources": [
+    "091609dab7c74957b6cca89782e70d207d354f6b68484eb5935616dc6273f597.jpg",
+    "263a98a2c66f1a1d2bc11997022e4ab16c0a2e2f2f8e7279743e2cbe9141a90c.jpg",
+    "2725472c7c907da7528a732d4a056134512782587042d79378ae4871c7658b16.jpg",
+    "286cf0109b8fc7066234f0cd353ca3103f77c4cd57457fd0a285a5f243545e7c.jpg",
+    "337473e1f6d07ab6532f55365c50bbc44ee87199d1c1abf522eabc6cbfd2ef84.jpg",
+    "356600e0273ab6558376ef646fab8adacb77b777cd953cc0adf7225a288b48c8.jpg",
+    "3cbd2e107ce44638e3076be91cdefdffc7553c5fc122e587173d8f4e7f6a1a73.jpg",
+    "4a5ba093f3c5dbc603f9b6a483345bb420541736c4ca50837b44d2cddf24674b.jpg",
+    "505147d62b973ccbc860ce83ad5203226f8f81699611dd9fc8cc9cbe4e4c5928.jpg",
+    "594128d2ea7d83ece1717248293238097507a8afaf6bc15696c2a4b8756fd073.jpg",
+    "6bc798066e52da40ebd72e6e33b583c87baea64a25fa761a5fce06be884c716c.jpg",
+    "74322abe20907ee3f1fd8b976f6a70ae3adc21e74e04159b3535549d62336da9.jpg",
+    "82c87d78b3dda1f74c3df55da10533df8068dcb25748774c92705112e8f28297.jpg",
+    "9b9867b7f750cb9db7a685d4560716a3a4a66a477369fdb601dd623414ae1764.jpg",
+    "9d8f1d7a5dcff1eea5b7fc75ba84fb2c90f5147859688d70895c9d28a4f59765.jpg",
+    "9f92234a619c6515fb9deb73b5b75e566806df4ee84817ace18b85ea57441e38.jpg",
+    "a082993ff355f1699725aadd863607e4e9db1f9ff8d62ab560dc05ca372ebefe.jpg",
+    "a5fccb2059d2287de87d6a5e29c14fe54fa0126b5bcb190befd8c55cbd27eb32.jpg",
+    "a98530dfe12218b50c02a5976afdac7daf1d0c42250805b92d1fcd2758b654b6.jpg",
+    "cfd936bac6a488ef7dcf6d4698cfe31917b1900b9f5e85e6389a9887774d638e.jpg",
+    "d284a6c1265434c171a2e525221f180f3e08c15a9e6cf0263b4f66646ce2911c.jpg",
+    "df3b5a462fc30c1c4a96b26ea94c6bd1ba51a92cb63cddac214268cb00fd8e5f.jpg",
+    "eac47c658a76e897beabaf2155d41c4f63659d76638852b229e08efa9ee62a08.jpg",
+    "f1f018c5ba1085cfa5abb74007cc77c28b157669ead0c6f295ff99b63dbcea01.jpg",
+    "fba628fa47c2ce0209da34adf45ba0318311f2f665b75d9d2e04ab76d5ec97d6.jpg"
+  ],
+  "url": "/notes/n-4e7a476b48e045eb8201a825f75e5557/"
+}

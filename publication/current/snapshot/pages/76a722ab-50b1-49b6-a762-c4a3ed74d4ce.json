@@ -1,0 +1,56 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-0512fe7605ba249d52a3",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-643fdbf945d4ddeea762",
+      "kind": "heading",
+      "offset": 88
+    },
+    {
+      "id": "h-7f723d08031547ca610e",
+      "kind": "heading",
+      "offset": 485
+    },
+    {
+      "id": "h-5ad78eca6a4a40ace4c4",
+      "kind": "heading",
+      "offset": 687
+    },
+    {
+      "id": "h-643ffdc1f561416aaafa",
+      "kind": "heading",
+      "offset": 1059
+    },
+    {
+      "id": "h-7491213686c9d88c06bd",
+      "kind": "heading",
+      "offset": 1507
+    },
+    {
+      "id": "h-1afb1d7169f1750ca9e1",
+      "kind": "heading",
+      "offset": 1884
+    },
+    {
+      "id": "h-92c5625787240c63c124",
+      "kind": "heading",
+      "offset": 2307
+    }
+  ],
+  "body": "# Windows 系统编程 (MOC)\n\n> Windows 对象、进程线程、内存、同步、窗口消息与系统调用的总入口；开发实践与内部实现分开阅读。\n\n## 对象与系统调用基础\n\n1. [Windows 内核对象](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/) — 理解对象体、对象头、生命周期与命名空间。\n2. [Windows 句柄机制](/notes/n-399db2c150e54f6db70dc0058623ffb0/) — 理解进程句柄表、继承、共享和对象访问。\n3. [Windows 内核路径解析&#65306;对象命名空间与 DeviceMap 机制](/notes/n-fd51c9c5b3534549885452c844b09c8e/) — 连接用户路径、NT 路径和内核对象查找。\n4. [Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/) — 追踪 API 调用链、特权级切换、保存现场与服务分发。\n\n## 进程与线程\n\n- [CreateProcess 函数概览](/notes/n-c2ee979bfba343668b3e7567f93782c4/) — 从应用接口理解进程创建的参数与基本使用。\n- [Windows 进程与线程管理 &#40;MOC&#41;](/notes/n-1909310e1a5e499cb337d28521607edb/) — 对象结构、创建、调度、切换和跨进程上下文。\n\n## 内存管理\n\n- [Windows 内存管理 &#40;MOC&#41;](/notes/n-eaaa660aabe44f52abf865bf51bb3789/) — 区分虚拟区域管理、物理页管理、缺页处理与共享映射。\n- [Windows 虚拟分页机制](/notes/n-31982091f5d4486aa5ae6aff36dca73a/) — 建立 Windows 虚拟空间与物理内存的关系。\n- [Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/) — 查阅虚拟地址区域的占用、分配与管理策略。\n- [Windows 内存映射文件](/notes/n-a5ced7cc81224d9196b3d65053f02293/) — 实践文件映射和跨进程共享内存。\n\n## 同步与异步执行\n\n- [Windows 同步与异步执行 &#40;MOC&#41;](/notes/n-fd806559a13b474392ec786d7b239b4b/) — 区分锁、等待唤醒、APC、DPC、定时器与 IRQL 约束。\n- [Windows 并发控制&#65288;1&#65289;&#65306;原子操作&#12289;自旋锁与临界区](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/) — 原子操作与互斥基础。\n- [Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/) — 对象等待、线程让出与通知唤醒。\n- [DLL 加载器锁](/notes/n-dd9c05084aa04886aaf28b6ee955464c/) — DLL 加载过程中的同步限制与死锁场景。\n\n## 窗口、消息与图形\n\n- [Windows 窗口与消息机制 &#40;MOC&#41;](/notes/n-8c532b91a6f94e15b533cc55499ce34f/) — 从应用消息循环进入系统路由与回调实现。\n- [Windows 窗口程序](/notes/n-5b50f7a485de48dcb0d1e1868933e003/) — 创建 Win32 窗口与处理事件的起点。\n- [Windows GDI](/notes/n-b415a25acde7408d9926f7a5612f432c/) — Windows 图形设备接口与基础绘制。\n- [MFC 框架开发 &#40;MOC&#41;](/notes/n-705b8d5b7602461184ebca4a316e97cd/) — 理解 MFC 对窗口消息和 GDI 的封装。\n\n## 驱动、调试与逆向\n\n- [Windows 驱动开发 &#40;MOC&#41;](/notes/n-0d5d90f7fa004030baa7ded0fecae31b/) — 环境、内核编程、驱动通信、综合项目与历史实验。\n- [Windows 调试与逆向分析 &#40;MOC&#41;](/notes/n-da63b3ac0bcb46c7bb4db1de80503df3/) — 调试关系、断点、异常、分析工具与验证实验。\n- [Windows 异常处理机制 &#40;MOC&#41;](/notes/n-46c2bfd4baf7445db160d3a9c39163bc/) — 直接查阅异常产生、分发、VEH 与 SEH。\n- [Windows PE 与逆向工程 &#40;MOC&#41;](/notes/n-c3b3e9cd34d44e929aaae83f6caebbec/) — PE 格式、链接加载、代码注入及逆向应用。\n\n## 学习前置与开发环境\n\n- [x86&#47;x64 体系结构](/notes/n-d80046d2d0bb4ae49616fceabab1054a/) — 分段、分页、特权级与中断等硬件基础。\n- [C&#65295;C&#43;&#43; 语言基础 &#40;MOC&#41;](/notes/n-38d58bba673d4ca996b87b58f8d04951/) — 编译链接、类型布局与内存资源管理。\n- [Visual Studio C&#43;&#43; 项目配置](/notes/n-ed9672c894ab4ee9a8bcef44a748d6d5/) — 项目配置与构建问题。\n",
+  "id": "76a722ab-50b1-49b6-a762-c4a3ed74d4ce",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows"
+    ],
+    "title": "Windows 系统编程 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/"
+}

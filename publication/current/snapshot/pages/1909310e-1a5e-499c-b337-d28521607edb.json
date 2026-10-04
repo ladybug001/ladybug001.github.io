@@ -1,0 +1,45 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-fe450e0741cfd4ed936b",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-124009af82ebe6d37fdd",
+      "kind": "heading",
+      "offset": 76
+    },
+    {
+      "id": "h-89b6f3da64edf34e1677",
+      "kind": "heading",
+      "offset": 327
+    },
+    {
+      "id": "h-ce6009f0f62f5e9ebe81",
+      "kind": "heading",
+      "offset": 457
+    },
+    {
+      "id": "h-880945c6342b3bbe4878",
+      "kind": "heading",
+      "offset": 650
+    },
+    {
+      "id": "h-caa4ebcff1e7fe59ea20",
+      "kind": "heading",
+      "offset": 1027
+    }
+  ],
+  "body": "# Windows 进程与线程管理 (MOC)\n\nWindows 进程/线程管理的总入口：结构体、生命周期、调度、切换与跨进程上下文。\n\n## 应用接口\n\n- [CreateProcess 函数概览](/notes/n-c2ee979bfba343668b3e7567f93782c4/) — 先了解进程创建接口和使用场景。\n- [Windows 内核对象](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/) — 区分对象生命周期与应用持有的引用。\n- [Windows 句柄机制](/notes/n-399db2c150e54f6db70dc0058623ffb0/) — 理解对象访问、共享和继承。\n\n## 总览\n\n- [Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)：`EPROCESS/KPROCESS/ETHREAD/KTHREAD` 分层。\n\n## 进程生命周期\n\n- [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)：进程对象、地址空间、PEB 与参数注入。\n- [Windows 进程挂靠与跨进程读写机制](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/)：线程临时切换进程地址空间。\n\n## 线程生命周期\n\n- [Windows 线程创建流程 &#40;MOC&#41;](/notes/n-1c54138a1f3c4b9ba003f8b0f18d6ffe/)：线程对象、初始上下文、内核栈现场与启动例程。\n- [Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/)：ready/running/waiting 与优先级。\n- [Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)：`SwapContext` 与线程现场恢复。\n- [C 语言模拟 Windows 线程切换](/notes/n-dc26a1ccb21c475a91f966f52af7ca3a/)：用最小模型理解上下文切换。\n\n## 关联机制\n\n- [Windows 内存管理 &#40;MOC&#41;](/notes/n-eaaa660aabe44f52abf865bf51bb3789/) — 地址空间、VAD、物理页与共享映射。\n- [Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/) — 连接线程 waiting 状态与唤醒后的调度。\n- [Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/) — 理解线程上下文中的异步执行与启动初始化。\n- [Windows 同步与异步执行 &#40;MOC&#41;](/notes/n-fd806559a13b474392ec786d7b239b4b/) — 锁、等待、APC、DPC 和定时器。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 返回 Windows 领域入口。\n",
+  "id": "1909310e-1a5e-499c-b337-d28521607edb",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows"
+    ],
+    "title": "Windows 进程与线程管理 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-1909310e1a5e499cb337d28521607edb/"
+}

@@ -1,0 +1,317 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" width="7.11588in" height="1.99096in" viewBox="0 0 512.344 143.349" xml:space="preserve" color-interpolation-filters="sRGB" fill="none" fill-rule="evenodd" font-size="12px" overflow="visible" stroke-linecap="square" stroke-miterlimit="3">
+	
+
+	
+
+	<ns0:g>
+		<ns0:title>Page-1</ns0:title>
+		
+		<ns0:g id="group58-1" transform="translate(0.625,-0.375)">
+			<ns0:title>Sheet.58</ns0:title>
+			<ns0:g id="shape40-2" transform="translate(0,-49.8588)">
+				<ns0:title>Sheet.40</ns0:title>
+				<ns0:path d="M0 99.29 L13.13 143.35 L59.2 143.35 L361.57 99.29 L0 99.29 Z" fill="#fff2cc" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+			</ns0:g>
+			<ns0:g id="shape8-4" transform="translate(13.1322,-2.27374E-13)">
+				<ns0:title>Sheet.8</ns0:title>
+				<ns0:desc>2 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="46.063" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="6.91" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">2 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape12-7" transform="translate(395.334,2.84217E-14)">
+				<ns0:title>Sheet.12</ns0:title>
+				<ns0:desc>0 - 2313 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="81.7086" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="9.17" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">0 - 2313 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape13-10" transform="translate(476.243,-2.27374E-13)">
+				<ns0:title>Sheet.13</ns0:title>
+				<ns0:desc>4 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="35.1007" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="1.43" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">4 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape2-13" transform="translate(13.1322,-14.5438)">
+				<ns0:title>Rectangle</ns0:title>
+				<ns0:desc>Frame Control</ns0:desc>
+				
+				
+				
+				<ns0:rect x="0" y="108.034" width="46.063" height="35.3149" fill="#fee599" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+				<ns0:text x="8.59" y="122.94" fill="#000000" font-family="Arial" font-size="0.833336em">Frame <ns0:tspan x="6.91" dy="1.1em" font-size="1em">Control</ns0:tspan></ns0:text>			</ns0:g>
+			<ns0:g id="shape3-17" transform="translate(105.131,-14.5438)">
+				<ns0:title>Rectangle.2</ns0:title>
+				<ns0:desc>Address 1</ns0:desc>
+				
+				
+				
+				<ns0:rect x="0" y="108.034" width="58.8543" height="35.3149" fill="#b7dde8" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+				<ns0:text x="6.91" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Address 1</ns0:text>			</ns0:g>
+			<ns0:g id="shape7-20" transform="translate(476.628,-14.5044)">
+				<ns0:title>Rectangle.6</ns0:title>
+				<ns0:desc>FCS</ns0:desc>
+				
+				
+				
+				<ns0:rect x="0" y="108.034" width="33.7704" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+				<ns0:text x="6.89" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">FCS</ns0:text>			</ns0:g>
+			<ns0:g id="shape17-23" transform="translate(59.1318,-14.5438)">
+				<ns0:title>Rectangle.17</ns0:title>
+				<ns0:desc>Duration</ns0:desc>
+				
+				
+				
+				<ns0:rect x="0" y="108.034" width="46.063" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+				<ns0:text x="4.13" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Duration</ns0:text>			</ns0:g>
+			<ns0:g id="shape18-26" transform="translate(163.922,-14.5438)">
+				<ns0:title>Rectangle.18</ns0:title>
+				<ns0:desc>Address 2</ns0:desc>
+				
+				
+				
+				<ns0:rect x="0" y="108.034" width="58.8543" height="35.3149" fill="#b7dde8" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+				<ns0:text x="6.91" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Address <ns0:tspan font-size="1em">2</ns0:tspan></ns0:text>			</ns0:g>
+			<ns0:g id="shape19-30" transform="translate(222.713,-14.5438)">
+				<ns0:title>Rectangle.19</ns0:title>
+				<ns0:desc>Address 3</ns0:desc>
+				
+				
+				
+				<ns0:rect x="0" y="108.034" width="58.8543" height="35.3149" fill="#b7dde8" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+				<ns0:text x="6.91" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Address <ns0:tspan font-size="1em">3</ns0:tspan></ns0:text>			</ns0:g>
+			<ns0:g id="shape20-34" transform="translate(281.504,-14.5438)">
+				<ns0:title>Rectangle.20</ns0:title>
+				<ns0:desc>Sequence Control</ns0:desc>
+				
+				
+				
+				<ns0:rect x="0" y="108.034" width="55.8187" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+				<ns0:text x="5.39" y="122.94" fill="#000000" font-family="Arial" font-size="0.833336em">Sequence <ns0:tspan x="11.79" dy="1.1em" font-size="1em">Control</ns0:tspan></ns0:text>			</ns0:g>
+			<ns0:g id="shape21-38" transform="translate(336.582,-14.5438)">
+				<ns0:title>Rectangle.21</ns0:title>
+				<ns0:desc>Address 4</ns0:desc>
+				
+				
+				
+				<ns0:rect x="0" y="108.034" width="58.8543" height="35.3149" fill="#b7dde8" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+				<ns0:text x="6.91" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Address 4</ns0:text>			</ns0:g>
+			<ns0:g id="group22-41" transform="translate(395.373,-14.5044)">
+				<ns0:title>Sheet.22</ns0:title>
+				<ns0:g id="shape6-42" transform="translate(1.9984E-14,-0.0394348)">
+					<ns0:title>Rectangle.5</ns0:title>
+					<ns0:desc>Data</ns0:desc>
+					
+					
+					
+					<ns0:path d="M0 143.35 L39.65 143.35 L43.64 108.03 L0 108.03 L0 143.35 Z" fill="#d8d8d8" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="11.26" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Data</ns0:text>				</ns0:g>
+				<ns0:g id="shape14-45" transform="translate(43.2212,2.84217E-14)">
+					<ns0:title>Rectangle.15</ns0:title>
+					<ns0:desc>Data</ns0:desc>
+					
+					
+					
+					<ns0:path d="M0 143.35 L38.1 143.31 L38.1 108 L3.94 108 L0 143.35 Z" fill="#d8d8d8" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="8.49" y="128.42" fill="#000000" font-family="Arial" font-size="0.833336em">Data</ns0:text>				</ns0:g>
+			</ns0:g>
+			<ns0:g id="group38-48" transform="translate(0,-93.9139)">
+				<ns0:title>Sheet.38</ns0:title>
+				<ns0:g id="shape25-49">
+					<ns0:title>Rectangle</ns0:title>
+					<ns0:desc>Protocol Version</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="46.063" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="4.69" y="122.94" fill="#000000" font-family="Arial" font-size="0.833336em">Protocol <ns0:tspan x="6.08" dy="1.1em" font-size="1em">Version</ns0:tspan></ns0:text>				</ns0:g>
+				<ns0:g id="shape26-53" transform="translate(81.6362,-2.55795E-13)">
+					<ns0:title>Rectangle.2</ns0:title>
+					<ns0:desc>Subtype</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="44.7654" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="4.04" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Subtype</ns0:text>				</ns0:g>
+				<ns0:g id="shape27-56" transform="translate(260.129,0)">
+					<ns0:title>Rectangle.6</ns0:title>
+					<ns0:desc>Pwr Mgmt</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="33.7704" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="8.27" y="122.94" fill="#000000" font-family="Arial" font-size="0.833336em">Pwr <ns0:tspan x="4.39" dy="1.1em" font-size="1em">Mgmt</ns0:tspan></ns0:text>				</ns0:g>
+				<ns0:g id="shape28-60" transform="translate(46.1128,-2.84217E-13)">
+					<ns0:title>Rectangle.17</ns0:title>
+					<ns0:desc>Type</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="36.1438" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="6.96" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Type</ns0:text>				</ns0:g>
+				<ns0:g id="shape29-63" transform="translate(126.366,-2.55795E-13)">
+					<ns0:title>Rectangle.18</ns0:title>
+					<ns0:desc>To DS</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="33.452" height="35.3149" fill="#fee599" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="10.89" y="122.94" fill="#000000" font-family="Arial" font-size="0.833336em">To <ns0:tspan x="9.78" dy="1.1em" font-size="1em">DS</ns0:tspan></ns0:text>				</ns0:g>
+				<ns0:g id="shape30-67" transform="translate(159.782,-2.55795E-13)">
+					<ns0:title>Rectangle.19</ns0:title>
+					<ns0:desc>From DS</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="33.452" height="35.3149" fill="#fee599" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="5.06" y="122.94" fill="#000000" font-family="Arial" font-size="0.833336em">From <ns0:tspan x="9.78" dy="1.1em" font-size="1em">DS</ns0:tspan></ns0:text>				</ns0:g>
+				<ns0:g id="shape31-71" transform="translate(193.197,-2.55795E-13)">
+					<ns0:title>Rectangle.20</ns0:title>
+					<ns0:desc>More Frag</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="33.452" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="5.33" y="122.94" fill="#000000" font-family="Arial" font-size="0.833336em">More <ns0:tspan x="6.45" dy="1.1em" font-size="1em">Frag</ns0:tspan></ns0:text>				</ns0:g>
+				<ns0:g id="shape32-75" transform="translate(226.613,-2.55795E-13)">
+					<ns0:title>Rectangle.21</ns0:title>
+					<ns0:desc>Retry</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="33.452" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="4.78" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Retry</ns0:text>				</ns0:g>
+				<ns0:g id="shape36-78" transform="translate(293.963,-1.13687E-13)">
+					<ns0:title>Rectangle.36</ns0:title>
+					<ns0:desc>WEP</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="33.7704" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="5.5" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">WEP</ns0:text>				</ns0:g>
+				<ns0:g id="shape37-81" transform="translate(327.797,-1.13687E-13)">
+					<ns0:title>Rectangle.37</ns0:title>
+					<ns0:desc>Order</ns0:desc>
+					
+					
+					
+					<ns0:rect x="0" y="108.034" width="33.7704" height="35.3149" fill="#ffffff" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" />
+					<ns0:text x="4.1" y="128.44" fill="#000000" font-family="Arial" font-size="0.833336em">Order</ns0:text>				</ns0:g>
+			</ns0:g>
+			<ns0:g id="shape41-84" transform="translate(58.8189,-2.27374E-13)">
+				<ns0:title>Sheet.41</ns0:title>
+				<ns0:desc>2 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="46.063" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="6.91" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">2 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape42-87" transform="translate(105.258,-2.27374E-13)">
+				<ns0:title>Sheet.42</ns0:title>
+				<ns0:desc>6 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="59.1512" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="13.45" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">6 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape43-90" transform="translate(164.786,-2.27374E-13)">
+				<ns0:title>Sheet.43</ns0:title>
+				<ns0:desc>6 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="59.1512" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="13.45" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">6 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape44-93" transform="translate(222.821,-2.27374E-13)">
+				<ns0:title>Sheet.44</ns0:title>
+				<ns0:desc>6 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="59.1512" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="13.45" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">6 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape45-96" transform="translate(336.519,-2.27374E-13)">
+				<ns0:title>Sheet.45</ns0:title>
+				<ns0:desc>6 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="59.1512" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="13.45" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">6 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape46-99" transform="translate(282.38,-4.83169E-13)">
+				<ns0:title>Sheet.46</ns0:title>
+				<ns0:desc>2 bytes</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="55.8187" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="11.79" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">2 bytes</ns0:text>			</ns0:g>
+			<ns0:g id="shape47-102" transform="translate(0,-129.229)">
+				<ns0:title>Sheet.47</ns0:title>
+				<ns0:desc>2 bits</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="46.063" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="11.08" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">2 bits</ns0:text>			</ns0:g>
+			<ns0:g id="shape49-105" transform="translate(47.4803,-129.229)">
+				<ns0:title>Sheet.49</ns0:title>
+				<ns0:desc>2 bits</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="34.7244" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="5.41" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">2 bits</ns0:text>			</ns0:g>
+			<ns0:g id="shape50-108" transform="translate(83.3689,-129.229)">
+				<ns0:title>Sheet.50</ns0:title>
+				<ns0:desc>4 bits</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="42.1147" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="9.11" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">4 bits</ns0:text>			</ns0:g>
+			<ns0:g id="shape51-111" transform="translate(126.648,-129.229)">
+				<ns0:title>Sheet.51</ns0:title>
+				<ns0:desc>1 bit</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="32.0922" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="5.77" y="139.66" fill="#000000" font-family="Arial" font-size="0.833336em" font-weight="bold">1 bit</ns0:text>			</ns0:g>
+			<ns0:g id="shape52-114" transform="translate(159.904,-129.229)">
+				<ns0:title>Sheet.52</ns0:title>
+				<ns0:desc>1 bit</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="32.0922" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="5.77" y="139.66" fill="#000000" font-family="Arial" font-size="0.833336em" font-weight="bold">1 bit</ns0:text>			</ns0:g>
+			<ns0:g id="shape53-117" transform="translate(193.161,-129.229)">
+				<ns0:title>Sheet.53</ns0:title>
+				<ns0:desc>1 bit</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="32.0922" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="6.6" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">1 bit</ns0:text>			</ns0:g>
+			<ns0:g id="shape54-120" transform="translate(226.417,-129.229)">
+				<ns0:title>Sheet.54</ns0:title>
+				<ns0:desc>1 bit</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="32.0922" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="6.6" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">1 bit</ns0:text>			</ns0:g>
+			<ns0:g id="shape55-123" transform="translate(259.674,-129.229)">
+				<ns0:title>Sheet.55</ns0:title>
+				<ns0:desc>1 bit</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="32.0922" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="6.6" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">1 bit</ns0:text>			</ns0:g>
+			<ns0:g id="shape56-126" transform="translate(292.93,-129.229)">
+				<ns0:title>Sheet.56</ns0:title>
+				<ns0:desc>1 bit</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="32.0922" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="6.6" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">1 bit</ns0:text>			</ns0:g>
+			<ns0:g id="shape57-129" transform="translate(329.475,-129.229)">
+				<ns0:title>Sheet.57</ns0:title>
+				<ns0:desc>1 bit</ns0:desc>
+				
+				
+				<ns0:rect x="0" y="129.979" width="32.0922" height="13.3705" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.75" />
+				<ns0:text x="6.6" y="139.66" fill="#7f7f7f" font-family="Arial" font-size="0.833336em">1 bit</ns0:text>			</ns0:g>
+		</ns0:g>
+	</ns0:g>
+</ns0:svg>

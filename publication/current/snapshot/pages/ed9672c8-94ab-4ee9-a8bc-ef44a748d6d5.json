@@ -1,0 +1,49 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-e429093b55cc4d57aa9e",
+      "kind": "heading",
+      "offset": 25
+    },
+    {
+      "id": "h-4ae0f5f9e8a942ca5f03",
+      "kind": "heading",
+      "offset": 36
+    },
+    {
+      "id": "h-8dcb709a15a95e3265a2",
+      "kind": "heading",
+      "offset": 577
+    },
+    {
+      "id": "h-09cb842a160acd584ce6",
+      "kind": "heading",
+      "offset": 1138
+    },
+    {
+      "id": "h-53f0887e016b8d579844",
+      "kind": "heading",
+      "offset": 1560
+    },
+    {
+      "id": "h-afae4ec091704dfcfbdb",
+      "kind": "heading",
+      "offset": 1647
+    }
+  ],
+  "body": "\n# Visual Studio C++ 项目配置\n\n## 文件显示方式\n\n在 Visual Studio 解决方案资源管理器中，默认显示的黄色文件夹图标实际上是**筛选器**（Filter）。它们仅提供逻辑上的文件分类，并不对应磁盘上的真实物理目录。\n\n![](/notes/n-ed9672c894ab4ee9a8bcef44a748d6d5/media/6c8f6c909c7b50a70650d43468ae177a85a51f3368ceac189b696bea22b6cb2f.jpeg)\n\n默认情况下，项目中创建的所有头文件（`.h`）和源文件（`.cpp`）实际上都堆积在项目根目录下。为了更清晰、高效地管理代码，建议使用物理文件夹进行组织：\n\n![](/notes/n-ed9672c894ab4ee9a8bcef44a748d6d5/media/e5402af049ef6b269ec009ab7c6fe0dca033472969ea0f432b07395f9b22a997.jpeg)\n\n点击解决方案资源管理器顶部的“**显示所有文件**”按钮后，视图会额外显示项目文件夹中存在、但尚未包含在项目内的文件和目录。借此可以创建如 `src` 等物理文件夹来分类存放源代码文件，该操作会直接影响文件系统的目录结构。\n\n## 文件输出目录\n\n![](/notes/n-ed9672c894ab4ee9a8bcef44a748d6d5/media/60ff90d05efb2f4b5e6f56421d28137f27a5b837006d0a18f7ffca5674def509.jpeg)\n\nVisual Studio 默认的编译输出路径较为分散，不利于查找生成文件和进行版本控制。建议通过以下配置统一管理输出路径：\n\n- **修改最终生成文件的输出目录**（如 `.exe`、`.dll`）：\n    - 右键点击项目 -> **属性** -> **配置属性** -> **常规** -> **输出目录**。\n    - 修改值为：`$(SolutionDir)bin\\$(Platform)\\$(Configuration)\\`\n- **修改中间文件的输出目录**（如 `.obj`）：\n    - 右键点击项目 -> **属性** -> **配置属性** -> **常规** -> **中间目录**。\n    - 修改值为：`$(SolutionDir)bin\\intermediates\\$(Platform)\\$(Configuration)\\`\n\n> 配置完成后，重新生成项目，所有的输出文件将自动存放到上述指定的目录结构中。\n\n## 头文件查询目录\n\n在 Visual Studio 中，头文件的搜索顺序取决于 `#include` 的写法：\n- 对于 `#include \"file.h\"`，编译器先搜索包含该 `#include` 的文件所在目录，再搜索父级包含文件的目录，随后搜索附加包含目录。\n- 对于 `#include <file.h>`，编译器从附加包含目录开始搜索。\n\n项目根目录不是默认搜索路径；只有当源文件位于项目根目录，或显式将项目根目录加入包含目录时，才会搜索该目录。若头文件位于 `src` 或 `include` 等目录中，且不在上述搜索路径内，就需要手动添加搜索路径：\n\n- 打开 **项目属性** -> **C/C++** -> **常规** -> **附加包含目录** (Additional Include Directories)。\n- 添加头文件所在的实际目录路径（建议使用项目宏，如 `$(ProjectDir)include`）。\n\n## 预编译头\n\n相关知识参考：[C&#12289;C&#43;&#43; 预编译头](/notes/n-9c017c01ec07432aac2a961420590912/)\n\n## 参考\n\n[BEST Visual Studio Setup for C++ Projects!](https://www.youtube.com/watch?v=qeH9Xv_90KM&list=PLlrATfBNZ98dudnM48yfGUldqGD0S4FFb&index=13)\n",
+  "id": "ed9672c8-94ab-4ee9-a8bc-ef44a748d6d5",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "lang/cpp"
+    ],
+    "title": "Visual Studio C++ 项目配置"
+  },
+  "resources": [
+    "60ff90d05efb2f4b5e6f56421d28137f27a5b837006d0a18f7ffca5674def509.jpeg",
+    "6c8f6c909c7b50a70650d43468ae177a85a51f3368ceac189b696bea22b6cb2f.jpeg",
+    "e5402af049ef6b269ec009ab7c6fe0dca033472969ea0f432b07395f9b22a997.jpeg"
+  ],
+  "url": "/notes/n-ed9672c894ab4ee9a8bcef44a748d6d5/"
+}

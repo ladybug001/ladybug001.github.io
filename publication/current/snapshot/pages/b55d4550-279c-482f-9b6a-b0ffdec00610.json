@@ -1,0 +1,82 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-8d7ce6d9385d5a278a4e",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-a6eacd89b03c539500ba",
+      "kind": "heading",
+      "offset": 97
+    },
+    {
+      "id": "h-36f31e8d491f4b704bd2",
+      "kind": "heading",
+      "offset": 174
+    },
+    {
+      "id": "h-6dd540bfd382cfbdc673",
+      "kind": "heading",
+      "offset": 192
+    },
+    {
+      "id": "h-5d8d79c876d86a34d063",
+      "kind": "heading",
+      "offset": 486
+    },
+    {
+      "id": "h-5ddc124b4c0ff524ec57",
+      "kind": "heading",
+      "offset": 833
+    },
+    {
+      "id": "h-a5882a521f2314d05609",
+      "kind": "heading",
+      "offset": 1202
+    },
+    {
+      "id": "h-861acc1cc66d59eebc5e",
+      "kind": "heading",
+      "offset": 1414
+    },
+    {
+      "id": "h-42da83de063b0e881fd1",
+      "kind": "heading",
+      "offset": 1431
+    },
+    {
+      "id": "h-642afba9ef6405f8e42c",
+      "kind": "heading",
+      "offset": 1780
+    },
+    {
+      "id": "h-2111d4722df666a46307",
+      "kind": "heading",
+      "offset": 1796
+    },
+    {
+      "id": "h-bb1dd74dbf10904a1702",
+      "kind": "heading",
+      "offset": 2381
+    }
+  ],
+  "body": "# STL 顺序容器\n\n上级：[C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/)\n\n## 说明\n\n顺序容器的核心特点是：元素间的相对顺序主要由插入顺序决定。典型代表是 `vector`、`deque` 和 `list`。\n\n## Vector 容器\n\n### 什么是 `vector`\n\n`vector`（向量）是一个封装了**动态大小数组**的顺序容器。它支持随机访问，适合尾部插入/删除频繁、并且需要按下标快速访问元素的场景。\n\n在使用 `vector` 时需要包含头文件并使用命名空间：\n\n```cpp\n#include <vector>\nusing namespace std;\n```\n\n`vector` 有两个很重要的属性：\n\n- `size`：当前实际元素个数。\n- `capacity`：当前分配的存储空间最多可容纳多少元素。\n\n如果插入元素时元素个数超过 `capacity`，容器通常会重新分配更大的连续内存，并把原有元素搬迁过去。\n\n### 创建容器\n\n创建（初始化）容器的常见方式如下：\n\n```cpp\nvector<int> v1;               // 空容器\nvector<int> v2(100);          // 100 个元素，值类型为 int，默认初始化\nvector<int> v3(100, 8);       // 100 个元素，每个元素值为 8\nvector<int> v4(v3);           // 拷贝构造\n\nint tmpArray[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};\nvector<int> v5(tmpArray + 2, tmpArray + 5); // 拷贝 [tmpArray+2, tmpArray+5) 区间\n```\n\n### 添加元素\n\n常见添加方式有 `push_back()` 和 `insert()`：\n\n```cpp\nfor (int i = 0; i < 10; i++) {\n    v1.push_back(i);\n}\n\nv1.insert(v1.begin(), 99);                 // 在开头插入一个元素\nv1.insert(v1.begin() + 3, 2, 98);          // 在指定位置前插入 2 个值为 98 的元素\n\nint tmpArray[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};\nv1.insert(v1.begin(), tmpArray + 2, tmpArray + 5); // 插入区间 [tmpArray+2, tmpArray+5)\n```\n\n### 删除元素\n\n常见删除方式如下：\n\n```cpp\nv1.pop_back();                             // 删除尾部一个元素\nv1.erase(v1.begin() + 3);                  // 删除指定位置元素\nv1.erase(v1.begin() + 3, v1.begin() + 5); // 删除指定区间 [first, last)\n```\n\n## Deque 容器\n\n### 什么是 `deque`\n\n1. `deque` 是 `Double-Ended Queue` 的缩写，表示双端队列，**存储方式是分段连续存储**。\n2. 它在首尾两端增删元素都具有较好性能。\n3. `deque` 的很多接口与 `vector` 相同。\n4. 与 `vector` 相比，`deque` 额外提供了 `push_front()` 和 `pop_front()`。\n\n使用前需要包含头文件：\n\n```cpp\n#include <deque>\nusing namespace std;\n```\n\n`deque` 独有的两个常用操作如下：\n\n```cpp\nv1.push_front(123); // 在首部插入元素\nv1.pop_front();     // 删除首部元素\n```\n\n## List 容器\n\n### 什么是 `list`\n\n`list` 是一个**双向链表**容器，非连续存储。\n\n它有几个关键特点：\n\n1. 不支持随机访问，因此不支持 `at()` 和 `[]`。\n2. 除了顺序容器常见函数以外，还提供了一些链表特有操作。\n3. 由于元素不是连续存储，插入/删除某个已知位置元素时通常不需要整体搬移后续元素。\n\n`list` 常见特有操作如下：\n\n```text\npush_front：将元素插入到首部\npop_front：删除首部元素\nsort：排序（list 自带排序）\nremove：删除与指定值相等的元素\nunique：删除相邻重复元素\nmerge：合并两个有序链表，并清空被合并的那个链表\nreverse：反转链表\n```\n\n如下图所示为 `list` 的存储结构：\n\n![e6f516ea4dabb6257238d2f00dd86a46&#95;MD5&#46;jpg](/notes/n-b55d4550279c482f9b6ab0ffdec00610/media/ff035d0818d30ca399d1ac61fb53ac261dbb33b42852608a9903f00aa11e6d08.jpg)\n\n可以看到，`list` 容器中各元素的前后顺序是靠指针维系的。每个元素都配有前驱和后继指针；头节点前向为空，尾节点后向为空。\n\n### 使用 `list` 的注意点\n\n`list` 容器没有办法使用类似 `v1.begin() + 3` 这种随机访问写法。如果需要向后移动迭代器，可以自己写一个辅助函数：\n\n```cpp\nlist<int>::iterator MoveIterator(list<int>::iterator* pIt, int nLen) {\n    for (int i = 0; i < nLen; i++) {\n        (*pIt)++;\n    }\n    return *pIt;\n}\n```\n\n![d9c7fee69145fc5bd36f1c13587ac86d&#95;MD5&#46;jpg](/notes/n-b55d4550279c482f9b6ab0ffdec00610/media/56198938248805b66bcad6dfacab2db0eadbe63d991de625fa00dbf0922177f7.jpg)\n\n接下来是 `list` 容器的一些常用成员函数：\n\n1. `sort()`：按默认比较规则排序。\n\n![a18312b3ca231e5c1f3dfe97ecdb10cd&#95;MD5&#46;jpg](/notes/n-b55d4550279c482f9b6ab0ffdec00610/media/1575be3424927edaf878dd36e90a35681fb5d47fce1e7f25731ca2717333195d.jpg)\n\n2. `remove()`：删除所有与指定值相等的元素。\n\n![f731e4c8e9d6f063b844274475753851&#95;MD5&#46;jpg](/notes/n-b55d4550279c482f9b6ab0ffdec00610/media/d2ce12b21357a2014ac7a3d155fac13f15117ce7c904c7de77f1dbd2cfd3a5f9.jpg)\n\n3. `unique()`：删除**相邻**且相等的重复元素；如果要“去重”，通常要先 `sort()` 再 `unique()`。\n\n![2fb46f0562a20d7cea1d2b314fa6e708&#95;MD5&#46;jpg](/notes/n-b55d4550279c482f9b6ab0ffdec00610/media/855e4b280acf15a4e824a54484b09ae61de9d91679f17f88e32a8efa7b0e1af4.jpg)\n\n4. `merge()`：合并两个有序链表，并清空被合并的那个链表。两个链表应按相同规则有序。\n\n![0ad5efd32c9c157aec357bc92038f91f&#95;MD5&#46;jpg](/notes/n-b55d4550279c482f9b6ab0ffdec00610/media/b12316d7671f7150cbc79da7ee9cf61efec36aa7e3944a84d85d23b193113204.jpg)\n\n5. `reverse()`：反转链表。\n\n![4a43cc648a1c9ba7806e0bad0e36e524&#95;MD5&#46;jpg](/notes/n-b55d4550279c482f9b6ab0ffdec00610/media/f2b2dc6b9320703558769026e59672787f8991602960900ec425572752402a8c.jpg)\n",
+  "id": "b55d4550-279c-482f-9b6a-b0ffdec00610",
+  "metadata": {
+    "tags": [
+      "lang/cpp/stl"
+    ],
+    "title": "C++ STL 顺序容器"
+  },
+  "resources": [
+    "1575be3424927edaf878dd36e90a35681fb5d47fce1e7f25731ca2717333195d.jpg",
+    "56198938248805b66bcad6dfacab2db0eadbe63d991de625fa00dbf0922177f7.jpg",
+    "855e4b280acf15a4e824a54484b09ae61de9d91679f17f88e32a8efa7b0e1af4.jpg",
+    "b12316d7671f7150cbc79da7ee9cf61efec36aa7e3944a84d85d23b193113204.jpg",
+    "d2ce12b21357a2014ac7a3d155fac13f15117ce7c904c7de77f1dbd2cfd3a5f9.jpg",
+    "f2b2dc6b9320703558769026e59672787f8991602960900ec425572752402a8c.jpg",
+    "ff035d0818d30ca399d1ac61fb53ac261dbb33b42852608a9903f00aa11e6d08.jpg"
+  ],
+  "url": "/notes/n-b55d4550279c482f9b6ab0ffdec00610/"
+}

@@ -1,0 +1,221 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7e007b213181b4369623",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-6f438c9b4c879acce832",
+      "kind": "heading",
+      "offset": 25
+    },
+    {
+      "id": "h-a365250c95ecf7eaf0a9",
+      "kind": "heading",
+      "offset": 35
+    },
+    {
+      "id": "h-83b242f7b7e2a784e520",
+      "kind": "heading",
+      "offset": 302
+    },
+    {
+      "id": "h-901392d295bbf5fa199c",
+      "kind": "heading",
+      "offset": 389
+    },
+    {
+      "id": "h-328d643e33c404dcffff",
+      "kind": "heading",
+      "offset": 399
+    },
+    {
+      "id": "h-c22f5a18285505dad9e6",
+      "kind": "heading",
+      "offset": 1066
+    },
+    {
+      "id": "h-db1b1737a3ea029d6a94",
+      "kind": "heading",
+      "offset": 1159
+    },
+    {
+      "id": "h-af541dc7b4b4b51f459e",
+      "kind": "heading",
+      "offset": 1501
+    },
+    {
+      "id": "h-9e249838460b84f43bc1",
+      "kind": "heading",
+      "offset": 1970
+    },
+    {
+      "id": "h-116384f3e3b42ff61aad",
+      "kind": "heading",
+      "offset": 2169
+    },
+    {
+      "id": "h-385ad728a7bc7ba726de",
+      "kind": "heading",
+      "offset": 3133
+    },
+    {
+      "id": "h-072396a12468b1511cfc",
+      "kind": "heading",
+      "offset": 3335
+    },
+    {
+      "id": "h-27646bacd7c21c64c233",
+      "kind": "heading",
+      "offset": 3348
+    },
+    {
+      "id": "h-c6e866b01f440aaa6c74",
+      "kind": "heading",
+      "offset": 3360
+    },
+    {
+      "id": "h-c90d29c06835158e5954",
+      "kind": "heading",
+      "offset": 3430
+    },
+    {
+      "id": "h-4c6419c1dbebed0e4f0b",
+      "kind": "heading",
+      "offset": 3541
+    },
+    {
+      "id": "h-25333667a80a4fd89bcb",
+      "kind": "heading",
+      "offset": 4001
+    },
+    {
+      "id": "h-168ba6e88f5743434165",
+      "kind": "heading",
+      "offset": 4294
+    },
+    {
+      "id": "h-7aac42b3fd9f77254a9f",
+      "kind": "heading",
+      "offset": 5264
+    },
+    {
+      "id": "h-907a5724385a425b0bb2",
+      "kind": "heading",
+      "offset": 5283
+    },
+    {
+      "id": "h-5446fb22dd1837534ada",
+      "kind": "heading",
+      "offset": 5469
+    },
+    {
+      "id": "h-f37ba0b87cc365ee794b",
+      "kind": "heading",
+      "offset": 5686
+    },
+    {
+      "id": "h-4cb7b0ae6df72b82af80",
+      "kind": "heading",
+      "offset": 5936
+    },
+    {
+      "id": "h-a861269a8e2abe31837b",
+      "kind": "heading",
+      "offset": 6207
+    },
+    {
+      "id": "h-cf8983af3d761fa17a95",
+      "kind": "heading",
+      "offset": 6983
+    },
+    {
+      "id": "h-3c721af644fc41a34d16",
+      "kind": "heading",
+      "offset": 7154
+    },
+    {
+      "id": "h-b2fdf6d1963554623372",
+      "kind": "heading",
+      "offset": 7163
+    },
+    {
+      "id": "h-5f3ba443830ec6c5988b",
+      "kind": "heading",
+      "offset": 7665
+    },
+    {
+      "id": "h-2d75779f7573d530520d",
+      "kind": "heading",
+      "offset": 8177
+    },
+    {
+      "id": "h-f1986c12c5aa2fd549a9",
+      "kind": "heading",
+      "offset": 8507
+    },
+    {
+      "id": "h-54bb4f8d77f86d2eff02",
+      "kind": "heading",
+      "offset": 10080
+    },
+    {
+      "id": "h-fda3f8a89ddee4105050",
+      "kind": "heading",
+      "offset": 10209
+    },
+    {
+      "id": "h-dbc260eb15daffdd92bf",
+      "kind": "heading",
+      "offset": 10278
+    },
+    {
+      "id": "h-f9619fea5410b690ae96",
+      "kind": "heading",
+      "offset": 10293
+    },
+    {
+      "id": "h-d0665d358ea9a352dfaa",
+      "kind": "heading",
+      "offset": 10459
+    },
+    {
+      "id": "h-ce1be8c62e49471fe9a5",
+      "kind": "heading",
+      "offset": 11080
+    },
+    {
+      "id": "h-c8543cdd49657762b7d3",
+      "kind": "heading",
+      "offset": 11582
+    },
+    {
+      "id": "h-c96424e1828804db08aa",
+      "kind": "heading",
+      "offset": 12007
+    },
+    {
+      "id": "h-34c0efd8e537f84843bf",
+      "kind": "heading",
+      "offset": 12103
+    }
+  ],
+  "body": "# 安卓安全环境检测与对抗\n\n## Root 检测\n\n### 检测方式\n\n- 检查设备的 `build tags` 是否包含 `test-keys`。这通常是用于测试的设备，如果检测到这个标记，则可以认为设备已被 Root。\n- 检查设备是否存在一些特定的文件路径（如 `/sbin/su`、`/system/bin/su` 等），这些文件通常被用于执行 Root 操作。如果检测到这些文件，则可以认为设备已被 Root。\n- 使用 `Runtime.exec()` 方法来执行 `which su` 命令，然后检查命令的输出是否不为空。如果输出不为空，则可以认为设备已被 Root。\n\n### 绕过方法\n\n- 算法助手、对话框取消等插件一键 Hook\n- 分析具体的检测代码\n- 利用 IO 重定向使文件不可读\n- 修改 Android 源码，去除常见指纹\n\n## 模拟器检测\n\n### 检测方式\n\n通过检测系统的 `Build` 对象来判断当前设备是否为模拟器。具体方法是检测 `Build.FINGERPRINT` 属性是否包含字符串 `\"generic\"`，以及 `Build.MODEL`、`Build.MANUFACTURER` 等字段中是否包含模拟器特征值。\n\n```kotlin\nfun isEmulator(): Boolean {\n    return Build.FINGERPRINT.startsWith(\"generic\") ||\n        Build.FINGERPRINT.startsWith(\"unknown\") ||\n        Build.MODEL.contains(\"google_sdk\") ||\n        Build.MODEL.contains(\"Emulator\") ||\n        Build.MODEL.contains(\"Android SDK built for x86\") ||\n        Build.MANUFACTURER.contains(\"Genymotion\") ||\n        Build.HOST.startsWith(\"Build\") ||\n        Build.PRODUCT == \"google_sdk\"\n}\n```\n\n参考资料：[模拟器检测对抗](https://ionized-bag-d70.notion.site/04dbaf39091f42519b14decd2a87fde7)\n\n### 绕过方法\n\n- Hook `Build` 类的各属性返回值，伪造真机指纹\n- 修改模拟器系统镜像中的 `build.prop` 文件\n- 使用 Magisk 模块修改系统属性\n\n## 反调试检测\n\n\n- **Java 层调试**：依靠虚拟机内建的调试支持。调试器（如 Android Studio）通过 TCP/ADB 与设备端的 **JDWP 守护线程** 建立会话。应用进程与调试端是一种“协作式”通信，断点命中由虚拟机调度暂停线程。\n- **SO 层调试**：依靠操作系统内核机制。调试器作为主控进程，通过 **`ptrace`** 附加（attach）到目标进程。目标进程收到内核信号（如 `SIGTRAP`）时被强制挂起，主控端直接读取或修改该进程的内存空间与 CPU 寄存器上下文。\n> 相关内容参考：[Windows 调试关系与调试事件机制](/notes/n-534116c45bce417bac764b15cc9c1f99/)\n\n### Java 层调试的检测\n\n**`Debug.isDebuggerConnected()` 检测：**\n\n```kotlin\nfun checkForDebugger() {\n    if (Debug.isDebuggerConnected()) {\n        // 如果调试器已连接，则终止应用程序\n        System.exit(0)\n    }\n}\n```\n\n**`debuggable` 属性检查：**\n\n```java\npublic boolean getAppCanDebug(Context context)//上下文对象为xxActivity.this\n{\n    boolean isDebug = context.getApplicationInfo() != null &&\n            (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;\n    return isDebug;\n}\n```\n#### 绕过方法\n\n- Hook `Debug.isDebuggerConnected()` 使其始终返回 `false`\n- 修改 APK 的 `AndroidManifest.xml`，移除或修改 `debuggable` 属性\n\n参考资料：[[原创]对安卓反调试和校验检测的一些实践与结论](https://bbs.pediy.com/thread-268155.htm)\n### Native 层调试的检测\n\n**ptrace 自附加检测：**\n\n```c++\nint ptrace_protect()//ptrace附加自身线程 会导致此进程TracerPid 变为父进程的TracerPid 即zygote\n{\n    return ptrace(PTRACE_TRACEME,0,0,0);;//返回-1即为已经被调试\n}\n```\n\n每个进程同时刻只能被 1 个调试进程 `ptrace`，主动 `ptrace` 本进程可以使得其他调试器无法调试。\n\n**调试器进程名检测：**\n\n```c++\nint SearchObjProcess()\n{\n    FILE* pfile=NULL;\n    char buf[0x1000]={0};\n \n    pfile=popen(\"ps\",\"r\");\n    if(NULL==pfile)\n    {\n        //LOGA(\"SearchObjProcess popen打开命令失败!\\n\");\n        return -1;\n    }\n    // 获取结果\n    //LOGA(\"popen方案:\\n\");\n    while(fgets(buf,sizeof(buf),pfile))\n    {\n \n        char* strA=NULL;\n        char* strB=NULL;\n        char* strC=NULL;\n        char* strD=NULL;\n        strA=strstr(buf,\"android_server\");//通过查找匹配子串判断\n        strB=strstr(buf,\"gdbserver\");\n        strC=strstr(buf,\"gdb\");\n        strD=strstr(buf,\"fuwu\");\n        if(strA || strB ||strC || strD)\n        {\n            return 1;\n            // 执行到这里，判定为调试状态\n \n        }\n    }\n    pclose(pfile);\n    return 0;\n}\n```\n\n#### 绕过方法\n\n- Hook `ptrace` 系统调用，使自附加检测失效\n- Hook `popen` / `fopen` 等函数，过滤进程列表中的调试器特征\n- 修改 `/proc/self/status` 中的 `TracerPid` 值\n\n参考资料：[[原创]对安卓反调试和校验检测的一些实践与结论](https://bbs.pediy.com/thread-268155.htm)\n\n## Frida 检测\n\n### 常见检测与对抗\n\n#### 检测文件名\n\n检测 `/data/local/tmp` 路径下是否有 Frida 特征文件。\n\n对抗方式：server 端改名。\n\n#### 端口检测\n\n使用端口扫描检测 Frida：扫描所有端口（0~65535），并通过 D-Bus 协议向本地端口发送探测消息尝试与 Frida 服务器进行通信，如果收到特定的返回值，则表明 Frida 正在运行。\n\n#### 自我附加\n\n与 Windows 原生提供 `CreateRemoteThread` 不同，Linux 内核缺乏直接跨进程创建远程线程的系统调用。因此，SO 注入通常退化为“劫持既有线程执行流”的机制，而这一过程高度依赖 `ptrace` 建立调试关联。\n\n基于此特性，应用通过**自我附加（Self-Attach / 双进程守护）** 即可抢占调试席位，使 Frida 因无法获取跟踪权而注入失败。\n\n对抗方式：\n- spawn 模式启动 APP，在自我附加执行前完成附加。\n```bash\nfrida -U -f 进程名 -l hook.js\n```\n- 使用 Frida Gadget 注入模式，避免依赖 `ptrace`。\n- Zygote 孵化注入，直接在应用进程 Fork 阶段植入代码（如 Zygisk / Riru），彻底规避了对 `ptrace` 的依赖。\n> 相关内容参考：[Xposed 框架原理](/notes/n-de6265b6e8a74a7c987667457b8da0c3/)\n### 内存布局检测\n\n`/proc/pid/maps` 是一个 **虚拟文件**（而不是目录），它存储了进程 `pid` **的内存映射信息**，包括代码段、堆、栈、共享库、匿名映射等。\n\n当你打开这个文件时，它会显示一个列表，其中包含了进程中每个内存区域的详细信息。这些信息通常包括：\n- 起始地址（Start Address）\n- 结束地址（End Address）\n- 权限（如可读、可写、可执行）\n- 共享/私有标志（Shared or Private）\n- 关联的文件或设备（如果内存区域是文件映射的）\n- 内存区域偏移量\n- 内存区域类型（如匿名映射、文件映射、设备映射等）\n\n#### 检测\n\n**当注入 Frida 后，打开相应进程的 maps 文件，在内存区域类型一列就会存在 `frida-agent-64.so`、`frida-agent-32.so` 等特征字样**。\n\n示例：\n\n```bash\nadb shell ps | findstr com.zj.wuaipojie\ncat /proc/12186/maps | grep frida\n```\n\n![4bd59ee85e48f489b04bca96ceaafc47&#95;MD5&#46;jpg](/notes/n-9a0ea8eec6bc433c974f2451c775f059/media/99ea6fc4393ac8251dd6eea03bac3268db345a2f4004754c089d993d73cc4805.jpg)\n\n| 字段值     | 描述                                                   |\n| ------- | ---------------------------------------------------- |\n| u0_a504 | 用户ID和应用ID，`u0`代表系统用户（user 0），而`a504`是该应用在用户0下的唯一标识符。 |\n| 28082   | PID（进程ID）                                            |\n| 1935    | PPID（父进程ID）                                          |\n| 6511212 | 虚拟内存：进程使用的虚拟内存大小，通常以字节为单位。                           |\n| 125728  | 共享内存：进程使用的共享内存大小，同样以字节为单位。                           |\n| 0       | CPU时间/线程数：这通常表示进程的CPU时间或者是线程数，具体含义取决于`ps`命令的输出格式。    |\n| S       | 状态：其中`S`代表睡眠状态（Sleeping），即进程没有在执行，而是在等待某些事件或资源。      |\n\n#### 对抗\n\n##### Hook 文本比较函数\n\nHook `libc.so` 中的 `strstr` 和 `strcmp` 函数，当待对比文本中包含 \"Frida\" 或 \"REJECT\" 的字符串时，返回 False，防止调试工具或检测程序发现其存在。\n\n> 参考：[Android 常用系统库](/notes/n-c9854103b1aa4adeb714e7e0b2559172/)\n\n##### 重定向 maps\n\n通过 Hook 常用系统库 `libc.so` 中的 `open` 和 `read` 接口，拦截对 `/proc/<pid>/maps` 内存映射文件的访问；当检测到目标路径时动态过滤或重定向返回内容，从而抹除 Frida 相关的动态库特征，规避目标程序的反调试与注入检测。\n\n> 参考：[Android 常用系统库](/notes/n-c9854103b1aa4adeb714e7e0b2559172/)\n\n##### eBPF\n\n该代码利用 **eBPF (`bpf_probe_write_user`)** **篡改用户空间的内存**，目的是**伪造 `/proc/self/maps` 文件的内容**，隐藏 Frida 相关信息。\n\n```c\nchar placeholder[] = \"/data/data/com.zj.wuaipojie/maps\";\nbpf_probe_write_user((void*)addr, placeholder, sizeof(placeholder));\n```\n\n### 线程检测\n\n在 Linux 系统中，每个进程的**线程信息**存储在 `/proc/pid/task/线程ID/status` 文件中。\n该文件包含 **线程的运行状态、CPU 占用情况、寄存器信息、堆栈信息等**，可以用于 **调试、性能分析和安全检测**。\n\n可以使用以下命令查看进程的所有线程 ID：\n\n```bash\nls /proc/pid/task  # 列出线程 ID\n```\n\n然后，可以检查某个线程的 `status` 文件：\n\n```bash\ncat /proc/pid/task/线程ID/status\n```\n\n#### 检测\n\n某些 App 会通过读取该文件来检测 Frida 是否运行，如果 `status` 中出现 **`gmain`、`gdbus`、`gum-js-loop`、`pool-frida`** 等 **Frida 线程名**，则表明 Frida 可能已附加到该进程。\n\n| **线程名**       | **含义**                                                               |\n| ------------- | -------------------------------------------------------------------- |\n| `gmain`       | Frida 使用 **Glib** 进行事件循环，`gmain` 线程表示 Glib 主循环。                      |\n| `gdbus`       | **GDBus** 是 Glib 的 D-Bus 通信库，Frida 使用它来进行内部通信。                       |\n| `gum-js-loop` | **Gum** 是 Frida 的 JavaScript 引擎，`gum-js-loop` 代表执行 JavaScript 代码的线程。 |\n| `pool-frida`  | Frida 可能会使用线程池来执行任务，`pool-frida` 代表 Frida 的线程池。                      |\n| `linjector`   | **linjector** 是一种用于动态注入 `.so` 库的工具，可能用于 Frida 相关的 Hook。              |\n\n#### 对抗：Hook 文本比较函数\n\n为了 **绕过 Frida 线程检测**，可以 Hook **`strstr`** 和 **`strcmp`**，让它们无法正确匹配 Frida 相关的线程名。\n\n> 参考：[Android 常用系统库](/notes/n-c9854103b1aa4adeb714e7e0b2559172/)\n\n### Inline Hook 检测与对抗\n\n#### 检测\n\nFrida 提供了 `inlinehook` 功能，它允许通过修改进程的机器码来 **hook** 特定的函数。在某些安全检测中，检测是否存在 `inlinehook` 可以帮助识别被 Frida 注入的函数。\n\n**基本思路：** 通过比较内存中的机器码与函数的原始机器码，如果二者不一致，说明该函数的字节被修改，即被 `inlinehook` 了。\n\n![674bffc43d9eae56bdc28337b6e25171&#95;MD5&#46;jpg](/notes/n-9a0ea8eec6bc433c974f2451c775f059/media/9e8245fff7c79696ad1f744a608153c5b90ca33e10710169e41ae934cb08e745.jpg)\n\nInline Hook 后的指令序列：\n\n![](/notes/n-9a0ea8eec6bc433c974f2451c775f059/media/d093736a82d5b1460b23aaccdffa50755f8a0c3cbd48fb4bf0650930a4c09554.jpg)\n\n#### 对抗\n\n在 Frida 中，我们可以通过 **`hexdump`** 获取函数在内存中的字节码，查看 Hook 前的机器码：\n\n```js\nlet bytes_count = 8;\nlet address = Module.getExportByName(\"libc.so\", \"open\"); // 获取 open 函数的地址\nlet before = ptr(address); // 获取指针指向的位置\n\nconsole.log(\"before hook: \");\nconsole.log(hexdump(before, {\n    offset: 0,\n    length: bytes_count,\n    header: true,\n    ansi: true\n}));\n```\n\n为了避免 Frida 在检测过程中被发现，我们可以 **Hook `memcmp` 函数**，在内存比较时伪造返回值，使字节对比无法被正常执行。\n\n> 或者 Hook `fread` 函数，因为要对比一般会读取文件中的原始内容再来对比，通过在 `fread` 返回时伪造读取到的字节来绕过比较。\n\n\n### 重写系统函数检测与对抗\n\n\nARM 架构与 X86-64 架构类似，用户态通过系统调用（`svc` 指令）产生软中断，从而陷入内核态，操作系统借此执行与相应的内核层函数（通过服务号区分）。\n> 相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n\n在上面的检测对抗中，我们 Hook 了 `libc.so` 中的 `fread`、`strstr`、`open` 等函数，但 APP 如果自实现这些函数，我们该如何应对？\n> 参考：[Android 常用系统库](/notes/n-c9854103b1aa4adeb714e7e0b2559172/)\n\n#### API 自实现示例\n\n通过查看 `/proc/self/maps` 文件，我们可以监控内存映射并检测是否存在恶意的 Frida 库或其他注入的代码，这里以重写打开文件的函数 `openat` 为例，演示通过重写函数绕过对系统 API 的 Hook。\n\n\n以下是一个通过自定义 `openat` 函数来读取内存映射文件的示例：\n\n```cpp\nbool anti_anti_maps() {\n    // 定义一个足够大的字符数组line，用于存储读取的行\n    const int buf_size = 512;\n    char buf[buf_size];\n    int fd;  // 文件描述符\n    // 使用 my_openat 打开当前进程的内存映射文件 /proc/self/maps 进行读取\n    // AT_FDCWD 表示当前工作目录，\"r\" 表示只读方式打开\n    fd = my_openat(AT_FDCWD, \"/proc/self/maps\", O_RDONLY | O_CLOEXEC, 0);\n    if (fd != -1) {\n        // 如果文件成功打开，循环读取每一行\n        while ((read_line(fd, buf, buf_size)) > 0) {\n            // 使用strstr函数检查当前行是否包含\"frida\"字符串\n            if (strstr(buf, \"frida\") || strstr(buf, \"gadget\")) {\n                // 如果找到了\"frida\"，关闭文件并返回true，表示检测到了恶意库\n                close(fd);\n                return true; // Evil library is loaded.\n            }\n        }\n        // 遍历完文件后，关闭文件\n        close(fd);\n    } else {\n        // 如果无法打开文件，记录错误。这可能意味着系统状态异常\n        // 注意：这里的代码没有处理错误，只是注释说明了可能的情况\n    }\n    // 如果没有在内存映射文件中找到\"frida\"，返回false，表示没有检测到恶意库\n    return false; // No evil library detected.\n}\n\nENTRY(my_openat)  // 定义函数入口，标签my_openat\n    mov     x8, __NR_openat  // 将openat系统调用号（__NR_openat）移动到x8寄存器，x8用于存储系统调用号\n    svc     #0               // 触发系统调用异常，进入操作系统执行系统调用\n    cmn     x0, #(MAX_ERRNO + 1)  // 将函数返回值（存储在x0寄存器）与MAX_ERRNO + 1进行无符号比较\n    cneg    x0, x0, hi       // 如果上面的比较结果大于或等于零（即没有错误），则将x0的符号位取反（如果原来是负则变正）\n    b.hi    __set_errno_internal  // 如果上面的比较结果大于或等于零（即发生了错误），则跳转到__set_errno_internal进行错误处理\n    ret                       // 从函数返回，继续执行调用者代码\nEND(my_openat)  // 标记函数结束\n```\n\n#### 对抗\n\n可以通过扫描 SO 库的可执行内存段定位直接系统调用（`svc`），结合反汇编上下文匹配目标调用号（Syscall ID），进而利用 Inline Hook 拦截并替换关键系统调用参数，以实现反检测绕过。\n\n##### 无能为力的情况：重写 strstr\n\n在某些场景下，`strstr` 函数可能被替换或修改，这种情况因为不涉及到系统调用，所以该方案无法应对该场景。\n\n### 其他检测思路\n\n#### 检测方法签名信息\n\nFrida 在 Hook Java 方法时，会将 Java 方法转为 native 方法。如果检测到某个方法的签名发生变化（或不符合预期），则可能说明该方法已被 Frida Hook。\n\n**检测点：** 通过检查方法的签名信息，判断是否存在异常转换或 Hook 行为。\n\n#### 检测 ELF 魔数（ELF_magic）校验\n\nFrida 在 attach 进程并注入共享库（SO）时，会对 ELF 文件头中的 magic 数值进行校验。如果校验失败，Frida 会直接报错并退出进程。\n\nFrida 相关源码如下图所示：\n\n![](/notes/n-9a0ea8eec6bc433c974f2451c775f059/media/73002009a78c7b7be0fb64fdbd98d13dfc9601de47ef41433848bbae1e430484.jpg)\n\n通过在内存中手动抹掉或修改 SO 的 ELF magic 字段，可以达到反调试的效果，从而让 Frida 无法正常注入。\n\n抹除 ELF 魔数示例代码：\n\n```c\nFILE *fp = fopen(\"/proc/self/maps\", \"r\");\nwhile (fgets(line, sizeof(line), fp)) {\n    if (strstr(line, \"linker64\")) {\n        start = reinterpret_cast<int *>(strtoul(strtok(line, \"-\"), NULL, 16));\n        *(long*)start = *(long*)start ^ 0x7f;  // 对 ELF magic 进行异或处理，抹除真实数据\n    }\n}\n```\n\n#### 利用 Frida 源码中的 somain 检测\n\nFrida 的源码中多次获取/调用一个叫做 `somain` 的结构体，而在调用之前并未判断是否为空。\n如果我们在注入前手动将该结构体置空，则 Frida 在附加后会因为空指针操作而崩溃。\n\n相关 Frida 源码如下图所示：\n\n![](/notes/n-9a0ea8eec6bc433c974f2451c775f059/media/1408040f8261bd25a573017af8b4393de2cb22f1fb87db0e678b2423adb1e797.jpg)\n\n置空结构体实现反 Frida：\n\n```c\nsomain = api->solist_get_somain();\ngum_init_soinfo_details(&details, somain, api, &ranges);\n// …后续代码…\nint getsomainoff = findsym(\"/system/bin/linker64\", \"__dl__ZL6somain\");\n*(long*)((char*)start + getsomainoff) = 0;  // 置空对应内存区域\n```\n\n### 总结\n\n| **反调试现状** | **详细说明** |\n| --- | --- |\n| **检测方式多样** | 检测手段从通用检测、Hook 检测到源码检测层出不穷。针对每一行代码，都能设计不同的检测方法，导致 Frida 的指纹多而杂。 |\n| **检测位置不确定** | 检测逻辑有时单独运行在一个线程中，有时在关键函数执行前判断，难以覆盖所有时机。 |\n| **强混淆加大定位难度** | 反调试代码通常仅几行，但结合混淆手段后可能膨胀成上万行，定位和分析难度大，且效率低下。 |\n\n针对 Frida 的检测既有行为特征检测（内存布局、线程、Inline Hook 指令扫描），也有针对源码级别的检测（`somain`、魔数检查）。\n\n反调试技术需要不断更新和完善，才能适应不断演变的攻击手段，可以通过分析 app 中的检测代码，从而了解其检测逻辑，并分析如何绕过。\n\n#### 隐藏 Frida 特征：刷入魔改的 frida-server 端\n\n注意版本！！！\n[strongR-frida-android](https://github.com/hzzheyang/strongR-frida-android)\n\n## 推荐学习资源\n\n- 芽衣大神的手撕签名校验教程：[点击学习](https://www.52pojie.cn/home.php?mod=space&uid=874154&do=thread&view=me&from=space)\n- SVC 的 TraceHook 沙箱实现 & 无痕 Hook 实现思路：[看雪论坛](https://bbs.pediy.com/thread-273160.htm)\n- Frida 检测手段合集：[GitHub - AntiFrida](https://github.com/xxr0ss/AntiFrida)\n- 模拟器检测对抗：[Notion 笔记](https://ionized-bag-d70.notion.site/04dbaf39091f42519b14decd2a87fde7)\n- Hook 应用签名方法：[GitHub - HookPmsSignature](https://github.com/fourbrother/HookPmsSignature)\n- [一些 Frida 检测手段](https://github.com/xxr0ss/AntiFrida)\n",
+  "id": "9a0ea8ee-c6bc-433c-974f-2451c775f059",
+  "metadata": {
+    "tags": [
+      "os/android",
+      "reverse/android/bypass"
+    ],
+    "title": "Android 环境检测与对抗"
+  },
+  "resources": [
+    "1408040f8261bd25a573017af8b4393de2cb22f1fb87db0e678b2423adb1e797.jpg",
+    "73002009a78c7b7be0fb64fdbd98d13dfc9601de47ef41433848bbae1e430484.jpg",
+    "99ea6fc4393ac8251dd6eea03bac3268db345a2f4004754c089d993d73cc4805.jpg",
+    "9e8245fff7c79696ad1f744a608153c5b90ca33e10710169e41ae934cb08e745.jpg",
+    "d093736a82d5b1460b23aaccdffa50755f8a0c3cbd48fb4bf0650930a4c09554.jpg"
+  ],
+  "url": "/notes/n-9a0ea8eec6bc433c974f2451c775f059/"
+}

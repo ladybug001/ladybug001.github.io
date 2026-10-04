@@ -1,0 +1,60 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-d338c14cfb262f1e19f6",
+      "kind": "heading",
+      "offset": 6
+    },
+    {
+      "id": "h-1d7e5e3c4edb9a32b3f0",
+      "kind": "heading",
+      "offset": 538
+    },
+    {
+      "id": "h-0e7e711ed2438500e714",
+      "kind": "heading",
+      "offset": 1568
+    },
+    {
+      "id": "h-8b5ed4c8c541d4a423cf",
+      "kind": "heading",
+      "offset": 1577
+    },
+    {
+      "id": "h-c96acb9813361f81bf0e",
+      "kind": "heading",
+      "offset": 2059
+    },
+    {
+      "id": "h-5108bbad1135adcf51c9",
+      "kind": "heading",
+      "offset": 2156
+    },
+    {
+      "id": "h-f29286a64ff1e18e302c",
+      "kind": "heading",
+      "offset": 2528
+    },
+    {
+      "id": "h-1a1331eec49fee77e9c0",
+      "kind": "heading",
+      "offset": 2932
+    }
+  ],
+  "body": "# 前情提要\n\n**模块**：`.py`结尾的文件就是模块\n\n**包**：含有`__init__.py`文件+多个模块的文件夹就是包，`__init__.py`中的代码，会在包被加载的第一时间执行，相当于类中的`__init__`方法。\n\n>我的理解：模块和包大同小异，无需严格区分。 \n\n- 在进行Python开发时，经常会遇到与模块引用有关的报错，可能出现的情景如：\n\t- 代码在Pycharm中运行正常，但是把代码移植到服务器运行报错提示\"找不到XXX模块\"。\n\t- 在A模块中引用B，又在B中引用A，造成循环引用进而运行报错。\n\t- 在项目根目录有一个main.py入口文件和一个存放工具模块的tools文件夹，直接运行main.py文件正常，但是单独运行tools文件中的模块可能会提示\"找不到XXX模块\"。\n\t- 等等\n\n- 或是遇到这样的疑问：\n\t- 在项目的不同文件中引用了同一个模块，这个模块会被引用多次吗？\n\t- 模块中的全局变量是如何被共享的？\n\t- `from module import *`和`import module`的区别？\n\n上述情景和问题，与Python如何查找和引用模块以及Pycharm替我们做了哪些事情有关。\n\n\n# 模块的查找路径\n\n- Python解释器需要我们告诉它去哪些文件夹中寻找模块，通过以下代码可以输出当前脚本的模块查找路径：\n```python\nimport sys\n\nprint(sys.path)\n```\n>sys模块与脚本执行时的Python解释器运行环境相关，类似JAVA的\"运行时\"。os模块则是与当前的操作系统相关。\n\n\n- 如下图所示的项目结构。![](/notes/n-1916a97516364548a1dbaa1eab057368/media/b3c3ebc1cc94d88e49267c8c4ad05fc7ddc4f67672ae6aa20753c6c821e146d2.jpeg)\n输出：\n```\n['D:\\\\360MoveData\\\\Users\\\\1\\\\Desktop\\\\test2\\\\deep', 'D:\\\\360MoveData\\\\Users\\\\1\\\\Desktop\\\\test2', 'D:\\\\PyCharm 2023.1\\\\plugins\\\\python\\\\helpers\\\\pycharm_display', 'D:\\\\Python\\\\Python310\\\\python310.zip', 'D:\\\\Python\\\\Python310\\\\DLLs', 'D:\\\\Python\\\\Python310\\\\lib', 'D:\\\\Python\\\\Python310', 'D:\\\\Python\\\\Python310\\\\lib\\\\site-packages', 'D:\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\win32', 'D:\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\win32\\\\lib', 'D:\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\Pythonwin', 'D:\\\\PyCharm 2023.1\\\\plugins\\\\python\\\\helpers\\\\pycharm_matplotlib_backend']\n```\n\n>输出的内容中包含Python解释器的库路径，其中列表的前两个元素分别表示脚本的执行路径和项目的根路径，执行路径由Python解释器加入到查找列表中，而**项目的根路径是由Pycharm加入到查找列表中**(这就是为什么把代码移植到服务器后，可能会提示模块引用失败)。\n\n\n# 模块的两种引用方式\n\n## 相对引用\n1. `from .. import tools`是相对引用，相对引用只能在包与包之间使用（即使是没有`__init__.py`的文件夹也叫包），但是！脚本运行的根目录不叫包！![](/notes/n-1916a97516364548a1dbaa1eab057368/media/61d8cce69dfe10c27c4b7625be2b7e0776aa235c9a5101efd4152708c9f3a09d.jpeg)\n>`from . import moduleA` 和 `from .. import moduleA` 都是相对引用，分别是从当前文件所在的目录和父级目录中引用`moduleA`。\n2. 运行`main.py`文件，执行结果如下图所示：![](/notes/n-1916a97516364548a1dbaa1eab057368/media/d686db439168aed83084658ec4d264f61a899a482f1b9ef4b12c26663ba059fb.jpeg)\n>这里使用绝对引用也可以实现同样的效果。\n\n## 绝对引用\n\n`import moduleA`是绝对引用，使用这种方式，Python解释器会试图通过路径列表找到被引用的模块。\n\n优点：不需要考虑模块间的相对路径关系，使用起来更方便。\n\n# 模块多重引用\n\n\n> [!NOTE] 当在同一个项目的不同文件中引用了同一个模块，该模块会被多次引用吗？\n> 答案是否定的。当在文件中尝试引用某个模块时，Python解释器会先判断该模块是否已经被加载(是否在模块加载列表中)，如果是则直接返回/复用该模块对象，否则尝试找到并加载模块后放入到模块加载列表中然后返回模块对象。\n\n\n如下图所示，是一个模块依赖树，可以很清晰的看到模块间的依赖关系，通过这张图可以直观感受到Python模块是如何被复用的，树中的各个结点都会放在模块引用列表中。![](/notes/n-1916a97516364548a1dbaa1eab057368/media/311d1dd6fa0c83984c77c819a4777a35004459ff68bb9ce7ac3d63804d66ac5c.jpeg)\n\n\n# 全局变量共享策略\n\n\n![](/notes/n-1916a97516364548a1dbaa1eab057368/media/311d1dd6fa0c83984c77c819a4777a35004459ff68bb9ce7ac3d63804d66ac5c.jpeg)\n- 使用`import module`引用模块，则可以通过`module.params`的方式可以访问到module模块对象中的params变量，大家通过这种方式就可以实现共享module中的params变量。\n-  使用`from module import params`等同于`import module`+`params = module.params`，这可能导致将全局变量赋值到局部变量中(如果`module.params`是列表、数组等类型则`params`仍然等同于全局变量，但若是整数等类型则`params`为局部变量)。\n\n\n\n# 其它\n\n>早期遭遇模块引入错误时的场景和采取的应对措施：\n\n在快手滑块逆向开发过程中，曾因为相对路径的问题，耽误了好多时间，这里做个总结：在自写模块a中导入另一个自写模块b中的方法/类时，不要使用相对a来说b的相对路径，要使用相对于整个项目而言b的相对路径，否则在`main.py`中引用模块a，会因为找不到模块b的路径导致`ModuleNotFoundError`。 \n\n正确示例如下图所示：\n![Pasted image 20240706213938&#46;png](/notes/n-1916a97516364548a1dbaa1eab057368/media/5e0ec87f4611b458fce63ab921512f00fd7f9f8e4f3839bfcb84f5ae8fa35617.png)\n\n\n\n\n\n\n\n\n\n",
+  "id": "1916a975-1636-4548-a1db-aa1eab057368",
+  "metadata": {
+    "tags": [
+      "lang/python"
+    ],
+    "title": "Python 模块与导入机制"
+  },
+  "resources": [
+    "311d1dd6fa0c83984c77c819a4777a35004459ff68bb9ce7ac3d63804d66ac5c.jpeg",
+    "5e0ec87f4611b458fce63ab921512f00fd7f9f8e4f3839bfcb84f5ae8fa35617.png",
+    "61d8cce69dfe10c27c4b7625be2b7e0776aa235c9a5101efd4152708c9f3a09d.jpeg",
+    "b3c3ebc1cc94d88e49267c8c4ad05fc7ddc4f67672ae6aa20753c6c821e146d2.jpeg",
+    "d686db439168aed83084658ec4d264f61a899a482f1b9ef4b12c26663ba059fb.jpeg"
+  ],
+  "url": "/notes/n-1916a97516364548a1dbaa1eab057368/"
+}

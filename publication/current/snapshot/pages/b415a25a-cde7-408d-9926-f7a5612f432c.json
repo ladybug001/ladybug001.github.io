@@ -1,0 +1,33 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-d5417f6cc5305d1dd9ca",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-a3ff305099c2c4893ec2",
+      "kind": "heading",
+      "offset": 121
+    },
+    {
+      "id": "h-424ec10d4a6e952c85cd",
+      "kind": "heading",
+      "offset": 744
+    }
+  ],
+  "body": "\n# Windows GDI\n\n**相关内容**：\n- 对 `GDI` 的面向对象封装：[MFC CDC 绘图与坐标映射](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/)\n\n---\n## 什么是 GDI\n\n`GDI`（Graphics Device Interface，图形设备接口）是 Windows 操作系统提供的核心绘图组件。\n\n本章学习 GDI 的目的，并非为了用它绘制（没有什么实际意义，因为有对它的封装，且更方便使用），而是为了通过纯正的 `GDI` 机制来深刻理解**窗口的本质**与**消息机制的本质**。\n\n关于 `GDI` 运作，存在三个高度耦合的核心概念：\n- **设备对象（Device）**：表示实际执行像素绘制的目标物理位置集合（可以特指某一个弹出的窗口、直接面对的全局桌面、或是外接的打印机设备）。\n- **DC（Device Context，设备上下文）**：由系统内核维护的关键内存数据结构，保存了与当前目标设备相关的绘图环境状态和一系列当前生效的绘图配置参数。\n- **图像对象（GDI Object）**：如画笔（Pen）、画刷（Brush）、字体（Font）等，用于决定将要发生的绘制行为的具体视觉属性设定（如线宽、颜色、填充模式属性）。\n\n![d1877bf65b90d77cbb76db8747fc01bd&#95;MD5&#46;png](/notes/n-b415a25acde7408d9926f7a5612f432c/media/3a09f8a27ac7ee789feb0b421c4992935ba856ac8fa96000485260cf58e8416d.png)\n\n## 实践：基础绘制代码\n\n以下代码展示了如何直接获取系统桌面的设备上下文并在屏幕的绝对坐标体系中进行划线动作（`LineTo`）：\n\n```c\n#include <windows.h>\n\nint main(int argc, char* argv[]) {\n    HWND hWnd;  // 窗口句柄\n    HDC hDc;    // 设备上下文对象句柄\n    HPEN hPen;  // GDI 画笔对象句柄\n\n    // 1. 指定设备对象定位\n    // 将 hWnd 设置为 NULL，代表直接在全局桌面（Desktop）上绘制\n    hWnd = (HWND)NULL;\n\n    // 2. 获取设备上下文对象（DC）\n    /*\n    HDC GetDC(HWND hWnd);\n    */\n    hDc = GetDC(hWnd);\n\n    // 3. 创建图形对象：画笔，配置其线条物理与视觉属性\n    /*\n    HPEN CreatePen(int fnPenStyle, int nWidth, COLORREF crColor);\n    */\n    hPen = CreatePen(PS_SOLID, 5, RGB(0xFF, 0x00, 0x00));  // 实心线（Solid）、线宽 5、标准红色（RGB(255,0,0)）\n\n    // 4. 图形对象覆盖：将新建画笔选入目标设备上下文\n    /*\n    HGDIOBJ SelectObject(HDC hdc, HGDIOBJ hgdiobj);\n    */\n    SelectObject(hDc, hPen);\n\n    // 5. 调用绘制引擎指令：从缺省起点位置对接到目标坐标 (400, 400)\n    /*\n    BOOL LineTo(HDC hdc, int nXEnd, int nYEnd);\n    */\n    LineTo(hDc, 400, 400);\n\n    // 6. 释放所有持有的 GDI 资源（防止严重的内核句柄泄漏）\n    DeleteObject(hPen);\n    ReleaseDC(hWnd, hDc);\n\n    return 0;\n}\n```\n\n![81acb10a7a2e4f9da1f0f4a236942b85&#95;MD5&#46;png](/notes/n-b415a25acde7408d9926f7a5612f432c/media/7ec925b89b2e18eeec8ae6965a1948976c105b165bfa7459f567ae143384ea25.png)\n\n **架构思考**： 实际上在 Windows 操作系统的图形体系中，**绝大多数的 UI 窗口本质上都是通过上述这些底层 API 一帧接一帧“画”出来的**。\n\n**疑问**：既然窗口也是通过这种方式画出来的，为什么上述代码画出的红线在被其他窗口进行遮挡或拖动后便立刻消失不见，而正常的系统进程窗口却永远不会消失褪色呢？\n\n> 难道是死循环不停的重新绘制吗？实际是只在需要的时候才重新绘制，可以参考 [MFC CDC 绘图与坐标映射](/notes/n-a0177c9251c14e20a5ce12a4ba1ce34f/#h-19dcc057eda968f99730) 中，对操作系统重绘消息 `WM_PAINT` 的介绍。\n",
+  "id": "b415a25a-cde7-408d-9926-f7a5612f432c",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "cs/graphics"
+    ],
+    "title": "Windows GDI"
+  },
+  "resources": [
+    "3a09f8a27ac7ee789feb0b421c4992935ba856ac8fa96000485260cf58e8416d.png",
+    "7ec925b89b2e18eeec8ae6965a1948976c105b165bfa7459f567ae143384ea25.png"
+  ],
+  "url": "/notes/n-b415a25acde7408d9926f7a5612f432c/"
+}

@@ -1,0 +1,114 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-41db2f49606aa630dbc3",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-f085f94bb1a471f3ae85",
+      "kind": "heading",
+      "offset": 180
+    },
+    {
+      "id": "h-5d507415d85e8cbb1610",
+      "kind": "heading",
+      "offset": 732
+    },
+    {
+      "id": "h-8112efe4569a1c51ac82",
+      "kind": "heading",
+      "offset": 1477
+    },
+    {
+      "id": "h-91f20ea6a1ff53c14724",
+      "kind": "heading",
+      "offset": 6119
+    },
+    {
+      "id": "h-dd2329f3452d40844d2f",
+      "kind": "heading",
+      "offset": 6342
+    },
+    {
+      "id": "h-0326fa50367fe99c0aa3",
+      "kind": "heading",
+      "offset": 6792
+    },
+    {
+      "id": "h-578f93ee213bb3ab4a05",
+      "kind": "heading",
+      "offset": 7120
+    },
+    {
+      "id": "h-58a9f700137e1507f4d8",
+      "kind": "heading",
+      "offset": 9057
+    },
+    {
+      "id": "h-2ab76274ae21176ac796",
+      "kind": "heading",
+      "offset": 9727
+    },
+    {
+      "id": "h-4da0980087b2652ac9c9",
+      "kind": "heading",
+      "offset": 11800
+    },
+    {
+      "id": "h-8caa43c644e59ca42ada",
+      "kind": "heading",
+      "offset": 12766
+    },
+    {
+      "id": "h-d5694abd14405c52154b",
+      "kind": "heading",
+      "offset": 12786
+    },
+    {
+      "id": "h-9fb314adc40ad91f18fe",
+      "kind": "heading",
+      "offset": 12975
+    },
+    {
+      "id": "h-c3fba3cafe787ff88560",
+      "kind": "heading",
+      "offset": 13908
+    },
+    {
+      "id": "h-4ad00198c49640e53dbc",
+      "kind": "heading",
+      "offset": 14029
+    }
+  ],
+  "body": "# Python 协程机制\n\n**前置知识**：\n1. [Python 迭代器&#12289;可迭代对象与生成器](/notes/n-3462eb49b6c5415bb3e086109d28cb04/)\n2. [Python asyncio 异步机制](/notes/n-5344b73e8c544f2db3fe00dedd9c607e/)\n\n## 协程的演进\n\nPython 的协程发展，经历了两个主要阶段：\n\n1.  **生成器协程（Python 3.5 之前）**：\n    *   **实现方式**：基于普通生成器，利用 `yield` 和 `yield from` 实现。\n    *   **特点**：可以使用 `next()` 或 `send()` 驱动，与普通生成器无本质区别。\n    *   **标记**：通常使用 `@asyncio.coroutine` 装饰器。\n\n2.  **原生协程（Native Coroutine，Python 3.5+）**：\n    *   **实现方式**：使用 `async def` 定义。\n    *   **特点**：为了避免混淆和误用，原生协程**不再支持 `next()` 方法**（调用会抛出 `TypeError`），必须使用 `.send()` 方法或 `await` 语法驱动。\n    *   **本质**：虽然**语法进行了隔离，但底层依然依赖生成器**的“暂停/恢复”状态机机制。\n\n> 协程的定义以及 Python 协程的实现原理，参考：[编程语言&#65306;协程的原理](/notes/n-3b7b3a9754c243b79a632f73f849de64/)\n\n## 代码示例\n\n以下代码展示了使用 `asyncio` 库，调度/运行协程的基本用法：\n\n```python\nimport asyncio\nimport time\n\nasync def worker(name):\n    print(f\"Task {name} started...\")\n    \n    # 模拟 IO 操作，此时会释放控制权，允许 Loop 调度其他任务\n    await asyncio.sleep(1)\n    \n    print(f\"Task {name} finished\")\n    return f\"{name} Result\"\n\nasync def main():\n    print(f\"Main started at {time.strftime('%X')}\")\n\n    # 创建任务，将其加入事件循环的调度队列\n    task1 = asyncio.create_task(worker(\"A\"))\n    task2 = asyncio.create_task(worker(\"B\"))\n    \n    # 等待任务完成\n    res1 = await task1\n    res2 = await task2\n    # 注意：results = await asyncio.gather(task1, task2) 等价于上面两条代码\n    \n    print(f\"Main finished at {time.strftime('%X')}\")\n\nif __name__ == \"__main__\":\n    # 启动 Event Loop，执行主协程\n    asyncio.run(main())\n```\n\n---\n\n## 调试分析\n\n> [!NOTE] C 语言实现导致的调试不连续性\n> Python 的 `asyncio` 核心组件（如 `Task` 和 `Future`）默认使用 C 语言实现。这意味着在调试调用栈（Call Stack）时，我们无法逐行步入 C 代码内部，只能看到 Python 层的调用。这会导致调用栈出现“中断”，容易让人在调试时感到困惑。\n\n以下是对上述代码执行流程的详细跟踪分析：\n\n1.  **启动入口**：在 `asyncio.run` 处打断点并运行代码。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/f72cfc56f1ac9b4eabc9a996bc8a7fa95c3fd7bf1bced79551d8e4d4cd2ab3d3.jpg)\n\n2.  **进入 `run` 函数**：跟踪 `run` 函数，发现它其实是对一系列函数的封装。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/7cd0618701a8d93874ce94615e06cc064b007e26e3b3b79f97359a1fa581ee9e.jpg)\n\n3.  **进入 `run_until_complete`**：在该函数中，会确保传入的参数是 `Future`（或 `Task`），然后准备进入事件循环的核心逻辑。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/0424c9faafc82b1ebedfa1593d9fe50c25ecd062d78f7da0bdb21c4c7f2b1fe2.jpg)\n\n4.  **进入 `run_forever`**：这是事件循环的主体。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/65ba0661646e504bda51d007476efcf0e0c05a6350b79e8d8541e9de4eb79fa7.jpg)\n\n5.  **核心执行循环**：继续跟踪 `super().run_forever()`（子类调用父类），这里是协程调度的核心代码。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/daf11a67b1eed1ade68680919adffa122930012c9d89af1a29bdba45d786ddd3.jpg)\n\n6.  **`run_once` 与队列**：跟踪 `run_once`，可以看到两个关键队列：**等待队列 (Scheduled)** 和 **就绪队列 (Ready)**。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/6ad096eae22b4a5757174ce2f2df51a4e8183645be307bd93cb102835c697cbb.jpg)\n\n7.  **检查就绪队列**：此时等待队列为空，就绪队列长度为 2。其中一个是官方模块添加的 Handle，另一个是我们 `main()` 协程封装而成的 Handle，重点关注该 Handle（队列第一个）。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/d63c3cfa4fe63fa01c95b320e6cc4ce178a71a26c8cf6d54bde01049c642a9ab.jpg)\n\n8.  **执行 Handle**：跟踪 `handle._run()` 函数，可以看到这里会调用成员 `self._context` 的 `run` 函数。该 `context` 成员保存了当前协程的上下文环境。`run` 方法的作用是**在该上下文中**执行 `self.callback`。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/dd4e3cf1fda970351115cc4c3f2fb413347eba83e052cc7ff40830a20a43eaca.jpg)\n\n9.  **跨越 C 语言实现层**：继续跟踪。\n    *   **注意**：此时如果单步调试（Step Into），你会发现直接跳转到了我们的用户代码处，并没有进入 `_run` 函数体内或者 `self.callback` 函数内。\n    *   **原因**：`self._context.run` 函数是用 C 实现的，同时 Handle 是对 `Task`/`Future` 的封装，这些对象也主要由 C 语言实现。虽然 `asyncio` 包内存在 Python 版的 `Task` 实现，但在默认环境下 Python 优先加载 C 扩展（尝试通过 `sys.modules['_asyncio'] = None` 使用 Python 版本未能成功）。\n    *   **本质**：底层逻辑是 `context.run` 设置变量上下文 -> 调用 `self.callback` (即 `Task.__step`) -> `Task.__step` 通过 `send` / `next` 激活生成器 -> 进入 `main` 函数。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/748f43ed91dbb6449951a1c41fd9ee04cfce1b6134f60e6bc9b49a678692964b.jpg)\n\n10. **创建任务**：跟踪 `create_task`，它是 `loop.create_task` 的封装。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/20316f747cc2d936a5287b4d3d55ecfbc365ea08f5e390e28d8b3417d4b765f8.jpg)\n\n11. **Task 封装**：继续跟踪，发现它是对 `tasks.Task` 的封装。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/18e06fc1d7046023d06e344e9e495f095061c22b1ae40240af2da673ea2270a9.jpg)\n\n12. **任务入队**：无法直接跟踪 `tasks.Task` 的 C 代码构造函数，但参考对应的 Python 源码（关键处已圈出），可以看到在此处将任务添加到了**就绪队列**中（`__step` 函数被封装为 Handle 后进入队列）。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/fc214db4d88b482ff8e27e2957494e1adad4f79bc87504541ec09685707dcccb.jpg)\n\n13. **遇到 `await`**：步出回到用户代码逻辑，在 `await` 处单步跟进。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/bb7af5c6651c801953bd43b62e54a7b4cdb0c1093cd739d8c1f4022a2864164e.jpg)\n\n14. **让出控制权**：此时流程回到了 `handle._run` 函数中（协程/生成器挂起，控制权交还给调用方），再返回就是 Event Loop 循环的地方了。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/677583bb236eb5eb372426700427b966f45215cf5fa32e0b9ce7fb74384df719.jpg)\n\n15. **调度 Worker**：重复上述部分操作后，Event Loop 调度进入 `worker` 函数，停在 `asyncio.sleep` 前。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/3904e18f74a4a4d97c2469a8b5fd91941237e2abe1b5ea1b5c195a9baecb9a30.jpg)\n\n16. **进入 `sleep`**：继续跟踪，这次进入了 `asyncio.sleep` 函数内部（因为 `await` 对象的类型不同，行为也不同，这里是 `await` 一个函数调用）。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/c576a9c9943982a07b43573ba71db578d75171abe7bf41004d0bc38fa500afd9.jpg)\n\n17. **Await Future**：执行到 `await future` 处，单步跟进，再次回到 `handle._run` 函数处。\n    *   **注意**：我们看不到 C 代码的调用栈，但 `worker` 函数是由 `Task` / `Future` 中的某处代码调用的。当单步跟进时，C 实现的 `Task` / `Future` 剩余部分代码已经执行完毕。`Task` 在其 `__step` 方法中捕获到了协程 `yield` 出来的 `Future`，然后**主动**在该 `Future` 上调用了 `add_done_callback(self.__wakeup)`——该回调用于在 `Future` 完成时恢复协程执行。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/8cdf0571a2e906fc6d82aeea9fb2ca376f1c1e91a3e3dc171a81116cfda04cdc.jpg)\n\n18. **检查等待队列**：此时查看等待队列，发现长度 +1。这是因为 `asyncio.sleep` 向等待队列中添加了一个元素（通过 `call_later`）。\n    ![](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/media/98b2e098c0dc4deaa55902e89ddfda61cd4820fd4b689d52a22292880cf992ef.jpg)\n\n至此，调试分析完毕。协程的执行逻辑已大体清晰：**Task 封装协程 -> 加入就绪队列 -> Event Loop 调度 -> 遇到 await 挂起并注册回调 -> Event Loop 继续调度其他任务。**\n\n---\n\n## 设计思想\n\n1.  **基于生成器**：利用 `yield` / `yield from` 实现暂停和恢复。\n2.  **语法糖支持**：在源码层面添加 `async` / `await` 关键字\n3.  **基于异步机制**：Event Loop + 双队列（就绪/等待）模型。参考：[Python asyncio 异步机制](/notes/n-5344b73e8c544f2db3fe00dedd9c607e/)\n\n#### async 关键词的本质\n\n`async` 关键词，其背后的逻辑可以看作是一个装饰器\n```python\n\nasync def myFunc2():\n\tpass\n\ndef myFunc1():\n\tpass\n\t\n\nprint(myFunc1) # <function myFunc>\nprint(myFunc2) # <function myFunc>\nprint(myFunc2()) # coroutine\n```\n\n等价于：\n```python\n@xxxWrapper\ndef myFunc2():\n\tpass\n\ndef myFunc1():\n\tpass\n\t\nprint(myFunc1) # <function myFunc>\nprint(myFunc2) # <function myFunc>\nprint(myFunc2()) # coroutine 装饰器将myFunc2封装为协程对象后返回\n```\n只不过由 `async` 关键词得到的装饰器，是一种原子语句，不可再分。\n\n#### await 关键词的本质\n\n`await` 是一个语法糖，其核心作用是将控制权暂时移交。\n\n从原理上讲：\n```python\nawait object\n```\n**等价于**\n```python\nyield from object.__await__()\n```\n\n当执行 `await object` 时，Python 会调用该对象的 `__await__` 方法获取一个**迭代器**（生成器是特殊的迭代器），并对其执行 `yield from` 操作。\n\n```\n# 1. 若 __await__ 定义为生成器函数，调用时自动返回生成器对象。 \n# 2. 若 __await__ 定义为普通函数，必须显式返回一个迭代器对象。\n```\n\n#### awaitable 对象详解\n\n在 Python 中，`await` 后面只能跟 **Awaitable** 对象（即实现了 `__await__` 方法的对象）。主要分为以下三类：\n\n**1. Future (未来对象)**\n\n这是异步编程的基石。`Future` 代表一个未来的结果，它的 `__await__` 方法不仅是为了等待，更是为了**让出控制权**。\n\n*   **伪代码实现逻辑**：\n```python\nclass Future:\n    def __await__(self):\n        # 只要 Future 还没完成，就 yield 自己\n        if not self.done():\n            # 标记当前 Future 为阻塞状态（防止被外部错误取消等）\n            self._asyncio_future_blocking = True\n            \n            # 关键点：yield self。\n            # 这会将 future 对象本身产出，沿着调用栈层层向上传递，\n            # 最终传给 Task.__step。Task 拿到这个 future 后，\n            # 会调用 future.add_done_callback(self.__wakeup) 挂起自己。\n            yield self \n        \n        # 当 Future 完成后（被 set_result），循环结束，返回结果\n        return self.result()\n```\n\n**2. Task (任务)**\n\n`Task` 是 `Future` 的子类。它既是 Awaitable（可以被其他协程 await），也是驱动者（驱动它内部包裹的协程）。\n\n*   **伪代码实现逻辑**：\n```python\nclass Task(Future):\n    def __await__(self):\n        # 由于 Task 继承自 Future，其 __await__ 逻辑基本复用了 Future 的逻辑。\n        # 如果 Task 还没做完，就 yield 自己让出控制权。\n        \n        if not self.done():\n            yield self \n            \n        return self.result()\n```\n\n**3. Coroutine (原生协程)**\n原生协程对象也实现了 `__await__` 方法（这是它能被 `await` 的原因）。\n\n- **区别**：`Future` 的 `__await__` 主要是为了让出控制权（`yield self`）；而协程的 `__await__` 是为了**返回一个迭代器**（生成器是特殊的迭代器），以便驱动自身的执行。\n    \n- **伪代码逻辑**：\n```python\n# 当执行 await coro_obj 时：\nclass CoroutineWrapper:\n    def __await__(self):\n        # 原生协程的 __await__ 返回一个迭代器\n        # 当对其执行 yield from 时，就是在驱动这个协程运行\n        return self # 或者返回一个 wrapper(self)\n```\n\n**4. 自定义 Awaitable**\n\n任何实现了 `__await__` 方法的对象都可以被 await。\n\n*   **伪代码实现逻辑**：\n```python\nclass MyAwaitable:\n    def __await__(self):\n        print(\"1. 自定义 Awaitable 开始执行\")\n        \n        # 必须返回一个迭代器（生成器也是迭代器）\n        # 这里演示 yield 一个值给 Loop（假设 Loop 能处理这个值）\n        yield \"something_to_loop\" \n        \n        print(\"2. 恢复执行\")\n        return \"final_result\"\n\n# 使用\nasync def main():\n    res = await MyAwaitable() # res 将是 \"final_result\"\n```\n\n#### 手写协程驱动代码\n\n调用 `async def` 函数会返回一个协程对象，而不会立即执行函数体，要让它跑起来，必须驱动它。\n\n**代码示例**：\n\n```python\nimport asyncio\n\nasync def myFunc():\n    print(\"Coroutine started\")\n    loop = asyncio.new_event_loop()\n    future = loop.create_future()\n    # 遇到 await，底层调用 yield from future.__await__()\n    await future \n\n# 1. 创建协程对象\ncoro = myFunc()\nprint(f\"Created: {coro}\") # <coroutine object ...>\n\ntry:\n    # 错误：原生协程不能使用 next()，会抛出 TypeError\n    # next(coro) \n    \n    # 正确：必须使用 send(None) 进行预激（Prime）\n    # 这会启动协程，直到遇到第一个 yield (即 await future 里的 yield self)\n    yielded_future = coro.send(None) \n    \n    print(f\"Yielded: {yielded_future}\") # <Future pending>\nexcept StopIteration:\n    pass\n```\n\n### Task\n\n**定义**：`Task` 是 `Future` 的子类。它是 `Future` 与 `Coroutine` 之间的桥梁，专为**驱动**协程而设计。\n> 参考 [Python asyncio 异步机制](/notes/n-5344b73e8c544f2db3fe00dedd9c607e/#h-b657b871b2a9b9df2b27)\n\n**特点**：\n\n*   **创建**：必须传入一个协程和一个 Event Loop 作为参数。\n*   **自驱动机制**：\n    *   Task 初始化时，会自动将自己的 `_step` 方法封装为 Handle 并加入到 Event Loop 的就绪队列中。\n    *   **`__step` 方法**：核心驱动引擎。它调用协程的 `send(None)` 或 `send(result)` 驱动其继续向下执行，并处理协程 yield 出来的结果（通常是另一个 Future，并且通常将 `__wakeup` 方法作为其完成回调）。\n    *   **`__wakeup` 方法**：主要作为回调函数使用。当 `_step` 遇到 `await` 挂起时，会注册 `__wakeup` 为目标 Future 的回调。当目标 Future 完成时，`__wakeup` 被触发，其唯一职责是将 `_step` 再次加入 Event Loop 的就绪队列，从而在下一次调度中恢复协程的执行。\n\n**代码示例**：\n```python\nimport asyncio\n\nasync def coro():\n    print(\"Coroutine executing...\")\n    await asyncio.sleep(1)\n    return \"Result\"\n\nloop = asyncio.new_event_loop()\nasyncio.set_event_loop(loop)\n\n# 创建 Task：需要传入协程对象和 loop\n# 这一步会自动将 Task.__step 加入到 loop 的就绪队列\ntask = asyncio.Task(coro(), loop=loop)\n\n# 绑定完成回调\ntask.add_done_callback(lambda x: loop.stop())\n\nloop.run_forever()\nloop.close()\n```\n\n**核心驱动流程详解**：\n1.  **初始化**：`Task` 被创建，初始化函数会将 `self.__step` 封装为 Handle，通过 `loop.call_soon` 加入**就绪队列**。\n2.  **首次调度**：Event Loop 从队列取出 Handle，执行 `Task.__step`。\n3.  **激活协程**：`Task.__step` 内部调用 `coro.send(None)`，协程开始运行。\n4.  **遇到 IO/Sleep**：\n    *   协程执行到 `await asyncio.sleep(1)`。\n    *   `asyncio.sleep` 内部创建了一个 `Future` (记为 `sleep_future`)，并建立了定时回调。\n    *   协程执行 `yield sleep_future`，并将控制权交回给 `Task.__step`。\n5.  **处理挂起**：\n    *   `Task._step` 捕获到协程 yield 出来的 `sleep_future`。\n    *   **关键点**：Task 并非阻塞等待，而是调用 `sleep_future.add_done_callback(self.__wakeup)`。\n    *   这意味着：**“当此 sleep 操作完成时，请调用 `__wakeup` 方法唤醒我”。**\n6.  **让出控制权**：`Task.__step` 执行完毕并返回，控制权回到 Event Loop。\n7.  **Event Loop 空转/调度**：Event Loop 继续处理其他任务，或者空转等待时间到达。\n8.  **子任务完成**：1 秒后，`sleep` 的定时器触发，将 `sleep_future` 设置为完成状态 (`set_result`)。\n9.  **触发唤醒**：由于 `sleep_future` 完成，它会调用注册的回调函数 `Task.__wakeup`。\n10. **重入队列**：`Task.__wakeup` 唯一的任务就是：再次调用 `loop.call_soon(self.__step)`，将 Task 重新放入**就绪队列**。\n11. **恢复执行**：Event Loop 再次执行 `Task.__step` -> `coro.send(result)`，协程向下继续执行，直到结束。\n\n---\n\n### 常用函数的封装逻辑\n\n常用函数其实是对底层机制的封装，正是这些封装让协程的执行流看起来比较“抽象”。以下是核心函数的核心代码逻辑（不完全等同于真实情况）：\n\n*   **`asyncio.run(coro)`**: 程序入口，负责生命周期管理。\n```python\ndef run(coro):\n\tloop = events.new_event_loop()\n\ttry:\n\t\tevents.set_event_loop(loop)\n\t\t# 内部调用 run_until_complete\n\t\treturn loop.run_until_complete(coro)\n\tfinally:\n\t\tloop.close()\n```\n\n*   **`loop.run_until_complete(future)`**: 阻塞直到传入的 Future/Task 完成。\n```python\ndef run_until_complete(self, future):\n\t# 1. 确保参数是 Future/Task，如果是协程则封装为 Task\n\tfuture = tasks.ensure_future(future, loop=self)\n\n\t# 2. 添加回调：当 future 完成时，停止 loop\n\tfuture.add_done_callback(_run_until_complete_cb)\n\n\t# 3. 开启死循环，不断调度任务，直到 _run_until_complete_cb 被触发调用 loop.stop()\n\tself.run_forever()\n\n\treturn future.result()\n```\n\n*   **`asyncio.create_task(coro)`**: 将协程封装为 Task 并加入 Event Loop 调度。\n```python\ndef create_task(coro):\n\tloop = events.get_running_loop()\n\t# 创建 Task 对象，Task 初始化时会自动调用 loop.call_soon 将 __step 加入就绪队列\n\ttask = loop.create_task(coro) \n\treturn task\n```\n\n### Context (上下文)\n\n#### 为何需要 Context？\n\n在多线程编程中，我们有 TLS (Thread Local Storage) 来隔离线程间的全局变量。而在异步编程中，所有协程运行在同一个线程中，为了防止协程 A 修改的全局变量影响到协程 B，我们需要 **Task Local Storage (任务本地存储)**，这就是 `contextvars` 和 `Handle._context` 的作用。\n\n#### 示例验证\n\n```python\nimport asyncio\nimport contextvars\n\n# 定义一个 ContextVar，类似于全局变量，但在不同 Context 中隔离\nrequest_id = contextvars.ContextVar(\"request_id\")\n\nasync def handler(name, new_id):\n    # 设置当前协程上下文中的变量值\n    request_id.set(new_id)\n    print(f\"[{name}] Set ID: {new_id}\")\n    \n    # 挂起协程。如果此时没有 Context 隔离，其他协程修改变量会影响这里\n    await asyncio.sleep(1)\n    \n    # 恢复执行。验证变量是否依然是之前设置的值\n    current_id = request_id.get()\n    print(f\"[{name}] Get ID: {current_id} (Expected: {new_id})\")\n\nasync def main():\n    # 创建两个 Task，它们在同一个线程中交替执行\n    # asyncio 会自动为每个 Task 捕获并隔离 Context\n    t1 = asyncio.create_task(handler(\"Task A\", \"ID_AAA\"))\n    t2 = asyncio.create_task(handler(\"Task B\", \"ID_BBB\"))\n    await asyncio.gather(t1, t2)\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n```\n\n**运行结果表明**：尽管两个 Task 在同一个线程内交替执行，`Task A` 醒来后读取到的 `request_id` 依然是它自己设置的 \"ID_AAA\"，而不是 `Task B` 设置的 \"ID_BBB\"。这就是 `Handle._run` 中调用 `self._context.run()` 的意义所在。\n\n---\n\n## 总结\n\n\n1.  **Task**：封装协程，利用 `__step` 和 `_wakeup` 机制自动驱动协程执行。\n2.  **Context**：确保协程在挂起和恢复之间，能够保持独立的环境变量副本（Task Local）。\n\n## 参考资料\n\n- [一文读懂Python async/await异步编程 - 知乎](https://zhuanlan.zhihu.com/p/698683843)\n- [Python面试官：你来解释一下协程的实现原理本篇文章主要内容：介绍了协程的基本概念、Python 协程的语法、Pyth - 掘金](https://juejin.cn/post/7494149952697991178#heading-18)",
+  "id": "6a3b85d9-41b7-45e5-a29b-51d1b40dbad2",
+  "metadata": {
+    "tags": [
+      "lang/python",
+      "cs/concurrency"
+    ],
+    "title": "Python 协程机制"
+  },
+  "resources": [
+    "0424c9faafc82b1ebedfa1593d9fe50c25ecd062d78f7da0bdb21c4c7f2b1fe2.jpg",
+    "18e06fc1d7046023d06e344e9e495f095061c22b1ae40240af2da673ea2270a9.jpg",
+    "20316f747cc2d936a5287b4d3d55ecfbc365ea08f5e390e28d8b3417d4b765f8.jpg",
+    "3904e18f74a4a4d97c2469a8b5fd91941237e2abe1b5ea1b5c195a9baecb9a30.jpg",
+    "65ba0661646e504bda51d007476efcf0e0c05a6350b79e8d8541e9de4eb79fa7.jpg",
+    "677583bb236eb5eb372426700427b966f45215cf5fa32e0b9ce7fb74384df719.jpg",
+    "6ad096eae22b4a5757174ce2f2df51a4e8183645be307bd93cb102835c697cbb.jpg",
+    "748f43ed91dbb6449951a1c41fd9ee04cfce1b6134f60e6bc9b49a678692964b.jpg",
+    "7cd0618701a8d93874ce94615e06cc064b007e26e3b3b79f97359a1fa581ee9e.jpg",
+    "8cdf0571a2e906fc6d82aeea9fb2ca376f1c1e91a3e3dc171a81116cfda04cdc.jpg",
+    "98b2e098c0dc4deaa55902e89ddfda61cd4820fd4b689d52a22292880cf992ef.jpg",
+    "bb7af5c6651c801953bd43b62e54a7b4cdb0c1093cd739d8c1f4022a2864164e.jpg",
+    "c576a9c9943982a07b43573ba71db578d75171abe7bf41004d0bc38fa500afd9.jpg",
+    "d63c3cfa4fe63fa01c95b320e6cc4ce178a71a26c8cf6d54bde01049c642a9ab.jpg",
+    "daf11a67b1eed1ade68680919adffa122930012c9d89af1a29bdba45d786ddd3.jpg",
+    "dd4e3cf1fda970351115cc4c3f2fb413347eba83e052cc7ff40830a20a43eaca.jpg",
+    "f72cfc56f1ac9b4eabc9a996bc8a7fa95c3fd7bf1bced79551d8e4d4cd2ab3d3.jpg",
+    "fc214db4d88b482ff8e27e2957494e1adad4f79bc87504541ec09685707dcccb.jpg"
+  ],
+  "url": "/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/"
+}

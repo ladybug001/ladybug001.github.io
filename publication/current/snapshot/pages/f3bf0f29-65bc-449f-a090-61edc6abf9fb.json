@@ -1,0 +1,59 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-cd5ce9f51f6093ebdff6",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-564f6722ac128e5c5da8",
+      "kind": "heading",
+      "offset": 32
+    },
+    {
+      "id": "h-ab1d421673584080ea22",
+      "kind": "heading",
+      "offset": 549
+    },
+    {
+      "id": "h-fd6a7df12ffc5956e4f8",
+      "kind": "heading",
+      "offset": 648
+    },
+    {
+      "id": "h-bfd7f08b0e834f4eadea",
+      "kind": "heading",
+      "offset": 902
+    },
+    {
+      "id": "h-a7f9a527c8178aea1f13",
+      "kind": "heading",
+      "offset": 1382
+    },
+    {
+      "id": "h-954e7a89508126c99a92",
+      "kind": "heading",
+      "offset": 1775
+    }
+  ],
+  "body": "# Windows 双机调试环境配置\n\n## 为什么需要双机调试\n\n应用程序可以在本机由用户态调试器控制，但内核调试存在一个关键问题：**命中断点时，被调试系统的大部分执行都会暂停**，因此，需要把“运行被测内核和驱动”与“控制调试器”分到两个机器中：\n\n- **目标机**运行被测驱动，并由内核调试子系统响应调试命令。\n- **宿主机**运行 WinDbg，通过调试通道控制目标机。\n\n在学习场景中，通常就是一台实体宿主机加一台虚拟机：\n\n![Pasted image 20230817104739&#46;png](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/media/d4ba1730a8160822e52dfb4db5eb8e69572f60913c23acc1a7cff3f419657962.png)\n\n\n宿主机与目标机需要通过调试通道通信，有两条配置路线：\n\n1. **虚拟串口与命名管道**：步骤更多，但有助于理解传统双机调试连接的组成。\n2. **VirtualKD-Redux**：封装了连接配置，能够减少手工设置，适合快速搭建学习环境。\n\n\n**后续流程基于 Windows XP 虚拟机。**\n\n## 方案一：使用虚拟串口与命名管道\n\n> 参考教程：[WinDbg 与 VMware 双机调试环境搭建](https://blog.51cto.com/u_14207158/2560829)。\n\n### 配置 VMware 虚拟串口\n\n\n关闭虚拟机后，在 VMware 的虚拟机硬件设置中新增串口并按如下图进行配置：\n\n![image2022&#45;6&#45;14&#95;15&#45;49&#45;27&#46;png](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/media/f481f1a997665cb6a8528fb531d67f06f772cd3c62a882c7f4fe1cd25891325e.png)\n\n该串口用于目标机与宿主机 WinDbg 间的通信。\n\n### 配置启动项\n\n在 Windows XP 虚拟机中修改 C 盘下的 `boot.ini` 文件（需取消系统文件隐藏），添加如下启动项以开启调试模式：\n\n```ini\nmulti(0)disk(0)rdisk(0)partition(1)\\WINDOWS=\"XP DEBUG\" /execute=optin /fastdetect /debug /debugport=com1 /baudrate=115200\n```\n\n![image2022&#45;6&#45;14&#95;16&#45;4&#45;6&#46;png](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/media/34a9981283bbdfde15b6a8392b513f3b8313b1e3cbfe4efbe7ba04cba84c5eb4.png)\n\n\n这组参数用于启用内核调试，并告知目标机使用哪个串口通信：`COM1` 表示使用第一个 `COM` 串口。\n\n> 也可以通过 `C:\\boot.ini` 配置系统使用的分页模式。\n\n### 配置 WinDbg\n\n在宿主机启动 WinDbg 时，需要指定通信方式：使用虚拟机设置的管道名称及串口调试参数。\n\n可以每次手动指定，也可以在宿主机上找到 `WinDbg.exe` 并创建桌面快捷方式，修改快捷方式的**目标**参数为：\n\n```cmd\n\"你的目录\\windbg.exe\" -b -k com:pipe,port=\\\\.\\pipe\\com_1,baud=115200,pipe\n```\n\n![image2022&#45;6&#45;14&#95;16&#45;6&#45;40&#46;png](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/media/f12d2d3c68a511b1b6ab70d7ad260200a702ebacd7f4fbd6fdc23cfd574cc8c3.png)\n\n\n\n## 方案二：使用 VirtualKD-Redux\n\n传统双机调试通常需要手动配置启动项、虚拟串口、命名管道和 WinDbg 参数。VirtualKD-Redux 对这些步骤进行了封装，适合 VMware 学习环境。\n\n> VirtualKD-Redux 是对 VirtualKD 的更新、重构版本，后者暂不支持较高版本的 VMware，而前者支持 VMware 16.x。实际使用时应根据 VMware、目标 Windows 和工具版本查看项目说明。\n\nVirtualKD-Redux 项目地址：<https://github.com/4d61726b/VirtualKD-Redux>。\n\n其程序目录中，`target32` / `target64` 需要根据虚拟机系统位数复制到虚拟机内运行；`vmmon64.exe` 是在宿主机中运行的主控程序：\n\n![76b2fbfd570b23ffb60197b21e9ec8ff&#95;MD5&#46;jpg](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/media/58051378fd831d8281fe0b5b7e6c8bf062eaba61abcc2925fc419a1d3ff47f86.jpg)\n\n以 Windows XP 32 位虚拟机为例：\n\n1. 将 `target32` 目录复制到虚拟机。\n2. 在虚拟机中运行 `vminstall.exe`。\n3. 点击 Install 并确认安装。\n4. 重启虚拟机。\n5. 在启动菜单中选择 `VKD-Redux` 启动项。\n\n![5e4f3c367f2a7329dfb1b8b30617b983&#95;MD5&#46;jpg](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/media/23d24f1eadad0dc227d9fd47d9fd01cf36e70b9fc863517d39e20793a20bb3f9.jpg)\n\n随后在宿主机运行 `vmmon64.exe`，确认 WinDbg 的绝对路径。工具通常会尝试查找默认安装路径：\n\n![0e9a31d8d2da6b4aa9cae8a8f0d9ae24&#95;MD5&#46;jpg](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/media/0218c8ee832ffc29e092a883b41aa78a79026d9382dcee5bc601871f68ce59cb.jpg)\n\n虚拟机启动并建立连接后，VirtualKD-Redux 会在宿主机启动 WinDbg 并进入内核调试模式：\n\n![54530d371975ffb9ff3bc3225b7eeff6&#95;MD5&#46;jpg](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/media/f810c3fba0c4013a9b3b67a73dfc4259bd519b30ed527d32d4f4c47fd317c847.jpg)\n\n该方案不需要使用者逐项配置虚拟串口和命名管道，搭建过程相对直接。\n\n> WinDbg 的使用参考：[Windgb](/notes/n-a3d1192722d148b6ade29801cde5c370/)\n\n",
+  "id": "f3bf0f29-65bc-449f-a090-61edc6abf9fb",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows"
+    ],
+    "title": "Windows 双机调试环境配置"
+  },
+  "resources": [
+    "0218c8ee832ffc29e092a883b41aa78a79026d9382dcee5bc601871f68ce59cb.jpg",
+    "23d24f1eadad0dc227d9fd47d9fd01cf36e70b9fc863517d39e20793a20bb3f9.jpg",
+    "34a9981283bbdfde15b6a8392b513f3b8313b1e3cbfe4efbe7ba04cba84c5eb4.png",
+    "58051378fd831d8281fe0b5b7e6c8bf062eaba61abcc2925fc419a1d3ff47f86.jpg",
+    "d4ba1730a8160822e52dfb4db5eb8e69572f60913c23acc1a7cff3f419657962.png",
+    "f12d2d3c68a511b1b6ab70d7ad260200a702ebacd7f4fbd6fdc23cfd574cc8c3.png",
+    "f481f1a997665cb6a8528fb531d67f06f772cd3c62a882c7f4fe1cd25891325e.png",
+    "f810c3fba0c4013a9b3b67a73dfc4259bd519b30ed527d32d4f4c47fd317c847.jpg"
+  ],
+  "url": "/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/"
+}

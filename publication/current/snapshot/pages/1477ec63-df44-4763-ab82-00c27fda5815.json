@@ -1,0 +1,53 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-781a73c957d957435437",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-729ef99995325f1b6711",
+      "kind": "heading",
+      "offset": 145
+    },
+    {
+      "id": "h-73489a395399cf8d4515",
+      "kind": "heading",
+      "offset": 652
+    },
+    {
+      "id": "h-323954607fb0bb0b169d",
+      "kind": "heading",
+      "offset": 1144
+    },
+    {
+      "id": "h-b0bfe5577df93604931c",
+      "kind": "heading",
+      "offset": 1726
+    },
+    {
+      "id": "h-24f09f48625bb3b0f645",
+      "kind": "heading",
+      "offset": 2257
+    }
+  ],
+  "body": "# OD 验证：用户态异常的一次机会与二次机会\n\n本文使用除零异常验证用户态异常分发中的三个关键现象：\n- 调试器会先收到第一次机会通知；\n- 调试器声明异常已处理却没有修复执行现场时，故障指令会再次触发异常；\n- 用户态处理链全部拒绝接管后，调试器还会收到第二次机会通知。\n## 实验代码\n\n如下代码构造了一个除零异常。直接运行时，`_except(1)` 的过滤表达式返回 `EXCEPTION_EXECUTE_HANDLER`，因此程序进入 `_except` 分支：\n\n```c\n#include \"stdio.h\"\n\nint main()\n{\n    int x = 100;\n    int y = 0;\n\n    _try\n    {\n        int a = x / y;\n        printf(\"Error\");\n    }\n    _except(1)\n    {\n        printf(\"Except\");\n    }\n\n    getchar();\n\n    return 0;\n}\n```\n\n![c1edfbfc2bb3b104e17b10250055f8a4&#95;MD5&#46;jpg](/notes/n-1477ec63df444763ab8200c27fda5815/media/10ca66880d00905e9549e9dc059c363d48203875649f95588acf176873b3dac6.jpg)\n\n## OD 的异常选项\n\n调试器恢复被调试进程时都会调用 `ContinueDebugEvent`，传入的继续状态决定后续的路径：\n\n- `DBG_CONTINUE`：调试器声明异常已经处理，系统不会继续查找 VEH/SEH。\n- `DBG_EXCEPTION_NOT_HANDLED`：调试器声明没有处理，系统继续执行用户态异常分发。\n\n使用 `OD` 调试程序时，可以设置 `OD` 的异常忽略选项——是否在第一次机会异常处暂停、是否自动把异常交还给被调试程序：\n\n![679382ec8a4acb89db5b71f559047c80&#95;MD5&#46;jpg](/notes/n-1477ec63df444763ab8200c27fda5815/media/65260b79f6551e49b6882f3bab088410511e6c70f776ffd59d9456d2ea1f4fdb.jpg)\n\n**图中的含义**：当发生除 0 异常时返回 `DBG_EXCEPTION_NOT_HANDLED` ——继续搜索被调试程序自己的 SEH / VEH。\n\n## 实验一：声明已处理但没有修复现场\n\n调试器在除法指令处收到异常，如果继续执行时把异常声明为已处理 `DBG_CONTINUE`，但没有修改寄存器、除数或 `EIP`，CPU 返回后仍会重新执行同一条故障指令，于是再次产生除零异常。这就是反复继续却始终停在同一位置的原因：**系统认为调试器已经处理了异常，但触发异常的机器状态并没有被修复。**\n\n![dc016bfc20607782be418b3d80d3af3c&#95;MD5&#46;jpg](/notes/n-1477ec63df444763ab8200c27fda5815/media/11241c3e5ada6d56d2136b4097c854a113b64b01b4004ce10d772bbb4fa703e7.jpg)\n\n将除数 `y` 从 `0` 修改为 `1` 后，再次执行该除法指令便不会产生异常，程序可以继续执行 `_try` 分支内的代码：\n\n![748761be32ade8f41d8326e89a3a5b0d&#95;MD5&#46;jpg](/notes/n-1477ec63df444763ab8200c27fda5815/media/593a06491228b3e42aae723672d068d272945aee31522852ca82a1b4e218bcc9.jpg)\n\n## 实验二：交还异常与第二次机会\n\n如果调试器以 `DBG_EXCEPTION_NOT_HANDLED` 交还第一次机会异常：系统会继续查找 VEH 和 SEH。对于原实验中的 `_except(1)`，该 SEH 会接管异常并进入处理分支。\n\n将 `_except(1)` 改为 `_except(0)` 后，过滤表达式返回 `EXCEPTION_CONTINUE_SEARCH`，语义是“当前处理器拒绝接管，请继续搜索”，如果调试器、VEH、普通 SEH 和链尾兜底都没有接管，`KiUserExceptionDispatcher` 会通过 `ZwRaiseException` 再次进入内核，并把同一个异常作为第二次机会交给调试器。\n\n因此，即使 `OD` 被配置为自动交还或忽略第一次机会的除零异常，它仍可能在第二次机会处暂停：\n\n![0f04137123e6dbbe9ec04d9900946d9f&#95;MD5&#46;jpg](/notes/n-1477ec63df444763ab8200c27fda5815/media/957ade21842458696f14cddafb142e787d8f08cd2a79c60f8c8988672e9e96fa.jpg)\n## 实验结论\n\n用户态异常的简化时序如下：\n\n```text\n第一次机会交给调试器\n  ├─ DBG_CONTINUE：视为已处理；若未修复故障现场，原指令会再次异常\n  └─ DBG_EXCEPTION_NOT_HANDLED：继续查找 VEH / SEH / 链尾兜底\n       ├─ 有处理器接管：按处理结果恢复或转入处理分支\n       └─ 全部拒绝接管：第二次机会交给调试器\n            ├─ 调试器接管：按调试器修正后的现场继续\n            └─ 仍未处理：终止进程\n```\n\n用户态异常的一次、二次机会分发流程图如下所示：\n> 省略了内核调试器、VEH/SEH 内部顺序等细节，完整流程参考：[Windows x86 异常的产生与分发流程](/notes/n-fc98c7868417430fa36063afb251fb17/)\n\n![574130b8f8647d802f3f0c21309d6515&#95;MD5&#46;jpg](/notes/n-1477ec63df444763ab8200c27fda5815/media/82907a4d7e30f4d5fbb57a718449491a0cb0fd872f1aa90bff883472a567b37e.jpg)\n",
+  "id": "1477ec63-df44-4763-ab82-00c27fda5815",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "OD 验证：用户态异常的一次机会与二次机会"
+  },
+  "resources": [
+    "10ca66880d00905e9549e9dc059c363d48203875649f95588acf176873b3dac6.jpg",
+    "11241c3e5ada6d56d2136b4097c854a113b64b01b4004ce10d772bbb4fa703e7.jpg",
+    "593a06491228b3e42aae723672d068d272945aee31522852ca82a1b4e218bcc9.jpg",
+    "65260b79f6551e49b6882f3bab088410511e6c70f776ffd59d9456d2ea1f4fdb.jpg",
+    "82907a4d7e30f4d5fbb57a718449491a0cb0fd872f1aa90bff883472a567b37e.jpg",
+    "957ade21842458696f14cddafb142e787d8f08cd2a79c60f8c8988672e9e96fa.jpg"
+  ],
+  "url": "/notes/n-1477ec63df444763ab8200c27fda5815/"
+}

@@ -1,0 +1,47 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-551fb983be09d84ed353",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-03a8170882e24a411761",
+      "kind": "heading",
+      "offset": 86
+    },
+    {
+      "id": "h-816e7950f877e9061c64",
+      "kind": "heading",
+      "offset": 482
+    },
+    {
+      "id": "h-70a3b497aa086d754e27",
+      "kind": "heading",
+      "offset": 778
+    },
+    {
+      "id": "h-7b757f4fd4350e5b4dd5",
+      "kind": "heading",
+      "offset": 1311
+    },
+    {
+      "id": "h-41dc37b8de736f36d4fa",
+      "kind": "heading",
+      "offset": 1630
+    }
+  ],
+  "body": "# Windows PE 与逆向工程 (MOC)\n\n> 以 PE 格式、链接加载、文件修改与注入为主线；地址分析、调试和游戏逆向作为应用分支。\n\n## 编译、链接与文件格式\n\n1. [预处理&#12289;编译&#12289;汇编&#12289;链接](/notes/n-cf811ca4a4a742a2ad51882a328d7324/) — 理解目标文件与可执行文件的形成。\n2. [Windows 静态库与 DLL 的创建及使用](/notes/n-5b32137e0689438baa994e02aa4ef67a/) — 区分静态链接、动态链接与导出接口。\n3. [Windows PE 文件格式与结构解析](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/) — 解析文件／内存布局、节表、导入、导出与重定位。\n4. [Windows PE 资源目录的开发应用](/notes/n-8e673494e6614944a92b23ea454ba7f1/) — 将资源目录用于资源访问和 UI 创建。\n\n## 加载与运行环境\n\n- [Windows Manifest 与 SxS 机制](/notes/n-33a9f7c06c81400b85e366d475e21ad7/) — 理解组件绑定、程序集上下文与清单。\n- [DLL 加载器锁](/notes/n-dd9c05084aa04886aaf28b6ee955464c/) — 理解 DLL 加载时的同步问题和注入限制。\n- [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/) — 连接映像加载、进程对象、地址空间与线程启动的分析。\n\n## 文件修改、恢复与注入\n\n- [Shellcode 编写原则](/notes/n-d2bf87ca9bf649a08c1db21f534e3290/) — 先理解位置无关代码的编写约束。\n- [Windows PE 节操作与代码注入](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/) — 空白区注入、扩大节、新增节与合并节。\n- [内存 Dump 与 IAT 修复](/notes/n-38c4387ae06647ceb7af501ef428d8c8/) — 对照文件与内存布局，恢复分析用映像和导入关系。\n- [利用远程线程注入 DLL](/notes/n-7778bff0fbe64d00a5c1a3403062a9a5/) — 以远程线程调用目标进程内的加载接口。\n- [Windows DLL 隐藏](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/) — PEB 摘链、PE 头擦除、VAD 操纵等方法及各自观察层次。\n- [Trampoline Hook](/notes/n-fa12fc7baceb44f2aabe21ea5fedee59/) — 拦截与恢复代码执行流。\n\n## 地址与游戏逆向应用\n\n- [逆向&#65306;静态地址&#12289;动态地址与基址](/notes/n-8f71f7d8dbe14e5fa753c2604b51f152/) — 区分模块地址、动态对象与指针定位。\n- 堆中相关数据的邻近分布 — 利用分配关系辅助定位相关对象。\n- [FPS 游戏逆向通用思路](/notes/n-126b8566fd6b4d268317586a51557ddb/) — 按数值、玩家、实体、矩阵与可见性组织游戏分析。\n- FPS逆向记录&#65306;Assault Cube — 查看通用方法的基础实践。\n- FPS逆向记录&#65306;CSGO — 对照更复杂的接口、网络变量与引擎结构。\n\n## 调试与前置知识\n\n- [Windows 调试与逆向分析 &#40;MOC&#41;](/notes/n-da63b3ac0bcb46c7bb4db1de80503df3/) — 调试事件、断点、异常、工具与函数识别。\n- [FLIRT 静态库函数识别](/notes/n-afb27cef15c740d1ba20120c6d7b8c59/) — 识别静态链接库函数，减少重复分析。\n- [x86&#47;x64 体系结构](/notes/n-d80046d2d0bb4ae49616fceabab1054a/) — 指令编码与运行模式。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 对象、内存与系统调用基础。\n\n",
+  "id": "c3b3e9cd-34d4-4e92-9aaa-e83f6caebbec",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows",
+      "reverse/windows"
+    ],
+    "title": "Windows PE 与逆向工程 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-c3b3e9cd34d44e929aaae83f6caebbec/"
+}

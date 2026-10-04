@@ -1,0 +1,57 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b0402616a2415e808a25",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-dfe8f17d31f392cdff01",
+      "kind": "heading",
+      "offset": 366
+    },
+    {
+      "id": "h-f2451d44cf1f2c591e74",
+      "kind": "heading",
+      "offset": 840
+    },
+    {
+      "id": "h-e622f824d062954959e7",
+      "kind": "heading",
+      "offset": 1017
+    },
+    {
+      "id": "h-1daa9a8c6cd3d2b55d09",
+      "kind": "heading",
+      "offset": 1291
+    },
+    {
+      "id": "h-f2af0e43947d6b6df268",
+      "kind": "heading",
+      "offset": 1769
+    },
+    {
+      "id": "h-f9eaf398d4fd55956143",
+      "kind": "heading",
+      "offset": 2189
+    },
+    {
+      "id": "h-324f347cfa8d59339447",
+      "kind": "heading",
+      "offset": 2443
+    }
+  ],
+  "body": "# APK 文件结构\n\nAPK 全称 Android Package，**本质上就是一个压缩包**，可以直接用解压软件打开/解压。\n\n> APK 基于 ZIP 格式，将后缀改为 `.zip` 即可用任何解压软件打开。\n\n![ddab8744e3b4bac8c0699b91b24bdfd8&#95;MD5&#46;jpg](/notes/n-9729337d6cd24c80af4df65b837ba7cd/media/8ad7563ce51feb3d4549d943f991ef921bcb9a23c2aeabdd202ebe43bc689a2a.jpg)\n\n> `org/`、`templates/` 和 `com/` 都不是 Android APK 固定结构，这里简单了解即可。\n\n## AndroidManifest.xml\n\n`AndroidManifest.xml` 是整个应用程序的信息描述文件，每个 APK 必须包含且文件名不能修改。它描述了应用的名字、版本、权限、引用的库文件等信息。\n\n| 属性 | 定义 |\n| --- | --- |\n| `versionCode` | 版本号，主要用来更新，例如：12 |\n| `versionName` | 版本名，给用户看的，例如：1.2 |\n| `package` | 包名，例如：`com.zj.52pj.demo` |\n| `uses-permission android:name=\"\"` | 应用权限，例如：`android.permission.INTERNET` 代表网络权限 |\n| `android:label=\"@string/app_name\"` | 应用名称 |\n| `android:icon=\"@mipmap/ic_launcher\"` | 应用图标路径 |\n| `android:debuggable=\"true\"` | 应用是否开启 debug 权限 |\n\n## META-INF 目录\n\n`META-INF` 目录主要与 V1/JAR 签名及其他元数据有关，新版 APK 的 V2/V3/V4 签名并不只是简单放在 `META-INF` 中。\n> 相关内容参考：[Android 签名校验与对抗](/notes/n-0c28501e5cc44cd7bd8e0d2cecbdb6fc/)\n\n## res 目录与 resources.arsc\n\n`res` 目录和 `resources.arsc` 文件是配套的：`res` 目录存放资源文件，包括图片、字符串等。`resources.arsc` 用来做资源 ID 和资源内容的映射，代码中使用资源 ID 即可找到对应的资源文件。\n> APK 的界面由 `res/layout/` 目录下的文件设计。`layout` 目录下的文件和 Windows MFC 开发中将 UI 界面模板保存到 PE 资源文件中的逻辑一样：在代码中主动解析这些数据渲染画面。同时也都可以用纯代码的方式描述/画一个界面出来。\n\n### 一个 ID 对应一个逻辑资源\n\n同一个逻辑资源，实际上可能对应很多不同文件，比如程序员只定义一个名字 `R.drawable.logo`，但工程可能存在多个分辨率版本：\n\n```text\nres/\n├─ drawable-mdpi/logo.png\n├─ drawable-hdpi/logo.png\n├─ drawable-xhdpi/logo.png\n└─ drawable-xxhdpi/logo.png\n```\n\n程序永远写 `R.drawable.logo`（例如其 ID 为 `0x7f080001`），Android 根据当前设备的屏幕密度自动选择对应文件：\n\n1. `R.drawable.logo` → `0x7f080001`\n2. `ResourceManager` 检测当前设备 = xxhdpi\n3. 加载 `res/drawable-xxhdpi/logo.png`\n\n程序员完全不需要手动判断 DPI 再加载不同路径，Android 自己处理。\n\n**一个 ID 代表的是\"一个逻辑资源\"，而不是代表某一个具体文件。**\n\n### 资源 ID 的生成过程\n\n`resources.arsc` 文件是编译时产生的，用于记录资源 ID 和资源的映射关系，例如：\n\n1. 程序员在 `res/values/strings.xml` 中定义 `<string name=\"app_name\">Test</string>`\n2. AAPT2 / Android Gradle Plugin 生成资源符号 `R.string.app_name`\n3. 程序员在代码中写 `getString(R.string.app_name)`\n4. 链接阶段分配数字 ID，如 `0x7f120001`，代码逻辑变成 `getString(0x7f120001)`。\n5. 生成 `resources.arsc`，记录 ID ↔ name ↔ value/configuration 映射\n\n构建工具将 `R.XXX.YYY` 变成资源 ID 并建立映射关系，代码对资源的访问通过它们实现。\n\n## assets 目录\n\n`assets` 目录存放原始数据（视频、音频、图片、配置文件等）。与 `res` 不同，访问 `assets` 中的文件要通过**路径**，而不能通过资源 ID。\n\n```java\n// 例如访问 assets/config.json\ngetAssets().open(\"config.json\");\n```\n\n运行时流程：\n\n1. 代码中的字符串 `\"config.json\"`\n2. → `AssetManager`\n3. → `APK/assets/config.json`\n\n## lib 目录\n\n`lib` 目录按 CPU 架构存放 `.so` 文件：\n\n| 架构            | 说明                   |\n| ------------- | -------------------- |\n| `armeabi-v7a` | 适用于 32 位 Android 设备  |\n| `arm64-v8a`   | 仅适用于 64 位 Android 设备 |\n| `x86`         | 常见于 Android 模拟器      |\n\n![35e4bd4c533099e23206ab87cc27ebfc&#95;MD5&#46;jpg](/notes/n-9729337d6cd24c80af4df65b837ba7cd/media/43a2ee5685b338bc47ed4292a77739be756e2f9c3ea32ee65403e05c85964532.jpg)\n\n> 即使没有 `x86` 也可以在模拟器中运行该 APK，因为模拟器会模拟执行 ARM 架构的代码。\n\n",
+  "id": "9729337d-6cd2-4c80-af4d-f65b837ba7cd",
+  "metadata": {
+    "tags": [
+      "os/android"
+    ],
+    "title": "APK 文件结构"
+  },
+  "resources": [
+    "43a2ee5685b338bc47ed4292a77739be756e2f9c3ea32ee65403e05c85964532.jpg",
+    "8ad7563ce51feb3d4549d943f991ef921bcb9a23c2aeabdd202ebe43bc689a2a.jpg"
+  ],
+  "url": "/notes/n-9729337d6cd24c80af4df65b837ba7cd/"
+}

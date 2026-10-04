@@ -1,0 +1,90 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-282f525333b9c7eaab6b",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-937ba881e6bd98e07bec",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-2825c53a2c8ca7dfc29c",
+      "kind": "heading",
+      "offset": 201
+    },
+    {
+      "id": "h-a2036dd419b3857a7daf",
+      "kind": "heading",
+      "offset": 384
+    },
+    {
+      "id": "h-c4ec6d864aec8a83c6e4",
+      "kind": "heading",
+      "offset": 449
+    },
+    {
+      "id": "h-98b8d983642c3357413e",
+      "kind": "heading",
+      "offset": 872
+    },
+    {
+      "id": "h-5c8bc4cd177178d8bdf4",
+      "kind": "heading",
+      "offset": 1684
+    },
+    {
+      "id": "h-7d5b2c768727d07daadb",
+      "kind": "heading",
+      "offset": 1765
+    },
+    {
+      "id": "h-3de2e6f3075009d7be75",
+      "kind": "heading",
+      "offset": 2067
+    },
+    {
+      "id": "h-ec15e03aa10ddd951c20",
+      "kind": "heading",
+      "offset": 2473
+    },
+    {
+      "id": "h-3ce96b953f21f8d937df",
+      "kind": "heading",
+      "offset": 2719
+    },
+    {
+      "id": "h-f1cf172aea0e899af48b",
+      "kind": "heading",
+      "offset": 3078
+    },
+    {
+      "id": "h-3d0b4cbab72d348158f5",
+      "kind": "heading",
+      "offset": 4321
+    },
+    {
+      "id": "h-325f016f97b5fde22cc8",
+      "kind": "heading",
+      "offset": 5684
+    },
+    {
+      "id": "h-af8b8a09d6e547d6bd70",
+      "kind": "heading",
+      "offset": 6708
+    }
+  ],
+  "body": "# JavaScript 协程机制\n\n## 前言\n\n**前置知识**：\n\n1. [JavaScript 迭代器&#12289;可迭代对象与生成器](/notes/n-a26ebbdfa1114aa1b4f94c90100be921/)\n2. [JavaScript 事件循环与 Promise](/notes/n-05362560259140a7ada563abf99d1a7c/)\n\n## 协程的发展\n\n在 Javascript 中使用协程主要两种方式：\n1. 官方原生协程\n2. `Babel` 转译原生协程，得到等价写法\n\n> 协程的定义以及 `JavaScript` 协程的实现原理，参考：[编程语言&#65306;协程的原理](/notes/n-3b7b3a9754c243b79a632f73f849de64/)\n\n## 原生协程（async/await）\n\nES2017 (ES8) 引入的 `async/await` 是 JavaScript 官方提供的协程语法。\n### 基本用法\n\n**创建与使用协程：**\n\n```js\n// 1) 定义一个“协程式函数”（async 函数）\nasync function co() {\n  console.log(\"A\");\n  // 挂起点：await 会让出控制权，等待 Promise 解决\n  // 引擎会暂停当前函数的执行，将控制权交还给事件循环\n  await Promise.resolve();\n  console.log(\"B\");\n  return 42;\n}\n\n// 2) “创建/启动协程”：调用 async 函数，立即返回一个 Promise\nconst handle = co();\n\nconsole.log(\"C\");\n\n// 3) 等待协程完成并获取结果\nhandle.then((v) => console.log(\"result =\", v));\n```\n\n**输出顺序**：\n```\nA\nC\nB\nresult = 42\n```\n\n### 引擎实现机制\n\n虽然 `async/await` 在语法上标准统一，但不同的 JavaScript 引擎（如 V8, SpiderMonkey, JavaScriptCore）可能有不同的底层实现：\n> 参考：[编程语言&#65306;规范与实现分离](/notes/n-dca8dc00e8664e00ab4a00c31b2a057c/)\n1.  **原生支持**：现代引擎通常在编译层面将 `async` 函数编译为高效的异步状态机。\n    *   **注**：核心逻辑与下文使用 [](/notes/n-5573d8d0bf224186ae2c02ecc04a7a60/#h-3ce96b953f21f8d937df) 实现的协程相似，但原生实现去除了中间对象（如迭代器对象）的创建开销，直接操作底层上下文，因此性能更高。\n2.  **转译实现**：在不支持的环境中，通常通过 Babel 等工具转译为 Generator 或 Promise 链（详见后文），再对转译后的代码进行编译。\n\n**各引擎遵循的统一行为规范**：\n-   `async function` 调用后**立刻返回一个 Promise**。\n-   `await x` 的行为类似于 `Promise.resolve(x)`：\n    -   如果 `x` 是 Promise 且状态为 fulfilled，则注册微任务（Microtask）以恢复协程执行。\n    -   如果 `x` 是 Promise 且状态为 rejected，则在 `await` 处抛出异常（可被 `try/catch` 捕获）。\n    -   如果 `x` 不是 Promise，会被包装成 resolved 的 Promise。\n-   `await` 后的代码执行时机：**不会**在当前的同步调用栈中立即执行，而是等待微任务队列调度。\n\n---\n### 关键字的行为\n\n> 不同引擎实现细节可能不同，但**对外可观察行为应一致**。我们说“生成器+Promise”方式很接近 JS 的原生实现逻辑。\n#### Async 关键字\n\n`async` 关键字用于声明一个异步函数。它的核心作用是将函数的返回值自动包装为 Promise。\n\n*   **自动包装**：如果函数返回非 Promise 值，`async` 会将其包装为 `Promise.resolve(value)`。\n*   **异常处理**：如果函数内部抛出错误，返回的 Promise 会变为 rejected 状态。\n\n`async` 关键字的行为可以参考下文中 [](/notes/n-5573d8d0bf224186ae2c02ecc04a7a60/#h-f1cf172aea0e899af48b) 中的 `run` 函数逻辑。\n\n#### Await 关键字\n\n`await` 关键字只能在 `async` 函数内部使用（或顶层 await）。它的作用是暂停当前 `async` 函数的执行，等待 Promise 解决。\n\n```js\nawait expression;\n```\n\n**逻辑等价性**：\n\n在“生成器+自动执行器”的模拟实现中，它等价于：\n\n```js\nyield Promise.resolve(expression);\n```\n\n在纯 Promise 链的理解中，它大致等价于将后续代码放入 `then` 回调中：\n\n```js\nPromise.resolve(expression).then(value => {\n    // ...后续代码\n});\n```\n\n> **注意**：引擎实现原生 await 时，内部对此进行了优化，不会完全照搬 Promise 的创建过程，但保持了微任务调度的时序特性。\n\n---\n\n## Babel 转译实现协程\n\n为了在旧版浏览器或环境中运行 `async/await`，工具链（如 Babel）会将其**降级**为低阶语法的等价实现。\n> 相关技术参考：[Babel](/notes/n-3a98fb1d58b64535a2428da160df96ad/)\n\n主要的降级策略包括：\n1.  **生成器方案**（最常见，如 regenerator-runtime）\n2.  **闭包方案**（针对不支持 Generator 的环境）\n3.  **Promise 链**（简单场景）\n\n### 生成器方案\n\n这是最经典的 Polyfill 思路：利用 Generator 函数可以暂停（`yield`）和恢复（`next`）的特性，配合一个自动执行器来模拟 `await`。\n\n> 这种方式在思想上与 Python 的“生成器驱动的协程”较为接近，参考：[Python 协程机制](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/)\n\n**核心原理**：\n*   把 `async` 换成 `function*`。\n*   把 `await` 换成 `yield`。\n*   使用一个 `run` 函数（执行器）自动调用 `next()`，处理 `yield` 返回的 Promise，并在 Promise 完成时再次调用 `next()` 恢复执行。\n\n#### 最小化自动执行器实现\n\n```js\n/**\n * 协程自动执行器\n * @description 负责驱动 Generator 函数自动运行，直到完成\n */\nfunction run(gen) {\n    // 兼容生成器函数与生成器对象\n    const g = typeof gen?.next === \"function\" ? gen : gen();\n\n    function step(data) {\n        let result;\n        try {\n            // 恢复生成器执行，并传入上一步的结果\n            result = g.next(data);\n        } catch (e) {\n            return Promise.reject(e);\n        }\n\n        if (result.done) {\n            return Promise.resolve(result.value);\n        }\n\n        // 将 yield 出来的值 Promise 化，并在完成后唤醒协程\n        return Promise.resolve(result.value).then(wakeup, handleError);\n    }\n\n    function wakeup(value) {\n        // 正常唤醒：继续推进生成器\n        return step(value);\n    }\n\n    function handleError(err) {\n        // 异常唤醒：将异常抛回生成器内部\n        try {\n            const result = g.throw(err); // 利用 Generator 的 throw 方法在暂停处抛出异常\n\n            if (result.done) {\n                return Promise.resolve(result.value);\n            }\n\n            return Promise.resolve(result.value).then(wakeup, handleError);\n        } catch (e) {\n            return Promise.reject(e);\n        }\n    }\n\n    // 启动协程\n    return step();\n}\n```\n\n> `run` 在角色上类似于 Python 中的 `Task`，参考：[Python 协程机制](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/#h-2ab76274ae21176ac796)。\n\n#### 示例：并发控制\n\n虽然 `async/await` 是顺序执行的，但通过手动调度 Generator 可以实现类似“并发”的效果（实际上是利用 Promise 并行）。\n\n```js\nfunction* fetchUser(id) {\n    yield new Promise((resolve) => {\n        setTimeout(() => {\n            console.log(`📡 [网络] 获取用户 ${id} 的数据 a`);\n            resolve({ id, name: `用户_${id}` });\n        }, 1000);\n    });\n\n    yield new Promise((resolve) => {\n        setTimeout(() => {\n            console.log(`📡 [网络] 获取用户 ${id} 的数据 b`);\n            resolve({ id, name: `用户_${id}` });\n        }, 1000);\n    });\n\n    yield new Promise((resolve) => {\n        setTimeout(() => {\n            console.log(`📡 [网络] 获取用户 ${id} 的数据 c`);\n            resolve({ id, name: `用户_${id}` });\n        }, 1000);\n    });\n\n    return `用户 ${id} 数据全部获取完毕`;\n}\n\nfunction* gather() {\n    console.time(\"总耗时\");\n    console.log(\"开始\");\n\n    const p1 = run(fetchUser(1));\n    const p2 = run(fetchUser(2));\n    let count = 0;\n\n    // 这两个 then 会在各自对应的 fetchUser 完成后（微任务）执行\n    p1.then(() => (count += 1));\n    p2.then(() => (count += 1));\n\n    // 轮询检查是否所有请求都完成\n    while (count !== 2) {\n        // 暂停 500ms 后再次检查\n        yield new Promise((resolve) => setTimeout(resolve, 500));\n    }\n\n    console.timeEnd(\"总耗时\"); // 接近单个 fetchUser 的总耗时，而不是两者之和\n    return \"全部结束\";\n}\n\nrun(gather());\n```\n\n> 该示例依赖 Promise 的微任务机制，参考：[JavaScript 事件循环与 Promise](/notes/n-05362560259140a7ada563abf99d1a7c/#h-ee74d07d2d5febb26b55)。\n\n### 闭包方案\n\n> 生成器方案的底层原理也是闭包。\n\n如果目标环境甚至不支持 Generator（ES5及以下），Babel 会进一步将 Generator 降级为 **\"状态机 + Switch\"** 的形式。这也是 `regenerator-runtime` 的核心工作原理。\n\n**源代码**：\n```js\nasync function task() {\n    console.log(1);\n    const a = await fetchA();\n    console.log(2, a);\n    const b = await fetchB(a);\n    return b;\n}\n```\n\n**编译后的逻辑模型（伪代码）**：\n将函数拆解为多个状态，通过 `state` 变量控制执行流，`await` 处切分状态。\n\n```js\nfunction task() {\n    let state = 0;\n    let a, b;\n\n    function step(input) {\n        switch (state) {\n            case 0:\n                console.log(1);\n                state = 1;\n                // 将 fetchA() 的结果交给 step 继续处理\n                return Promise.resolve(fetchA()).then(step);\n\n            case 1:\n                a = input; // 这里的 input 是 fetchA resolve 的值\n                console.log(2, a);\n                state = 2;\n                return Promise.resolve(fetchB(a)).then(step);\n\n            case 2:\n                b = input;\n                return Promise.resolve(b); // 最终返回值\n        }\n    }\n\n    return step();\n}\n```\n\n### Promise 链方案\n\n对于简单的 `async/await` 逻辑，也可以直接转换为 Promise 链。\n\n**源代码**：\n```js\nasync function task() {\n    console.log(1);\n    const a = await fetchA();\n    return a;\n}\n```\n\n**降级为**：\n```js\nfunction task() {\n    return Promise.resolve().then(() => {\n        console.log(1);\n        return fetchA();\n    }).then((a) => {\n        return a;\n    });\n}\n```\n\n**局限性**：\n虽然 Promise 链简单，但处理复杂的控制流（如 `for` 循环中的 `await`、`try/catch` 块跨越多个 `await`）时，代码结构会变得非常复杂且难以维护。因此，通用转译器通常首选 **State Machine** 方案来保证语义的正确性和代码的可维护性。\n",
+  "id": "5573d8d0-bf22-4186-ae2c-02ecc04a7a60",
+  "metadata": {
+    "tags": [
+      "lang/javascript",
+      "cs/concurrency"
+    ],
+    "title": "JavaScript 协程机制"
+  },
+  "resources": [],
+  "url": "/notes/n-5573d8d0bf224186ae2c02ecc04a7a60/"
+}

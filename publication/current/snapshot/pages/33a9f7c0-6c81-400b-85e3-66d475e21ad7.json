@@ -1,0 +1,88 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3f14d3a63ae97e2c7347",
+      "kind": "heading",
+      "offset": 27
+    },
+    {
+      "id": "h-12be2d23cef163771442",
+      "kind": "heading",
+      "offset": 39
+    },
+    {
+      "id": "h-7dd7cff7c587efa8e032",
+      "kind": "heading",
+      "offset": 57
+    },
+    {
+      "id": "h-89a9f9f4e75b2bb0c1b6",
+      "kind": "heading",
+      "offset": 330
+    },
+    {
+      "id": "h-7e0872959eaf2739b6c1",
+      "kind": "heading",
+      "offset": 703
+    },
+    {
+      "id": "h-2cc71dca2a2a5c9ebcd3",
+      "kind": "heading",
+      "offset": 2277
+    },
+    {
+      "id": "h-894425715a9e06024cf8",
+      "kind": "heading",
+      "offset": 3119
+    },
+    {
+      "id": "h-3dfd653e4064029e86bb",
+      "kind": "heading",
+      "offset": 3137
+    },
+    {
+      "id": "h-0fffb24cb1a93cd39069",
+      "kind": "heading",
+      "offset": 3450
+    },
+    {
+      "id": "h-517b23cd97c7ea043038",
+      "kind": "heading",
+      "offset": 4376
+    },
+    {
+      "id": "h-64231bf4da8c7534ee63",
+      "kind": "heading",
+      "offset": 5870
+    },
+    {
+      "id": "h-1432c3fed77421e3d208",
+      "kind": "heading",
+      "offset": 5919
+    },
+    {
+      "id": "h-571c81846fd146bd4e61",
+      "kind": "heading",
+      "offset": 6466
+    },
+    {
+      "id": "h-7ad67781c786346c2f8b",
+      "kind": "heading",
+      "offset": 6676
+    }
+  ],
+  "body": "# Windows Manifest 与 SxS 机制\n## Manifest\n\n### Manifest 是什么\n\nWindows Manifest 是一个 XML 清单，用来描述程序身份、依赖的程序集以及运行环境设置，例如 SxS 组件依赖、UAC 权限等级、DPI 感知和兼容系统版本。\n\n它可以类比 Android 的 `AndroidManifest.xml`：二者都用于描述应用的元信息和运行约束，但 Windows Manifest 更侧重 Win32 运行时、组件绑定和系统兼容性声明。\n\n> 参考：[APK 文件结构](/notes/n-9729337d6cd24c80af4df65b837ba7cd/)\n\n### Manifest 在哪里\n\n很多程序目录里看不到 `.manifest` 文件，不代表它没有 Manifest。常见情况有三种：\n\n- **嵌入 EXE/DLL 资源区**：现代程序最常见，通常位于 PE 资源的 `RT_MANIFEST` 中。\n- **外置 Manifest 文件**：例如 `app.exe.manifest`，旧程序或特殊部署中可能出现。\n- **确实没有 Manifest**：程序仍然可以运行，只是无法显式声明 SxS 组件、权限等级、DPI 感知、兼容系统版本等信息。\n\n若嵌入资源区，则通常在：\n\n```text\n24\n└── 1\n    └── 1033\n```\n\n资源 ID `1` 通常表示进程默认 Manifest。DLL 中也可能有 Manifest，有时资源 ID 可能是 `2`。\n### 实践：找到 Manifest 信息\n\n以 `C:\\Windows\\explorer.exe` 为例，其 Manifest 嵌入资源区，查找及内容如下图所示：\n\n![d66667b2f8e0bc2fe625af8d509c2e5a&#95;MD5&#46;jpg](/notes/n-33a9f7c06c81400b85e366d475e21ad7/media/bf491f7a288c9574f46921916daddc54ea8c39bdf156fb4232483e8fcd40bad2.jpg)\n\n完整内容如下：\n\n```xml\n<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<assembly xmlns=\"urn:schemas-microsoft-com:asm.v1\" manifestVersion=\"1.0\">\n    <assemblyIdentity\n        name=\"Microsoft.Windows.pcshellshell.explorer\"\n        processorArchitecture=\"amd64\"\n        version=\"5.1.0.0\"\n        type=\"win32\">\n    </assemblyIdentity>\n    <description>Windows Shell</description>\n    <dependency>\n        <dependentAssembly>\n            <assemblyIdentity\n                type=\"win32\"\n                name=\"Microsoft.Windows.Common-Controls\"\n                version=\"6.0.0.0\"\n                processorArchitecture=\"*\"\n                publicKeyToken=\"6595b64144ccf1df\"\n                language=\"*\">\n            </assemblyIdentity>\n        </dependentAssembly>\n    </dependency>\n    <trustInfo xmlns=\"urn:schemas-microsoft-com:asm.v3\">\n        <security>\n            <requestedPrivileges>\n                <requestedExecutionLevel level=\"asInvoker\" uiAccess=\"false\"></requestedExecutionLevel>\n            </requestedPrivileges>\n        </security>\n    </trustInfo>\n    <application xmlns=\"urn:schemas-microsoft-com:asm.v3\">\n        <windowsSettings>\n            <dpiAwareness xmlns=\"http://schemas.microsoft.com/SMI/2016/WindowsSettings\">PerMonitorV2</dpiAwareness>\n        </windowsSettings>\n    </application>\n</assembly>\n```\n\n### Manifest 权限字段\n\nManifest 可以声明权限、DPI 感知、兼容系统版本等运行环境信息。上述进程的权限声明是：\n\n```xml\n<trustInfo xmlns=\"urn:schemas-microsoft-com:asm.v3\">\n    <security>\n        <requestedPrivileges>\n            <requestedExecutionLevel level=\"asInvoker\" uiAccess=\"false\"></requestedExecutionLevel>\n        </requestedPrivileges>\n    </security>\n</trustInfo>\n```\n\n`asInvoker` 表示使用启动者当前已有的权限运行，不主动请求权限提升。因此：\n\n- 从普通进程启动：普通权限。\n- 从管理员终端启动：管理员权限。\n- 启动时不会主动显示 UAC 弹窗。\n\n如果改成：\n\n```xml\n<requestedExecutionLevel level=\"requireAdministrator\" uiAccess=\"false\"></requestedExecutionLevel>\n```\n\n程序启动时会请求管理员权限，触发 UAC 提权弹窗。修改方式：\n\n```powershell\nmt.exe -manifest \"E:\\code\\test\\notepad++.manifest\" \"-outputresource:D:\\Notepad++\\notepad++.exe;#1\"\n```\n\n修改 EXE 资源会导致原有 Authenticode 数字签名失效。更稳妥的方式通常是：\n\n```powershell\nStart-Process \"D:\\Notepad++\\notepad++.exe\" -Verb RunAs\n```\n\n或者使用快捷方式的“用管理员身份运行”选项。\n\n## SxS 机制\n\n### 为什么需要 SxS 机制\n\n例如两个程序都可能调用：\n\n```cpp\nLoadLibrary(\"comctl32.dll\");\n```\n\n但它们真正想要的行为可能不同：\n- 旧程序希望保持经典控件行为。\n- 新程序希望使用带主题样式的新版控件。\n\n如果系统只靠“文件名 + 搜索路径”决定加载哪个 DLL，就很容易出现 **DLL Hell**：一个程序安装或覆盖了某个 DLL，另一个程序就被破坏。\n\nSxS 的解决思路是：\n\n```text\n不要只问“这个 DLL 文件在哪里”\n而是先问“当前程序声明自己依赖哪个组件身份和版本”\n```\n> DLL 文件名本身不足以表达“这是哪个组件、哪个版本、给谁用的”。\n\n\n### SxS 机制的实现原理\n\n普通 DLL 加载可以粗略理解为：\n\n```text\nLoadLibrary(\"xxx.dll\") -> 按搜索路径找 xxx.dll\n```\n\nSxS 参与后，加载前会多一层上下文绑定：\n\n```text\n1. CreateProcess 启动 app.exe\n2. 系统读取 app.exe 内嵌或外部的 Manifest\n3. SxS 解析 Manifest 中声明的 Assembly\n4. 在 WinSxS 组件仓库中寻找匹配版本\n5. 必要时应用 Policy 版本重定向\n6. 生成 Activation Context\n7. Loader / COM / 资源加载逻辑参考这个上下文：\n\tLoadLibrary(\"xxx.dll\")\n\t        ↓\n\t当前 Activation Context 中是否有对应 Assembly 绑定？\n\t        ↓\n\t如果有，先映射到指定组件版本\n\t        ↓\n\t再加载实际 DLL 文件\n```\n\n创建进程时，系统会解析 SxS 信息并构建 `Activation Context`。它不是简单的“DLL 加载上下文”，而是内存中的激活上下文，可能包含 DLL 重定向、COM server、窗口类、类型库、接口等绑定信息。后续 Loader、COM 和资源加载逻辑会查询这个上下文，以解析到正确的组件。\n> 相关内容参考：[进程创建时的 SxS 准备](/notes/n-a563a14132aa4c968d5f20c4000cb850/#h-697fc9e2a9ecf2462528)\n\n也就是说，SxS 更像是一个**用户态组件命名空间**：同一个名字在不同程序上下文中，可以解析到不同组件版本。\n> 因为 SxS 机制基于 Manifest ，所以先介绍它。\n\n> [!IMPORTANT] SxS 的作用范围\n> 不是所有 DLL 都会被 SxS 接管。只有当前 Manifest / Activation Context 声明过的 SxS Assembly，才会受到这种绑定影响；**普通 DLL 仍然走常规搜索路径**。\n\n### 实践：分析 SxS 配置信息\n\n仍以 `explorer.exe` 的 Manifest 为例，SxS 相关的组件依赖是：\n\n```xml\n<dependency>\n    <dependentAssembly>\n        <assemblyIdentity\n            type=\"win32\"\n            name=\"Microsoft.Windows.Common-Controls\"\n            version=\"6.0.0.0\"\n            processorArchitecture=\"*\"\n            publicKeyToken=\"6595b64144ccf1df\"\n            language=\"*\">\n        </assemblyIdentity>\n    </dependentAssembly>\n</dependency>\n```\n> `Assembly`：带身份信息的组件包，不一定只是一个 DLL，可能是一组 DLL、Manifest、资源和签名信息。**可以理解为一个目录**\n\n\n这个声明对应 `C:\\Windows\\WinSxS` 下的组件 Manifest 与组件目录，例如：\n\n1. `C:\\Windows\\WinSxS\\Manifests\\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.6456_none_60b8a6cb71f64256.manifest`\n2. `C:\\Windows\\WinSxS\\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.6456_none_60b8a6cb71f64256`\n> 如果目标是定位实际 DLL，重点看第二个组件目录；\n> 如果目标是理解组件身份、文件组成和依赖关系，重点看第一个。\n\n该组件目录如下：\n\n![5ea5758c625035e5f43adbdeebb967e4&#95;MD5&#46;jpg](/notes/n-33a9f7c06c81400b85e366d475e21ad7/media/62e9f235356fb06b54b5258640d4c6b38bf935febc91e98e4e3dcc598b87a5a9.jpg)\n\n> `C:\\Windows\\WinSxS` 容易让人误以为 SxS 就是这个目录。更准确地说：`WinSxS` 是组件仓库；SxS 是组件身份、版本、依赖声明和运行时绑定机制。\n\n其父文件夹的命名规则是：\n\n```text\namd64\n    64 位组件\n\nmicrosoft.windows.common-controls\n    组件名 / Assembly name\n\n6595b64144ccf1df\n    publicKeyToken，组件发布者身份标识\n\n6.0.19041.6456\n    实际组件版本\n\nnone\n    语言/区域信息，none 表示无特定语言\n\n60b8a6cb71f64256\n    Windows 内部用于区分组件身份的哈希/派生标识\n```\n\n**一个容易疑惑的点**：Manifest 里声明的版本是 `6.0.0.0`，为什么实际目录里可以是 `6.0.19041.6456`？\n\n**答案**：SxS 会在允许的规则内把前者解析到后者。\n\n### SxS 机制的应用\n\nSxS 除了解决 DLL 冲突，还可以用于免注册 COM 等场景。\n\n#### 免注册 COM\n\n传统 COM 很依赖全局注册表：\n\n```text\nCLSID -> InprocServer32 -> xxx.dll\n```\n\n问题是：COM 组件一旦注册到全局注册表，不同程序共享同一份映射，很容易产生版本冲突。\n\nSxS 支持 **Registration-Free COM**，也就是免注册 COM。程序可以在 Manifest 中声明 COM 类：\n\n```xml\n<comClass\n    clsid=\"{...}\"\n    threadingModel=\"Apartment\"\n    progid=\"Some.Component\"\n    tlbid=\"{...}\" />\n```\n\n这样创建 COM 对象时，系统可以在当前 `Activation Context` 中解析 `CLSID`，而不是完全依赖全局注册表。\n\n直观感受：\n\n```text\n传统 COM：问全局注册表“这个 CLSID 对应哪个 DLL”\n免注册 COM：先看当前程序 Manifest 形成的上下文\n```\n\n这也是 SxS 的核心思想：**把全局共享的名字解析，变成受当前程序上下文控制的名字解析。**\n\n#### Microsoft Visual C++ Redistributable\n\nVC++ Redistributable 是 SxS 机制的典型使用者之一。安装某些程序时，经常会被要求安装对应版本的 **Microsoft Visual C++ Redistributable**。\n\n这里所谓的安装，就是把对应运行库组件、组件 Manifest、版本策略和相关部署信息正确安装到系统中，使依赖这些运行库的程序能够通过 SxS 或常规运行库查找机制正常启动。\n\n### WinSxS 的大小与清理\n\n`WinSxS` 中保存不同版本的组件、Manifest、catalog 签名等信息。现代 Windows 中，`System32` 里的很多文件还可能和 `WinSxS` 中的组件文件存在硬链接关系。\n\n所以，**不要手动删除 `WinSxS` 中的文件**。Windows 更新、系统修复、功能启用、补丁回滚都可能依赖它。\n\n需要清理时使用系统工具：\n\n```cmd\nDism.exe /Online /Cleanup-Image /AnalyzeComponentStore\nDism.exe /Online /Cleanup-Image /StartComponentCleanup\n```\n",
+  "id": "33a9f7c0-6c81-400b-85e3-66d475e21ad7",
+  "metadata": {
+    "tags": [
+      "reverse/windows",
+      "os/windows/com"
+    ],
+    "title": "Windows Manifest 与 SxS 机制"
+  },
+  "resources": [
+    "62e9f235356fb06b54b5258640d4c6b38bf935febc91e98e4e3dcc598b87a5a9.jpg",
+    "bf491f7a288c9574f46921916daddc54ea8c39bdf156fb4232483e8fcd40bad2.jpg"
+  ],
+  "url": "/notes/n-33a9f7c06c81400b85e366d475e21ad7/"
+}

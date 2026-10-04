@@ -1,0 +1,57 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b8bb87db1a06795d0fc5",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-a12adb057a1b3df3c686",
+      "kind": "heading",
+      "offset": 226
+    },
+    {
+      "id": "h-ee7b65fb198cc1b18fba",
+      "kind": "heading",
+      "offset": 524
+    },
+    {
+      "id": "h-79ca2d05a12239a17386",
+      "kind": "heading",
+      "offset": 772
+    },
+    {
+      "id": "h-63e075cdb9b02ae9c78d",
+      "kind": "heading",
+      "offset": 1021
+    },
+    {
+      "id": "h-19e74f6c0acfddaf765f",
+      "kind": "heading",
+      "offset": 2128
+    },
+    {
+      "id": "h-0b32367ab1c2ede82a7c",
+      "kind": "heading",
+      "offset": 2327
+    }
+  ],
+  "body": "# Windows PE 资源目录的开发应用\n\n**相关内容**：\n- VC&#43;&#43; 6&#46;0 安装与配置\n- [MFC CFile 类](/notes/n-b7b0be5834a24d3a8b6a05670b631fbc/)\n- [Windows PE 文件格式与结构解析](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/#h-0f4d2dca6494fbab4b52)\n\n---\n\n## 前言\n\n`PE` 文件（Portable Executable）拥有专门的资源目录（Resource Directory），用于存储图标、位图、字符串、菜单以及自定义二进制数据等附加数据。这些资源通过唯一的“资源 `ID`”进行标识。\n\n这些资源，有的是被系统读取使用（如图标），有的则是程序自身使用（如字符串、菜单和自定义数据）。\n\n\n资源本质上是被封装在可执行文件内部的静态数据块。`Windows SDK` 提供了完备的 `API` 供开发者在运行时检索并操作这些数据。所以我们可以实现查找资源、获取资源属性、将其加载至内存以及导出到外部文件等操作。\n\n\n---\n\n## IDE 中对资源的描述\n\n使用 `IDE` 进行开发时，`IDE` 对资源的定义与描述主要依赖两个文件：\n- `.rc` 文件：资源脚本文件，可视为一种特殊的源代码文件。它描述了资源的来源、属性、语言以及与 `ID` 的对应关系，最终由资源编译器（`RC.exe`）编译为 `.res` 二进制文件并链接至 `PE`。\n- `resource.h` 文件：头文件，存储资源 `ID` 的宏定义（如 `#define IDR_TXT1 101`），用于在 `C++` 代码中引用资源。\n\n---\n\n## 基础操作 API\n\n在 `Win32` 开发中，操作资源的核心 `API` 流程如下：\n\n- `FindResource`：根据资源名称/ID 和类型定位资源，返回资源句柄 `HRSRC`。\n- `SizeofResource`：获取指定资源的原始字节大小。\n- `LoadResource`：将资源加载至全局存储器，返回资源数据句柄 `HGLOBAL`。\n- `LockResource`：锁定资源并获取指向资源内存块首地址的指针（`LPVOID`）。这是读取数据前的必要步骤。\n\n### 使用实例：导出资源文件\n\n首先，在 `VC6` 或 `Visual Studio` 中将一个 `.txt` 文件添加至资源列表：\n![b1a476a4e6c8cd30640d04be694e81f5&#95;MD5&#46;jpg](/notes/n-8e673494e6614944a92b23ea454ba7f1/media/6fc6bf1968aafbf7072f829bd5ff929806e26e121217d94c85c3b8a6cc51d843.jpg)\n\n接下来的代码展示了如何通过 `API` 查找资源并使用 `[[MFC CFile 类]]` 将其释放为磁盘文件：\n\n```cpp\nvoid CHelloComboBoxDlg::OnButton1() {\n\t// 1. 查找资源\n\t// 第二个参数由 MAKEINTRESOURCE 宏处理资源 ID\n\t// 第三个参数为资源类型（自定义的字符串类型或预定义宏）\n\tHRSRC hrSrc = FindResource(NULL, MAKEINTRESOURCE(IDR_TXT1), \"TXT\"); \n\tif (hrSrc == NULL) return;\n\n\t// 2. 获取资源大小\n\tDWORD rSize = SizeofResource(NULL, hrSrc);\n\n\t// 3. 加载资源至内存句柄\n\tHGLOBAL hResLoad = LoadResource(NULL, hrSrc);\n\n\t// 4. 锁定资源并获取数据指针（关键：必须锁定才能获取有效地址）\n\tLPVOID pData = LockResource(hResLoad);\n\n\t// 5. 将资源数据导出并写入文件\n\tCFile cf;\n\tif (cf.Open(\"new.txt\", CFile::modeCreate | CFile::modeWrite)) {\n\t\tcf.Write(pData, rSize);\n\t\tcf.Close();\n\t}\n}\n```\n![79dacd821fe341ef8549109e20ae384e&#95;MD5&#46;jpg](/notes/n-8e673494e6614944a92b23ea454ba7f1/media/5a3b0a8b604b833d722cc7ea04d6a81d033c01f05d2b6867a429957219cd9ce5.jpg)\n\n通过此机制，开发者可以将 `.exe`、`.dll` 或其他二进制模块内嵌在主程序中，在运行时动态释放并调用。\n\n---\n\n## API 的进一步封装：从资源创建 UI\n\n针对标准资源（如对话框、菜单、字符串表），`Windows` 提供了更高层的封装。例如，使用资源描述直接创建并运行一个对话框界面，而无需手动注册窗口类。\n> 手动创建和注册窗口，参考：[Windows 窗口程序](/notes/n-5b50f7a485de48dcb0d1e1868933e003/#h-e30816c94b89c9abc3f1)\n### 使用实例：手动加载资源创建 UI 界面\n\n1. **创建工程**：使用 `VC6` 创建空的 `Win32 Application` 项目。\n\t![a2be81785fc27a7acefbbbc95c1be70f&#95;MD5&#46;jpg](/notes/n-8e673494e6614944a92b23ea454ba7f1/media/a910820a4ede2201713b77615d5777a3e9c786d852d4da817d808148af65b4bc.jpg)\n\n2. **新建主脚本文件**：新建 `main.cpp`。\n3. **新建资源描述文件**：新建 `resource.h` 与 `resource.rc`。\n\t![b615db47c516d15eb799f5e9e50c38be&#95;MD5&#46;jpg](/notes/n-8e673494e6614944a92b23ea454ba7f1/media/5f7350be13de51f53dc444091e996ca7383bdcdebe6a348165434e0a14a5c3e6.jpg)\n\n4. **导入文件**：若 `VC6` 未自动引入创建的文件，需手动将 `.h` 和 `.rc` 文件加入项目。\n\t![81cfbf4fd227443072d6dbd99c551b78&#95;MD5&#46;jpg](/notes/n-8e673494e6614944a92b23ea454ba7f1/media/f855ad5ae3ecc388a539cc0d0e9e31b7b9458005c6b9a2ca5fc6f82c597b8364.jpg)\n\n5. **编辑资源脚本**：手动编辑资源文件。虽然可以使用 `IDE` 拖拽生成，但手动编写有助于理解底层逻辑。\n\n\t**resource.h** (ID 定义)：\n\t```cpp\n\t#define IDD_MYDIALOG    101\n\t#define IDC_MYBUTTON    1001\n\t#define IDC_MYEDIT      1002\n\t#define IDC_STATIC_TEXT 1003\n\t// 必须保留末尾空行以确保资源编译器正常工作\n\t```\n\n\t**resource.rc** (布局描述)：\n\t```cpp\n\t#include \"resource.h\"\n\t#include \"windows.h\"\n\n\tIDD_MYDIALOG DIALOGEX 0, 0, 250, 100\n\tSTYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU\n\tCAPTION \"Win32 对话框示例\"\n\tFONT 9, \"MS Shell Dlg\"\n\tBEGIN\n\t\tLTEXT           \"请输入你的名字:\", IDC_STATIC_TEXT, 15, 20, 60, 8\n\t\tEDITTEXT        IDC_MYEDIT, 80, 18, 150, 14, ES_AUTOHSCROLL\n\t\tPUSHBUTTON      \"点击弹出消息\", IDC_MYBUTTON, 50, 60, 70, 14\n\t\tDEFPUSHBUTTON   \"确定\", IDOK, 130, 60, 50, 14\n\t\tPUSHBUTTON      \"取消\", IDCANCEL, 185, 60, 50, 14\n\tEND\n\t```\n\n6. **编写主逻辑**：在 `main.cpp` 中调用 `DialogBox`。\n\n\t```cpp\n\t#include <windows.h>\n\t#include \"resource.h\"\n\n\t// 对话框回调过程函数\n\tBOOL CALLBACK MyDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {\n\t\tswitch (message) {\n\t\tcase WM_INITDIALOG:\n\t\t\t// 初始化：在 VC6 环境下直接使用常规字符串\n\t\t\tSetWindowText(GetDlgItem(hDlg, IDC_MYEDIT), \"Wang\");\n\t\t\treturn TRUE;\n\n\t\tcase WM_COMMAND:\n\t\t\tswitch (LOWORD(wParam)) {\n\t\t\tcase IDC_MYBUTTON:\n\t\t\t{\n\t\t\t\tchar buffer[256];\n\t\t\t\tGetDlgItemText(hDlg, IDC_MYEDIT, buffer, 256);\n\t\t\t\tMessageBox(hDlg, buffer, \"你输入的内容\", MB_OK | MB_ICONINFORMATION);\n\t\t\t}\n\t\t\treturn TRUE;\n\n\t\t\tcase IDOK:\n\t\t\tcase IDCANCEL:\n\t\t\t\tEndDialog(hDlg, LOWORD(wParam));\n\t\t\t\treturn TRUE;\n\t\t\t}\n\t\t\tbreak;\n\t\t}\n\t\treturn FALSE;\n\t}\n\n\t// WinMain 入口点\n\tint WINAPI WinMain(HINSTANCE hInstance,\n\t\t\t\t\t   HINSTANCE hPrevInstance,\n\t\t\t\t\t   LPSTR     lpCmdLine,\n\t\t\t\t\t   int       nShowCmd) \n\t{\n\t\t// 使用资源 ID 加载对话框并显示\n\t\tDialogBox(hInstance, MAKEINTRESOURCE(IDD_MYDIALOG), NULL, (DLGPROC)MyDialogProc);\n\n\t\treturn 0;\n\t}\n\t```\n\n7. **最终效果**：\n\t![0ee3ce490ae97d8f0d02fa0389300fcc&#95;MD5&#46;jpg](/notes/n-8e673494e6614944a92b23ea454ba7f1/media/7c5813fc3df4122b28dd55c8dc9fb5373196d920947f2955250d5d8d01034d0c.jpg)\n",
+  "id": "8e673494-e661-4944-a92b-23ea454ba7f1",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "lang/cpp"
+    ],
+    "title": "Windows PE 资源目录的开发应用"
+  },
+  "resources": [
+    "5a3b0a8b604b833d722cc7ea04d6a81d033c01f05d2b6867a429957219cd9ce5.jpg",
+    "5f7350be13de51f53dc444091e996ca7383bdcdebe6a348165434e0a14a5c3e6.jpg",
+    "6fc6bf1968aafbf7072f829bd5ff929806e26e121217d94c85c3b8a6cc51d843.jpg",
+    "7c5813fc3df4122b28dd55c8dc9fb5373196d920947f2955250d5d8d01034d0c.jpg",
+    "a910820a4ede2201713b77615d5777a3e9c786d852d4da817d808148af65b4bc.jpg",
+    "f855ad5ae3ecc388a539cc0d0e9e31b7b9458005c6b9a2ca5fc6f82c597b8364.jpg"
+  ],
+  "url": "/notes/n-8e673494e6614944a92b23ea454ba7f1/"
+}

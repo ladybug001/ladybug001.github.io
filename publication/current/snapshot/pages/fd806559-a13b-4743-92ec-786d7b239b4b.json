@@ -1,0 +1,50 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-ae784b29d43fb4476fa7",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-05f169f76143ce80865e",
+      "kind": "heading",
+      "offset": 87
+    },
+    {
+      "id": "h-7421acf7e6b00f4c67f9",
+      "kind": "heading",
+      "offset": 421
+    },
+    {
+      "id": "h-586f685d4b7a14abe782",
+      "kind": "heading",
+      "offset": 639
+    },
+    {
+      "id": "h-235be39b1308e4f4ffe9",
+      "kind": "heading",
+      "offset": 972
+    },
+    {
+      "id": "h-a47b64a38bafe2d1de07",
+      "kind": "heading",
+      "offset": 1309
+    },
+    {
+      "id": "h-14a7e29835a06e4e7f95",
+      "kind": "heading",
+      "offset": 1561
+    }
+  ],
+  "body": "# Windows 同步与异步执行 (MOC)\n\n锁解决共享资源访问，等待与唤醒连接线程调度，APC、DPC 和定时器安排特定上下文中的后续执行。\n\n## 运行约束与对象基础\n\n- [Windows 内核对象](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/)、[Windows 句柄机制](/notes/n-399db2c150e54f6db70dc0058623ffb0/) — 理解等待对象及应用如何访问它们。\n- [中断请求优先级与 IRQL](/notes/n-d4f651574a52425791b6f0f74f89a06c/) — 理解中断响应、可等待操作与分页访问限制。\n- [Windows 进程与线程管理 &#40;MOC&#41;](/notes/n-1909310e1a5e499cb337d28521607edb/) — 建立线程状态、调度与上下文模型。\n\n## 原子操作与互斥\n\n- [Windows 并发控制&#65288;1&#65289;&#65306;原子操作&#12289;自旋锁与临界区](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/) — 从共享变量和原子原语理解锁及忙等。\n- [DLL 加载器锁](/notes/n-dd9c05084aa04886aaf28b6ee955464c/) — 观察特定运行环境中的锁约束与死锁场景。\n\n## 等待、通知与调度\n\n- [Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/) — 理解对象状态、`KWAIT_BLOCK`、等待与通知函数。\n- [Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/) — 理解被唤醒线程如何进入就绪与调度。\n- [Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/) — 追踪让出 CPU 和恢复线程执行现场。\n\n## APC、DPC 与定时器\n\n- [Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/) — 线程相关的异步过程调用、排队、派发与执行条件。\n- [Windows DPC 机制](/notes/n-d0947d9f50c64f8b91d978e8fd3409df/) — 中断后续工作的延迟执行、回调限制及与 APC 的区别。\n- [Windows 定时器机制](/notes/n-48ef5d04ee454d78a7649c6a06ad0c08/) — `KTIMER`、`ETIMER`、窗口定时器及到期后的 DPC/APC 路径。\n\n先理解 IRQL、线程上下文和等待，再比较不同回调的执行条件。\n\n## 创建与消息机制中的应用\n\n- [Windows 线程创建流程 &#40;MOC&#41;](/notes/n-1c54138a1f3c4b9ba003f8b0f18d6ffe/) — 观察 APC 在新线程启动与首次返回用户态中的作用。\n- [Windows 窗口与消息机制 &#40;MOC&#41;](/notes/n-8c532b91a6f94e15b533cc55499ce34f/) — 对照 GUI 消息队列、通知与窗口定时器。\n- 异步编程的本质与实现机制 — 对照语言层的异步抽象与回调模型。\n\n## 相关入口\n\n- [Windows 驱动开发 &#40;MOC&#41;](/notes/n-0d5d90f7fa004030baa7ded0fecae31b/) — 将执行约束用于内核开发。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 返回 Windows 领域入口。\n",
+  "id": "fd806559-a13b-4743-92ec-786d7b239b4b",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows"
+    ],
+    "title": "Windows 同步与异步执行 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-fd806559a13b474392ec786d7b239b4b/"
+}

@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3710b0306f3f45ccd497",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-5c0057769abadc7b020a",
+      "kind": "heading",
+      "offset": 83
+    },
+    {
+      "id": "h-11d62f33463bcd4f19c4",
+      "kind": "heading",
+      "offset": 612
+    },
+    {
+      "id": "h-38239e2409abbe867cb0",
+      "kind": "heading",
+      "offset": 975
+    },
+    {
+      "id": "h-8af80b27944bb8d201e7",
+      "kind": "heading",
+      "offset": 1260
+    }
+  ],
+  "body": "# JavaScript 语言机制 (MOC)\n\n> 从对象模型理解 JavaScript 的原型、构造与继承，再沿迭代协议和事件循环理解异步执行。\n\n## 对象模型\n\n1. [JavaScript 原型链](/notes/n-a14b991065fc4914b7f79e591c0d4531/) — 建立对象查找与原型关系。\n2. [JavaScript new 关键字](/notes/n-33724b334e2b4a5991c1c1aa900809b3/) — 理解对象创建、构造调用与原型绑定。\n3. [JavaScript 继承机制](/notes/n-7799fc0e94bd47d092292791e1a5ca69/) — 理解原型链与构造器之间的继承关系。\n4. [JavaScript 实例成员与原型共享机制](/notes/n-6bca5d5e734e44f3b46eaf8c2695cff4/) — 区分实例成员与原型共享成员。\n5. [JavaScript 属性描述符与内部槽](/notes/n-9c5a2e1e35ef40b2acd2542046abdd01/) — 区分属性元数据与内部状态。\n6. [JavaScript this 绑定规则](/notes/n-b4bdf7faf6f5423bbcbf5e3fd1fabc43/) — 判断不同调用方式下的 `this`。\n\n## 迭代与异步\n\n1. [JavaScript 迭代器&#12289;可迭代对象与生成器](/notes/n-a26ebbdfa1114aa1b4f94c90100be921/) — 理解迭代协议与生成器的暂停、恢复。\n2. [JavaScript 事件循环与 Promise](/notes/n-05362560259140a7ada563abf99d1a7c/) — 理解 Promise、宏任务、微任务与执行时序。\n3. [JavaScript 协程机制](/notes/n-5573d8d0bf224186ae2c02ecc04a7a60/) — 在前两项基础上理解 `async/await` 与转译后的驱动逻辑。\n\n迭代协议与事件循环分别解释“如何暂停恢复”和“何时继续执行”，共同构成协程分析的前置。\n\n## 元编程与逆向应用\n\n- [JavaScript Proxy 与逆向补环境](/notes/n-d15ab76c1a1c4d3a9bbab08ab31de2a6/) — 用属性访问拦截观察对象行为并定位环境缺失。\n- [Babel](/notes/n-3a98fb1d58b64535a2428da160df96ad/) — 查看语法转译、AST 操作与代码处理工具。\n- [Web 逆向与爬虫实践 &#40;MOC&#41;](/notes/n-d2343212ccba41979e43c9b7ebf43968/) — 将对象、异步与环境知识用于具体案例。\n\n## 跨语言比较与开发应用\n\n- [编程语言理论 &#40;MOC&#41;](/notes/n-8bc8da2a86db45ccae511bc955e98539/) — 语言无关的迭代器、协程、异步与执行机制。\n- [Python 语言特性 &#40;MOC&#41;](/notes/n-55594aaf52804fedaae2178afc0581e1/) — 对照生成器、事件循环与协程调度。\n- [Web 应用开发 &#40;MOC&#41;](/notes/n-7863feb52f9d4d06bb8b3d8589d7fc36/) — Vue、接口请求与前后端开发。\n",
+  "id": "06ad026c-1663-4c2b-9d0b-578a0d0a62d0",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "lang/javascript"
+    ],
+    "title": "JavaScript 语言机制 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-06ad026c16634c2b9d0b578a0d0a62d0/"
+}

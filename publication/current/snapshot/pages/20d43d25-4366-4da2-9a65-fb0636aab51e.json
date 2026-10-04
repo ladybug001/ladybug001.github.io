@@ -1,0 +1,51 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-86094606312e1cc5d666",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-57f08e2d8b8643eedd28",
+      "kind": "heading",
+      "offset": 71
+    },
+    {
+      "id": "h-ee63cb994732e008a291",
+      "kind": "heading",
+      "offset": 379
+    },
+    {
+      "id": "h-f38d3ee84c097cab6bd7",
+      "kind": "heading",
+      "offset": 534
+    },
+    {
+      "id": "h-3b0402204db48ad0d731",
+      "kind": "heading",
+      "offset": 780
+    },
+    {
+      "id": "h-569920423fb9cc926982",
+      "kind": "heading",
+      "offset": 999
+    },
+    {
+      "id": "h-6b1715e4ee451307d34c",
+      "kind": "heading",
+      "offset": 1178
+    }
+  ],
+  "body": "# 计算机网络 (MOC)\n\n> 计算机网络体系结构：按五层模型从数据链路层到应用层组织，附加网络工具与虚拟网络环境。\n\n## 网络分层与链路\n\n1. [计算机网络&#65306;五层模型](/notes/n-c6a4b2388f0c4254904014948e877ee3/)\n2. [源 MAC 地址与目的 MAC 地址的作用](/notes/n-2b9f46c307dc4d5ea77381c1780cf9fb/) — 数据链路层基础概念\n3. [计算机网络&#65306;有线与无线 MAC 帧](/notes/n-d0f914f1f4cc4601846a72436f91684e/)\n4. [VLAN 标签的添加与剥离机制](/notes/n-fd046cc1da614ca1a4579e9e0d14afcc/) — 虚拟局域网\n## 寻址与网络层\n\n1. [子网掩码的作用](/notes/n-8d6257f8d74a45bda1b5dba257720da5/) — 网络层基础概念\n2. [计算机网络&#65306;IPv4 首部与分片](/notes/n-959ecb43b92a47b18202c6f1d72ff78a/)\n## 传输协议与套接字开发\n\n1. [计算机网络&#65306;UDP 协议与套接字开发](/notes/n-4435a512e6634510acdb3e397906087e/)\n2. [计算机网络&#65306;TCP 协议与套接字开发](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/)\n3. [计算机网络&#65306;select 与套接字 IO 多路复用](/notes/n-d5191c6925a647e0bb459de7a25cd989/)\n## 网络环境与抓包验证\n\n1. [环回地址与回环接口](/notes/n-f277c621fe2a434697d2b90851b20de2/)\n2. [VMware 三种网络模式](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/)\n3. [计算机网络&#65306;WinPcap 与 Npcap 抓包开发](/notes/n-b99260f2126f4979aadf32ad74c757d4/)\n\n## 应用层与安全通信\n\n- [DNS 基础概念](/notes/n-e32ccbfef69a4277a6bb262496b3707e/) — 解析、缓存与域名到地址的映射。\n- [流量抓包与代理原理 &#40;MOC&#41;](/notes/n-89074cb03d004c5f835aac39af5ef5bc/) — 连接传输协议、代理协议和实际流量路径。\n\n## 相关笔记\n\n- [网络安全与加密 &#40;MOC&#41;](/notes/n-7cd1017c7a814f29a4852a9adbdcfe79/) — 基于网络协议的安全机制\n\n- [Web 应用开发 &#40;MOC&#41;](/notes/n-7863feb52f9d4d06bb8b3d8589d7fc36/) — 接口请求、服务器、数据库和部署。\n- [Web 逆向与爬虫实践 &#40;MOC&#41;](/notes/n-d2343212ccba41979e43c9b7ebf43968/) — 将协议与抓包知识用于请求分析和爬虫。\n",
+  "id": "20d43d25-4366-4da2-9a65-fb0636aab51e",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "cs/network"
+    ],
+    "title": "计算机网络 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-20d43d2543664da29a65fb0636aab51e/"
+}

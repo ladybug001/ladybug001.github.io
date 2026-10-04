@@ -1,0 +1,44 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-0d89e1d87ba78774f40a",
+      "kind": "heading",
+      "offset": 9
+    },
+    {
+      "id": "h-cc729253851eef777167",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-3bd6b936d20411dc6375",
+      "kind": "heading",
+      "offset": 457
+    },
+    {
+      "id": "h-222e2a6fa346b8885a79",
+      "kind": "heading",
+      "offset": 535
+    },
+    {
+      "id": "h-1ac0a0cfe94360293460",
+      "kind": "heading",
+      "offset": 1187
+    },
+    {
+      "id": "h-17e0b0578058466d1081",
+      "kind": "heading",
+      "offset": 1944
+    }
+  ],
+  "body": "\n# 迭代器的原理\n\n## 核心定义\n\n**迭代器** (`Iterator`) 是一种设计模式（行为型模式），它提供了一种方法顺序访问一个聚合对象（如列表、集合）中的各个元素，而又不暴露该对象的内部表示。\n\n- **核心接口：** 必须实现“获取下一个元素” (如 `next()`) 和“判断是否还有元素” (如 `hasNext()` 或通过异常 `StopIteration` 标识) 的能力。\n- **底层本质：** 迭代器是一个**游标** (`Cursor`) 或**状态机** (`State Machine`)，它在其内部维护了一个**状态指针**，用于记录当前遍历的位置。\n\n> **注意：** 很多语言（如 `Python`）中，**生成器** (`Generator`) 是一种特殊的、语法糖化的迭代器，它自动实现了迭代器协议，在 `Python` 早期版本中，协程是基于生成器实现的，虽然现代 `Python` 引入了原生协程，但其底层状态机模型依然一脉相承。\n\n## 原理解析：状态保持\n\n迭代器的核心在于**状态保持**。为了能连续返回下一个元素，迭代器必须在多次调用 `next()` 之间“记住”当前遍历到了哪里。\n\n### 类实现模型\n\n这是最基础且正统的迭代器实现方式。通过定义一个**类** (`Class`) 来封装状态。\n\n- **成员变量：** 存储对数据源的引用 (`data`) 和当前索引 (`index`)。\n- **`next()` 方法：** 返回当前索引的数据，并将 `index` 加 1；若越界则停止。\n\n> **示例：** 手写一个简单的迭代器 (`Python` 模拟)\n\n```python\nclass CounterIterator:\n    def __init__(self, limit):\n        self.limit = limit\n        self.state = 0  # 状态指针 (局部变量变成了成员变量)\n\n    def __iter__(self):\n        return self\n\n    def __next__(self):\n        if self.state < self.limit:\n            val = self.state\n            self.state += 1 # 更新状态：指针后移\n            return val\n        else:\n            raise StopIteration\n\nit = CounterIterator(2)\nprint(next(it)) # 输出 0\nprint(next(it)) # 输出 1\n```\n\n### 闭包实现模型\n\n除了显式定义类，也可以利用**闭包** (`Closure`) 机制来实现迭代器。闭包能够捕获并维持其创建时的词法环境。\n\n- **机制：** 编译器或运行时会将原本属于栈 (`Stack`) 上的局部变量“提升”并存储到堆 (`Heap`) 中，从而跨越函数调用保持其生命周期。\n\n```python\ndef make_range(start, end):\n    state = 0  # 状态机阶段指针\n    i = start  # 数据游标\n\n    def next_step():\n        nonlocal state, i\n        # 阶段 0: 初始化/运行中\n        if state == 0:\n            state = 1\n        \n        # 阶段 1: 数据产出\n        if state == 1:\n            if i < end:\n                val = i\n                i += 1\n                return val\n            else:\n                state = 2 # 切换到终止状态\n        \n        # 阶段 2: 迭代结束\n        if state == 2:\n            raise StopIteration\n\n    return next_step\n\n# 使用闭包模拟的迭代器\nmy_iter = make_range(0, 3)\nprint(my_iter()) # 输出 0\nprint(my_iter()) # 输出 1\n```\n\n## 总结\n\n迭代器的原理就是**将遍历逻辑与数据结构分离**，并通过**状态变量**（如索引、指针）记录遍历进度。\n\n无论是手写的类，还是语法糖支持的生成器，其底层都需要解决“在多次调用之间保持状态”的问题——**栈帧状态的堆化**是实现这一能力的关键。\n",
+  "id": "1120995a-4e77-4363-9fe0-22c5319e2db8",
+  "metadata": {
+    "tags": [
+      "lang"
+    ],
+    "title": "编程语言：迭代器的原理"
+  },
+  "resources": [],
+  "url": "/notes/n-1120995a4e7743639fe022c5319e2db8/"
+}

@@ -1,0 +1,51 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-8cc70df2ca44db56d2eb",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-1a3d32e20fe337dd2a10",
+      "kind": "heading",
+      "offset": 73
+    },
+    {
+      "id": "h-d773a966e19825939e0a",
+      "kind": "heading",
+      "offset": 412
+    },
+    {
+      "id": "h-a6d91e13264cffc02842",
+      "kind": "heading",
+      "offset": 681
+    },
+    {
+      "id": "h-58288efcfd5c6d206431",
+      "kind": "heading",
+      "offset": 957
+    },
+    {
+      "id": "h-74b8b9dc3d69501ac258",
+      "kind": "heading",
+      "offset": 1169
+    },
+    {
+      "id": "h-dd6ff567289e0f38e076",
+      "kind": "heading",
+      "offset": 1518
+    }
+  ],
+  "body": "# 流量抓包与代理原理 (MOC)\n\n> 区分代理模式、流量接管位置、代理协议与加密内容可见性，再通过抓包和转发实验验证。\n\n## 网络与解析基础\n\n- [计算机网络 &#40;MOC&#41;](/notes/n-20d43d2543664da29a65fb0636aab51e/) — TCP/UDP、网络接口与抓包的基础。\n- [DNS 基础概念](/notes/n-e32ccbfef69a4277a6bb262496b3707e/) — 理解解析结果、解析路径与缓存。\n- [环回地址与回环接口](/notes/n-f277c621fe2a434697d2b90851b20de2/) — 排查本机转发、环回连接与循环代理。\n- [VMware 三种网络模式](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/) — 理解虚拟机抓包与转发所处的网络环境。\n\n## 流量如何被接管\n\n1. [透明代理机制](/notes/n-0ed2f726700c45d0a61c3f0ede066761/) — 区分应用感知代理与外部重定向。\n2. [流量转发软件的工作机制](/notes/n-ec343b88ec79476d9387d16f6eb00578/) — 比较显式代理、透明代理及具体接管方式。\n3. [TUN 模式代理机制](/notes/n-3907ea4714f246dfa9107612d4cb61be/) — 理解虚拟网卡、IP 数据包接管与转发；与具体 VPN 方案区分。\n\n## 代理端之间使用什么协议\n\n- [HTTP&#40;S&#41; 代理协议](/notes/n-ff55129e8a7b4cc3b65ef611de063b7e/) — HTTP 代理与 CONNECT 通道。\n- [SOCKS5 代理协议](/notes/n-f6c6ef20c9704570bd3078f37f192b81/) — SOCKS5 握手、地址类型与转发。\n- [DNS 泄露与防护机制](/notes/n-c5c86521e7b2482faa4febca58bd175b/) — 判断域名由哪一端解析以及是否绕过预期路径。\n\n## 协议、转发与 DNS 验证\n\n- [代理协议抓包验证实验](/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/) — 对比代理握手与转发数据。\n- Proxifier 流量转发机制实测 — 观察应用连接被接管后的路径。\n- [Charles DNS 映射与验证](/notes/n-3ccb45eb3fb54d50b2f7e6dfe4f80c51/) — 验证 DNS 映射设置的实际效果。\n\n## 加密流量的可见性\n\n- [加密&#12289;认证与安全通信](/notes/n-7cd1017c7a814f29a4852a9adbdcfe79/) — 补充 TLS、证书与身份验证机制。\n- [Wireshark 解密 TLS 流量](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/) — 利用密钥日志等条件分析加密流量。\n- [Android 抓包技术与反抓包对抗](/notes/n-898d5cfcbe054ff481fe086af87ff59d/) — 选择移动端抓包方案并排查证书、代理和应用限制。\n- 配置mitmProxy安卓抓包 — 对照具体 Android 抓包环境配置记录。\n\n代理接管成功不等于获得明文；解密条件需要独立判断。\n\n## 应用与后续阅读\n\n- [Android 运行机制与逆向 &#40;MOC&#41;](/notes/n-2b992cf7b1934491bd31a57f0b3266ac/) — 应用运行、调试 Hook 与抓包的衔接。\n- [Web 逆向与爬虫实践 &#40;MOC&#41;](/notes/n-d2343212ccba41979e43c9b7ebf43968/) — 将请求和流量分析用于逆向与爬虫案例。\n",
+  "id": "89074cb0-3d00-4c5f-835a-ac39af5ef5bc",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "cs/network"
+    ],
+    "title": "流量抓包与代理原理 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-89074cb03d004c5f835aac39af5ef5bc/"
+}

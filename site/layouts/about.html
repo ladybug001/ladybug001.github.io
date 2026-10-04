@@ -1,0 +1,8 @@
+{{ define "body-class" }}article-page{{ end }}
+{{ define "main" }}
+  <article class="main-article">
+    <header class="article-header"><div class="article-details"><h1 class="article-title">{{ .Title }}</h1></div></header>
+    <section class="article-content">{{ .Content }}</section>
+  </article>
+  {{ partialCached "footer/footer" . }}
+{{ end }}

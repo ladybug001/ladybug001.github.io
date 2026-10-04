@@ -1,0 +1,19 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-69e571b6f3bb87668c6c",
+      "kind": "heading",
+      "offset": 23
+    }
+  ],
+  "body": "# 源 MAC 地址与目的 MAC 地址的作用\n>源目MAC用来标识数据包的发出设备和下一个接受设备，而源目IP地址用来标识最初的发送方和最终的接收方。我们发出的数据包，抵达目标主机前，可能经过多次源目MAC地址的改变。\n\n**涉及到的概念**：\n- ARP 表：存储 IP-MAC 之间的映射关系，路由器在转发数据包时依据该表，修改目的MAC地址为下一个接收设备。\n- MAC 地址表：存储 MAC-接口 之间的映射关系，交换机依据该表决定收到的数据包从哪个接口转发。\n\n**MAC改变的时机**：\n1. 数据包经过交换机时，源MAC和目的MAC都不会变。\n2. 数据包经过路由器时，源MAC和目的MAC都会发生改变。(PS：不考虑NAT、VPN等特殊情况。)",
+  "id": "2b9f46c3-07dc-4d5e-a773-81c1780cf9fb",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "源 MAC 地址与目的 MAC 地址的作用"
+  },
+  "resources": [],
+  "url": "/notes/n-2b9f46c307dc4d5ea77381c1780cf9fb/"
+}

@@ -1,0 +1,50 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-5fab929244dfb006aba8",
+      "kind": "heading",
+      "offset": 25
+    },
+    {
+      "id": "h-a800f33c140106cfa0ba",
+      "kind": "heading",
+      "offset": 203
+    },
+    {
+      "id": "h-36d9ddc1c8ea937c427e",
+      "kind": "heading",
+      "offset": 343
+    },
+    {
+      "id": "h-86950abad72ba4d22b98",
+      "kind": "heading",
+      "offset": 998
+    },
+    {
+      "id": "h-4ba80a3ebcee83a5005e",
+      "kind": "heading",
+      "offset": 1096
+    },
+    {
+      "id": "h-db21f536b1f747d8e948",
+      "kind": "heading",
+      "offset": 1389
+    },
+    {
+      "id": "h-ccd6f7e201f1671a93fa",
+      "kind": "heading",
+      "offset": 1946
+    }
+  ],
+  "body": "# JavaScript Proxy 与逆向补环境\n\n`Proxy` 是 ES6 引入的元编程特性，允许拦截并自定义对象的基本操作（如属性查找、赋值、枚举、函数调用等）。它是实现响应式框架（如 Vue 3）和逆向工程“补环境”的核心工具。\n\n底层原理参考：[JavaScript 属性描述符与内部槽](/notes/n-9c5a2e1e35ef40b2acd2542046abdd01/)\n\n## 核心概念\n\n*   **Target**：被代理的目标对象。\n*   **Handler**：一个对象，其属性是当操作发生时调用的函数（称为 **Traps**）。\n*   **Trap**：拦截器，如 `get`、`set`、`has`、`apply` 等。\n\n---\n\n## 基础示例\n\n```javascript\nconst user = {\n    name: \"XiaoMing\",\n    age: 18,\n    details: {\n        school: \"High School\"\n    }\n};\n\nconst handler = {\n    // 拦截读取操作\n    get: function(target, prop, receiver) {\n        console.log(`[LOG] 正在读取属性: ${prop}`);\n        return Reflect.get(target, prop, receiver);\n    },\n    // 拦截赋值操作\n    set: function(target, prop, value, receiver) {\n        console.log(`[LOG] 正在设置属性: ${prop} = ${value}`);\n        return Reflect.set(target, prop, value, receiver);\n    }\n};\n\nconst proxyUser = new Proxy(user, handler);\n\nproxyUser.age; // 控制台打印读取日志\nproxyUser.name = \"John\"; // 控制台打印赋值日志\n```\n\n---\n\n## 逆向工程实战：补环境 (Environment Supplementing)\n\n在爬虫对抗和 JS 逆向中，`Proxy` 被广泛用于探测混淆代码对浏览器环境变量（如 `window`、`navigator`、`document`）的检测。\n\n### 1 自动监控指纹检测\n通过 `Proxy` 代理全局对象，可以精确捕获混淆脚本正在读取哪个加密指纹或环境变量。\n\n```javascript\nconst navigatorProxy = new Proxy(navigator, {\n    get(target, prop) {\n        const val = Reflect.get(target, prop);\n        console.log(`[检测] 脚本尝试读取 navigator.${prop} -> 结果: ${val}`);\n        return val;\n    }\n});\n```\n\n### 2 深度代理策略\n为了应对类似 `window.screen.width` 的深层嵌套访问，建议采用**深度优先**的递归代理：\n\n```javascript\nfunction createRecursiveProxy(obj, name = 'root') {\n    return new Proxy(obj, {\n        get(target, prop) {\n            const val = Reflect.get(target, prop);\n            console.log(`[Trace] ${name}.${String(prop)} 访问`);\n            \n            // 如果返回的是对象且非 null，则继续代理\n            if (val !== null && typeof val === 'object') {\n                return createRecursiveProxy(val, `${name}.${String(prop)}`);\n            }\n            return val;\n        }\n    });\n}\n```\n\n---\n\n## 逆向调试建议\n\n1.  **深度优先补全**：在补环境时，优先补充函数和底层变量，特别注意函数声明的相对位置（防止因为提升或顺序问题导致 `undefined`）。\n2.  **环境对照测试**：采用**浏览器控制台**与 **Node.js** 交替运行代码。通过对比两者的返回差异，可以快速定位是检测了浏览器指纹（Fingerprinting）还是检测了代码格式化（Anti-debugging）。\n3.  **死循环排查**：若代码在 Node.js 中陷入死循环，通常是触发了 Node 特有的检测。此时应将代码切回浏览器环境，利用断点调试确认逻辑是否正常。\n",
+  "id": "d15ab76c-1a1c-4d3a-9bba-b08ab31de2a6",
+  "metadata": {
+    "tags": [
+      "lang/javascript",
+      "reverse/js"
+    ],
+    "title": "JavaScript Proxy 与逆向补环境"
+  },
+  "resources": [],
+  "url": "/notes/n-d15ab76c1a1c4d3a9bbab08ab31de2a6/"
+}

@@ -1,0 +1,75 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b99c12acdd4d3e775310",
+      "kind": "heading",
+      "offset": 37
+    },
+    {
+      "id": "h-f7712a1165d8a2441977",
+      "kind": "heading",
+      "offset": 48
+    },
+    {
+      "id": "h-afba675b5c1ad73ab861",
+      "kind": "heading",
+      "offset": 1059
+    },
+    {
+      "id": "h-1202852536c9cdc82c98",
+      "kind": "heading",
+      "offset": 2378
+    },
+    {
+      "id": "h-2ce4f0a75a738d919b04",
+      "kind": "heading",
+      "offset": 2830
+    },
+    {
+      "id": "h-4be3630e5b44e643a8af",
+      "kind": "heading",
+      "offset": 3344
+    },
+    {
+      "id": "h-9e0b338e92efc332fb7b",
+      "kind": "heading",
+      "offset": 4545
+    },
+    {
+      "id": "h-7637420c47783cfef71e",
+      "kind": "heading",
+      "offset": 5123
+    },
+    {
+      "id": "h-ceed362a128d9195c6d1",
+      "kind": "heading",
+      "offset": 7413
+    },
+    {
+      "id": "h-5ac562948117f1701595",
+      "kind": "heading",
+      "offset": 7745
+    },
+    {
+      "id": "h-0836e91d5f6f0604a60a",
+      "kind": "heading",
+      "offset": 8072
+    },
+    {
+      "id": "h-fde99fdf72373ca1981c",
+      "kind": "heading",
+      "offset": 8326
+    }
+  ],
+  "body": "# Windows 内核路径解析：对象命名空间与 DeviceMap 机制\n\n## 对象命名空间\n\nWindows 内核里的 `Object Manager` 维护一个统一的对象命名空间。可以把它理解为一棵\"内核对象目录树\"：结构类似文件系统目录树，但里面放的是设备对象、驱动对象、事件、互斥体、节对象、符号链接对象等内核对象。\n\n> **核心特征：只有具名对象才挂在命名空间中。** 内核对象在创建时可以选择是否提供名字。提供了名字的对象会被 Object Manager 插入对应的目录节点，可以通过路径按名字查找和打开；没有名字的对象同样合法存在于内核中，但不会出现在命名空间的任何位置，外部只能通过已有的指针或句柄来引用它，而无法用路径找到它。\n\n示意结构如下，实际系统会因版本、会话和已加载驱动而不同：\n\n```text\n\\\n├── Device\n│   ├── HarddiskVolume1\n│   ├── HarddiskVolume2\n│   ├── Harddisk0\n│   │   └── DR0\n│   ├── CdRom0\n│   ├── Serial0\n│   └── Tcp\n│\n├── Driver\n│   ├── Disk\n│   ├── Ntfs\n│   └── Tcpip\n│\n├── BaseNamedObjects\n│   ├── Mutex\n│   ├── Event\n│   └── Section\n│\n├── KnownDlls\n│   ├── ntdll.dll\n│   └── kernel32.dll\n│\n├── GLOBAL??\n│   ├── C:              -> \\Device\\HarddiskVolume2\n│   ├── D:              -> \\Device\\CdRom0\n│   ├── COM1            -> \\Device\\Serial0\n│   └── PhysicalDrive0  -> \\Device\\Harddisk0\\DR0\n│\n└── Sessions\n```\n\n这里的 `\\Device\\HarddiskVolume2`、`\\Driver\\Disk`、`\\BaseNamedObjects\\xxx` 都是 NT 对象路径，描述的是对象管理器命名空间里具名对象的位置。系统中还存在大量无名内核对象（如过滤驱动创建的中间层设备对象），它们不出现在这棵树上。\n\n### 内核对象之设备对象\n\n设备对象（`DEVICE_OBJECT`）是内核对象的一种，由驱动程序调用 `IoCreateDevice` 创建。**是否为设备对象提供名字，是驱动开发时的主动选择，决定了这个设备对象能否被外界按名字找到。**\n\n- **具名设备对象**：调用 `IoCreateDevice` 时传入设备名字符串（如 `\\Device\\MyDevice`），Object Manager 会将该对象插入命名空间的对应目录，之后任何持有足够权限的调用者都可以通过该路径打开它。\n- **无名设备对象**：传入 `NULL` 作为设备名，Object Manager 不会在命名空间中为它创建任何入口。它依然是合法的内核设备对象，驱动内部可以通过指针操作它，也可以将它附加到已有设备栈；但外部无法用路径直接打开它。过滤驱动（Filter Driver）创建的中间层设备对象通常就是无名的——它不需要被用户态直接访问，只需附加在目标设备栈上拦截 IRP。\n\n**为什么磁盘、卷、串口这类设备对象必须具名？**\n\n用户态程序要打开一个文件或设备，最终必须通过 `CreateFile` 传入某种路径，内核沿路径在命名空间中查找，找到对应的设备对象后才能向其发送 IRP。如果设备对象没有名字，路径查找就无从落脚，用户态程序就彻底失去了访问入口。磁盘驱动（`disk.sys`）、卷管理器（`volmgr.sys`）、串口驱动（`serial.sys`）等的核心职责就是对外提供 I/O 服务，因此它们在初始化时必须为设备对象注册名字，例如：\n\n```text\n\\Device\\Harddisk0\\DR0       ← 磁盘驱动为物理磁盘创建的设备对象\n\\Device\\HarddiskVolume2     ← 卷管理器为逻辑卷创建的设备对象\n\\Device\\Serial0             ← 串口驱动为 COM1 创建的设备对象\n\\Device\\CdRom0              ← CD-ROM 驱动创建的设备对象\n```\n\n有了这些命名设备对象，用户态程序才能通过 DOS 设备名（如 `C:`、`COM1`）或直接使用 NT 路径来访问它们：\n\n```c\nCreateFile(\"\\\\\\\\.\\\\PhysicalDrive0\", ...);  // 经 DOS 设备名解析 -> \\Device\\Harddisk0\\DR0\nCreateFile(\"\\\\\\\\.\\\\C:\", ...);              // 经 DOS 设备名解析 -> \\Device\\HarddiskVolume2\nCreateFile(\"\\\\\\\\.\\\\COM1\", ...);            // 经 DOS 设备名解析 -> \\Device\\Serial0\nCreateFile(\"E:\\\\readme.txt\", ...);         // 最终落地到卷设备对象，再由文件系统处理\n```\n\n这些 Win32 名字最终会经过 DOS 设备名解析，找到对应的 NT 设备对象或设备栈。下面就来介绍这套解析机制。\n\n## 用户使用的路径\n\n用户和程序通常使用的是 Win32/DOS 风格路径，而非对象管理器的原生路径：\n\n```\nC:\\test.txt\n\\\\.\\PhysicalDrive0\n\\\\?\\C:\\test.txt\n\\\\server\\share\\a.txt\n```\n\n这些路径在进入内核前，会由 ntdll 转换成对象管理器可识别的 NT 路径形式（`\\??\\...`）：\n\n```\n\\??\\C:\\test.txt\n\\??\\PhysicalDrive0\n\\??\\UNC\\server\\share\\a.txt\n```\n\n相比之下，如果直接使用对象管理器的原生路径（以 `\\` 开头），则可以绕过 DOS 设备名解析，直接在命名空间中查找：\n\n```\n\\Device\\HarddiskVolume2\\Windows\\System32\\cmd.exe\n```\n\n> **注意**：`\\\\.\\` 和 `\\\\?\\` 等 Win32 前缀最终都会被转换为 `\\??\\`，进入同一套 NT 路径解析逻辑。\n\n## 路径的本质：NT 路径如何解析\n\n内核拿到 NT 路径（如 `\\??\\C:\\Windows\\System32\\cmd.exe`）后，Object Manager 以反斜杠为分隔符，将其切分为若干组件逐一解析：\n\n1. `??`\n2. `C:`\n3. `Windows`\n4. `System32`\n5. `cmd.exe`\n\n其中 `??` 是特殊的触发符——Object Manager 遇到它时，不会按普通目录去命名空间里查找，而是触发 **DeviceMap** 机制，这是 DOS 路径解析的核心所在。\n\n> **`\\??` 不是命名空间中的真实目录**：`\\??` 是 Object Manager 内部识别的一个魔法前缀（magic token）。命名空间中真正存在的目录对象是 `\\GLOBAL??`；`\\??` 只是路径字符串里的触发符，Object Manager 遇到它时直接绕过普通目录查找，转而执行 DeviceMap 查找逻辑，根据进程的 `_DEVICE_MAP->DosDevicesDirectory` 找到对应的真实目录（如 `\\GLOBAL??`），再在其中查找后续组件（如 `C:`）。\n\n## DeviceMap 机制\n\n**DeviceMap** 是内核中每个进程（`EPROCESS`）持有的一个字段，它指向一个 `_DEVICE_MAP` 结构体。\n\n> **`_DEVICE_MAP` 不是目录，它持有一个目录**：`_DEVICE_MAP` 是从非分页池分配的普通内核结构体，没有 `_OBJECT_HEADER`，不属于 Object Manager 命名空间。真正充当\"目录\"角色的是对象类型为 `Directory` 的 `_OBJECT_DIRECTORY` 对象——它有对象头、有对象类型、挂在命名空间中、可以按名字打开、可以包含子对象。`_DEVICE_MAP` 内部的 `DosDevicesDirectory` 字段指向这样一个 `_OBJECT_DIRECTORY`（即 `\\GLOBAL??` 或会话专属目录），那才是命名空间中真实可见的目录。\n\n`_DEVICE_MAP` 的结构大致如下：\n\n```c\ntypedef struct _DEVICE_MAP {\n    POBJECT_DIRECTORY DosDevicesDirectory;       // 指向真实的目录对象（如 \\GLOBAL??）\n    POBJECT_DIRECTORY GlobalDosDevicesDirectory; // 始终指向 \\GLOBAL??\n    ULONG             ReferenceCount;\n    ULONG             DriveMap;      // 盘符位掩码（bit0=A: bit2=C: ...），快速判断盘符是否存在\n    UCHAR             DriveType[32]; // 每个盘符的类型\n} DEVICE_MAP, *PDEVICE_MAP;\n```\n\n`_DEVICE_MAP` 关联的 `DosDevicesDirectory` 目录中只存放符号链接对象，构成该进程可见的\"DOS 设备名命名空间\"：\n\n```text\n├── [进程的 DeviceMap 目录]\n│   ├── C:              -> \\Device\\HarddiskVolume2\n│   ├── D:              -> \\Device\\CdRom0\n│   ├── COM1            -> \\Device\\Serial0\n│   └── PhysicalDrive0  -> \\Device\\Harddisk0\\DR0\n```\n\n> **注意**：多数普通进程的 DeviceMap 指向全局共享的 `\\GLOBAL??` 目录；但在多用户会话（Terminal Services）场景下，每个会话可以拥有独立的 DOS 设备映射，实现会话级别的设备隔离。\n\n## \"文件\"打开流程\n\nWindows 把\"文件\"打开抽象成了一套通用 I/O 模型。\n\n\n在继续向下学习之前，需要了解 IRP，以及常用 API 与 IRP 的对应关系：\n> IRP 相关内容参考：[Windows 应用程序与驱动的通信机制](/notes/n-9ec57c571edc4101bfeb488dbfdd4b97/)\n\n| 用户操作              | 主要 IRP                            |\n| ----------------- | --------------------------------- |\n| `CreateFile`      | `IRP_MJ_CREATE`                   |\n| `ReadFile`        | `IRP_MJ_READ`                     |\n| `WriteFile`       | `IRP_MJ_WRITE`                    |\n| `DeviceIoControl` | `IRP_MJ_DEVICE_CONTROL`           |\n| `CloseHandle`     | `IRP_MJ_CLEANUP` / `IRP_MJ_CLOSE` |\n### CreateFile\n\n`CreateFile` 是 Win32 I/O 体系的打开入口：它根据名称定位相应的设备对象，建立一个 `FILE_OBJECT` 描述这次打开，并通过 `IRP_MJ_CREATE` 让目标驱动完成实际的打开操作。\n\n以打开文件 `C:\\Windows\\System32\\cmd.exe` 为例，分析 `CreateFile` 函数的完整逻辑。\n\n**首先，Win32 路径 → NT 路径：**\n\n`CreateFile` 最终会调用 `ntdll!NtCreateFile` 进入内核，但在进入内核前，ntdll 会通过 `RtlDosPathNameToRelativeNtPathName_U` 等函数**将 Win32 路径转换为内核可识别的 NT 路径**：\n\n```\nC:\\Windows\\System32\\cmd.exe\n        ↓  ntdll 路径转换\n\\??\\C:\\Windows\\System32\\cmd.exe\n```\n\n**转换规则**：除了上述 `C:` 前缀会在前面加上 `\\??\\` 外，`\\\\.\\` 和 `\\\\?\\` 前缀会被替换为 `\\??\\`，进入相同的后续解析逻辑。\n\n**然后，在内核中解析 NT 路径得到设备对象：**\n\n进入内核后，调用链大致为：\n\n```\nNtCreateFile\n └─ IoCreateFile\n     └─ IopCreateFile\n         └─ ObOpenObjectByName        ← Object Manager 开始解析对象路径\n             └─ ObpLookupObjectName   ← 逐级解析 Object Manager 命名空间\n                 ├─ 解析 \\??          ← 根据 DeviceMap 进入对应的 DOS 设备目录\n                 ├─ 找到 C:           ← C: 是符号链接对象\n                 │    └─ 展开为 \\Device\\HarddiskVolumeX\n                 │\n                 └─ 找到卷对应的 DEVICE_OBJECT\n                      ↓\n                    Device 对象类型注册了专门的路径解析回调\n                      ↓\n                    调用 IopParseDevice\n                      ↓\n                    将：\n                    - 当前 DEVICE_OBJECT\n                    - 剩余路径 \\abc\\a.txt\n                    交给 I/O Manager\n                      ↓\n                    创建 FILE_OBJECT\n                      ↓\n                    构造 IRP_MJ_CREATE\n                      ↓\n                    发送给文件系统设备栈\n                      ↓\n                    NTFS 等文件系统继续解析 \\abc\\a.txt\n```\n\n**核心逻辑**：Object Manager 在命名空间中找到设备对象（`\\Device\\HarddiskVolume2`）后，不再继续用命名空间逻辑解析剩余路径，而是将控制权移交给 I/O Manager 创建 `FILE_OBJECT` 并发起 I/O 请求：通过 `ObCreateObject` 创建 `FILE_OBJECT`，将剩余路径 `\\Windows\\System32\\cmd.exe` 复制到 `FileObject->FileName`，设置 `FileObject->DeviceObject`，然后构造 `IRP_MJ_CREATE`，将 `FILE_OBJECT` 放入 `IO_STACK_LOCATION->FileObject`，发送给设备对象。\n\n**文件系统解析剩余路径并建立关联：**\n\nNTFS 驱动收到 `IRP_MJ_CREATE` 后：\n\n- 从 IRP 中取得已有的 `FILE_OBJECT`\n- 解析 `\\Windows\\System32\\cmd.exe`\n- 查找/创建目标文件\n- 初始化 `FILE_OBJECT` 对应的文件系统上下文（如 FCB/CCB 关联）\n\n`IRP_MJ_CREATE` 完成后，`ObOpenObjectByName` 通过 `ObpCreateHandle` 在当前进程的句柄表中创建一个引用该 `FILE_OBJECT` 的表项，将句柄返回给调用者。\n\n> **总结**：在典型文件打开流程中，Object Manager 负责将 NT 路径解析到 `DEVICE_OBJECT`；由 I/O Manager 创建 `FILE_OBJECT` 和 `IRP_MJ_CREATE`，再将剩余文件路径交给文件系统解析。\n\n### ReadFile / WriteFile\n\n`ReadFile`/`WriteFile` 不再需要路径解析。I/O Manager 通过句柄在句柄表中找到 `FILE_OBJECT`，根据 `FILE_OBJECT` 确定相关设备栈的目标设备对象，构造 IRP（设置 `MajorFunction = IRP_MJ_READ/WRITE`，`FileObject = 当前 FILE_OBJECT`），然后调用 `IoCallDriver` 将 IRP 发送给目标设备对象：`IoCallDriver` 内部从 `TargetDeviceObject->DriverObject->MajorFunction[IRP_MJ_READ/WRITE]` 取出派遣函数并调用。\n\n### CloseHandle\n\n关闭文件句柄涉及两个不同的 IRP，触发时机不同：\n\n- **`IRP_MJ_CLEANUP`**：与该 `FILE_OBJECT` 关联的最后一个句柄被关闭时触发（在关闭该句柄的进程上下文中发送）。驱动在此时取消挂起的 I/O 请求、释放与该打开实例相关的锁等资源。\n- **`IRP_MJ_CLOSE`**：`FILE_OBJECT` 的最后一个内核引用释放后触发。此时该打开实例彻底销毁，驱动释放与该 `FILE_OBJECT` 关联的所有内部状态。\n\n内核组件或未完成 I/O 仍可能使 `FILE_OBJECT` 保持存活，因此 `IRP_MJ_CLOSE` 可能在 `IRP_MJ_CLEANUP` 之后较长时间才触发。\n\n## 常见误区\n\n1. `C:` 不是卷设备对象本身，`C:` 是 `DOS Devices` 目录中的符号链接对象名。它通常指向真正的卷设备对象，例如：\n\n```text\nC:\n    -> \\Device\\HarddiskVolume2\n```\n\n2. `PhysicalDrive0` 也不是物理磁盘设备对象本身，`PhysicalDrive0` 通常也是符号链接对象名，目标一般是：\n\n```text\nPhysicalDrive0\n    -> \\Device\\Harddisk0\\DR0\n```\n\n## 核心结论\n\n- Windows 内核有一套由 `Object Manager` 维护的对象命名空间，它像目录树，但树上的节点是内核对象，不是普通文件系统目录。\n- 磁盘、卷、串口等设备通常会暴露为命名设备对象，例如 `\\Device\\Harddisk0\\DR0`、`\\Device\\HarddiskVolume2`、`\\Device\\Serial0`。\n- 用户层常见的 `C:`、`COM1`、`PhysicalDrive0` 多数不是设备对象本身，而是 `DOS Devices` 命名空间中的 `SymbolicLink` 对象。\n- `DeviceMap` 的核心作用是决定当前进程解析 `\\??\\...` 时应使用哪一组 DOS Devices 符号链接；多数进程指向全局的 `\\GLOBAL??`，多用户会话场景下则指向会话专属目录。\n- 对象管理器解析到卷设备对象后，剩余的文件路径由文件系统驱动解释；具体目录项不是简单挂在 `Object Manager` 命名空间里的普通对象目录。\n",
+  "id": "fd51c9c5-b353-4549-8854-52c844b09c8e",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows"
+    ],
+    "title": "Windows 内核路径解析：对象命名空间与 DeviceMap 机制"
+  },
+  "resources": [],
+  "url": "/notes/n-fd51c9c5b3534549885452c844b09c8e/"
+}

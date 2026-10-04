@@ -1,0 +1,76 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c7fbd3f12aade8e4f11a",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-6beef289cef88936ca65",
+      "kind": "heading",
+      "offset": 87
+    },
+    {
+      "id": "h-e6b678b192314273e32c",
+      "kind": "heading",
+      "offset": 557
+    },
+    {
+      "id": "h-358792e357f71124831d",
+      "kind": "heading",
+      "offset": 1101
+    },
+    {
+      "id": "h-3ef8db4f8d22f2d21703",
+      "kind": "heading",
+      "offset": 1400
+    },
+    {
+      "id": "h-60f4291d2306aa3ea0c5",
+      "kind": "heading",
+      "offset": 1664
+    },
+    {
+      "id": "h-b5d258207e247d7b4d43",
+      "kind": "heading",
+      "offset": 1901
+    },
+    {
+      "id": "h-6e5962bfb3be0909361a",
+      "kind": "heading",
+      "offset": 2150
+    },
+    {
+      "id": "h-9bb5d2a74d0044a34d88",
+      "kind": "heading",
+      "offset": 2425
+    },
+    {
+      "id": "h-f876a50be4ee5ac6e904",
+      "kind": "heading",
+      "offset": 2509
+    },
+    {
+      "id": "h-fd84d60a7fb81374bd54",
+      "kind": "heading",
+      "offset": 2694
+    }
+  ],
+  "body": "# VMware 三种网络模式\n>临近期末要写实验报告，其中一个实验与Vmware的三种网络模式有关，这篇文章用来记录我在此过程学习到的对这三种模式的理解。\n\n## 桥接模式\n\n桥接模式拓扑图如下所示，**该模式下虚拟机相当于真实的物理机，使用真实路由器分配的IP地址，会消耗IP资源**。在桥接模式中虚拟机与宿主机需要在同一网段，并且网关也要配置相同。\n\n\n![Pasted image 20240711150644&#46;png](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/media/580462bf2009b49899131c8cda1183b70898d874913d8e3c5c9b69337db47bf5.png)\n\n> 在该模式下，使用 Wireshark 捕获主机和虚拟机之间的通信流量，会发现同样的流量出现了两次，原因是此时主机网卡即是\"发\"的主体，又是\"收\"的主体，重复的流量一份来自\"发\"另一份来自\"收\"(因为收发都是主机网卡的 IP 地址？)。\n> \n> 注意，按这个道理来说，捕获本机环回地址的流量也会出现双份的情况(\"发\"和'收'的主体都是本机)，但实际并不是，猜测是系统/Wireshark 对环回网卡进行的特殊处理。\n\n## NAT模式\n\nNAT模式的拓扑图如下所示，在该模式中所有虚拟机都使用『主机网卡』的IP与外网通信。\n\n\nNAT模式中的VM8虚拟网卡仅为了主机与虚拟机互通，**即使没有VM8虚拟网卡，虚拟机也可以访问外网。**\n\n\n![Pasted image 20240711151448&#46;png](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/media/ada7ba82302b83070168cb5f580b09b532f13791201f0c8d6abc98daadd5cb48.png)\n\n\n> [!NOTE] 禁用VM8虚拟网卡，虚拟机可以PING通主机，但主机无法PING通虚拟机，对此现象我的分析和理解：\n> \n> 首先要明确主机和虚拟机所处局域网的相对关系：**虚拟机所处局域网是私网，主机所处局域网为公网**。\n> \n> - **虚拟机PING主机**：私网流量经NAT地址转换技术，借由主机IP发出，故虚拟机可以PING通主机。\n> - **主机PING虚拟机**：目的IP为私网IP，公网IP直接访问私网IP，故主机PING不同虚拟机。\n> \n> **综上所述，所以才需要加入VM8虚拟网卡来实现宿主机与虚拟机互通。**\n\n\n## 仅主机模式\n\n仅主机模式拓扑图如下所示，该模式中**虚拟机不能访问外网，只能访问主机**。(PS：也可以通过设置使得可以访问外网——[](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/#h-6e5962bfb3be0909361a))\n\n![Pasted image 20240711153446&#46;png](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/media/f063e1f4ab9b2a7169b7877850f9c2f1fcede3f7f11d2c5fd77ec8d0e767b9b4.png)\n### 遇到的问题\n>Vmware在我电脑里新建了两个网络连接VM1和VM8，它们分别与仅主机、NAT网络模式有关：\n![](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/media/90787a3670311a9c18ec3f82c7b621578f4aeca54945d4c4a4ea72c42a3e0c3d.png)\n\n>我的理解：这两个网络连接，相当于路由器+~~DNS+DHCP~~+网关，切换虚拟机为某网络模式后，相当于让虚拟机与相应的路由器(代指网络连接)连接。\n\n#### 无法Ping通网关\n\n参考链接： [VMware 主机模式下无法上网 或ping不通物理机_vmware仅主机模式无法上网-CSDN博客](https://blog.csdn.net/qq_51663706/article/details/120578700)\n\n切换虚拟机网络模式为『仅主机』后**既无法上网也无法Ping通网关**，查阅相关资料，猜测是『网络连接中VM1』与『Vmware虚拟网络设置』使用的网段不一致造成(**PS：后面证实确实是这个原因**)。\n\n##### 解决方法\n\n>不确定是否因为虚拟机是Window Server的原因，这个方法仅解决了无法Ping通网关的问题，任然无法上网。\n\n1. 修改『网络连接中VM1』与『Vmware虚拟网络设置』同一网段。\n2. 在物理机『网络连接』共享网络\n   ![](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/media/0f1a7428ac8ee3caafa0cfc2ea893af1697bd1ca7905e90c3710b07781161d30.png)\n#### 无法上网\n\n经上一步操作后，可以Ping通网关，但无法上网。\n\nPing其它地址提示：`传输失败。常见故障。`\n\n推测也许是路由表的问题，命令行执行`route print`查看路由表，发现果真如此：\n![](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/media/390964ba3806bda08afdb4d3b73cece70dfb3bd62bd3eabcf37864c650eb4a12.png)\n可以看到没有默认路由(PS：**不确定与系统是Window Server是否有关**)。\n\n##### 解决方法\ncmd执行`route add 0.0.0.0 mask 0.0.0.0 192.168.199.1`添加默认路由。\n\n**此时网络恢复正常。**\n\n\n\n# 相关命令\n\n1. 输出当前路由：`route print`\n2. 添加路由：`route add sourceIp mask 掩码 destinationIp`\n3. 刷新DNS：`ipconfig /flushdns`\n4. 释放当前的ip地址：`ipconfig  /release`\n5. 向DHCP服务器申请新的IP：`ipconfig  /renew`\n\n# 相关链接\n参考链接：[VMware虚拟机三种网络模式：桥接模式，NAT模式，仅主机模式_虚拟机桥接模式是什么意思-CSDN博客](https://blog.csdn.net/qq_39192827/article/details/85872025)\n",
+  "id": "5bd1a648-aaaf-423e-aedf-b637e53be10a",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "VMware 三种网络模式"
+  },
+  "resources": [
+    "0f1a7428ac8ee3caafa0cfc2ea893af1697bd1ca7905e90c3710b07781161d30.png",
+    "390964ba3806bda08afdb4d3b73cece70dfb3bd62bd3eabcf37864c650eb4a12.png",
+    "580462bf2009b49899131c8cda1183b70898d874913d8e3c5c9b69337db47bf5.png",
+    "90787a3670311a9c18ec3f82c7b621578f4aeca54945d4c4a4ea72c42a3e0c3d.png",
+    "ada7ba82302b83070168cb5f580b09b532f13791201f0c8d6abc98daadd5cb48.png",
+    "f063e1f4ab9b2a7169b7877850f9c2f1fcede3f7f11d2c5fd77ec8d0e767b9b4.png"
+  ],
+  "url": "/notes/n-5bd1a648aaaf423eaedfb637e53be10a/"
+}

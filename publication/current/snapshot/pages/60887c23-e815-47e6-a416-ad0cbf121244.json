@@ -1,0 +1,253 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-eb3b9e8f996a0b22f783",
+      "kind": "heading",
+      "offset": 12
+    },
+    {
+      "id": "h-7ee9195f37e800947e40",
+      "kind": "heading",
+      "offset": 212
+    },
+    {
+      "id": "h-421209769158902ddaa2",
+      "kind": "heading",
+      "offset": 1132
+    },
+    {
+      "id": "h-1007df86e97c9fdc581f",
+      "kind": "heading",
+      "offset": 1144
+    },
+    {
+      "id": "h-78842e48508fb423919d",
+      "kind": "heading",
+      "offset": 1630
+    },
+    {
+      "id": "h-e54cc6cbc01a1dacbcd8",
+      "kind": "heading",
+      "offset": 2431
+    },
+    {
+      "id": "h-300817a9cbf9ba46a871",
+      "kind": "heading",
+      "offset": 3216
+    },
+    {
+      "id": "h-ccec0c74249ffced6663",
+      "kind": "heading",
+      "offset": 3798
+    },
+    {
+      "id": "h-1257774468f044ac85f3",
+      "kind": "heading",
+      "offset": 3882
+    },
+    {
+      "id": "h-7dfb45d6a68d7b476dd3",
+      "kind": "heading",
+      "offset": 3907
+    },
+    {
+      "id": "h-d32b6dd6695ba6bcea3d",
+      "kind": "heading",
+      "offset": 4472
+    },
+    {
+      "id": "h-072b9056342202197b28",
+      "kind": "heading",
+      "offset": 4960
+    },
+    {
+      "id": "h-10cb422af968a7e9f57d",
+      "kind": "heading",
+      "offset": 5651
+    },
+    {
+      "id": "h-b286d9ddec781658cb57",
+      "kind": "heading",
+      "offset": 5675
+    },
+    {
+      "id": "h-0c58f227da096937b103",
+      "kind": "heading",
+      "offset": 6209
+    },
+    {
+      "id": "h-72b41ed42bcb4f10d8e5",
+      "kind": "heading",
+      "offset": 6712
+    },
+    {
+      "id": "h-49f2cf735e0cc0252520",
+      "kind": "heading",
+      "offset": 7113
+    },
+    {
+      "id": "h-9eb9b6a35a4df2d1cae2",
+      "kind": "heading",
+      "offset": 8285
+    },
+    {
+      "id": "h-d2fde6cec9196611823e",
+      "kind": "heading",
+      "offset": 8986
+    },
+    {
+      "id": "h-b075cfb2d1d74bfe7702",
+      "kind": "heading",
+      "offset": 9875
+    },
+    {
+      "id": "h-4e96cddf1199789d2668",
+      "kind": "heading",
+      "offset": 9890
+    },
+    {
+      "id": "h-a23f835fcd71aee3d446",
+      "kind": "heading",
+      "offset": 9958
+    },
+    {
+      "id": "h-0ef9f95facd5811a4994",
+      "kind": "heading",
+      "offset": 10408
+    },
+    {
+      "id": "h-1e8b5e72b508cc58f628",
+      "kind": "heading",
+      "offset": 10429
+    },
+    {
+      "id": "h-edd44c5f847f891702a3",
+      "kind": "heading",
+      "offset": 10874
+    },
+    {
+      "id": "h-2bb3c19d2f7433f059c5",
+      "kind": "heading",
+      "offset": 11273
+    },
+    {
+      "id": "h-62a2742089667ef0a226",
+      "kind": "heading",
+      "offset": 11295
+    },
+    {
+      "id": "h-f2103001c7c44019d8d7",
+      "kind": "heading",
+      "offset": 11861
+    },
+    {
+      "id": "h-8c9811d9b9b1d066aab3",
+      "kind": "heading",
+      "offset": 14586
+    },
+    {
+      "id": "h-d035cd5e35e143bacd5a",
+      "kind": "heading",
+      "offset": 14997
+    },
+    {
+      "id": "h-f49632b54143e051c401",
+      "kind": "heading",
+      "offset": 15018
+    },
+    {
+      "id": "h-e7fc5647a9b7f032e364",
+      "kind": "heading",
+      "offset": 15343
+    },
+    {
+      "id": "h-b54748c7e0fa4c9d82df",
+      "kind": "heading",
+      "offset": 17512
+    },
+    {
+      "id": "h-d05815d92c51d547bdb3",
+      "kind": "heading",
+      "offset": 17557
+    }
+  ],
+  "body": "# MFC 对话框与控件\n\n相关内容：\n1. [MFC 基础篇](/notes/n-581da27d7b3646a1b1298f1432e2939d/)\n2. [MFC 框架原理篇](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/)\n3. [MFC 拖拽实现UI设计的原理](/notes/n-a77f7fc29093465ca81acd7917861fc4/)\n\n## 创建对话框工程\n\n> 接下来关于 MFC 控件的讲解，要基于对话框工程，因此**首先要创建该工程**。\n\n\n创建基于对话框（Dialog-based）的工程：\n![c8cd1dd4a5993d94220340e0b365f005&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/3028ffc814d04e327087fdc788df8bb540b156aa9ea0623957723f7f39497435.jpg)\n\n> **关键规范**：系统生成的预编译头文件 `stdafx.h` 必须位于包含文件的第一行。编译器在处理 `stdafx.h` 包含语句之前的任何代码均会被直接忽略。\n\n![0d487fa5e3ccf8171fc20265ac32ea36&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/5438f3c98ddd51cf82732fb103e177a3acc8e1a70ccf79cc7c2dcca8cfa487ab.jpg)\n![add1c236ab27abf2f9707b39e4b56b47&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/447aa577bb6003385f2b010637a2df861e41ee30c61a51d7efd2ffc44a2ef1ef.jpg)\n\n然后在 Visual C++ 6.0 的资源视图中拖拽编辑框（`Edit Control`）和按钮（`Button`）到对话框中。\n![92d6fb339c2b740cfe559d7667259d3b&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/cf07b83fd7360e30f8073a95be284c0e2d0aaa854168bac1649af09a082fbaac.jpg)\n## 控件内容的获取与更新\n\n### 获取控件句柄\n\n现在我们要获取/修改编辑框控件中的内容，要怎么办呢？想要操纵/使用控件，就要通过控件的句柄。\n\n获取句柄最直接的方式是使用 `GetDlgItem` 函数。该函数通过控件 ID（逻辑标识符）获取控件对象句柄（遍历父控件下的子控件实现），获取到句柄后，就可以调用 `SetWindowText` 方法改写内容了。\n\n> **注意**：控件 ID 是供父窗口判断和查询子窗口使用的逻辑标识符，与系统级的窗口/控件句柄（`HWND`）不同。在 VC 6 中，可通过右键控件选择 `Properties` 获取。\n\n![fe3b5d39459c15a6cd45bddd2799fc8f&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/d4f37db39dde0c35b3a7cb3a6f4f0892a80ebdb6ae3026db1ad2d0b106e087bd.jpg)\n**除此之外**，有没有更便捷的操纵控件的方式？那就是动态绑定。\n\n\n### 变量绑定：控制绑定 (`Control`)\n\n**控制绑定**：将一个类变量（如 `CEdit` 对象实例）与目标控件深度关联。在代码中操作该变量即等同于操作控件本身。\n\n- **操作方式**：右键控件 $\\rightarrow$ `ClassWizard`，在 `Category` 中选择 `Control`。\n![4da8ddecb058110dfd230c3f7b773f44&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/ef0a1f5cad1f8155db527b51dcb3a56171c715f79a34e76fc1e953527d4034a4.jpg)\n\n完成绑定后，即可直接在代码中调用该变量的成员函数来修改控件属性：\n![cef5ee172ea0aceeb21b3b5cd1d7ce01&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/c3816fb916a816d9c37760cc6e197620c6d26c2778003f173d85e5d8b7e2f914.jpg)\n\n这一绑定在底层由 `DoDataExchange` 函数实现。IDE 会自动生成 `DDX_Control` 宏映射，将 `IDC_EDIT1` 控件与 `m_edit1` 变量关联起来：\n![e1dbdf163a73e642b62331ac102e0723&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/64c8b0ce42d5f8f7f2b5f596bfac80f7ea5236be1a6e49f0dd703d639164cc49.jpg)\n\n### 变量绑定：数据绑定 (`Value`)\n\n**数据绑定**：将控件的内容与一个基础数据类型的变量（如 `CString`）关联，实现数据流的双向流动（控件 $\\leftrightarrow$ 变量）。\n\n- **操作方式**：在 `ClassWizard` 的 `Category` 中选择 `Value`，并指定变量类型为 `CString`。\n![3a9745dbc0b67631e429d98d48424e7c&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/5735ab4d3f293ea317d27c04d6b1bdc31d2a93c7e09e007d9e26470269509b7f.jpg)\n\n进行数据绑定后，在代码中对变量进行赋值，必须配合 `UpdateData` 函数才能使数据同步生效：\n![9388ec7ffa9267f17f655489ae42e585&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/a7354fba73519a57ebf9985d25ea1904ea760429dc83f9525ad75862e78d22dc.jpg)\n![8bf8531b51d5aa619333b9380d55bcd0&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/ab96438abf3915d9bc5f7186494d1054f3fdf7afb627bff0ebf511e48d8d6a0f.jpg)\n\n> 数据绑定也会修改 `DoDataExchange` 函数，这里没有展示而已。\n### 底层机制：DoDataExchange 函数\n\n`DoDataExchange` 是 MFC 对话框类 `CDialog` 的一个**虚函数**，专用于控制数据流动以及完成控件与变量的绑定映射。\n\n在进行上述数据绑定/控制绑定后，可以看到主代码文件中的 `DoDataExchange` 函数会被 IDE 重写以实现绑定。\n- **调用链关系**：`DoDataExchange` 不是被直接调用，而是由 `UpdateData` 函数触发执行。\n- **数据流向控制**：`UpdateData` 的布尔参数决定了数据交互的方向。\n\n```cpp\n// 1. 初始化界面：将内存变量的数据渲染到视图控件\nm_strName = \"Alice\";\nUpdateData(FALSE); // 变量 -> 控件\n\n// 2. 获取用户输入：读取视图控件的内容到内存变量\nUpdateData(TRUE);  // 控件 -> 变量\n// 此后即可直接使用更新后的 m_strName 变量\n```\n\n初始化界面：\n```\nm_strName = \"Alice\";\nUpdateData(FALSE);  // 显示到编辑框\n```\n\n获取用户输入：\n```\nUpdateData(TRUE);   // 从控件读数据\n// 使用 m_strName\n```\n\n---\n\n## 对话框 (`Dialog`) 机制\n\n对话框本质上是一个**窗口容器**。它不仅可以接收系统消息，支持移动、关闭以及在客户区绘图，还能承载各类控件以提供丰富的用户输入手段。\n\n### 对话框工程结构解析\n\n#### 实例化对象 ( `theApp` )\n\n首先我们来看下**HelloDialog.cpp**文件：\n\n![12614d89c26077c056c524921b7c78bf&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/a654a910a399a50e7ca929b574cfb51afb523acc595efb2e4cab97df4872a061.jpg)\n\n在这个文件中我们可以看见**theApp**这么一个熟悉的名字，通过该名字我们就可以知道这个文件实际上就是用来实例化的。该代码和以前我们写的工程是没有区别的，其 `InitInstance` 函数负责初始化并唤出对话框。\n\n\n同时根据 MFC 层次结构图，对话框类同样继承自 `CWnd`，与 `CFrameWnd` 在本质上无异，仅呈现形式不同。\n\n![275c375ce0b9dc7814940674307c956f&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/31bbfdfc910c5dd36ebba21fd5cacf5f5190aeec6d5281edd8338ab17b214695.jpg)\n\n#### 主窗口与初始化逻辑\n\n主窗口文件是**HelloDialogDlg.cpp**，在里面我们可以看见熟悉的消息映射以及相关的消息处理函数：\n![c34b133ad24b35dd236c71df67dda238&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/5ac908943f8a8d4bd464237ed2010b93b6356dc348fd6f1c2a7a30efc7b71503.jpg)\n\n接着向下看就会发现一个注释写着在这里添加额外的初始化代码，也就是**CHelloDialogDlg::OnInitDialog**函数：\n![2c899f8da9a65f2216ace85170876498&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/d3da2d748603ae81d154bd488b42d84777e17b7df84378d25ae306841ff958ee.jpg)\n\n#### 资源文件 (`.rc`)\n资源脚本文件（`.rc`）用于存储描述窗口属性的静态参数（如字体、尺寸、控件布局）。\n> **核心意义**：将界面描述数据与执行代码分离，使得 IDE 可以在不编译程序的情况下解析 `.rc` 文件以实现界面预览（所见即所得）。实际程序在执行时只是按照存储的属性描述创建窗口。\n\n![b8f5481533d91f35e92a777ec225f3fe&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/ff275706f81d8662582fc5f489d7aedd3df7837c1350ae530e39e7edb074465f.jpg)\n\n设置窗口属性：\n![8186c1245a51468c10396384dd27a55b&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/83194cf891c73ab5feb74b23a2cea942b46fa88ae12dbf5fd7f192180fff8b7e.jpg)\n\n\n使用记事本去打开资源文件：\n![56c862f03363f310b8c71f067c8cc57e&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/74931aab9287ee0c27cd1377e77152bb550054df7c63575cdd63dc59cfb60a58.jpg)\n\n\n### 模态与非模态对话框\n\n#### 模态对话框 (`DoModal`)\n\n调用 `DoModal` 函数会创建一个模态对话框。该函数内部有专属的消息循环（同时函数内部会禁用父窗口，让其不再响应键盘和鼠标，这也是导致原窗口无响应的原因）。\n\n**特性**：对话框弹出后，用户必须对其进行响应（如点击“确定”或“取消”）并将其关闭后，主程序才会继续向下执行。其返回值（如 `IDOK` 或 `IDCANCEL`）用于验证用户的最终选择。\n![12614d89c26077c056c524921b7c78bf&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/a654a910a399a50e7ca929b574cfb51afb523acc595efb2e4cab97df4872a061.jpg)\n![0f3f3de447ac64749fbb8b905208f81d&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/cead2e1f1685e68967426be7c872ad2d0fc16957eeb10cd613150106447b7cc2.jpg)\n\n#### 非模态对话框\n\n非模态对话框允许用户在不关闭它的情况下，继续操作应用程序的其他窗口。创建非模态对话框需通过 `Create` 和 `ShowWindow` 函数。\n\n> **防坠坑指南**：非模态对话框必须在**堆区（Heap）** 使用 `new` 关键字分配内存，严禁分配为局部栈变量，否则当前函数块执行完毕后，窗口对象即被释放销毁导致崩溃。\n\n```cpp\n// 1. 正确创建非模态对话框\nvoid CHelloDialogDlg::OnButton1() {\n\tCDialog1* pDlg = new CDialog1; // 必须在堆中分配\n\tpDlg->Create(IDD_DIALOG1, this);\n\tpDlg->ShowWindow(SW_SHOW);\n}\n\n// 2. 在子对话框内部处理销毁以防止内存泄漏\nvoid CDialog1::OnCancel() {\n\tdelete this; // 自主清理堆内存\n\tCDialog::OnCancel();\n}\n```\n> 键盘、鼠标等消息携带窗口句柄，可用于找到用于处理该消息的窗口消息处理函数。\n\n---\n## MFC 对传统控件的封装\n\nWindows 传统控件与主窗口是典型的**父子层级关系**。当父窗口移动或销毁时，子控件会级联响应。\n\n| 控件类型 | WNDCLASS 标识   | MFC 对应封装类    |\n| :--- | :------------ | :----------- |\n| 按扭   | `\"BUTTON\"`    | `CButton`    |\n| 列表   | `\"ListBox\"`   | `CListBox`   |\n| 编辑框  | `\"EDIT\"`      | `CEdit`      |\n| 组合框  | `\"COMBOBOX\"`  | `CComboBox`  |\n| 滚动条  | `\"SCROLLBAR\"` | `CScrollBar` |\n| 静态文本 | `\"STATIC\"`    | `CStatic`    |\n\n### Button 控件 (`CButton`)\n\n这里通过代码动态创建按钮：点击按钮 1 会新建一个控件按钮 2，然后通过 `SetWindowText` 修改按钮 2 的标题：\n\n\n![cfde64e0c87b4a923e63ebd92ec4f2d2&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/91978055d0e1fbc027af3f885ac24f87c5a5a27a096b798bc36e10546b1b61ae.jpg)\n\n我们手动给创建的按钮 2添加一个点击处理函数（还是那一套流程）：\n![dda84321e22c9104151ea8a4e4178a48&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/6cbc45bbadd1faa8234b7a8867bf5184ea496f0ee075d83f182d2f221084684e.jpg)\n\n若要在多个函数中操作动态创建出来的按钮，应将其声明为类成员变量，或使用 `GetDlgItem` 动态获取，如下图所示：\n```cpp\nGetDlgItem(IDC_BUTTON2)->SetWindowText(\"Changed\");\n```\n![](/notes/n-60887c23e81547e6a416ad0cbf121244/media/0b50d23409d8e91bc9dea05fadd2eb99ddba670cee343e2b7c10c778c7c19d03.jpg)\n![](/notes/n-60887c23e81547e6a416ad0cbf121244/media/57e339b55e119ca826a06ab75f842c166357ce40f682aa65e0440d531bdd624d.jpg)\n\n按钮控件还包含丰富的成员方法，例如使用 `EnableWindow` 改变可用状态：\n- `EnableWindow(TRUE)`：启用按钮。\n- `EnableWindow(FALSE)`：禁用（灰显）按钮。\n![d9272d37aba3d2202fdc09593ee00f37&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/ac50c2e9b9e17b0d43ebfc635c5efa97fba94ebf5315fe45f1d486250c1847aa.jpg)\n\n除此之外，还可以设置样式，例如你可以设置按钮控件为一个单选框、复选框，这都可以在**Create**函数中去设置。\n### Static 控件 (`CStatic`)\n\n`CStatic` 是 MFC 中最基础的静态文本控件。以我们这里为了方便直接使用 MFC 控件栏区创建即可（并通过**Properties**去修改文本内容、样式...）：\n\n![add1ec40dc3f182685d079009085db1f&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/8cabb1c1a0f8bcd44ffd18f23cc8d0b1c770cd5d9e11d35be17e71aebd9900ae.jpg)\n\n\n默认不响应鼠标事件。若需为其添加点击事件处理：\n1. 修改默认的 `IDC_STATIC` 标识 ID（这是**关键步骤**，否则无法通过 VC 6 的向导创建消息处理函数，只能手动）。\n2. 在属性样式中勾选 `Notify`（允许发送通知消息）。\n3. 双击静态文本创建事件映射。\n\n![5d396fcb141cea379c6f1fa4ad6db58c&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/380f4f8339aea95f5fbd77b7f4b1610b4bac02a35f1e3cf15be4572a66f32a79.jpg)\n```cpp\nvoid CHelloDialogDlg::OnStatic1() {\n\tGetDlgItem(IDC_STATIC_1)->SetWindowText(\"Clicked!\");\n}\n```\n### Edit 控件 (`CEdit`)\n\n\nEdit 控件就是一个编辑框，与其他控件一样你可以通过**Properties**去修改样式：\n- 勾选 `Multiline` 支持多行文本。\n- 勾选 `Horizontal Scroll` / `Vertical Scroll` 启用滚动条。\n![e0921941e81c6f5a3e82a2d2fc72da64&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/070d5404ef8086fa99703d49bec74c9b9dee4feb9ea095495d0040136c095a17.jpg)\n![b099d08f34fd6f9da21acda5cde4da2e&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/82b1cf31a62c8f14a76406c7fcf66312de8315b5639c7fb1bd376e9fcc33eea6.jpg)\n\n对编辑框来说，支持内容变更通知事件（`EN_CHANGE`），常用于实时输入校验。当编辑框内容发生改变时，即会触发该处理函数。\n![1ffc7770deb9aaa93218edf3593d0cc2&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/42118fe0dee9a9b5c938148a59b9e2420e4fd2a8f482c783577e1dc816bd73fb.jpg)\n![9970858d7fc111ff35d32a7182ff68ea&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/091614ace740735dbfe7913802566d3214c0c9f994c74a32d100eb722a097612.jpg)\n## Windows 非传统控件\n\n### 组合框与列表框控件\n\n**在了解这么多控件的使用方法之后，其实很多都是如出一辙，所以接下来的笔记记录不会那么详细。**\n\n#### ComboBox 控件\n\n`ComboBox` 控件也就是组合框，跟其他控件没什么区别，唯一的区别在于它的设置中多了一个 `Data` 标签栏，如下图是使用方法：\n\n![71c98e1029379eac61e349eebb9f79af&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/7413ed09acebfc5cb5d9dae87215711f4c1dc4048f1618522e36f20051296a62.jpg)\n\n其他的属性可以自行去研究，都非常简单。\n\n![d9e6875902df6917aebc8b0f8c66aef9&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/25b7f49c671d4a37f701aac12e200d0c081a2712a9702f2d81ee977750f55911.jpg)\n\n#### ListBox 控件\n\n##### CListBox 常用风格\n\n`ListBox` 控件就是列表框，如下表是其常用风格：\n\n| 风格 | 介绍 |\n| :--- | :--- |\n| `LBS_EXTENDEDSEL` | 支持多重选择 |\n| `LBS_MULTICOLUMN` | 指定一个水平滚动的多列列表框，通过调用 `CListBox::SetColumnWidth` 来设置每列的宽度 |\n| `LBS_MULTIPLESEL` | 支持多重选择，列表项的选择状态随着用户对该项单击或双击鼠标而翻转 |\n| `LBS_NOTIFY` | 当用户单击或双击鼠标时通知父窗口 |\n| `LBS_USETABSTOPS` | 使列表框在显示列表项时识别并扩展制表符（`\\t`），默认的制表宽度是 32 个对话框单位 |\n| `LBS_DISABLENOSCROLL` | 使列表框在不需要滚动时显示一个禁止的垂直滚动条 |\n| `LBS_NOREDRAW` | 当选择发生变化时防止列表框被更新，可发送消息改变该风格 |\n\n#### 常用的方法\n\n- `AddString()`：添加一个字符串选项，放到最后面。\n- `DeleteString()`：删除指定索引的字符串选项。\n- `GetCurSel()`：获取当前选中选项的索引，返回值小于 0 则没有选中。\n- `SetCursel()`：设置当前索引，如果填写 0，那么就是设置第一个选中。\n- `GetCount()`：获取组合框或者列表框当前的项的个数。\n- `SetItemData()`：设置指定索引的位置的值。\n- `GetItemData()`：获取指定索引位置的值。\n- `InsertString()`：在指定索引处插入字符串。\n- `GetTopIndex()`：返回组合框或者列表框第一个可见项的下标，相应的也有设置下标的。\n- `FindString()`：寻找字符串，找到则返回值大于 0，并且返回的是寻找到的字符串的下标。\n\n### ListCtrl 控件\n\n\n#### CListCtrl 常用风格\n\n`ListCtrl` 控件是列表视图控件，其常用风格如下表：\n\n| 风格 | 介绍 |\n| :--- | :--- |\n| `LVS_ICON` | 为每个选项显示大图标 |\n| `LVS_SMALLICON` | 为每个选项显示小图标 |\n| `LVS_LIST` | 显示一列带有小图标的选项 |\n| `LVS_REPORT` | 显示选项详细资料，并且其会创建一个表头，这也是我们用的最多的一个风格 |\n\n![cd1fbaf34f2463c5f4e65fd452af8e52&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/eaeab407c43795e34151afff63ebfdc7145f11cf0fa68ce2850318c880b19075.jpg)\n\n![99120665cdb0bed8643df84427c94523&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/23ffbdbebdb189f306c3a69bab2504373aaae698ba5be00d4b09861168200b81.jpg)\n\n#### 使用 ListCtrl\n\n首先我们创建一个关联：\n\n![f0b9a57c63256135c967ffe3c9b3eef9&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/d2d95574244272a5e0da133b24628fd4df0cf098ef4772689eb321b4a636fd7e.jpg)\n\n在我们正式使用之前，我们需要了解一些扩展样式：\n\n```cpp\nLONG lStyle;\nlStyle = GetWindowLong(m_list.m_hWnd, GWL_STYLE); // 获取当前窗口样式\nlStyle &= ~LVS_TYPEMASK;                          // 清除显示方式位\nlStyle |= LVS_REPORT;                             // 设置样式\nSetWindowLong(m_list.m_hWnd, GWL_STYLE, lStyle);  // 设置样式\n\nDWORD dwStyle = m_list.GetExtendedStyle();       // 获取原来的一个扩展风格\ndwStyle |= LVS_EX_FULLROWSELECT;                 // 选中某行使整行高亮（只适用于 report 风格的 ListCtrl）\ndwStyle |= LVS_EX_GRIDLINES;                      // 网格线（只适用于 report 风格的 ListCtrl）\ndwStyle |= LVS_EX_CHECKBOXES;                     // 在选项前面生成 CheckBox 控件\nm_list.SetExtendedStyle(dwStyle);                // 设置扩展样式\n```\n\n我们可以使用这个风格，在 `OnInitDialog` 函数中进行设置：\n\n![3e09aa9a6a1a2e46f0e5611f7cfa1dd5&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/e7c080a213093c8111f15611e5135962be6c7ac03c7843ec7ef3f391cb30959b.jpg)\n\n因为这是一个 `Report` 风格的 `ListCtrl` 控件，该风格具有表头，所以我们需要使用 `InsertColumn` 函数去添加一个表头（**靠左对齐，宽度为 60**）：\n\n![7b2d777f95423082ba132e28bd3dbdfa&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/312fcca5aab148ed38e62a3bd8bb66c4d306fbd50145bbcee700479d5e5bf8cd.jpg)\n\n我们可以通过 `InsertItem` 函数去添加表格的数据：\n\n![619946c21733e18eaaed93ccd1fc9eed&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/60e42240b60b22d5a0d8f7ebe7412d7925220aeff403f0436ee5bad62c5f35ef.jpg)\n\n在数据开头有这个复选框是因为我们的扩展样式设置了 `CheckBox`。\n\n`InsertItem` 函数最终返回的结果是一个 `int` 类型，表示当前插入数据的行索引。我们可以根据这个返回值使用 `SetItemText` 函数去修改对应行其他列的数据：\n\n![685e60a871687a1a684304d65e0e89c9&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/a76d46732f42cdc802f85174f43386d536caf48ac1477b791effe7095e4a2f0d.jpg)\n\n如上图我们可以得知，`InsertItem` 函数实际上插入的是一行。其第一个参数 `0` 表示在第 1 行的第 1 列添加一个项。随后使用 `SetItemText` 函数根据该行索引去填充其他列的数据。\n\n所以，我们添加数据的时候先应该执行 `InsertItem` 函数创建行，然后再通过 `SetItemText` 函数填充其他列数据。\n\n同样，我们也可以通过 `GetItemText` 函数去获取数据，如下图所示就是获取第 2 行的第 2 列的数据：\n\n![9be2478e588ab12ca720c7bddf95a713&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/1b883098aca42428b40a874a3faaeb3375e175f76826c1583bafef930fd83d6b.jpg)\n\n使用了 `CheckBox` 的扩展样式后，要获取复选框是否被选中，可以通过 `GetCheck` 函数来实现：\n\n![6bfbd77a0ef41fcd1bc4513cf9b4aeca&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/7c33c61816b3572fe745969126d55b215a101fb9f0ad7ef2464c476c958e6af4.jpg)\n\n该函数返回值为 `1` 表示选中，`0` 表示未选中。参数表示获取第几个项的复选框状态。\n\n我们可以在 `Resource` 中添加一个图标，然后在数据开头挂载该图标：\n\n![9318f63823590c52a8e76ef0339ac391&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/06b273cffecb753048d127d492782c6db95ab49c6b769421227efc8b979b8d71.jpg)\n\n#### 添加右键菜单\n\n我们可以在资源文件中添加/描述右键菜单的样式，转到资源视图选择插入：\n\n![1955c4f80db92ddf3b13de86ffa20258&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/687f92531b323959d2aa66338e3ccf9ab7d4fff95f28e033acaab7ed9d5d1def.jpg)\n\n然后添加右击事件，显示菜单：\n\n![aa9732e2f5481f092c7a269ffdb7ed0b&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/d6e04377459af296b2ade3559eab397ff3ffab194c3e57c042c037f4cd8cac86.jpg)\n\n### TreeCtrl 控件\n\n#### CTreeCtrl 常用风格\n\n| 风格 | 介绍 |\n| :--- | :--- |\n| `TVS_HASLINES` | 添加线段，将子项目和其父项目连接起来 |\n| `TVS_LINESTROOT` | 添加线段，将分层结构的顶层（根项目）连接起来。需指定 `TVS_HASLINES` 才有效 |\n| `TVS_HASBUTTONS` | 为具有子项目的项目添加 `+/-` 按钮，点击可展开或折叠子树 |\n| `TVS_EDITLABELS` | 使置换式标签编辑通知有效 |\n| `TVS_DISABLEDRAGDROP` | 禁用拖放功能 |\n| `TVS_SHOWSELALWAY` | 选中项始终保持高亮（即使失去焦点） |\n\n#### 使用 TreeCtrl\n\n老规矩，我们还是添加一个关联变量：\n\n![7c981a81927876b915f33c8e5ca20335&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/1a1d916584ade3a8a212f335627157c099084dbaad001b9e09264c3ebf220c0e.jpg)\n\n然后新建一个按钮来调用一些常见的函数。通过 `InsertItem` 函数可以添加节点（该方法有多种重载形式，可查询 `MSDN Library`）：\n\n![78211ec1ba6423882655ab183522ddef&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/294e379e632e35326f9a7a9f0278fc41be03aa3e4acdd524afa92155b22fa026.jpg)\n\n我们先用 `InsertItem` 函数添加一个父节点，然后根据该函数返回的 `HTREEITEM` 句柄去创建子节点：\n\n![1193e648e4f19ba7b878af790647b048&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/e662925514361cedffb336ac21afa2ca2e8cbe48663bbfc0f4683391850d40fd.jpg)\n\n如果需要节点自动排序，可以使用样式 `TVI_SORT`：\n\n![6bf83374a8f263810c8f9b8bdb25e07a&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/dd2e5594d65433c94f086bcf7bdb3efaa1d246778240d3d5995a3823266bfec9.jpg)\n\n同理，若要在子节点下继续创建孙节点，可将当前子节点的句柄作为父节点参数：\n\n![54a5ef90af4e479c108430a93c655861&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/ee96f2257f5fd79d5987f3379250a439936b321ce9e936d704d16367d2fcb013.jpg)\n\n获取节点信息方面，我们可以使用 `GetRootItem` 获取最顶层的根节点：\n\n![ed026b9dc8fb16a590689dd4e9a1bfef&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/03b0217de53add555d20c29536cd7056abe4b246846134ecb3ba0f9d84f71d07.jpg)\n\n在有多个根节点的情况下，该函数默认获取第一个（最上面的）：\n\n![6db1a05b43b7f0c4c2299ffb21e81957&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/dd1b019c18e059478b862503b5760b01a572798123f3343cb009c912383a7859.jpg)\n\n若要获取同级的其他父节点，可以使用 `GetNextSiblingItem` 函数：\n\n![28803d9fc9728687ee703e483f20d33f&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/a44467ea0b19d7297f1340fcfd422543756e45e86ed71412a3e19fec0a33c4e5.jpg)\n\n获取父节点的子节点则使用 `GetChildItem` 函数：\n\n![6a694cfc9c52a57e73762bb2d492f2d8&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/74e37c5330205a55f1fb71c5212c9ff356b162a1a0fc10eeb5b9d35171b1a945.jpg)\n\n为了遍历整个树，我们可以结合 `GetChildItem` 和 `GetNextSiblingItem` 编写循环逻辑：\n\n![230741fe722fe23791de0a56d96a3fb9&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/5d5ef94665a5e390b32740841a57388f31d3ab1e4bb2964c7663c2b74bec3e5c.jpg)\n\n### Tab Control 控件\n\n`Tab` 控件常用于实现 `MFC` 的多页面设计。\n#### 使用 TabCtrl\n\n在 `VC6` 中拖拽创建控件：\n\n![6cc722d939bc575fee02d5bb73408bc2&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/2ede1e5bed423f9796a67b0794e78cb5e349d55f84d956f640cb152af2a8c692.jpg)\n\n创建一个 `Tab` 控制变量（关联 `CTabCtrl` 类型）：\n\n![62442883ed04f177ed8e75395184bda7&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/17baf7ca9eb1d4f6085a4fcdadedea8fa052c3cfb3a57ce7c2941ba9a96035c3.jpg)\n\n可以通过 `InsertItem` 函数在初始化阶段添加标签：\n\n![49897cc93ba2678db8931907a28ff880&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/ce66a9ade5f828d336f43cd0c1537167cb6e88c9fe512ae2572e60789955789d.jpg)\n![a4985f5934f1c7f9541c8115c0dc330f&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/6f0f51468673df87d0d28244fb1c078beb2d1ab3585734120961ee50161bb0d6.jpg)\n运行结果如下，说明 `MFC` 多页面设计是基于标签页实现的：\n\n![98008164d002753ab5e1fed533a53ee6&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/0d7fcab21c72d47ea22a3cde419f0deded1f9812effd3da70addfc500d0c9185.jpg)\n\n目前只是创建了标签页，还需要在资源区创建对应的对话框（`Dialog`）模板并生成窗口类：\n\n![9b9d7fe3a09865006cc33bf6424faef8&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/56a71c70e7417c7318c4cce6d91624c3b13442808525ce7fb00d5717dd4d9d19.jpg)\n\n![f2a42ccfc2a1242e6a814ff034d3a032&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/0c9c4d85f970bf2f41bc86230d309de352586892adf56cb0e54424c22b4893ce.jpg)\n\n在主窗口类中声明页面成员：\n\n![47406b3ddf4bd7dca34d5e552688a0f3&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/d323cfff7bb24b6733a6a064fae13c0446aa8235c00dffc017569396816ff1ac.jpg)\n\n接下来使用 `Create` 和 `ShowWindow` 创建并显示窗口，并使用 `SetParent` 将其父窗口设置为 `Tab` 控件或主对话框：\n\n![02c1a747f642df5db7053279c803542e&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/279d47b5c66157ed0034e17ab99433b9d59340bbfd40c04f458052a028c5d769.jpg)\n我们可以看下结果：\n\n![297d3ff8ac55154901baf4a651842896&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/55e0c1b8b97c454223fd6261098f96978936bbb6b9e80c9f9a36200721d7aa27.jpg)\n默认情况下，子页面可以移动且没有填满我们的客户区。我们需要通过 `GetClientRect` 获取客户区坐标并进行手动调整：\n\n![b88987d8c9453813ef35b10d06456170&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/54042aa6cb9332666ec30550049d23dc764f6bfeca3e0f4c0509eb4f6e27edc4.jpg)\n\n我们又发现，这样标签页又被遮住了，还需要调整坐标以避开标签栏：\n\n![b1d03e6842a5d23615fc7c42c9f790d5&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/edfce04215abbccf3dc6f5142b31057edc5b8b0215c8ef7d6852c5e397a40381.jpg)\n\n最后，通过 VC 的类向导设置对 `TCN_SELCHANGE` 消息的响应，以实现在切换标签时显示/隐藏对应页面：\n\n![75bcec2b018d7a62c3f16d09ae8c3b7e&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/a470cf9f0ba0c639e416cfb8319e967f1fa824bcb31b548ccfd27855954288e6.jpg)\n\n此外，子页面对话框应修改样式为 `Child` 且无边框（`None`），以符合 UI 设计习惯：\n\n![c6cf3c311a58f60d2c880217d876c5f5&#95;MD5&#46;jpg](/notes/n-60887c23e81547e6a416ad0cbf121244/media/4b47d4680c820300d26a1500027650fdea41dc43deb4b160dc641faa38214af7.jpg)\n",
+  "id": "60887c23-e815-47e6-a416-ad0cbf121244",
+  "metadata": {
+    "tags": [
+      "lang/cpp/mfc"
+    ],
+    "title": "MFC 对话框与控件"
+  },
+  "resources": [
+    "03b0217de53add555d20c29536cd7056abe4b246846134ecb3ba0f9d84f71d07.jpg",
+    "06b273cffecb753048d127d492782c6db95ab49c6b769421227efc8b979b8d71.jpg",
+    "070d5404ef8086fa99703d49bec74c9b9dee4feb9ea095495d0040136c095a17.jpg",
+    "091614ace740735dbfe7913802566d3214c0c9f994c74a32d100eb722a097612.jpg",
+    "0b50d23409d8e91bc9dea05fadd2eb99ddba670cee343e2b7c10c778c7c19d03.jpg",
+    "0c9c4d85f970bf2f41bc86230d309de352586892adf56cb0e54424c22b4893ce.jpg",
+    "0d7fcab21c72d47ea22a3cde419f0deded1f9812effd3da70addfc500d0c9185.jpg",
+    "17baf7ca9eb1d4f6085a4fcdadedea8fa052c3cfb3a57ce7c2941ba9a96035c3.jpg",
+    "1a1d916584ade3a8a212f335627157c099084dbaad001b9e09264c3ebf220c0e.jpg",
+    "1b883098aca42428b40a874a3faaeb3375e175f76826c1583bafef930fd83d6b.jpg",
+    "23ffbdbebdb189f306c3a69bab2504373aaae698ba5be00d4b09861168200b81.jpg",
+    "25b7f49c671d4a37f701aac12e200d0c081a2712a9702f2d81ee977750f55911.jpg",
+    "279d47b5c66157ed0034e17ab99433b9d59340bbfd40c04f458052a028c5d769.jpg",
+    "294e379e632e35326f9a7a9f0278fc41be03aa3e4acdd524afa92155b22fa026.jpg",
+    "2ede1e5bed423f9796a67b0794e78cb5e349d55f84d956f640cb152af2a8c692.jpg",
+    "3028ffc814d04e327087fdc788df8bb540b156aa9ea0623957723f7f39497435.jpg",
+    "312fcca5aab148ed38e62a3bd8bb66c4d306fbd50145bbcee700479d5e5bf8cd.jpg",
+    "31bbfdfc910c5dd36ebba21fd5cacf5f5190aeec6d5281edd8338ab17b214695.jpg",
+    "380f4f8339aea95f5fbd77b7f4b1610b4bac02a35f1e3cf15be4572a66f32a79.jpg",
+    "42118fe0dee9a9b5c938148a59b9e2420e4fd2a8f482c783577e1dc816bd73fb.jpg",
+    "447aa577bb6003385f2b010637a2df861e41ee30c61a51d7efd2ffc44a2ef1ef.jpg",
+    "4b47d4680c820300d26a1500027650fdea41dc43deb4b160dc641faa38214af7.jpg",
+    "54042aa6cb9332666ec30550049d23dc764f6bfeca3e0f4c0509eb4f6e27edc4.jpg",
+    "5438f3c98ddd51cf82732fb103e177a3acc8e1a70ccf79cc7c2dcca8cfa487ab.jpg",
+    "55e0c1b8b97c454223fd6261098f96978936bbb6b9e80c9f9a36200721d7aa27.jpg",
+    "56a71c70e7417c7318c4cce6d91624c3b13442808525ce7fb00d5717dd4d9d19.jpg",
+    "5735ab4d3f293ea317d27c04d6b1bdc31d2a93c7e09e007d9e26470269509b7f.jpg",
+    "57e339b55e119ca826a06ab75f842c166357ce40f682aa65e0440d531bdd624d.jpg",
+    "5ac908943f8a8d4bd464237ed2010b93b6356dc348fd6f1c2a7a30efc7b71503.jpg",
+    "5d5ef94665a5e390b32740841a57388f31d3ab1e4bb2964c7663c2b74bec3e5c.jpg",
+    "60e42240b60b22d5a0d8f7ebe7412d7925220aeff403f0436ee5bad62c5f35ef.jpg",
+    "64c8b0ce42d5f8f7f2b5f596bfac80f7ea5236be1a6e49f0dd703d639164cc49.jpg",
+    "687f92531b323959d2aa66338e3ccf9ab7d4fff95f28e033acaab7ed9d5d1def.jpg",
+    "6cbc45bbadd1faa8234b7a8867bf5184ea496f0ee075d83f182d2f221084684e.jpg",
+    "6f0f51468673df87d0d28244fb1c078beb2d1ab3585734120961ee50161bb0d6.jpg",
+    "7413ed09acebfc5cb5d9dae87215711f4c1dc4048f1618522e36f20051296a62.jpg",
+    "74931aab9287ee0c27cd1377e77152bb550054df7c63575cdd63dc59cfb60a58.jpg",
+    "74e37c5330205a55f1fb71c5212c9ff356b162a1a0fc10eeb5b9d35171b1a945.jpg",
+    "7c33c61816b3572fe745969126d55b215a101fb9f0ad7ef2464c476c958e6af4.jpg",
+    "82b1cf31a62c8f14a76406c7fcf66312de8315b5639c7fb1bd376e9fcc33eea6.jpg",
+    "83194cf891c73ab5feb74b23a2cea942b46fa88ae12dbf5fd7f192180fff8b7e.jpg",
+    "8cabb1c1a0f8bcd44ffd18f23cc8d0b1c770cd5d9e11d35be17e71aebd9900ae.jpg",
+    "91978055d0e1fbc027af3f885ac24f87c5a5a27a096b798bc36e10546b1b61ae.jpg",
+    "a44467ea0b19d7297f1340fcfd422543756e45e86ed71412a3e19fec0a33c4e5.jpg",
+    "a470cf9f0ba0c639e416cfb8319e967f1fa824bcb31b548ccfd27855954288e6.jpg",
+    "a654a910a399a50e7ca929b574cfb51afb523acc595efb2e4cab97df4872a061.jpg",
+    "a7354fba73519a57ebf9985d25ea1904ea760429dc83f9525ad75862e78d22dc.jpg",
+    "a76d46732f42cdc802f85174f43386d536caf48ac1477b791effe7095e4a2f0d.jpg",
+    "ab96438abf3915d9bc5f7186494d1054f3fdf7afb627bff0ebf511e48d8d6a0f.jpg",
+    "ac50c2e9b9e17b0d43ebfc635c5efa97fba94ebf5315fe45f1d486250c1847aa.jpg",
+    "c3816fb916a816d9c37760cc6e197620c6d26c2778003f173d85e5d8b7e2f914.jpg",
+    "ce66a9ade5f828d336f43cd0c1537167cb6e88c9fe512ae2572e60789955789d.jpg",
+    "cead2e1f1685e68967426be7c872ad2d0fc16957eeb10cd613150106447b7cc2.jpg",
+    "cf07b83fd7360e30f8073a95be284c0e2d0aaa854168bac1649af09a082fbaac.jpg",
+    "d2d95574244272a5e0da133b24628fd4df0cf098ef4772689eb321b4a636fd7e.jpg",
+    "d323cfff7bb24b6733a6a064fae13c0446aa8235c00dffc017569396816ff1ac.jpg",
+    "d3da2d748603ae81d154bd488b42d84777e17b7df84378d25ae306841ff958ee.jpg",
+    "d4f37db39dde0c35b3a7cb3a6f4f0892a80ebdb6ae3026db1ad2d0b106e087bd.jpg",
+    "d6e04377459af296b2ade3559eab397ff3ffab194c3e57c042c037f4cd8cac86.jpg",
+    "dd1b019c18e059478b862503b5760b01a572798123f3343cb009c912383a7859.jpg",
+    "dd2e5594d65433c94f086bcf7bdb3efaa1d246778240d3d5995a3823266bfec9.jpg",
+    "e662925514361cedffb336ac21afa2ca2e8cbe48663bbfc0f4683391850d40fd.jpg",
+    "e7c080a213093c8111f15611e5135962be6c7ac03c7843ec7ef3f391cb30959b.jpg",
+    "eaeab407c43795e34151afff63ebfdc7145f11cf0fa68ce2850318c880b19075.jpg",
+    "edfce04215abbccf3dc6f5142b31057edc5b8b0215c8ef7d6852c5e397a40381.jpg",
+    "ee96f2257f5fd79d5987f3379250a439936b321ce9e936d704d16367d2fcb013.jpg",
+    "ef0a1f5cad1f8155db527b51dcb3a56171c715f79a34e76fc1e953527d4034a4.jpg",
+    "ff275706f81d8662582fc5f489d7aedd3df7837c1350ae530e39e7edb074465f.jpg"
+  ],
+  "url": "/notes/n-60887c23e81547e6a416ad0cbf121244/"
+}

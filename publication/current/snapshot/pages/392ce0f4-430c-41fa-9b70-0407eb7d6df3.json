@@ -1,0 +1,336 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-d14147fd8238d25cabd7",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-31552d5512f2ce78437b",
+      "kind": "heading",
+      "offset": 308
+    },
+    {
+      "id": "h-58d12d4e3363ec486353",
+      "kind": "heading",
+      "offset": 352
+    },
+    {
+      "id": "h-c89aba15f680c3221572",
+      "kind": "heading",
+      "offset": 376
+    },
+    {
+      "id": "h-51218b66b1bca216875b",
+      "kind": "heading",
+      "offset": 484
+    },
+    {
+      "id": "h-3901b4147890fa907576",
+      "kind": "heading",
+      "offset": 2164
+    },
+    {
+      "id": "h-1474b34fe3009972d1c2",
+      "kind": "heading",
+      "offset": 2398
+    },
+    {
+      "id": "h-af783acf5d5dbdbee4dc",
+      "kind": "heading",
+      "offset": 2422
+    },
+    {
+      "id": "h-aecd362d8f2043259463",
+      "kind": "heading",
+      "offset": 2553
+    },
+    {
+      "id": "h-704bf5d45990e8abf1b8",
+      "kind": "heading",
+      "offset": 4363
+    },
+    {
+      "id": "h-b078b629bdf2cff034f8",
+      "kind": "heading",
+      "offset": 4384
+    },
+    {
+      "id": "h-b6ee7d8c5cce799bd110",
+      "kind": "heading",
+      "offset": 4515
+    },
+    {
+      "id": "h-61ee886feafcd6b826f4",
+      "kind": "heading",
+      "offset": 9010
+    },
+    {
+      "id": "h-aee8d97de05fd55229f7",
+      "kind": "heading",
+      "offset": 9612
+    },
+    {
+      "id": "h-94e5f27b09a13894574f",
+      "kind": "heading",
+      "offset": 9626
+    },
+    {
+      "id": "h-781a4f7c65978f921041",
+      "kind": "heading",
+      "offset": 9811
+    },
+    {
+      "id": "h-050704c444b48d2ba609",
+      "kind": "heading",
+      "offset": 10086
+    },
+    {
+      "id": "h-2b9c4610548cc878d3b9",
+      "kind": "heading",
+      "offset": 10641
+    },
+    {
+      "id": "h-0d5e34ec68c9c792b24b",
+      "kind": "heading",
+      "offset": 10771
+    },
+    {
+      "id": "h-bb8f9d89783ca09a3f81",
+      "kind": "heading",
+      "offset": 11729
+    },
+    {
+      "id": "h-994bdba83b73bff6644c",
+      "kind": "heading",
+      "offset": 12033
+    },
+    {
+      "id": "h-ac90d0c96720aeb098ac",
+      "kind": "heading",
+      "offset": 12578
+    },
+    {
+      "id": "h-c823be328b26adbe20bc",
+      "kind": "heading",
+      "offset": 12600
+    },
+    {
+      "id": "h-dca88b39c9517e754a44",
+      "kind": "heading",
+      "offset": 13099
+    },
+    {
+      "id": "h-76077884a70908a2d267",
+      "kind": "heading",
+      "offset": 14053
+    },
+    {
+      "id": "h-20067f0ff1c17d6de616",
+      "kind": "heading",
+      "offset": 14864
+    },
+    {
+      "id": "h-73074e32efef801dbd95",
+      "kind": "heading",
+      "offset": 16076
+    },
+    {
+      "id": "h-37966823a964611bb5ba",
+      "kind": "heading",
+      "offset": 16094
+    },
+    {
+      "id": "h-380e3eb1f703683c83c9",
+      "kind": "heading",
+      "offset": 16364
+    },
+    {
+      "id": "h-f2e3fa6d8b0bfab4b534",
+      "kind": "heading",
+      "offset": 17025
+    },
+    {
+      "id": "h-81926e1c0b8a50c6b719",
+      "kind": "heading",
+      "offset": 17639
+    },
+    {
+      "id": "h-3edcbfa5c36909d0e476",
+      "kind": "heading",
+      "offset": 17708
+    },
+    {
+      "id": "h-3d433b0794a387ef0d09",
+      "kind": "heading",
+      "offset": 18285
+    },
+    {
+      "id": "h-b28d143c2d0b537b17c4",
+      "kind": "heading",
+      "offset": 18632
+    },
+    {
+      "id": "h-b48d5dd31f75d6f49028",
+      "kind": "heading",
+      "offset": 19726
+    },
+    {
+      "id": "h-637ed8171b1b93f9540c",
+      "kind": "heading",
+      "offset": 20258
+    },
+    {
+      "id": "h-1d14ba7e72575b454d2c",
+      "kind": "heading",
+      "offset": 20637
+    },
+    {
+      "id": "h-79f6f678a2cb58b516cf",
+      "kind": "heading",
+      "offset": 20650
+    },
+    {
+      "id": "h-31a39ce33213eb6610ea",
+      "kind": "heading",
+      "offset": 20767
+    },
+    {
+      "id": "h-f7101a9e158decd54a74",
+      "kind": "heading",
+      "offset": 20907
+    },
+    {
+      "id": "h-30596275c4b9dfd787b3",
+      "kind": "heading",
+      "offset": 22100
+    },
+    {
+      "id": "h-643a4ace044e93c8e0bc",
+      "kind": "heading",
+      "offset": 22126
+    },
+    {
+      "id": "h-ad70e6b585055ef81491",
+      "kind": "heading",
+      "offset": 22614
+    },
+    {
+      "id": "h-4727062e298eb08b979c",
+      "kind": "heading",
+      "offset": 25059
+    },
+    {
+      "id": "h-2ac97de8dfddfb137dec",
+      "kind": "heading",
+      "offset": 25297
+    },
+    {
+      "id": "h-cedd67b9855418268e71",
+      "kind": "heading",
+      "offset": 25310
+    },
+    {
+      "id": "h-0536e53781a4221d40af",
+      "kind": "heading",
+      "offset": 25412
+    },
+    {
+      "id": "h-65e2c0fe2624e3a0f45a",
+      "kind": "heading",
+      "offset": 29304
+    }
+  ],
+  "body": "# MFC 框架原理\n\n相关内容：\n1. [MFC 基础篇](/notes/n-581da27d7b3646a1b1298f1432e2939d/)\n2. [C&#43;&#43; static 与 const 关键字](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/)\n3. [C&#43;&#43; RTTI 机制](/notes/n-05b15a525c2c46f5b96d1ac648d63387/)\n4. [C&#43;&#43; 继承与虚继承机制](/notes/n-da561297c8704e938e5625a35698d9eb/)\n\n## 手动实现 MFC 类\n\n本章通过代码来模拟 `MFC` 类具有的一些特性。\n\n### MFC 类的初始化顺序\n\n#### 1.1.1) 本节需要掌握的知识点\n\n- 为什么要声明全局的应用程序对象（`CWinApp`）。\n- 学会使用类视图快速添加类。\n- `CWinApp` 的层次结构。\n- `CFrameWnd` 的层次结构。\n\n#### 代码模拟 MFC 类执行顺序\n\n用代码模拟 `MFC` 的初始化过程，我们基于前章中手动编写的 `MFC` 代码来模拟。\n\n我们继承 `CWinApp`、`CFrameWnd` 两个类，这两个类的层次结构如下：\n\n![1fcac53605725f42354323c2d072a1a0&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/18e84ff5b5da7180875bde35b132672aa097607d16af832cd4f5e781cc15be6b.jpg)\n\n因此，我们需要重写 `CObject`、`CCmdTarget`   `CWinThread`、`CWnd`、`CWinApp`、`CFrameWnd` 这几个类。\n\n仅仅是模拟代码，不用实现实际功能，只需编写构造与析构函数即可。这里使用 `VC6` 的类视图来创建：\n\n![853739ff0110923732ffc10d313cd7cd&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/18a16491e8ef9e30ba2af7feabbd318eb1cf6ea73aed664fe0b70ce78a5ad179.jpg)\n\n![467dc2338dd068c7f958cd716dd1cd67&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/29726619038076196d2a231705d21f145fe30d917c43fdd2e095f469c0cf0c9d.jpg)\n\n![3840a1da58fbb3ba0adcb7b69b9f4fb8&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/d0b52d0a64b4c10a9bf51fe44ae9fda459270ef487b1bd7f955181a46e242001.jpg)\n\n按照这样的层级结构我们创建了这些类，并使用前章的代码去继承模拟实现一个 `MFC` 程序：\n\n![ad9c5f24150ea546c432f2d80a0697c8&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/8f35bbbcf8cf70055e44baeda7798e7e936878ed9010aacd9626402e12d4cab2.jpg)\n\n![d9dc93d6925d483d43f4d154ce9a157a&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/3dc36d1b1373edd0b4d20f728b94a6da25b473444ac6c3f57294454f4fb0ab1d.jpg)\n\n![1088ad169fe145edc8454890829f0e77&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/b7a3687745b69e980ae0f09485dc910a0082786fcd15d022707c620401023c5d.jpg)\n\n最后执行，我们可以很清晰地看见执行流程：\n\n![764323f2c75f61d2ef1f03df39e1b307&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/d10d7531e8bee2b0588d8a971d3d791475dc8bae25e6c7239cd0d4d8aefb7ec7.jpg)\n\n#### 1.1.3) 总结\n\n即对象创建时，父类和子类构造、析构函数的执行顺序问题，参考 [C&#43;&#43; 继承与虚继承机制](/notes/n-da561297c8704e938e5625a35698d9eb/)。\n\n全局对象的建构会比程序入口点更早，因此 `CWinApp` 派生类的对象构造函数将早于 `WinMain` 函数执行。由于 `WinMain` 函数又广泛使用了该应用程序对象，这就是为什么该程序对象**必须做全局声明**的原因。\n\n### MFC 类的关键成员和函数\n\n#### 1.2.1) 本节需要掌握的知识点\n\n- `MFC` 是如何使用应用程序对象的。\n- `CWinApp` 类的两个可以覆盖的虚函数：\n    - `virtual BOOL InitInstance();`\n    - `virtual int Run();`\n\n#### 代码模拟 MFC 过程\n\n在本章中，我们可以基于前章的代码重新定义一下虚函数。在原生 `MFC` 中，这个虚函数在三个类中都存在：\n\n![5213d81f3712391070646db3f32c1ef9&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/4089df610605eb2328375fd4f3214b795ea2a1938dfbf67888d4ed61e4ebd9da.jpg)\n\n我们已经了解层次结构，所以直接在最高一层去定义，即在 `CWinThread` 类中定义：\n\n![039e4572d809c4726fe9b4c01741dd50&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/b5bafaf8e8a977eebf7f1cf0837cf95209e49cef99676af3efbf1382560e4f2b.jpg)\n\n在 `CWinThread` 类中我们使用纯虚函数表示，而后在 `CMyWinApp` 类中去实现：\n\n![88c5a993a3a3dd911c3d497a220d8d12&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/d5a2b2ccb34c5a64399d6bb72388d95c7c89745c44000911e7c70ce35402702a.jpg)\n\n![ff97a854932308ed899755e5905a0004&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/f7dd50908fd5fcc66d73c6408c9cff80d5e2426c5da8623c161096695107dd54.jpg)\n\n除此之外，还有一个**成员变量 `m_pMainWnd`**，它同样是在 `CWinThread` 类中定义的：\n\n![9595433ddaba8295084a01e36ed15ee2&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/cea3bd3e4f1d0d28f08ad6a286d7791d564fbf0b12ae0dd86659f719d0a1a47b.jpg)\n\n同样我们需要在 `CMainWindow` 类中定义 `Create()` 函数，并做一个简单的输出即可：\n\n![0b7b37c0142bbbd6b3df95072a8d45a0&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/d599cbd6521eb19d77a80ad2ebcba3997f9ae1b32669be737245512c149e0909.jpg)\n\n为了完美模拟，**`Create()` 函数需要在构造函数中调用，`InitInstance()` 函数需要在 `main` 函数中调用**：\n\n![bb0240092096acaccb8ffd98259cbed6&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/b7520c06bc8bac6dc9084498ac0be01b33f787052d8dc08fc6be033f339c323e.jpg)\n> 虚函数通过虚函数表调用\n\n\n执行顺序如下图：\n\n![1969308f37ce0444d587792e2c9873b4&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/08f0adfc87bc5f8d5ba4b45e4a39d18c73f746935c2702cefb1378f4699d244f.jpg)\n\n---\n\n> `Run` 函数核心逻辑：`CWinApp` 的 `Run()` 函数内封装了消息循环。该虚函数不是必须要重写。\n\n## MFC 源码分析\n\n### 2.1) 本节需要掌握的知识点\n\n- 通过在 `MFC` 的 `AfxWinMain` 入口函数下断点，分析其框架原理。\n- 理解 `CWinApp` 如何取代 `WinMain`。\n- 理解 `CFrameWnd` 如何取代 `WndProc`。\n\n### MFC 的 WinMain 分析\n\n> `MFC` 库中实现了一个通用的 `WinMain` 函数，该函数内部会调用 `AfxWinMain`，后者才是逻辑核心。\n\n`MFC` 的核心入口函数是 `AfxWinMain`，其有四个参数都保存在 `theApp` 的成员变量中（删减版逻辑）：\n\n```cpp\nint AFXAPI AfxWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,\n                      LPTSTR lpCmdLine, int nCmdShow) \n{\n    // 1. 获取当前线程与 App 对象的指针\n    // 在主线程中，pThread 指向的就是 pApp（theApp 对象）\n    CWinThread* pThread = AfxGetThread(); \n    CWinApp* pApp = AfxGetApp();         \n\n    // 2. 初始化 MFC 全局状态 内部会调用 AfxInitThread\n    if (!AfxWinInit(hInstance, hPrevInstance, lpCmdLine, nCmdShow))\n        return FALSE;\n\n    // 3. 进程级初始化（Legacy） 此函数已基本废弃\n    pApp->InitApplication(); \n\n    // 4. 实例级初始化（核心入口） InitInstance 负责：创建窗口、绑定 m_pMainWnd、显示窗口\n    if (!pThread->InitInstance()) \n    {\n        pThread->ExitInstance();\n        return FALSE;\n    }\n\n    // 5. 调用Run函数\n    return pThread->Run();  // 核心：封装了 Win32 消息循环 \n}\n```\n\n在 `AfxWinMain` 函数处下断点跟踪：\n\n![c41e65689304f82f13b2406dc8c35082&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/443074be68a9618edb513a096a66baf4a82ae87ab545da9c84c972583feda719.jpg)\n\n跟进会发现 `pThread` 与 `pApp` **均获取**了我们实例化的 `theApp` 对象：\n\n![1208c110ec01d7ccbfc51939c15bd1d8&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/891722ff6ed30467b6b3528cfb1b1b27e78b5b2ac07163f19ab7632f27334bdb.jpg)\n\n进入 `AfxWinInit()` 函数，其内部会再次获取 `theApp` 对象，并将 `WinMain` 传入的四个参数保存到该对象的成员中：\n\n![f6d0cc9f5cd9aa9f7410455465aae109&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/69d5516c50f3724b931cc9f2bc7cbc32551d37d353003faa408851289cf6a834.jpg)\n\n因此，在重写 `InitInstance()` 时使用的 `m_nCmdShow` 变量实际上就是 `theApp` 的成员：\n\n![357c791bc82c288dad53c9df95cd1c65&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/2aea4e0b0d099c9207291b13b2488061fa55347ecb246eb87978dcc66d11d3e4.jpg)\n\n接下来的 `AfxInitThread()` 函数主要负责为主线程执行初始化工作，如增加消息队列长度：\n\n![0632a3800508123dcd944dc0e56eb0ac&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/f2ea7dc719ffb50203ba3fbe2807a26b22a5a516790f54f96a2891e263c18714.jpg)\n再回到**AfxWinMain**函数，接下来就是一个**InitApplication**函数：\n\n![baed54ab2167b461d816c2a63cd65203&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/4ff08c856f59065e141bb2138d3e0990f6f14b54422428a2c48783e8f473eec3.jpg)\n\n我们之前提到这是 MFC 原来使用的初始化函数，在现在已经过时了，所以不推荐使用，我们可以忽略，继续跟进：\n![640dfd77149a367d45363eb09d325413&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/302d86625dac2ffbb677e45ecfcf735ce9f4c61e364ae43e48095f398141c6c5.jpg)\n\n核心函数 `InitInstance()` 会创建窗口。由于它是一个虚函数，且我们在 `CMyWinApp` 类中进行了重写，程序会进入我们定义的逻辑：\n\n![25cf04808e65dd19f493a08f3a832fd9&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/b3c48021710ad9f475255c0ebdd1bb9d21ade0755aa4927096f69c893c287098.jpg)\n\n`InitInstance()` 最后必须返回 `TRUE`。若返回 `FALSE`，则会销毁窗口并退出实例：\n\n![640dfd77149a367d45363eb09d325413&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/302d86625dac2ffbb677e45ecfcf735ce9f4c61e364ae43e48095f398141c6c5.jpg)\n\n接下来的 `Run()` 函数实现了 `Win32` 的消息循环：\n\n![5f54f84a0c412c94dddf28d9ccb11f7d&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/bdea0d6ff0af78a00b8bff0d1b8dcb70da92d22847e8e0f11ea49e03167f3eee.jpg)\n\n该函数被视为 `MFC` 的控制中心，所有的消息分发都在其中完成。\n\n\n其逻辑是先通过空闲标志判断线程状态。此处使用的是 `PeekMessage()` 而非 `GetMessage()`，两者的区别如下：\n- **相同点**：均用于查看消息队列。\n- **不同点**：`PeekMessage()` 无论是否有消息均立即返回（无消息则执行空闲逻辑）；`GetMessage()` 在无消息时会阻塞，直到新消息出现。\n\n**若处于空闲状态**，则调用 `OnIdle()` 函数：\n![edfe24b2d9e64de937a5f2c8a5b97728&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/f2c78ac6447d684764910ee5e377fe2f6c1366fc99cc843e845a72bf861f9a27.jpg)\n\n`OnIdle()` 是 `CWinApp` 的虚函数成员，我们可以重写它以在空闲时执行特定操作：\n\n![6da082e42bf8140842d4d8ba3824e1cb&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/8f080a505b991e72e08bb11330792337f58042dbc660c2c9d55f630a72f76225.jpg)\n\n随后进入 `PumpMessage()` 函数，在其内部会调用 `GetMessage()` 进行正式的消息提取、转换与分发：\n\n![d7cf4b123914e29679db38170fc6394e&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/56a92a7d64b658548c39fd9134563e3a58ee1a4ff23d676f7c21cde0a5b8ea11.jpg)\n![e9ab27525be7e89e5743a1f8d8ac45a5&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/1bb05d633d08721547b0055c41f9aac9662d16a447ce9a981ed8cf6fdd90e117.jpg)\n> 在 `PumpMessage()` 函数的尾部，可以看到我们熟悉的消息转换、分发。\n\n再回到**Run**函数接下里调用的就是**IsIdleMessage**函数：\n\n![8ec153e0fd50be65737d6de78f32d89f&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/3b58c9c1615c3436f7d5a92aff148f2c9fc4996d6cb8d573db8af7447182a9b0.jpg)\n\n至此，`Run()` 函数的流程分析完毕。它与 `Win32` 消息循环本质相同，主要区别在于引入了空闲处理机制。\n\n### 创建在堆上的 CMainWindow\n\n我们实例化 `CMainWindow` 时使用了 `new` 关键字，但代码中并未显式调用 `delete`。\n\n实际上，当窗口关闭时，程序会调用虚函数 `PostNcDestroy()`。`CFrameWnd` 的默认实现中包含了 `delete this;` 操作：\n\n![3d3657f166b4f57ef827239e5c75378f&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/5be2656194f9567923dcf133fd01a15eb54808632203f90f491493cd6cfbb707.jpg)\n\n若有特殊需求，可以在子类中重写该函数：\n\n![fcb969242615dc3d82b1e96699f55854&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/2ebfd15e3af6ba77af20a8f0f2d01bcdde426e5191bde1bd66671638397583c9.jpg)\n\n> **注意**：若继承自 `CWnd` 而非 `CFrameWnd`（后者是前者的派生类），则没有自动的 `delete this` 逻辑，需手动处理。\n\n## MFC 的运行时类型识别（RTTI）\n\n### 什么是 RTTI\n\n`RTTI`（Runtime Type Information，运行时类型识别）允许通过基类指针或引用检查所指向对象的实际派生类。其目的是实现安全的多态特性，避免对多态指针的错误使用。\n> 参考：[C&#43;&#43; RTTI 机制](/notes/n-05b15a525c2c46f5b96d1ac648d63387/)\n### 3.2) 本节需要掌握的知识点\n\n- `MFC` 为什么要自建 `RTTI`。\n- 关键宏：`DECLARE_DYNAMIC`、`IMPLEMENT_DYNAMIC`、`RUNTIME_CLASS`。\n- 关键结构体：`CRuntimeClass`。\n- `static` 和 `const` 关键字的作用（参考 [C&#43;&#43; static 与 const 关键字](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/)）。\n- `C++` 原生 `RTTI` 的 `typeid` 操作符。\n\n### 使用 VC6 自带的 RTTI\n\n在 `VC6` 编译器中，需在 **Project Settings -> C/C++** 标签页中开启：\n\n![4a990f01a6327410e876fbc0627426ce&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/3900b8a12b4d173f7456673554ac44b2f689e9679a6334b1d340e24418c3a92c.jpg)\n\n包含头文件 `typeinfo.h` 后即可使用 `typeid()` 函数。\n\n如下图所示简单用一下 `typeid()`，我们定义了一个类 `CAnimal`，并实例化得到指针 `pAnimal`，使用 `typeid()` 进行比较该变量和类本身，发现两者相等：\n\n![058cc4f846d8f950092fa0f939e8611c&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/d80e0d8708e114b4e3d4e723fbb5b13ffb14fd0b09fe642a87c98fb3db4c76b9.jpg)\n\n### MFC 为什么要自建 RTTI？\n\n在 `MFC` 诞生初期，`C++` 标准尚未引入 `RTTI` 概念。为了实现类型安全，`MFC` 设计了一套依靠 `DECLARE_DYNAMIC` 和 `IMPLEMENT_DYNAMIC` 宏实现的识别机制。\n\n### MFC RTTI 的使用方式\n\n要在自定义类中构建 `RTTI`，需成对使用这两个宏：\n\n1. 在 `CMyWinApp` 类声明中使用 `DECLARE_DYNAMIC(CMyWinApp)`。\n![0f36bc85a9a53700475a2281d19d9bc5&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/7a4fa357114a0cc6325dc7417b4d237ec1bceb2412589e01816655cb9d3f1124.jpg)\n\n2. 在实现文件中使用 `IMPLEMENT_DYNAMIC(CMyWinApp, CWinApp)`，两个参数分别为子类和父类的名称。\n![12eaa8a4ba4cf3641dcaa3cf3ff16e85&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/2006052f1b26da17dd90a9cb2f6cef1b3dba22aa5a54df53ebe9e9d077ebd898.jpg)\n\n3. 再使用 `IsKindOf()` 函数判断类继承关系，传递的参数是 `CRuntimeClass` 结构体指针，可通过 `RUNTIME_CLASS` 宏获取\n![68e1127ea4e081e5dc6be6ef12119b7c&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/594e530c89c2ea57ec8f6256e40f4cb573a9c5dbc59dc9b114807d4639f0af6b.jpg)\n\n![9ba7230dc9d6545fb5aa4d72d33d89d8&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/2e7e671d9297ededd2fd876be3b68ed8959552b77b19e29e1fcaff9f78643d9d.jpg)\n> 若是则返回结果为真，否则为假。\n\n\n#### RUNTIME_CLASS\n\n该宏通过拼接符 `##` 访问类中的静态 `CRuntimeClass` 成员：\n\n```cpp\n// 展开后等价于：\n((CRuntimeClass*)(&CWinApp::classCWinApp))\n```\n\n\n![924a78eb078adb190b70ea331d55ee53&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/041ea601a0266274f5eb636a5ed8de08890229e5d037a39ea57e37dc9d3ccd7c.jpg)\n\n#### CRuntimeClass 结构体\n\n`CRuntimeClass` 是一个类型记录链表结构，记录了类的详细信息（简化后）：\n\n```cpp\nstruct CRuntimeClass {\n    LPCSTR m_lpszClassName;       // 类名称\n    int m_nObjectSize;            // 类的大小\n    UINT m_wSchema;               // 模式编号\n    CRuntimeClass* m_pBaseClass;  // 父类指针\n    BOOL IsDerivedFrom(const CRuntimeClass* pBaseClass) const; // 判断派生关系\n    CRuntimeClass* m_pNextClass;  // 链表指针\n};\n```\n\n![81c5d3623c823e3b152a4344b847a52d&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/ee5e3d2b0ba17e19098dc276475959a9b2b7fffb631f9da863c4ae6f7a31aafc.jpg)\n### 宏的本质\n\n#### DECLARE_DYNAMIC\n\n我们可以将使用到的几个宏转换为原来的代码然后看一下本质。首先是 `DECLARE_DYNAMIC`：\n\n```cpp\n#define DECLARE_DYNAMIC(class_name) \\\npublic: \\\n    static const AFX_DATA CRuntimeClass class##class_name; \\\n    virtual CRuntimeClass* GetRuntimeClass() const; \\\n```\n\n在代码中改写为：\n\n```cpp\n// 全局可读的静态成员变量，用于存储类型记录信息\nstatic const CRuntimeClass classCMyWinApp;\n// 获取当前类的运行时类信息，const 表示对该成员无法更改\nvirtual CRuntimeClass* GetRuntimeClass() const;\n```\n\n这里既然定义了一个成员为全局可读的变量，**那么就会需要在一个地方进行初始化**，而初始化的地方就在 `IMPLEMENT_DYNAMIC` 宏中。\n\n#### IMPLEMENT_DYNAMIC\n\n我们来看下 `IMPLEMENT_DYNAMIC` 的背后是什么：\n\n```cpp\n#define IMPLEMENT_DYNAMIC(class_name, base_class_name) \\\n    IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, NULL) // 其背后又是一个宏，继续跟进\n\n#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew) \\\n    AFX_COMDAT const AFX_DATADEF CRuntimeClass class_name::class##class_name = { \\\n        #class_name, sizeof(class class_name), wSchema, pfnNew, \\\n        RUNTIME_CLASS(base_class_name), NULL }; \\\n    CRuntimeClass* class_name::GetRuntimeClass() const \\\n        { return RUNTIME_CLASS(class_name); } \\\n```\n\n在代码中改写为：\n\n```cpp\nconst CRuntimeClass CMyWinApp::classCMyWinApp = {\n    \"CMyWinApp\", \n    sizeof(class CMyWinApp), \n    0xFFFF, \n    NULL, // CRuntimeClass 结构体，初始化类信息\n    ((CRuntimeClass*)(&CWinApp::classCWinApp)), \n    NULL\n};\n\nCRuntimeClass* CMyWinApp::GetRuntimeClass() const {\n    return ((CRuntimeClass*)(&CMyWinApp::classCMyWinApp)); // 返回静态成员地址\n}\n```\n\n#### IsKindOf 函数的逻辑\n\n整个代码转换下来，流程也清楚了，最后就是 `IsKindOf` 函数的原理了，我们可以下断点跟进：\n\n![f33153577075407ce7556623437ec945&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/88dc9e4caa5f16c1962645eea7fc7f26a8ef85668019c078171b722dac39770f.jpg)\n\n首先是获取类的 `CRuntimeClass` 结构体指针，然后根据这个指针调用 `IsDerivedFrom` 方法，传递的参数也是一个结构体指针，继续跟进该函数：\n\n![f1b446755cf9824839ae22ac560b05e7&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/c96f69d20ad897fedbf12feaa17c2c46627b0b1a4f77340e2f69d4271d5b9cfa.jpg)\n\n前面的可以不用管，都是一些容错代码。进到这个 `while` 循环，我们可以很清晰地看见其会递归判断当前类和传递进来的类是否一致（通过 `m_pBaseClass` 链表向上回溯），如果一样则返回 `TRUE`。\n\n**总结**：\n- `DECLARE_DYNAMIC`：声明一个**静态的**属于类本身的存储类信息的成员变量（如果不是静态变量，则无法在类创建前进行初始化）。\n- `IMPLEMENT_DYNAMIC`：指定父子关系，初始化该成员变量。\n- `RUNTIME_CLASS`：取出目标存储类信息的成员变量地址。\n- `IsKindOf`：通过 `IsDerivedFrom` 遍历父类链表，判断目标类是否在继承树中。\n\n### 3.7) 课后作业\n\n通过拆分宏，让 `CMainWindow` 类也支持 `RTTI`：\n\n![3707ce1344bcee9b548cec1575b40fb1&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/f6dc5d53d9b33181414d411ceac309ad35d913289df0a2c0e08932487b9ff82c.jpg)\n\n分别自写函数打印出它父类的 `CRuntimeClass` 结构体信息：\n\n```cpp\nclass CMyWinApp : public CWinApp {\nprivate:\n    void PrintCRuntimeClass(CRuntimeClass* className) {\n        char szOutBuff[0x80];\n        sprintf(szOutBuff, \"%s \\n\", className->m_lpszClassName);\n        OutputDebugString(szOutBuff);\n        \n        CRuntimeClass* baseRuntimeClass = className->m_pBaseClass;\n        if (baseRuntimeClass != NULL) {\n            PrintCRuntimeClass(baseRuntimeClass);\n        }\n    }\n\npublic:\n    virtual BOOL InitInstance();\n    CMyWinApp();\n    ~CMyWinApp();\n\n    static const CRuntimeClass classCMyWinApp; // 全局可读的变量\n    virtual CRuntimeClass* GetRuntimeClass() const; // 最后的 const 表示对该成员无法更改\n\n    void RunIt() {\n        CRuntimeClass* thisRuntimeClass = this->GetRuntimeClass();\n        PrintCRuntimeClass(thisRuntimeClass);\n    }\n};\n```\n\n![fd5c50dea0aad5cba4141741ab59a039&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/2a1dc5527e892ea36bc3d04d6f73d680111da9f726a7eb9f26e9067b9ff086c0.jpg)\n\n## MFC 的动态创建 \n\n### 关于 MFC 的动态创建\n\n`MFC` 有一个永久保存机制（序列化），就是将内存中的对象状态写入到文件中。在读取时，可能需要**根据文件中记载的类名字符串**来创建对象实例（类比 `Java` 的反射或持久化存储）。\n\n`MFC` 的动态创建是对 `C++` 的 `new` 运算符的一层封装，让它能够实现如下逻辑：\n\n```cpp\nchar* className = \"MyClass\";\nCObject* obj = CreateObjectByName(className); // 伪代码，通过类名动态创建\n```\n\n### 4.2) 本节需要掌握的知识点\n\n- 动态创建的作用。\n- 两个关键的宏：\n    - `DECLARE_DYNCREATE`\n    - `IMPLEMENT_DYNCREATE`\n- `CRuntimeClass::CreateObject`（**动态创建函数**）。\n\n```cpp\n// 类型记录链表结构\nstruct CRuntimeClass {\n    LPCSTR m_lpszClassName;               // 类名称\n    int m_nObjectSize;                    // 类的大小\n    UINT m_wSchema;                       // 加载类的模式编号\n    CObject* (PASCAL* m_pfnCreateObject)(); // 函数指针，存放支持动态创建类的 CreateObject 函数地址\n    CRuntimeClass* m_pBaseClass;          // 父类指针\n    CObject* CreateObject();              // 核心动态创建函数\n    // 判断函数\n    BOOL IsDerivedFrom(const CRuntimeClass* pBaseClass) const;\n    CRuntimeClass* m_pNextClass;          // 指向下一个 CRuntimeClass\n};\n```\n\n### 使用动态创建\n\n我们可以跟进 `CFrameWnd` 类、`CWinApp` 类来看一下谁支持动态创建，也就是**谁使用了相关的宏**：\n\n![c6f5ef0a2402b65347c6ddbbc84add7f&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/6e4b4d601837536cf2a2127ec21db333ce8c490b1e05d0098554dc8934b94f20.jpg)\n\n如上图所示，我们可以很清晰地看见 ** `CFrameWnd` 类使用了 `DECLARE_DYNCREATE` 宏**，表示其支持动态创建。\n\n我们可以在其派生的 `CMainWindow` 类也使用动态创建，宏的用法和 `RTTI` 宏一致：\n\n![495bf58afc519cd28b92e211bd17d783&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/2ed9f43d2f630a09ebe0cd424e1d77bd66fa96fa763e68d6bead483df43351af.jpg)\n\n在 `InitInstance` 函数中**将 `new` 运算符替代为动态创建函数 `CreateObject()` ** 即可。\n### 4.4) 转换宏了解本质\n\n与上一章类似，我们将宏转换为其背后的原始代码，以深入理解 `MFC` 动态创建的本质。\n\n#### DECLARE_DYNCREATE\n\n首先分析 `DECLARE_DYNCREATE` 宏及其包含的 `DECLARE_DYNAMIC`：\n\n```c\n#define DECLARE_DYNCREATE(class_name) \\\n    DECLARE_DYNAMIC(class_name) \\\n    static CObject* PASCAL CreateObject();\n\n#define DECLARE_DYNAMIC(class_name) \\\npublic: \\\n    static const AFX_DATA CRuntimeClass class##class_name; \\\n    virtual CRuntimeClass* GetRuntimeClass() const;\n```\n\n在代码中改写为：\n\n```cpp\n// 静态成员变量，存储类信息\nstatic const CRuntimeClass classCMainWindow;\n// 虚函数，返回类信息结构体指针\nvirtual CRuntimeClass* GetRuntimeClass() const;\n// 静态创建函数，用于实例化对象\nstatic CObject* __stdcall CreateObject(); \n```\n\n#### IMPLEMENT_DYNCREATE\n\n`IMPLEMENT_DYNCREATE` 宏负责定义 `CreateObject` 成员函数并初始化类信息结构体：\n\n```cpp\n#define IMPLEMENT_DYNCREATE(class_name, base_class_name) \\\n    CObject* PASCAL class_name::CreateObject() \\\n        { return new class_name; } \\\n    IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, 0xFFFF, \\\n        class_name::CreateObject)\n```\n\n##### IMPLEMENT_RUNTIMECLASS\n\n这个宏是用来初始化类信息结构体的：\n```cpp\n#define IMPLEMENT_RUNTIMECLASS(class_name, base_class_name, wSchema, pfnNew) \\\n    AFX_COMDAT const CRuntimeClass class_name::class##class_name = { \\\n        #class_name, sizeof(class_name), wSchema, pfnNew, \\\n        RUNTIME_CLASS(base_class_name), nullptr }; \\\n    CRuntimeClass* class_name::GetRuntimeClass() const \\\n        { return RUNTIME_CLASS(class_name); }\n```\n\n在代码中改写为：\n\n```cpp\n// 实现静态创建函数\nCObject* PASCAL CMainWindow::CreateObject() {\n    return new CMainWindow;\n}\n\n// 初始化 CRuntimeClass 静态变量\nconst CRuntimeClass CMainWindow::classCMainWindow = {\n    \"CMainWindow\", \n    sizeof(class CMainWindow), \n    0xFFFF, \n    CMainWindow::CreateObject, // 将静态创建函数的地址存入结构体\n    ((CRuntimeClass*)(&CFrameWnd::classCFrameWnd)), \n    NULL\n};\n\n// 实现虚函数 GetRuntimeClass\nCRuntimeClass* CMainWindow::GetRuntimeClass() const {\n    return ((CRuntimeClass*)(&CMainWindow::classCMainWindow));\n}\n```\n\n![bcd35990c202636f84662002d55828da&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/00f4d298d47376a738db523dd0330644e40399dd64e16903433b8301752814b6.jpg)\n\n#### 流程跟进\n\n在调用 `CreateObject()` 函数时下断点跟踪：\n\n![5aa727b51f325153b1b529ae8c19ce12&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/3ad93f73099fd4a4734af217f5a93c5370b35993b8d6582d1cd292b45c6abf4d.jpg)\n\n`MFC` 内部逻辑会判断 `m_pfnCreateObject` 函数指针是否有效。若有效，则通过该指针调用静态的 `CreateObject()` 函数（即执行 `new CMainWindow`），最后返回实例化后的对象指针。\n\n**总结**：\n- `DECLARE_DYNCREATE`：在类中声明支持 `RTTI` 的成员，并增加静态 `CreateObject` 接口。\n- `IMPLEMENT_DYNCREATE`：实现 `CreateObject` 逻辑并完成类信息结构体的初始化。\n- `CRuntimeClass::CreateObject`：核心分发器，通过调用结构体中存储的函数指针实现动态实例化。\n\n### 4.5) 课后作业\n\n在 `CMainWindow` 类中定义函数 `CreateObjectByName(char* className)`，实现通过类名字符串动态创建对象实例：\n\n![0913a37e57a8f683792a22cf7c73f13d&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/64733023c97a074e201edb6c05013040122abc7b42e22974088ac146d3a476ef.jpg)\n\n> 这里实现的动态创建逻辑，只能创建给定父子链条上的某个类。\n\n\n> [!info] 注意！\n> 上图中展示的 `GetRunTimeClass` 函数体中，第二个 `if` 语句中，缺失 `return` 。\n\n\n## MFC 消息和处理函数的映射\n\n### 什么是消息映射\n\n消息映射是 `MFC` 内建的一种消息分派机制。它利用**数个宏及固定形式的表结构**，告知框架在特定消息发生时应将其传递给哪个类的成员函数。每个类只能拥有一个**消息映射表格**（或不拥有）。\n\n\n### 本节课需要掌握的知识点\n\n- 三个关键的宏：\n    - `DECLARE_MESSAGE_MAP`\n    - `BEGIN_MESSAGE_MAP`\n    - `END_MESSAGE_MAP`\n- 消息条目的添加方式。\n- `AFX_MSGMAP_ENTRY` 结构。\n\n### 使用三个关键宏\n> 这里可以类比之前 MFC 用于实现 RTTI 的宏使用方式。\n\n1. 在类声明中使用 `DECLARE_MESSAGE_MAP()`：\n![3592b2e14c6aedd53148078e66b6b30a&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/d960d1379aec9ec1c8db2b58e06d6658c0fa348b64b308d8ad006e819c613257.jpg)\n\n2. 在实现文件中使用 `BEGIN_MESSAGE_MAP` 与 `END_MESSAGE_MAP` 括起消息条目（两个参数分别是当前类、当前类的基类）：\n![ab6394d5122ddedc2421010bfadf2c0b&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/fb6565ffb7be5eb0de467899654a4060ecde75abc6ff2214b9a2801d94023b53.jpg)\n\n映射鼠标左键按下消息：\n![1dd0be9cb93b3ad63e0dae0e3e01b0cd&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/bde992da4bcd20e8f20841249807a2a29a5313762da6a1e61c63cd6b0204b925.jpg)\n\n对应的处理函数需在类声明中定义：\n![5c915ee23f01df2f8a70006b7ab346da&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/031ab82f8c6e9d697e52e71745e940dde39e7c0233b640e3467615a3a80574a5.jpg)\n\n这里代码的含义是左键按下就弹出一个提示框\"Test\"，执行效果：\n![514c5c5c6e69a613ea98dec52c37bd91&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/3f57ae481f183da6d944ec8d7120d24fbe7608064d995b908a8a11c434869d6d.jpg)\n\n按照这样的格式我们想添加需要的消息处理函数，但是我们不了解背后的原理，比如：这个左键按下的消息处理函数的名称一定要是 `OnLButtonDown` 吗？\n\n**为了知其所以然**，所以我们还需要通过转换宏去了解本质。\n### 5.4) 转换宏了解本质\n\n#### DECLARE_MESSAGE_MAP\n首先是 `DECLARE_MESSAGE_MAP` 宏：\n\n```cpp\n#define DECLARE_MESSAGE_MAP() \\\nprivate: \\\n    static const AFX_MSGMAP_ENTRY _messageEntries[]; \\\nprotected: \\\n    static AFX_DATA const AFX_MSGMAP messageMap; \\\n    virtual const AFX_MSGMAP* GetMessageMap() const; \\\n```\n\n在代码中改写为：\n\n```cpp\nprivate:\n    static const AFX_MSGMAP_ENTRY _messageEntries[];\nprotected:\n    static const AFX_MSGMAP messageMap;\n    virtual const AFX_MSGMAP* GetMessageMap() const;\n```\n\n#### BEGIN_MESSAGE_MAP 和 END_MESSAGE_MAP\n\n其次是成对出现的 `BEGIN_MESSAGE_MAP` 与 `END_MESSAGE_MAP` 宏，以及在其间调用的 `ON_WM_LBUTTONDOWN` 宏：\n\n```\n#define BEGIN_MESSAGE_MAP(theClass, baseClass) \\\n    const AFX_MSGMAP* theClass::GetMessageMap() const \\\n        { return &theClass::messageMap; } \\\n    AFX_COMDAT AFX_DATADEF const AFX_MSGMAP theClass::messageMap = \\\n        { &baseClass::messageMap, &theClass::_messageEntries[0] }; \\\n    AFX_COMDAT const AFX_MSGMAP_ENTRY theClass::_messageEntries[] = \\\n    { \\\n\n```\n\n```\n#define ON_WM_LBUTTONDOWN() \\\n        { WM_LBUTTONDOWN, 0, 0, 0, AfxSig_vwp, \\\n          (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&OnLButtonDown },\n```\n\n```\n#define END_MESSAGE_MAP() \\\n        { 0, 0, 0, 0, AfxSig_end, (AFX_PMSG)0 } \\\n    }; \\\n```\n\n在代码中改写为：\n\n```cpp\nconst AFX_MSGMAP* CMainWindow::GetMessageMap() const {\n    return &CMainWindow::messageMap;\n}\n\nconst AFX_MSGMAP CMainWindow::messageMap = {\n    &CFrameWnd::messageMap, // 父类的映射关系结构体\n    &CMainWindow::_messageEntries[0] \n};\n\nconst AFX_MSGMAP_ENTRY CMainWindow::_messageEntries[] = {\n    {\n        WM_LBUTTONDOWN, 0, 0, 0, AfxSig_vwp,\n        (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&OnLButtonDown\n    },\n    \n    {\n        0, 0, 0, 0, AfxSig_end, (AFX_PMSG)0\n    }\n};\n```\n\n如上代码转换完成之后，可以很清晰地知道使用宏的时候**鼠标左键按下**的消息处理函数必须命名为 `OnLButtonDown`，因为这里是写死在代码中的，无法改变。\n\n我们还可以很清晰地看见 `_messageEntries` 数组存放着我们的消息及处理函数，**这就是一个消息映射的表格**。而这个数组是一个结构体数组，我们来看一下 `AFX_MSGMAP_ENTRY` 结构体的定义：\n\n```cpp\nstruct AFX_MSGMAP_ENTRY\n{\n    UINT nMessage;  // Windows 消息类型 ID\n    UINT nCode;     // 对于窗口消息该值为 0；处理命令消息和控件通知的函数使用与此相同的消息映像。\n    UINT nID;       // 命令消息 ID 的起始范围 (对于窗口消息为 0)\n    UINT nLastID;   // 命令消息 ID 范围的终点\n    UINT nSig;      // 消息的动作标识（enum AfxSig 里的成员），决定了函数指针的签名\n    AFX_PMSG pfn;   // 响应消息时应执行的函数指针\n};\n```\n\n根据注释可以非常清晰地理解每个参数的意义。主要说明后两个参数：\n- `AFX_PMSG pfn`：响应消息时执行的函数地址（即 `OnLButtonDown` 的地址）。\n- `UINT nSig`：消息的动作标识，属于 `enum AfxSig` 里的成员（当前值为 `AfxSig_vwp`）。这是一个枚举值，我们可以跟进查看一下：\n\n![8b52e886b57c4e2539f140aa308c7b9f&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/7333c5306937e318e3aed22727c37ed95b2dd33d2f0ca58669d2979611005ad2.jpg)\n\n它标识了 ** `AFX_PMSG pfn`（响应消息时执行的函数）** 的**返回值和参数格式**：\n\n![16e25ea0e754a074a2858ba7cbef07c7&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/35a332138e0bd8f26a24c77df632d00e238e8f4f512c95fdbac72fca07d64ea0.jpg)\n\n因此在内部可以通过 `UINT nSig` 来进行安全的类型转换并调用该函数。\n\n当前我们的 `UINT nMessage` 参数为 `WM_LBUTTONDOWN`，这是一个标准消息。\n\n#### 5.4.3) 总结\n- `DECLARE_MESSAGE_MAP`：声明一个存储消息和函数映射关系的数组。\n- `BEGIN_MESSAGE_MAP` 和 `END_MESSAGE_MAP`：初始化该数组。这两个宏相当于一组括号，根据用户在括号中的指示，将指定的映射关系绑定为用户自己的处理函数。由于宏的固定展开特性（如 `ON_WM_LBUTTONDOWN()` 展开后固定使用名称 `OnLButtonDown`），我们必须遵守其消息处理函数的命名规范。\n\n---\n\n## MFC 消息传递\n\n### 什么是消息传递\n\n消息会按照规定的路线，游走于各个对象之间，直到找到它的消息处理函数；如果找不到，则最终把它交给 `::DefWindowProc()` 函数去处理。\n\n### 通过 Create 函数来看窗口创建流程\n\n之前我们了解过 `Create` 函数，若其第一个参数（类名）为 `NULL`，则以 `MFC` 内建的窗口类产生一个标准的外框窗口。窗口的创建需要指明窗口过程处理函数，所以我们从这个函数入手下断点去跟进，找到窗口过程处理函数。\n\n![3ce036c5d05d59bdd0f8f9592de6eb97&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/42b720e72a2c1313460e57c02145f9accaaf770a5a22088faeed395fe7d41d46.jpg)\n\n首先会判断菜单名称：\n\n![1a7bf8fae82f3acbb2b58f18f6f9e034&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/3984960e372ca45dc02f7eeab01f8335be833955959852f05076c31d7c69967e.jpg)\n\n这里我们没有菜单，所以继续向下，会发现其调用了一个 `CreateEx()` 函数：\n\n![2e1a87a84958739500894d0b44440844&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/0121e120a240621c318ee720df69d34e0ab395cb30a25845eb643932b19ee1d2.jpg)\n\n跟进 `CreateEx()` 函数，其一开始对一些信息进行了填充，并将信息传递给了 `PreCreateWindow()` 函数：\n\n![254a89e57845a980e1a69a5aa167a465&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/98e924af729fb129fee55a8bc129f1926f8e45c8cb3d25985fed3173048561f8.jpg)\n\n这里涉及到一个结构体 `CREATESTRUCT`，我们跟进看一下：\n\n![1466a1f314955525e6f169b4637faa0f&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/b265f4f58f2bb08ea6374e55471b91ffd2043dcf4b095338705473b625aa5a0d.jpg)\n\n```cpp\nstruct tagCREATESTRUCTA {\n    LPVOID lpCreateParams; // 创建参数\n    HINSTANCE hInstance;   // 窗口模块的句柄\n    HMENU hMenu;           // 窗口使用的菜单句柄\n    HWND hwndParent;       // 父窗口或所有者窗口的句柄\n    int cy;                // 窗口的高度（像素）\n    int cx;                // 窗口的宽度（像素）\n    int y;                 // y坐标\n    int x;                 // x坐标\n    LONG style;            // 窗口的样式\n    LPCSTR lpszName;       // 窗口的名称\n    LPCSTR lpszClass;      // 窗口的类名\n    DWORD dwExStyle;       // 扩展窗口样式\n} CREATESTRUCTA, *LPCREATESTRUCTA;\n```\n\n继续跟进 `PreCreateWindow()` 函数，我们可以看见如果窗口名称为空，则注册一个默认的窗口类：\n\n![5a2c2cf8f19468faf76cbbf9310ae8ca&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/269b28f3527eca8814e07b29f56cade97262ebae1c91c7ed7cd8aeba15143471.jpg)\n\n其使用的是 `AfxDeferRegisterClass` 宏，背后调用了 `AfxEndDeferRegisterClass()` 函数：\n\n![95cf070529ad6f49c418b57ada53858d&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/c0646e97e8374126d064b258af9fc76958af5c30ef771fd59354cf1ba02d9f50.jpg)\n\n阅读代码发现该函数不负责处理窗口过程函数的逻辑，返回 `CreateEx()` 继续跟进。在 `CreateEx()` 函数里面有一个 `AfxHookWindowCreate()` 函数：\n\n![6eb58c507233e698b6769080a6d07e62&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/d9fa77812caea3ae8850edf0b170e9450dd4bad62fca65f78f38cb841f99ac08.jpg)\n\n顾名思义，这表示在窗口创建之前安装了一个钩子（`HOOK`）。跟进这个函数：\n\n![7c1e4aecc4d041f217b59b34281b8ddd&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/ac0b6038893fbe7edf79ab38d16e7fd104068cf72be055006e65673d14c43d64.jpg)\n\n可以看到其内部调用的函数是 `SetWindowsHookEx()`，第一个参数是 `WH_CBT`。该类型的钩子监听窗口的激活、产生、释放（关闭）、最小/最大化或改变状态；当事件发生时执行第二参数 `_AfxCbtFilterHook` 回调函数。通过它，默认的窗口过程处理函数被替换成了 `AfxWndProc`。\n\n我们寻找 `_AfxCbtFilterHook` 的定义（简化版）：\n\n```cpp\nLRESULT CALLBACK _AfxCbtFilterHook(int code, WPARAM wParam, LPARAM lParam)\n{\n    // ...\n    // 使用标准 AfxWndProc 子类化窗口\n    WNDPROC afxWndProc = AfxGetAfxWndProc();\n    oldWndProc = (WNDPROC)SetWindowLong(hWnd, GWL_WNDPROC, (DWORD)afxWndProc);\n    // ...\n}\n```\n\n> 注：`SetWindowLong` 可以改变窗口的默认行为或存储关联数据。此处将原窗口过程处理函数替换为了 `AfxWndProc`。\n\n继续跟进 `AfxGetAfxWndProc()` 函数：\n\n![7295c654b6e8186001bfa541d773fbe0&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/768bdf4e2522328cabb57ab5d346cd4c4c4174434046027876e3e6d0872567c3.jpg)\n\n它会判断是否定义了 `_AFXDLL` 宏（判断是否使用了动态链接库）。由于我们当前使用的是静态链接库，因此直接返回 `AfxWndProc` 函数的地址。\n\n---\n\n若想通过调试验证此过程，可以借助已经绑定的消息处理函数（如 `OnLButtonDown`），在此处下断点并跟进（需在界面中左键按下以触发事件）：\n\n![ffe9d09a9b3e3e4139e73ae4cc3b9d32&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/02f8e2840e02a8f07ac4440acc8c4869a28a2d6b9b607c51d1186a54a65220fd.jpg)\n\n断下后，一直向下执行，最终会发现返回到了 `AfxWndProc` 函数：\n\n![2522adc40fdbbe83f4e9c31b927a6d89&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/c9f044a4ca397e2eb4faf2dd3ee50e62d50e12435a5c7f0507511004686146c7.jpg)\n\n### 消息处理流程\n\n> 上述分析了窗口处理函数被替换的逻辑，接下来追踪被替换后的处理函数（`AfxWndProc`）的内部运作。\n\n在 `OnLButtonDown` 处下断点来观察消息的调用栈流程。\n\n![ffe9d09a9b3e3e4139e73ae4cc3b9d32&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/02f8e2840e02a8f07ac4440acc8c4869a28a2d6b9b607c51d1186a54a65220fd.jpg)\n\n跟到 `AfxCallWndProc()` 函数时，在如下位置下断点：\n\n![07545b926061faaf8e463faccb3498bc&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/982bf7a0722b49347472afe8a7023dd4e645ba2f244e6ecc5c733ca84d64e7a6.jpg)\n\n设置条件断点：当 `nMsg == 0x0201`（`#define WM_LBUTTONDOWN 0x0201`）即消息类型为左键按下时断下：\n\n![0e0e83e8fa0c24b56acc21d71c5f6742&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/a9c733e31315865683035601a6696750f1a25eab31411abddefcb2901e10e6b7.jpg)\n\n重新运行程序，触发事件：\n\n![9b476ab26d169145ea826d2670799123&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/4d63cada9216ed258c7fdde794d0a05a86db15d2f0c38e2e2bf2c0d848570259.jpg)\n\n成功断下，继续跟进代码：\n\n![6c2e76b2bae850ae92a48afd55fd3445&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/1accbcd73ad451d42ce37ba824566e4c8370fd6b9d2e7f6a3b2f4a89dc3fd2cb.jpg)\n\n可以看到消息进入了 `WindowProc()` 函数。这是一个虚函数，可以在子类中重写；这里未重写，因此调用的是 `CWnd::WindowProc()`。\n\n![9f68225536329c2cad113203c09d0d98&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/a84619382c74f70a7cf8daf59ff1fef69986550c5d9671bce6dec56ae8e5dcf0.jpg)\n\n其内部调用的 `OnWndMsg()` 同样也是虚函数：\n\n![9f9727d9576af0321b46faddd1e540a5&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/0aab10007c264ddc2d312ef7c876d1809ab40f7be1273b993011000f86ed3f3b.jpg)\n\n也未重写，这里进入了默认的 `CWnd::OnWndMsg()`：\n\n![dc09fd9176aefdc8d12a38fc672712ba&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/d187e66ad2886e07b1cba0e30e79cdf550e65876f71b30187449fd7237108541.jpg)\n\n开头的几个 `if` 语句用于判断消息类型。如果都不是（非命令消息、非控件通知等），则将其按**标准消息**处理。\n\n随后出现一个 `pMessageMap` 指针，它指向当前类的消息映射表。跟进后发现，程序会利用 `while` 循环基于 `pBaseMap` 成员不断向上级父类回溯查找（先找类自身有无该处理函数，再找父类有无），直至链表结束（即 `pMessageMap == NULL`）：\n\n![faf378b3eabf2e4b161c37b893303eda&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/39679b44fb5a28b455644bb8312dd41199fd848f66bc60a3a844a59f433575f2.jpg)\n\n在此过程中，会通过 `AfxFindMessageEntry()` 函数在映射表（`_messageEntries` 数组）中寻找与当前 `nMessage` 相匹配的条目（也就是找到 `message` 的处理函数）：\n\n![e21b2b29809fb7336d92721739f8c9b4&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/14ef80c4638a3936ed55fcb32546126c8815ea15dd11e0d4d1e5db70205ffd20.jpg)\n\n![93b956784b5842082d83fac5eb61b897&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/39fed903a4987acd8c255b521093e62741c079f691bff7070163d1faa3b7e772.jpg)\n\n匹配成功后，程序会利用 `MessageMapFunctions` 的联合体（该 Union 封装了多种签名的函数指针，通过切换成员，即可灵活匹配相应的调用约定）结构，将条目中的 `pfn`（处理函数地址）安全转换为适当类型的函数指针。\n\n![b556e9d7526b9386654f29a54cf8fcd6&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/5c007f506c4bab003759d6ed41775710e21964876004f68a8310242d865e0a49.jpg)\n\n转换的依据正是条目中的 `nSig`（消息动作标识）。它被传入 `switch` 分支，用于指示该消息对应的参数列表和返回值格式。\n\n![8569b63f7393d64adc6926affe724737&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/e1c2f54ebcc70d71d2f2e8e3eb43991d15aab147ed0865b46e9f2fe911e91fd8.jpg)\n\n...\n\n![ebcb2ddf9b92f1fd966fb970e9fb9874&#95;MD5&#46;jpg](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/media/67d4e9564ee1b69ec8e8de9e5ee3e09b15f3f3b11827035b3447c30e2220c56e.jpg)\n\n最终，通过安全的类型强转，框架将 `WPARAM` 和 `LPARAM` 解析为正确的参数，并分发执行了我们自定义的消息处理函数（`OnLButtonDown`）。\n\n",
+  "id": "392ce0f4-430c-41fa-9b70-0407eb7d6df3",
+  "metadata": {
+    "tags": [
+      "lang/cpp/mfc"
+    ],
+    "title": "MFC 框架原理"
+  },
+  "resources": [
+    "00f4d298d47376a738db523dd0330644e40399dd64e16903433b8301752814b6.jpg",
+    "0121e120a240621c318ee720df69d34e0ab395cb30a25845eb643932b19ee1d2.jpg",
+    "02f8e2840e02a8f07ac4440acc8c4869a28a2d6b9b607c51d1186a54a65220fd.jpg",
+    "031ab82f8c6e9d697e52e71745e940dde39e7c0233b640e3467615a3a80574a5.jpg",
+    "041ea601a0266274f5eb636a5ed8de08890229e5d037a39ea57e37dc9d3ccd7c.jpg",
+    "08f0adfc87bc5f8d5ba4b45e4a39d18c73f746935c2702cefb1378f4699d244f.jpg",
+    "0aab10007c264ddc2d312ef7c876d1809ab40f7be1273b993011000f86ed3f3b.jpg",
+    "14ef80c4638a3936ed55fcb32546126c8815ea15dd11e0d4d1e5db70205ffd20.jpg",
+    "18a16491e8ef9e30ba2af7feabbd318eb1cf6ea73aed664fe0b70ce78a5ad179.jpg",
+    "18e84ff5b5da7180875bde35b132672aa097607d16af832cd4f5e781cc15be6b.jpg",
+    "1accbcd73ad451d42ce37ba824566e4c8370fd6b9d2e7f6a3b2f4a89dc3fd2cb.jpg",
+    "1bb05d633d08721547b0055c41f9aac9662d16a447ce9a981ed8cf6fdd90e117.jpg",
+    "2006052f1b26da17dd90a9cb2f6cef1b3dba22aa5a54df53ebe9e9d077ebd898.jpg",
+    "269b28f3527eca8814e07b29f56cade97262ebae1c91c7ed7cd8aeba15143471.jpg",
+    "29726619038076196d2a231705d21f145fe30d917c43fdd2e095f469c0cf0c9d.jpg",
+    "2a1dc5527e892ea36bc3d04d6f73d680111da9f726a7eb9f26e9067b9ff086c0.jpg",
+    "2aea4e0b0d099c9207291b13b2488061fa55347ecb246eb87978dcc66d11d3e4.jpg",
+    "2e7e671d9297ededd2fd876be3b68ed8959552b77b19e29e1fcaff9f78643d9d.jpg",
+    "2ebfd15e3af6ba77af20a8f0f2d01bcdde426e5191bde1bd66671638397583c9.jpg",
+    "2ed9f43d2f630a09ebe0cd424e1d77bd66fa96fa763e68d6bead483df43351af.jpg",
+    "302d86625dac2ffbb677e45ecfcf735ce9f4c61e364ae43e48095f398141c6c5.jpg",
+    "35a332138e0bd8f26a24c77df632d00e238e8f4f512c95fdbac72fca07d64ea0.jpg",
+    "3900b8a12b4d173f7456673554ac44b2f689e9679a6334b1d340e24418c3a92c.jpg",
+    "39679b44fb5a28b455644bb8312dd41199fd848f66bc60a3a844a59f433575f2.jpg",
+    "3984960e372ca45dc02f7eeab01f8335be833955959852f05076c31d7c69967e.jpg",
+    "39fed903a4987acd8c255b521093e62741c079f691bff7070163d1faa3b7e772.jpg",
+    "3ad93f73099fd4a4734af217f5a93c5370b35993b8d6582d1cd292b45c6abf4d.jpg",
+    "3b58c9c1615c3436f7d5a92aff148f2c9fc4996d6cb8d573db8af7447182a9b0.jpg",
+    "3dc36d1b1373edd0b4d20f728b94a6da25b473444ac6c3f57294454f4fb0ab1d.jpg",
+    "3f57ae481f183da6d944ec8d7120d24fbe7608064d995b908a8a11c434869d6d.jpg",
+    "4089df610605eb2328375fd4f3214b795ea2a1938dfbf67888d4ed61e4ebd9da.jpg",
+    "42b720e72a2c1313460e57c02145f9accaaf770a5a22088faeed395fe7d41d46.jpg",
+    "443074be68a9618edb513a096a66baf4a82ae87ab545da9c84c972583feda719.jpg",
+    "4d63cada9216ed258c7fdde794d0a05a86db15d2f0c38e2e2bf2c0d848570259.jpg",
+    "4ff08c856f59065e141bb2138d3e0990f6f14b54422428a2c48783e8f473eec3.jpg",
+    "56a92a7d64b658548c39fd9134563e3a58ee1a4ff23d676f7c21cde0a5b8ea11.jpg",
+    "594e530c89c2ea57ec8f6256e40f4cb573a9c5dbc59dc9b114807d4639f0af6b.jpg",
+    "5be2656194f9567923dcf133fd01a15eb54808632203f90f491493cd6cfbb707.jpg",
+    "5c007f506c4bab003759d6ed41775710e21964876004f68a8310242d865e0a49.jpg",
+    "64733023c97a074e201edb6c05013040122abc7b42e22974088ac146d3a476ef.jpg",
+    "67d4e9564ee1b69ec8e8de9e5ee3e09b15f3f3b11827035b3447c30e2220c56e.jpg",
+    "69d5516c50f3724b931cc9f2bc7cbc32551d37d353003faa408851289cf6a834.jpg",
+    "6e4b4d601837536cf2a2127ec21db333ce8c490b1e05d0098554dc8934b94f20.jpg",
+    "7333c5306937e318e3aed22727c37ed95b2dd33d2f0ca58669d2979611005ad2.jpg",
+    "768bdf4e2522328cabb57ab5d346cd4c4c4174434046027876e3e6d0872567c3.jpg",
+    "7a4fa357114a0cc6325dc7417b4d237ec1bceb2412589e01816655cb9d3f1124.jpg",
+    "88dc9e4caa5f16c1962645eea7fc7f26a8ef85668019c078171b722dac39770f.jpg",
+    "891722ff6ed30467b6b3528cfb1b1b27e78b5b2ac07163f19ab7632f27334bdb.jpg",
+    "8f080a505b991e72e08bb11330792337f58042dbc660c2c9d55f630a72f76225.jpg",
+    "8f35bbbcf8cf70055e44baeda7798e7e936878ed9010aacd9626402e12d4cab2.jpg",
+    "982bf7a0722b49347472afe8a7023dd4e645ba2f244e6ecc5c733ca84d64e7a6.jpg",
+    "98e924af729fb129fee55a8bc129f1926f8e45c8cb3d25985fed3173048561f8.jpg",
+    "a84619382c74f70a7cf8daf59ff1fef69986550c5d9671bce6dec56ae8e5dcf0.jpg",
+    "a9c733e31315865683035601a6696750f1a25eab31411abddefcb2901e10e6b7.jpg",
+    "ac0b6038893fbe7edf79ab38d16e7fd104068cf72be055006e65673d14c43d64.jpg",
+    "b265f4f58f2bb08ea6374e55471b91ffd2043dcf4b095338705473b625aa5a0d.jpg",
+    "b3c48021710ad9f475255c0ebdd1bb9d21ade0755aa4927096f69c893c287098.jpg",
+    "b5bafaf8e8a977eebf7f1cf0837cf95209e49cef99676af3efbf1382560e4f2b.jpg",
+    "b7520c06bc8bac6dc9084498ac0be01b33f787052d8dc08fc6be033f339c323e.jpg",
+    "b7a3687745b69e980ae0f09485dc910a0082786fcd15d022707c620401023c5d.jpg",
+    "bde992da4bcd20e8f20841249807a2a29a5313762da6a1e61c63cd6b0204b925.jpg",
+    "bdea0d6ff0af78a00b8bff0d1b8dcb70da92d22847e8e0f11ea49e03167f3eee.jpg",
+    "c0646e97e8374126d064b258af9fc76958af5c30ef771fd59354cf1ba02d9f50.jpg",
+    "c96f69d20ad897fedbf12feaa17c2c46627b0b1a4f77340e2f69d4271d5b9cfa.jpg",
+    "c9f044a4ca397e2eb4faf2dd3ee50e62d50e12435a5c7f0507511004686146c7.jpg",
+    "cea3bd3e4f1d0d28f08ad6a286d7791d564fbf0b12ae0dd86659f719d0a1a47b.jpg",
+    "d0b52d0a64b4c10a9bf51fe44ae9fda459270ef487b1bd7f955181a46e242001.jpg",
+    "d10d7531e8bee2b0588d8a971d3d791475dc8bae25e6c7239cd0d4d8aefb7ec7.jpg",
+    "d187e66ad2886e07b1cba0e30e79cdf550e65876f71b30187449fd7237108541.jpg",
+    "d599cbd6521eb19d77a80ad2ebcba3997f9ae1b32669be737245512c149e0909.jpg",
+    "d5a2b2ccb34c5a64399d6bb72388d95c7c89745c44000911e7c70ce35402702a.jpg",
+    "d80e0d8708e114b4e3d4e723fbb5b13ffb14fd0b09fe642a87c98fb3db4c76b9.jpg",
+    "d960d1379aec9ec1c8db2b58e06d6658c0fa348b64b308d8ad006e819c613257.jpg",
+    "d9fa77812caea3ae8850edf0b170e9450dd4bad62fca65f78f38cb841f99ac08.jpg",
+    "e1c2f54ebcc70d71d2f2e8e3eb43991d15aab147ed0865b46e9f2fe911e91fd8.jpg",
+    "ee5e3d2b0ba17e19098dc276475959a9b2b7fffb631f9da863c4ae6f7a31aafc.jpg",
+    "f2c78ac6447d684764910ee5e377fe2f6c1366fc99cc843e845a72bf861f9a27.jpg",
+    "f2ea7dc719ffb50203ba3fbe2807a26b22a5a516790f54f96a2891e263c18714.jpg",
+    "f6dc5d53d9b33181414d411ceac309ad35d913289df0a2c0e08932487b9ff82c.jpg",
+    "f7dd50908fd5fcc66d73c6408c9cff80d5e2426c5da8623c161096695107dd54.jpg",
+    "fb6565ffb7be5eb0de467899654a4060ecde75abc6ff2214b9a2801d94023b53.jpg"
+  ],
+  "url": "/notes/n-392ce0f4430c41fa9b700407eb7d6df3/"
+}

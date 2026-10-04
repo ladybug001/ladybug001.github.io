@@ -1,0 +1,27 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-278ef6dc7ff142379e38",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-9166a3cee3fb871b2851",
+      "kind": "heading",
+      "offset": 300
+    }
+  ],
+  "body": "\n\n\n# 所需工具：\n\n![Pasted image 20230718145353&#46;png](/notes/n-5baf166b50c3474b85149d380ca0019b/media/f983d8b7d3c5f877f209ff28a0ed3841e8f13a7ba8bc62037ee6fbc262fce488.png)\n \nwxappUnpacker：许多人使用的小程序解包工具，据说已经停止更新，但对付大多数小程序已经够用。\n\nUnpackMiniApp：电脑版的`.wxapkg`文件无法直接通过`wxappUnpacker`反编译，要经过这个软件处理后才能使用\n\n# 使用方法\n\n1. 找到目标小程序对应的`.wxapkg`文件。\n2. 打开`UnpackMiniApp`程序，选择目标`.wxapkg`小程序包，处理后得到解密后的`.wxapkg`文件（PS:后面把通过`UnpackMiniApp`处理过的`.wxapkg`文件称为`处理版.wxapkg` ） ![Pasted image 20230718182636&#46;png](/notes/n-5baf166b50c3474b85149d380ca0019b/media/43f28f10246ca167831ed3c1a5288669131d9d22e74a09099688324f82e015f5.png)\n3. 处理后的`处理版.wxapkg` 文件，在`UnpackMiniApp`同级目录`wxpack`中。\n4. 在`wxappUnpacker`工具所在的目录下打开CMD\n\t1. 对于没有附包的小程序，在CMD中执行`./bingo 处理版.wxapkg文件路径 `运行即可得到目标小程序的源码。\n\t2. 如果小程序既有主包又有附包\n\t\t1. 先找到主包，得到主包的`处理版.wxapkg`，在CMD中执行`./bingo 主包的处理版.wxapkg路径 `\n\t\t2. 对于每个附包，执行`node ./wuWxapkg.js -s=主包解密后生成的文件夹的路径  附包的处理版.wxapkg路径`\n5. 最终得到的文件夹里的内容就是反编译后的小程序源码\n\n\n",
+  "id": "5baf166b-50c3-474b-8514-9d380ca0019b",
+  "metadata": {
+    "tags": [
+      "reverse"
+    ],
+    "title": "微信小程序解包"
+  },
+  "resources": [
+    "43f28f10246ca167831ed3c1a5288669131d9d22e74a09099688324f82e015f5.png",
+    "f983d8b7d3c5f877f209ff28a0ed3841e8f13a7ba8bc62037ee6fbc262fce488.png"
+  ],
+  "url": "/notes/n-5baf166b50c3474b85149d380ca0019b/"
+}

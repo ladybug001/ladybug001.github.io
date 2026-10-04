@@ -1,0 +1,170 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b7ecce9d68d4e7ebefc2",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-98549b269a46873619f0",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-c61a3b3fb0f821c2c1e8",
+      "kind": "heading",
+      "offset": 575
+    },
+    {
+      "id": "h-7e5698027d8512d42111",
+      "kind": "heading",
+      "offset": 585
+    },
+    {
+      "id": "h-1bef8410f42134b8fd03",
+      "kind": "heading",
+      "offset": 1083
+    },
+    {
+      "id": "h-b32889acfc8eaa4c8b2b",
+      "kind": "heading",
+      "offset": 1633
+    },
+    {
+      "id": "h-52242b48352d0f3b811a",
+      "kind": "heading",
+      "offset": 2550
+    },
+    {
+      "id": "h-327f904d764a56acb25b",
+      "kind": "heading",
+      "offset": 2731
+    },
+    {
+      "id": "h-d3885591a2e423bffef3",
+      "kind": "heading",
+      "offset": 3039
+    },
+    {
+      "id": "h-86fbb40a5d3de5a09eca",
+      "kind": "heading",
+      "offset": 3545
+    },
+    {
+      "id": "h-ef210395968c0c510dbe",
+      "kind": "heading",
+      "offset": 4326
+    },
+    {
+      "id": "h-a7dec4deb544586ab39c",
+      "kind": "heading",
+      "offset": 4607
+    },
+    {
+      "id": "h-30659fdf9b110544daa0",
+      "kind": "heading",
+      "offset": 4807
+    },
+    {
+      "id": "h-ed7b3c0aa33c06c21bb5",
+      "kind": "heading",
+      "offset": 6245
+    },
+    {
+      "id": "h-1b6b197ef8853cc0257a",
+      "kind": "heading",
+      "offset": 6256
+    },
+    {
+      "id": "h-f725f1f4b6af56dc2f33",
+      "kind": "heading",
+      "offset": 6695
+    },
+    {
+      "id": "h-fe3053e7b507fa081d36",
+      "kind": "heading",
+      "offset": 7281
+    },
+    {
+      "id": "h-1616eb62dbd8fb3087a6",
+      "kind": "heading",
+      "offset": 7718
+    },
+    {
+      "id": "h-c05e2b3a318bf12f48e4",
+      "kind": "heading",
+      "offset": 8808
+    },
+    {
+      "id": "h-b7d263cbbb6fa569ee26",
+      "kind": "heading",
+      "offset": 9231
+    },
+    {
+      "id": "h-b5792c031b6c32d2f110",
+      "kind": "heading",
+      "offset": 10195
+    },
+    {
+      "id": "h-eaa14fa1921e0fc9ea89",
+      "kind": "heading",
+      "offset": 10386
+    },
+    {
+      "id": "h-567b7fc4f5c88ca1197b",
+      "kind": "heading",
+      "offset": 10985
+    },
+    {
+      "id": "h-d7611f8d5e0ed7cb2541",
+      "kind": "heading",
+      "offset": 12666
+    },
+    {
+      "id": "h-b764a2d14f2706222895",
+      "kind": "heading",
+      "offset": 12675
+    },
+    {
+      "id": "h-a268ec85f7c94a55d385",
+      "kind": "heading",
+      "offset": 13768
+    },
+    {
+      "id": "h-988e55556d2f809d20d6",
+      "kind": "heading",
+      "offset": 14346
+    },
+    {
+      "id": "h-45952c616abec978a767",
+      "kind": "heading",
+      "offset": 14784
+    }
+  ],
+  "body": "# Linux ELF 文件格式\n\n## 概述\n\n目前，PC平台流行的 **可执行文件格式（Executable）** 主要包含如下两种：\n- Windows下的 **PE（Portable Executable）**，参考：[Windows PE 文件格式与结构解析](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/)\n- Linux下的 **ELF（Executable Linkable Format）**\n> 它们都是 **COFF（Common File Format）** 格式的变种。\n\n对于目标文件 Windows 下采用 **PE-COFF** 文件格式，对可执行文件和动态链接库使用 PE 文件格式而 ELF 是 Linux/Unix 中可重定位目标文件（`.o`）、可执行文件和共享对象（`.so`）共用的二进制格式：\n- 可重定位目标文件：Windows 的 `.obj`，Linux 的 `.o`，用于后续链接。\n- 动态链接库：Windows 的 `.dll`，Linux 的 `.so`。\n- 静态链接库：Windows 的 `.lib`，Linux 的 `.a`（`.a` 是 `ar` 归档，内部成员才是 ELF `.o`）。\n\n下面，我们介绍ELF文件格式。\n\n## 整体结构\n\n### 物理布局\n\n一个 ELF 文件在磁盘上的典型布局通常为：\n- 文件起始处是 **ELF Header**，描述整个文件。\n- 随后是 **Program Header Table**，描述如何建立进程映像。\n- 中间存放各个 **Section / Segment** 对应的实际数据。\n- 文件尾部是 **Section Header Table**，描述各 Section 的类型、位置和关联关系。\n\n静态库不会被加载执行所以不依赖 Program Header Table，可执行文件和共享库不会被用于（静态）链接所以不依赖 Section Header Table。\n\n综上，不同类型的 ELF 文件，某些结构可以被省略：\n\n![a4da7b883e238cdd5d7fe3304d668995&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/0d9786d24f554a839b0ddaab1aa63e349904ff8301dcb2ce1bc2abe71c8afe36.jpg)\n\n### 两种视角：链接与执行\n\nELF 文件根据用途分为两类，对应两种不同的视角：\n\n- **链接视角**（`.o` / `.a`）：这些文件是静态链接器（`ld`）的输入。链接器关心 **Section**——`.text`、`.data`、`.symtab`、`.rel.*` 等——的逻辑类型与相互引用，按 Section 组装输出。此类文件必须有 Section Header Table，通常没有 Program Header Table。\n- **执行视角**（可执行文件 / `.so`）：这些文件由内核加载器和动态链接器（`ld.so`）处理。加载器按 **Segment** 的偏移、大小和权限将文件映射到进程地址空间，不逐个处理 Section；此类文件必须有 Program Header Table，Section Header Table 非必需。\n\n![Pasted image 20260824141226&#46;png](/notes/n-95e8c75c9da6476fbc85e09535265997/media/453867d3f60abaf1794f20fe85d6b2294ee8ab8fe644aefa20a77b3113497de3.png)\n\n### 常见 Section 一览\n\n| Section               | 作用                                     |\n| --------------------- | -------------------------------------- |\n| `.text`               | 机器指令                                   |\n| `.rodata`             | 只读常量与字符串                               |\n| `.data`               | 已初始化的全局变量和静态变量                         |\n| `.bss`                | 未初始化或零初始化的全局变量和静态变量；通常不在文件中占据对应大小的数据字节 |\n| `.symtab` / `.strtab` | 完整符号表及其字符串表，主要服务于静态链接、分析和调试            |\n| `.dynsym` / `.dynstr` | 运行时动态链接所需的符号表及其字符串表                    |\n| `.dynamic`            | 动态链接器需要的动态数组                           |\n| `.rel.*` / `.rela.*`  | 重定位项；使用 `REL` 还是 `RELA` 取决于架构与 ABI     |\n| `.got` / `.got.plt`   | 保存经重定位或动态绑定得到的地址                       |\n| `.plt`                | 为外部函数调用提供跳板                            |\n\n> [!NOTE] 可执行文件的裁剪\n> 对于可执行文件，`.symtab`、`.strtab` 和 `.debug*` 等非运行必需内容可被 `strip` 削减掉，只要运行时必需的结构完整即可。\n\n### 结构概览图\n\n![029ec7f6592446729039eb7146b89c20&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/11560e5fc9284217a5ff837063da09ef4fbbfb3a21a0b521c6b85a355851c1dc.jpg)\n\n## 样例与环境\n\n全文使用同一份程序观察 ELF 结构，执行 `vim hello.c`，粘贴以下代码：\n\n```c\n#include <stdio.h>\n\nint global = 100;\n\nint main()\n{\n    int local = 200;\n\n    printf(\"hello ELF\\n\");\n\n    printf(\"global=%d local=%d\\n\", global, local);\n\n    return 0;\n}\n```\n\n编译：`gcc -m32 -no-pie hello.c -o hello32`，生成 32 位、非 PIE 的动态链接可执行文件。\n\n## ELF Header\n\nELF Header 给出文件的全局属性，最值得先记住的字段：\n\n- `Class`：ELF32 或 ELF64。\n- `Type`：`ET_REL`（可重定位）、`ET_EXEC`（可执行）或 `ET_DYN`（共享对象 / PIE）。\n- `Entry point address`：程序入口地址。\n- `Start of program headers`：Program Header Table 的文件偏移。\n- `Start of section headers`：Section Header Table 的文件偏移。\n\n执行 `readelf -h -W hello32` 查看 ELF Header：\n\n![fb28b5d1bbe2646dc35eb0845545b6a7&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/1d9857514bde2b2ad7be147b56d339c28109be3d5370bcbc74b10f832eca5d0c.jpg)\n\n## Program Header Table\n\n执行 `readelf -l -W hello32`，观察 Program Header 内容：\n\n![de08b1a2bb308751d5d67c6f457d03ac&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/76ee7080328685b41269b86bfdcc90c474bcecfd999fe0ebe3eb3bfaf87549e2.jpg)\n> 末尾的 `Section to Segment mapping` 表示该 Segment 中包含了哪些 Section。\n\n程序运行时，会按照 `VirtAddr` 字段将各 Segment 加载到内存中，加载主线：\n```text\nELF Header → Program Header Table → 找到 PT_LOAD Segment → mmap 映射 → 建立进程地址空间\n```\n\nProgram Header 中三个容易混淆的地址字段：\n\n- `Offset`（`p_offset`）：Segment 在文件中的偏移。\n- `VirtAddr`（`p_vaddr`）：Segment 在进程虚拟地址空间中的地址。\n- `PhysAddr`（`p_paddr`）：物理地址。现代用户态程序不使用；虚拟地址由 MMU 转换为物理地址。\n\n例如，文件偏移 `0x1000` 的代码区域可能映射到虚拟地址 `0x401000`。加载器处理的是这组映射关系与 R/W/X 权限。\n\n一个 Segment 可以包含多个具有相容权限的 Section，例如 `.text` 和 `.rodata` 可能进入同一个只读可执行的 `PT_LOAD` Segment。\n\n## Section Header Table\n\n执行 `readelf -S -W hello32` 查看 Section Header Table：\n![385c5f225db0e46b85dd4e03c2792e45&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/5343f88ac2141960c6e9efbce1d81a4451d47e04c54e2d264f14dcd6715884e9.jpg)\n\n除了名称、类型、文件偏移和大小，还应关注 `Flags`、`Link` 与 `Info`。\n\n### Flags\n\n带有 `SHF_ALLOC`（显示为 `A`）的 Section 会进入进程内存映像；`W` 表示可写，`X` 表示可执行。常见组合为 `A`（只读分配）、`WA`（可写分配）和 `AX`（可执行分配）。\n\n因此 `.dynsym` 通常带 `A`，而 `.symtab` 通常不带 `A`：运行时动态链接器需要前者，程序执行本身不需要后者。\n\n### `sh_link` 与 `sh_info`\n\nSection Header 中的 `sh_link` 和 `sh_info` 用于描述当前 Section 与其他 Section 的关联关系，具体含义由 `sh_type` 决定：\n\n| `sh_type`     | 常见 Section 名称                          | `sh_link`                        | `sh_info`                          |\n| ------------- | -------------------------------------- | -------------------------------- | ---------------------------------- |\n| `SHT_DYNAMIC` | `.dynamic`                             | 关联字符串表的 Section 下标，通常为 `.dynstr` | 通常为 `0`                            |\n| `SHT_HASH`    | `.hash`                                | 关联符号表的 Section 下标，通常为 `.dynsym`  | `0`                                |\n| `SHT_REL`     | `.rel.text`、`.rel.dyn`、`.rel.plt` 等    | 重定位使用的符号表 Section 下标             | 重定位作用目标的 Section 下标；部分动态重定位中可为 `0` |\n| `SHT_RELA`    | `.rela.text`、`.rela.dyn`、`.rela.plt` 等 | 重定位使用的符号表 Section 下标             | 重定位作用目标的 Section 下标；部分动态重定位中可为 `0` |\n| `SHT_SYMTAB`  | `.symtab`                              | 关联字符串表的 Section 下标，通常为 `.strtab` | 第一个非局部符号的下标                        |\n| `SHT_DYNSYM`  | `.dynsym`                              | 关联字符串表的 Section 下标，通常为 `.dynstr` | 第一个非局部符号的下标                        |\n| 其他            | 由具体 Section 决定                         | 由对应 `sh_type` 定义                 | 由对应 `sh_type` 定义                   |\n\n因此，`.dynsym` 与 `.dynstr`、`.symtab` 与 `.strtab` 的关系由 Section Header 的 `sh_link` 明确记录，而非约定俗成——即 `.symtab` 关联的字符串表由 `sh_link` 指定，并不硬性要求为 `.strtab`。\n\n### 各 Section 详解\n\n#### 字符串表\n\nELF 中不会在各个结构里重复保存字符串，而是将字符串集中存放到字符串表中，再由其他结构通过**字节偏移**引用对应字符串。\n\n常见字符串表有三类：\n\n- `.shstrtab`：Section 名称字符串表，存放各 Section 的名称。\n\t- ELF Header 的 `e_shstrndx` 指明它在 Section Header Table 中的下标；Section Header 的字段 `sh_name` 保存名称在 `.shstrtab` 中的字节偏移。\n- `.dynstr`：动态字符串表，保存动态符号名、依赖库名等运行时字符串。\n- `.strtab`：普通字符串表。\n\n> `.shstrtab` 由 ELF Header 的 `e_shstrndx` 指定，而 `.strtab` 和 `.dynstr` 由对应符号表 Section Header 的 `sh_link` 指定。\n\n#### 符号表（`.symtab` 与 `.dynsym`）\n\n样例中的 `main` 函数和 `global` 变量由当前文件定义，而 `printf` 只在当前文件中被引用，实现来自外部共享库。\n\n执行 `readelf -s -W hello32` 查看符号表，可以观察\"我定义的符号\"和\"我需要的符号\"：\n\n![9fbdbf5d48a81d5f678c4534bccc3954&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/61cafe731b1d4c835083b4247f03210267f0ac9b8da8ac88ebbe80e53b8f7d2a.jpg)\n\n除了我们显式提供的三个符号外，其余符号来自链接时合并的其他目标文件。\n\n另外可以看到（对于未被 `strip` 的动态可执行文件）`.dynsym` 是 `.symtab` 的子集：\n- `.symtab`：收录静态链接、调试和分析需要的局部/全局符号。不需要映射到运行时内存，可被 `strip`。\n- `.dynsym`：只保留运行时动态链接需要的符号——导入的符号（`UND`）和导出的符号。\n\n> 普通 `.o` 主要依赖 `.symtab` 完成静态链接，最终动态可执行文件和 `.so` 才需要 `.dynsym`。\n\n##### `Ndx = UND` 的含义\n\n**`Ndx`** 字段的真名叫做 **`st_shndx`**（Section Header Index），指明这个符号（函数或变量）到底\"居住\"在当前 ELF 文件的哪一个 Section 里。\n\n当前 ELF 引用了 `printf` 但没有定义，所以：\n\n- `Value = 0`，`Ndx = UND`——当前 ELF 只有引用，没有实现。\n- 运行时由 `ld.so` 在依赖库（如 `libc.so`）中查找。\n- 动态链接器不会把解析结果写回 `.dynsym` 的 `Value` 字段；它把运行时地址写入重定位指定的位置。\n\n> [!QUESTION] 为什么 `.dynsym` 中有些表项的 `Value` 不为 `0`？\n> `.dynsym` 既指明依赖哪些函数（`Value` 为 0），也指明提供哪些函数及在该 ELF 虚拟地址布局中的位置（`Value` 不为 0）。\n\n#### 重定位表（`.rel.*` / `.rela.*`）\n\n执行 `readelf -r -W hello32`，查看重定位表：\n\n![f31df3e19c506e8b85326656e511866a&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/3cf576eca3c9e559b18a5dd181841f01a06a0fec2e5bf336dd572df052485b37.jpg)\n\n> [!NOTE] 重定位表的命名\n> Section 名中的后缀提示关联对象（如 `.rela.text` 与 `.text` 相关），但准确的关联关系应查看 `sh_info`。\n\n重定位表回答两个核心问题：**哪里需要修正，以及按哪一种规则修正**，每一个表项包含：\n1. 编码符号索引与重定位类型的 `r_info`：\n\t- 32 位 ELF：高 24 位是 `.dynsym` 符号表项索引，低 8 位是重定位类型。\n\t- 64 位 ELF：高 32 位是 `.dynsym` 符号表项索引，低 32 位是重定位类型。\n\t- 重定位类型决定计算公式——不同类型使用不同输入（Load Bias、符号值、加数、位置本身），并非统一执行\"加上新旧地址之差\"。![5e957b3157e59da7b3065d50ca3c3193&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/40cb1ff419523bd4630de008d634e341e5640ea076d17b1b9a0e838fd6e39459.jpg)\n2. 待修正位置 `r_offset`：对 `ET_REL`，`r_offset` 是相对目标 Section 起点的字节偏移；对 `ET_EXEC` 与 `ET_DYN`，为待修正存储单元的虚拟地址。\n\n> [!IMPORTANT] `.rel.*` 和 `.rela.*` 的区别\n> `REL`：加数隐含在待修正位置中。\n> `RELA`：额外使用 `r_addend` 显式保存加数。\n\n`.rel.*` / `.rela.*` 既用于静态链接阶段的地址修正（链接器合并 `.o` 时处理），也用于运行时的动态重定位（动态链接器在加载或调用时处理）。\n\n常见的重定位表：\n- `.rela.plt` / `.rel.plt`：用于修正外部函数的地址。\n- `.rela.dyn` / `.rel.dyn`：用于修正外部变量的地址。\n\n\n## 动态链接\n\n对于如何（静态）链接成一个共享库、可执行文件，参考：[预处理&#12289;编译&#12289;汇编&#12289;链接](/notes/n-cf811ca4a4a742a2ad51882a328d7324/)\n\n接下来分析共享库、可执行文件在运行时如何完成动态链接，这需要了解函数的导入和导出机制。\n\n与 PE 的逻辑类似，同样需要记录依赖哪些库文件以及其中的函数，然后在运行时加载提供该符号的共享库，并把调用点连接到真实地址。\n\n区别在于，ELF 没有 PE 那样独立的导入表和导出表，依赖什么库以及对应的函数是由两个关键 Section 分工实现的：\n- `.dynamic`：依赖哪些库，以及动态符号表、字符串表、重定位表、哈希表和 GOT 在哪里。\n- `.dynsym`：需要导入/导出的符号。导入符号（`Ndx = UND`）与导出符号（有明确 Section 下标）共存于此。\n\n#### `.dynamic` Section\n\n前面的 `sh_link` / `sh_info` 属于 Section 级别的关联（静态链接器依赖它们寻找符号表、字符串表与重定位关系）。但运行时 `ld.so` 不依赖 Section Header，它通过 Program Header 中的 `PT_DYNAMIC` Segment 定位 `.dynamic`，再由其中的 `DT_*` 条目建立运行时关联：\n\n执行 `readelf -d -W hello32`，查看 `.dynamic` Section：\n\n![4ef8d59d7114d5a0cad66054eecbbb72&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/abbbce916ccae9ea77684f470603ba4932785af7873851866c1251556c7da2b0.jpg)\n\n常见数组条目类型及其含义：\n\n| 动态条目 | 作用 |\n| --- | --- |\n| `DT_NEEDED` | 依赖库名称在动态字符串表中的偏移，例如 `libc.so.6` |\n| `DT_SYMTAB` | 指向动态符号表（`.dynsym`） |\n| `DT_STRTAB` | 指向动态字符串表（`.dynstr`） |\n| `DT_JMPREL` | 指向 PLT 使用的 `.rel.plt` 或 `.rela.plt` |\n| `DT_PLTGOT` | 指向与 PLT/GOT 相关的数据 |\n| `DT_GNU_HASH` / `DT_HASH` | 指向加速动态符号查找的哈希表 |\n\n以符号解析为例，运行时的解析链路为：\n\n```text\nrelocation.r_info → symbol index → DT_SYMTAB[index].st_name → DT_STRTAB → symbol name\n```\n\n与链接时依赖 `sh_link` / `sh_info` 不同，这条链路完全由 `DT_*` 条目驱动，**Section Header 即使被移除也不影响正常动态链接**。\n\n##### `.symtab`、`.dynsym` 与 `.dynamic` 的区别\n\n- **`.symtab`**：当前 ELF 里\"有哪些符号\"——完整符号表，服务于静态链接、调试和分析。\n- **`.dynsym`**：动态链接器运行时\"需要关心哪些符号\"——运行时导入和导出的符号。\n- **`.dynamic`**：动态链接器\"需要加载哪些库、如何找到与动态链接有关的数据、需要做哪些动态链接工作\"——运行时元信息的入口。\n\n#### GOT 与 PLT\n\nELF 的动态链接支持延迟绑定（lazy binding）——首次调用时才解析并回填函数地址。\n> 也可以使用即时绑定（`LD_BIND_NOW`），在加载时一次性解析所有 PLT 重定位项。\n\n实现延迟绑定需要两个关键结构：\n\n- **GOT（Global Offset Table，全局偏移表）**：用于保存符号在运行时解析得到的实际地址，使程序在编译、链接阶段尚不知道全局变量或外部符号最终地址的情况下，可以通过 GOT 间接访问它们。\n\t- 对于采用懒绑定的外部函数，其对应 GOT 表项在初始状态下通常并不保存函数的真实地址，而是指向 PLT 中的解析流程；完成符号解析后，动态链接器再将真实函数地址写入 GOT。\n- **PLT（Procedure Linkage Table，过程链接表）**：为外部函数调用提供固定的跳转入口。例如代码执行 `call printf@plt` 时，会先进入 `printf` 对应的 PLT 表项，再通过 GOT 间接跳转。若 `printf` 尚未完成解析，GOT 的初始值会使执行流重新进入 PLT 的解析路径，由动态链接器解析 `printf` 的真实地址并回填 GOT；之后再次调用 `printf@plt` 时，PLT 便可通过 GOT 直接跳转到真实的 `printf` 函数。\n\n#### 延迟绑定全链路：以 `printf` 为例\n\n以 `printf` 为例，在 Linux 中执行 `objdump -d -M intel hello32 | grep -C 8 'printf@plt'`，相关输出如下：\n\n![7b6ec5f8ec814b9ba74666a344cda5b5&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/c10b1e843facec65bf21aa154b7fc225b895d880dca3bac1cb231b3e317f5005.jpg)\n> 标红的是搜索结果。\n\n可以看到，对 `printf` 的调用实际指向 `printf@plt`。`printf@plt` 的函数体先从 GOT 读取地址并跳转；若 GOT 尚未回填，跳转目标正是紧随其后的 `push + jmp` 序列，将控制流交给通用解析逻辑——这与前文描述的延迟绑定机制一致。\n\n执行 `objdump -s -j .got.plt hello32` 查看 GOT 表地址及其内容：\n![3a201e6e51f57675d1d3e9f858dbaea6&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/39b06ba8331f263c8225452b435ddfea103639ff5e6e9595b410bb096572c677.jpg)\n\n其内容指向 `printf@plt` 中 `push + jmp` 序列的入口地址。\n\n**首次调用 `printf`：**\n\n1. 执行 `call printf@plt`，进入 PLT 对应表项。\n2. PLT 从 GOT 读取地址跳转——此时 GOT 尚未回填，执行流落入 `push + jmp` 序列，将符号偏移压栈后跳转到通用解析逻辑。\n3. 通用解析逻辑依据栈顶偏移找到 `.rel.plt` 中的表项（`.rel.plt` 表记录每个待导入符号以及解析结果应写入的 GOT 槽）：![f31df3e19c506e8b85326656e511866a&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/3cf576eca3c9e559b18a5dd181841f01a06a0fec2e5bf336dd572df052485b37.jpg)\n    - `r_offset` 指向待回填的 GOT 槽；\n    - `r_info = 0x00000207`，高 24 位给出符号索引 `2`，低 8 位给出重定位类型 `R_386_JUMP_SLOT`。\n4. 按索引查询 `.dynsym[2]`，其 `st_name` 是 `.dynstr` 中的偏移，还原名称 `printf`（`Ndx = UND`，当前 ELF 无定义）：![54b8f1cdba3dbed81b22578c0ad5c14e&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/389469f39ea149bc6a40b0c55ed3979363df5f9e25eb2f17ddc2219b6f7a5c4c.jpg)\n5. 在 `libc.so.6` 符号表中查找 `printf`，找到 `st_value`，计算真实地址，写入 `GOT.printf`。\n\n> `libc.so.6` 的加载由内核通过 Program Header 找到 `PT_DYNAMIC`，依据 `.dynamic` 完成；该库本身也有 `.dynsym`、`.dynstr` 和哈希表，用于加速符号名称查找。\n\n\n**后续调用 `printf`：**\n\nPLT 从已更新的 GOT 直接读取真实地址跳转，不再触发解析逻辑。\n\n## 地址无关与地址随机化\n\n### PIE\n\nPIE（Position Independent Executable）使主程序可以像共享对象一样被映射到不同地址，ELF Header 中 `e_type` 通常为 `ET_DYN`。\n\n- 非 PIE 直接使用链接时确定的绝对地址，例如 `mov eax, [0x404000]`。\n- x86-64 PIE 常使用 RIP-relative 寻址，例如 `mov eax, [rip+offset]`，利用代码与数据之间不变的相对距离。\n- 32 位 x86 没有 `[EIP + offset]` 这种通用数据寻址形式，位置无关代码通常先通过 thunk 取得当前 EIP，再以普通寄存器（常见 EBX）作为基址访问 GOT 或数据。\n\n例如，链接布局中 `.text` 位于 `0x401000`、`.data` 位于 `0x404000`，距离为 `+0x3000`。整体搬到另一处后，只要相对距离不变，PC-relative 引用无需修正。\n\n从重定位的角度看，程序中函数和数据访问可以归纳为四类：\n\n- **类型 1：程序内部的函数调用**，即调用当前模块中定义的函数。\n- **类型 2：程序内部的数据访问**，如访问当前模块中定义的全局变量、静态变量等。\n- **类型 3：程序外部的函数调用**，即调用其他共享库 / DLL 中定义的函数。\n- **类型 4：程序外部的数据访问**，即访问其他共享库 / DLL 中定义的全局数据。\n\n其中，类型 1、2 的目标地址与当前模块具有确定的相对关系，因此通常可以借助 PIE，避免模块整体搬移时产生额外的运行时地址修正。\n\n而类型 3、4 的目标位于其他模块中，其真实地址只能在运行后确定，因此必须保留相应的符号解析信息，在装载或运行阶段完成地址解析。\n\n\n> [!NOTE] Windows 与 Linux 对这几类地址引用的组织方式有所不同。\n> \n> 在 Windows PE 中，**Base Relocation Table（基址重定位表）**主要用于修正因模块装载基址变化而受到影响的模块内部绝对地址引用；跨模块的函数和数据引用则主要通过**导入表 / IAT**完成解析，导出表负责描述模块可以向外提供的符号。\n> \n> Linux ELF 没有 PE 意义上的独立“导入表 / 导出表”。外部符号解析主要依赖 `.dynsym`、`.dynamic`、GOT / PLT 以及 `.rel.*` / `.rela.*` 等结构，其中**动态重定位表承担了地址回填的重要作用**。\n\n### ASLR\n\nASLR（Address Space Layout Randomization）是操作系统层面的安全机制，为主程序、共享库、栈和堆等区域选择随机化地址，降低攻击者预测内存布局的能力。\n\nPIE 决定\"主程序能不能换基址\"，ASLR 决定\"系统是否随机选择基址\"。两者组合后的效果如下：\n\n> [!QUESTION] 下表对 32 位和 64 位是否都成立？\n> 基本逻辑相同：PIE 决定程序是否支持重定位，ASLR 决定系统是否随机选址。但 32 位地址空间较小，ASLR 的随机化熵值有限，安全收益不如 64 位显著。\n\n| 组合             | 效果                          |\n| -------------- | --------------------------- |\n| 无 PIE + 无 ASLR | 主程序地址固定，其他区域也不随机            |\n| 无 PIE + 有 ASLR | 主程序通常仍固定，但共享库、栈和堆等可以随机，保护有限 |\n| 有 PIE + 无 ASLR | 主程序支持换地址，但系统没有为每次运行随机选择地址   |\n| PIE + ASLR     | 主程序与其他可随机化区域在不同运行中改变地址      |\n\n### 非 PIE 程序的重定位特点\n\n前面的 `hello32` 按理来说重定位表中应能看到许多表项，但实际只有几个：\n![f31df3e19c506e8b85326656e511866a&#95;MD5&#46;jpg](/notes/n-95e8c75c9da6476fbc85e09535265997/media/3cf576eca3c9e559b18a5dd181841f01a06a0fec2e5bf336dd572df052485b37.jpg)\n\n原因是使用 `-no-pie`，生成 `ET_EXEC` 类型的可执行文件，主程序依赖固定的虚拟地址布局（使用绝对地址）：Linux 对 `ET_EXEC` 类型的非 PIE 程序会加载到链接时确定的固定地址，因此程序自身的绝对地址引用不需要修正，只有依赖的外部符号（如 `printf`）和外部变量才需要重定位。\n> 这也是为什么 `printf@plt` 函数中第一个 `jmp` 是绝对地址，但在重定位表中没有该项的原因。\n\n\n## 参考资料\n\n1. [ELF文件格式解析 | openEuler社区官网](https://www.openeuler.openatom.cn/zh/blog/lijiajie128/2020-11-03-ELF%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90)\n2. [计算机那些事(4)——ELF文件结构 | 楚权的世界](https://chuquan.me/2018/05/21/elf-introduce/)\n",
+  "id": "95e8c75c-9da6-476f-bc85-e09535265997",
+  "metadata": {
+    "tags": [
+      "reverse/linux",
+      "os/linux",
+      "cs/binary-format"
+    ],
+    "title": "Linux ELF 文件格式"
+  },
+  "resources": [
+    "0d9786d24f554a839b0ddaab1aa63e349904ff8301dcb2ce1bc2abe71c8afe36.jpg",
+    "11560e5fc9284217a5ff837063da09ef4fbbfb3a21a0b521c6b85a355851c1dc.jpg",
+    "1d9857514bde2b2ad7be147b56d339c28109be3d5370bcbc74b10f832eca5d0c.jpg",
+    "389469f39ea149bc6a40b0c55ed3979363df5f9e25eb2f17ddc2219b6f7a5c4c.jpg",
+    "39b06ba8331f263c8225452b435ddfea103639ff5e6e9595b410bb096572c677.jpg",
+    "3cf576eca3c9e559b18a5dd181841f01a06a0fec2e5bf336dd572df052485b37.jpg",
+    "40cb1ff419523bd4630de008d634e341e5640ea076d17b1b9a0e838fd6e39459.jpg",
+    "453867d3f60abaf1794f20fe85d6b2294ee8ab8fe644aefa20a77b3113497de3.png",
+    "5343f88ac2141960c6e9efbce1d81a4451d47e04c54e2d264f14dcd6715884e9.jpg",
+    "61cafe731b1d4c835083b4247f03210267f0ac9b8da8ac88ebbe80e53b8f7d2a.jpg",
+    "76ee7080328685b41269b86bfdcc90c474bcecfd999fe0ebe3eb3bfaf87549e2.jpg",
+    "abbbce916ccae9ea77684f470603ba4932785af7873851866c1251556c7da2b0.jpg",
+    "c10b1e843facec65bf21aa154b7fc225b895d880dca3bac1cb231b3e317f5005.jpg"
+  ],
+  "url": "/notes/n-95e8c75c9da6476fbc85e09535265997/"
+}

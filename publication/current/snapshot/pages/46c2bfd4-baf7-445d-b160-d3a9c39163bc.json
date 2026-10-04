@@ -1,0 +1,46 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6941daa8fba6f3e67d6d",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-f1be5e6eccbaab71200d",
+      "kind": "heading",
+      "offset": 68
+    },
+    {
+      "id": "h-975179fbe015befc813e",
+      "kind": "heading",
+      "offset": 206
+    },
+    {
+      "id": "h-1952dabc08eea5b90c60",
+      "kind": "heading",
+      "offset": 510
+    },
+    {
+      "id": "h-bede57590c86d5d61987",
+      "kind": "heading",
+      "offset": 675
+    },
+    {
+      "id": "h-8b1674e7ed24688caf61",
+      "kind": "heading",
+      "offset": 958
+    }
+  ],
+  "body": "# Windows 异常处理机制 (MOC)\n\nWindows 异常的产生、分发、VEH、SEH 与调试验证。\n\n## 异常的产生与分发\n\n- [Windows x86 异常的产生与分发流程](/notes/n-fc98c7868417430fa36063afb251fb17/) — 异常如何产生、记录并最终汇入 `KiDispatchException` 统一分发（含内核与用户两条路径）\n\n## 异常的处理\n\n- [Windows x86 VEH 与 SEH](/notes/n-513b4c801b634b30839654b1a72897cc/) — VEH 与 SEH 的数据结构、回调接口及编译器扩展（`scopetable`、展开）\n- [Windows x86 RtlDispatchException 异常分发](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/) — 用户态 `RtlDispatchException` 如何依次搜索 VEH、SEH 和链尾兜底，以及 `UnhandledExceptionFilter` 的判断逻辑与反调试应用\n\n## 前置机制\n\n- [x86 中断的分类与触发机制](/notes/n-870bed2e9d0049498ba9ef4e6251c5cc/) — 区分异常与外部中断。\n- [x86 中断门与陷阱门](/notes/n-12e2ce5ea6a84311952dd4ac3d4978c2/) — 理解异常入口、现场保存与返回。\n\n## 调试与验证\n\n- [Windows 调试关系与调试事件机制](/notes/n-534116c45bce417bac764b15cc9c1f99/) — 观察异常如何成为调试器收到的事件。\n- [Windows 断点与单步执行机制](/notes/n-16a0bec58f144135a48b03e4ac71452a/) — 观察不同断点和单步如何触发异常。\n- [OD 验证&#65306;用户态异常的一次机会与二次机会](/notes/n-1477ec63df444763ab8200c27fda5815/) — 验证调试器、用户态处理与二次机会的关系。\n\n## 相关入口\n\n- [Windows 调试与逆向分析 &#40;MOC&#41;](/notes/n-da63b3ac0bcb46c7bb4db1de80503df3/) — 从机制进入调试环境、工具与实验。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 返回 Windows 领域入口。\n",
+  "id": "46c2bfd4-baf7-445d-b160-d3a9c39163bc",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows",
+      "arch/x86"
+    ],
+    "title": "Windows 异常处理机制 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-46c2bfd4baf7445db160d3a9c39163bc/"
+}

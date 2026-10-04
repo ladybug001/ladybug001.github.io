@@ -1,0 +1,62 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-31c45c441d8e7ffdced6",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-0e3b906a89c6a1776c80",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-a276613e8b8c430c9082",
+      "kind": "heading",
+      "offset": 244
+    },
+    {
+      "id": "h-3485880613e142f61f51",
+      "kind": "heading",
+      "offset": 264
+    },
+    {
+      "id": "h-6b578d18fadd8e59d67a",
+      "kind": "heading",
+      "offset": 443
+    },
+    {
+      "id": "h-e2194d3033acd60bde9b",
+      "kind": "heading",
+      "offset": 704
+    },
+    {
+      "id": "h-e245747c5b811f039e1b",
+      "kind": "heading",
+      "offset": 1393
+    },
+    {
+      "id": "h-836702308025b024d004",
+      "kind": "heading",
+      "offset": 1780
+    },
+    {
+      "id": "h-9dca556360fa91cdf3dc",
+      "kind": "heading",
+      "offset": 2392
+    }
+  ],
+  "body": "# C++ 虚函数与虚函数表\n\n## 背景\n\n虚函数是 `C++` 实现**运行时多态**（Runtime Polymorphism）的关键机制。\n> 相关知识：[C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/)\n\n- **核心作用：** 允许通过基类指针或引用，调用派生类重写后的特定版本函数。\n- **底层机制：** 依赖于**虚函数表**（`vtable`）和**虚表指针**（`vptr`）。\n\n## 核心机制\n\n### 虚函数表（`vtable`）\n\n- **定义：** 一个存储**虚函数地址**的函数指针数组。\n- **归属：** 属于**类**（`class`）层级。\n\t- 编译器在编译期为每个包含虚函数的类创建一个唯一的 `vtable`。\n\t- 同一类的所有对象共享同一份 `vtable`。\n- **内容：** 表中按声明顺序存放该类所有虚函数的入口地址。\n\n### 虚表指针（`vptr`）\n\n- **定义：** 一个隐藏的指针成员，指向所属类的 `vtable`。\n- **归属：** 属于**对象**（`object`）层级。\n\t- 每个对象实例在内存中都有自己独立的 `vptr`。\n- **内存位置：** 通常位于对象内存布局的**最前端**（Offset 0），以便快速寻址。\n\t- *注：具体实现取决于编译器（如 `MSVC`/`GCC`），参考 [编程语言&#65306;规范与实现分离](/notes/n-dca8dc00e8664e00ab4a00c31b2a057c/)。*\n\n## 代码示例\n\n```cpp\nclass A {\npublic:\n    virtual void func1() { std::cout << \"A::func1\" << std::endl; }\n    virtual void func2() { std::cout << \"A::func2\" << std::endl; }\n};\n\nclass B : public A {\npublic:\n    // 重写 func1\n    void func1() override { std::cout << \"B::func1\" << std::endl; }\n    // 继承 func2，未重写\n};\n```\n\n`A` 的内存布局如下图所示：\n![1a040414095babebe1c8730d80d35509&#95;MD5&#46;jpg](/notes/n-7794ffc3e8894de895729386e783249b/media/12b9337f178563672be7ab08c0129b8d2e27e415da5a69aa27bfbfd152f174d5.jpg)\n`B` 的内存布局如下图所示：\n![b66b148b86e8e94bdec9739cb55cfb04&#95;MD5&#46;jpg](/notes/n-7794ffc3e8894de895729386e783249b/media/e2801f49e901e6a22c70df1cca811a41618390837428f941c8eba8f09a3d6f46.jpg)\n\n### 虚表构建过程\n\n1. **类 `A` 的 `vtable`：**\n\t- `[0]`: `&A::func1`\n\t- `[1]`: `&A::func2`\n2. **类 `B` 的 `vtable`（关键变化）：**\n\t- **拷贝：** 首先拷贝基类 `A` 的虚表内容。\n\t- **覆盖（Override）：** 由于 `B` 重写了 `func1`，表中索引 `0` 的位置被替换为 `&B::func1`。\n\t- **保留：** `func2` 未被重写，表中索引 `1` 仍指向 `&A::func2`。\n\n**最终布局示意：**\n\n```text\nClass A vtable: [ &A::func1 | &A::func2 ]\nClass B vtable: [ &B::func1 | &A::func2 ] <--- 关键：第一个地址变了\n```\n\n## 动态绑定流程\n\n```cpp\n// 或：A &ptr = *newB();\nA* ptr = new B();\nptr->func1(); \n```\n\n当通过**基类指针/引用**调用虚函数时，编译器会生成如下逻辑的代码（伪汇编逻辑）：\n\n```\nmov  ecx, [ptr]      ; ecx = this\nmov  eax, [ecx]      ; eax = vptr\ncall dword ptr [eax + 0*4]\n```\n\n**执行步骤：**\n1. **寻址：** 通过 `ptr` 找到对象内存起始地址。\n2. **读取 `vptr`：** 读取偏移量为 `0` 处的指针值（即 `vptr`）。\n3. **查表：** 根据函数 `func1` 在声明时的索引（假设是 `0`），访问 `vtable[0]`。\n4. **跳转：** `call` 查到的地址（即 `B::func1`）。\n\n> **内存视角：**  \n> 在 C++ 的继承体系中，只要指针指向**合法的子对象起始地址**，就可以将其视为基类对象来使用，而不会破坏对象的内存布局或完整性。  \n> 需要运行时类型检查的向下转型及指针修正，见 [dynamic&#95;cast 的运行时转换](/notes/n-05b15a525c2c46f5b96d1ac648d63387/#h-c464c6fbe060e7e09096)。\n\n## 总结\n\n**设计思想：** \n\n编译器为每个“有虚函数的类”造一张表，并在每个“对象”里埋一个指针指向这张表。调用时，通过指针查表，实现“指谁调谁”。\n\n这种 **“通过不变量（对象结构）找到变量（虚表/虚基类）”** 的间接寻址思想，在虚继承中也一脉相承，参考：[C&#43;&#43; 继承与虚继承机制](/notes/n-da561297c8704e938e5625a35698d9eb/#h-a559b2363e40c05675f7)\n",
+  "id": "7794ffc3-e889-4de8-9572-9386e783249b",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 虚函数与虚函数表"
+  },
+  "resources": [
+    "12b9337f178563672be7ab08c0129b8d2e27e415da5a69aa27bfbfd152f174d5.jpg",
+    "e2801f49e901e6a22c70df1cca811a41618390837428f941c8eba8f09a3d6f46.jpg"
+  ],
+  "url": "/notes/n-7794ffc3e8894de895729386e783249b/"
+}

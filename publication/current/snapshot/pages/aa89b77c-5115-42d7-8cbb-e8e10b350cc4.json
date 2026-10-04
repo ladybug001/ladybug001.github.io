@@ -1,0 +1,119 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-71678b56a2b5a7bae999",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-a1b879b83da1c597e9e6",
+      "kind": "heading",
+      "offset": 224
+    },
+    {
+      "id": "h-e07002915504009c3522",
+      "kind": "heading",
+      "offset": 1175
+    },
+    {
+      "id": "h-aa1231f8affc208627e1",
+      "kind": "heading",
+      "offset": 2761
+    },
+    {
+      "id": "h-f29650c4af93012e44b8",
+      "kind": "heading",
+      "offset": 3099
+    },
+    {
+      "id": "h-67e76f666914dac7f750",
+      "kind": "heading",
+      "offset": 3671
+    },
+    {
+      "id": "h-70408173b8ebe87eb472",
+      "kind": "heading",
+      "offset": 4899
+    },
+    {
+      "id": "h-19937c0b26b15639130d",
+      "kind": "heading",
+      "offset": 5347
+    },
+    {
+      "id": "h-95141023b739ed6df7be",
+      "kind": "heading",
+      "offset": 7259
+    },
+    {
+      "id": "h-bc39c8226147d4f89bac",
+      "kind": "heading",
+      "offset": 7734
+    },
+    {
+      "id": "h-30ac9497b6dc68be73a5",
+      "kind": "heading",
+      "offset": 7858
+    },
+    {
+      "id": "h-a99d5d313e084c9488af",
+      "kind": "heading",
+      "offset": 8238
+    },
+    {
+      "id": "h-b4019285accc0512bcbb",
+      "kind": "heading",
+      "offset": 8812
+    },
+    {
+      "id": "h-8b3c76b9b85dfb217ec6",
+      "kind": "heading",
+      "offset": 9808
+    },
+    {
+      "id": "h-0a9e7cec037c6d686a42",
+      "kind": "heading",
+      "offset": 10437
+    },
+    {
+      "id": "h-cc3c02d4a73f72f81bee",
+      "kind": "heading",
+      "offset": 11418
+    },
+    {
+      "id": "h-abaa0b3af6340357a2e4",
+      "kind": "heading",
+      "offset": 11435
+    },
+    {
+      "id": "h-792d4f5a20c03ae0d8d1",
+      "kind": "heading",
+      "offset": 12578
+    }
+  ],
+  "body": "# Windows 内核编程基础\n\n**核心问题**：驱动开发有哪些规则来约束代码？\n\n驱动程序运行在内核态（在 x86/x64 语境中常称 Ring 0），内核态拥有更高权限，但也承担更严格的约束：无效内存访问、错误的 IRQL、未配对的资源操作或破坏内核数据结构，都可能导致系统 bug check（常见表现为蓝屏）。\n\n> 对于硬件而言，至少有一个驱动负责它与用户程序的交互，对于驱动而言，不一定有相应的硬件。\n\n## HAL、内核层与执行体\n\n![Pasted image 20231018223303&#46;png](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/d2e8a95639c396c05d4c344b488ab9dd9833f0f2455b68e78c7d6d3f1c90de77.png)\n如上图所示，Windows 内核分为三层：\n1. 与硬件直接打交道的这一层称为硬件抽象层（Hardware Abstraction Layer，简称 HAL），这一层的用意是把所有与硬件相关联的代码逻辑隔离到一个专门的模块中，从而使上面的层次尽可能做到独立于硬件平台。\n2. HAL 之上是内核层，有时候也称为**微内核**（micro-kernel），这一层包含了基本的操作系统原语和功能，如线程和进程、线程调度、中断和异常的处理、同步对象和各种同步机制。\n3. 在内核层之上则是**执行体**（executive）层，这一层的目的是提供一些可供上层应用程序或内核驱动程序直接调用的功能和语义。Windows 内核的执行体包含一个对象管理器，用于一致地管理执行体中的对象。\n\n内核层和执行体层的分工是，**内核层实现操作系统的基本机制，而所有的策略决定则留给执行体**。就像在游戏里，Kernel 是角色最基础的动作能力，例如走、停、转向、等待，它只负责“怎么动”，不关心为什么动。Executive 则像上层行为逻辑，例如跟随主人、追击敌人、巡逻。它把“走、停、等待”等基础能力组合起来，完成一个具体功能。\n\n**执行体是由多个内核子系统构成的**，这种设计体现了分层、解耦的思想。下图显示了 Windows 内核的详细组成结构。\n\n![Pasted image 20231018223234&#46;png](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/fc4b43cf5a76689550926254e324292a6512f6f6d4ba58d88e6da04eb3555b76.png)\n\n进程管理器、I/O 管理器、内存管理器等，在实现自己的功能时，共同使用对象管理器提供的基础机制。\n\n### 判定内核函数属于哪一层\n\n1. 执行体相关的函数特征如下表所述：\n\n| 组件       | 常见前缀       | 典型函数                                                                                            |\n| -------- | ---------- | ----------------------------------------------------------------------------------------------- |\n| 执行体通用支持  | `Ex`       | `ExAllocatePool2`、`ExFreePool`、`ExAcquireResourceExclusiveLite`、`ExInitializeRundownProtection` |\n| 对象管理器    | `Ob`       | `ObCreateObject`、`ObInsertObject`、`ObReferenceObjectByHandle`、`ObDereferenceObject`             |\n| 进程/线程管理器 | `Ps`、`Psp` | `PsCreateSystemThread`、`PsLookupProcessByProcessId`、`PsGetCurrentProcess`、`PspCreateProcess`    |\n| 内存管理器    | `Mm`、`Mi`  | `MmMapIoSpace`、`MmProbeAndLockPages`、`MmGetSystemAddressForMdlSafe`、`MiResolveDemandZeroFault`  |\n| I/O 管理器  | `Io`、`Iop` | `IoCreateDevice`、`IoCallDriver`、`IoCompleteRequest`、`IoAllocateIrp`                             |\n| 安全引用监视器  | `Se`、`Sep` | `SeAccessCheck`、`SeSinglePrivilegeCheck`、`SeCaptureSubjectContext`                              |\n| 缓存管理器    | `Cc`       | `CcCopyRead`、`CcCopyWrite`、`CcInitializeCacheMap`                                               |\n| 配置管理器    | `Cm`、`Cmp` | 主要负责注册表，内部函数常见 `Cmp*`                                                                           |\n| 本机系统服务   | `Nt`、`Zw`  | `NtCreateFile`、`ZwOpenProcess`、`NtAllocateVirtualMemory`                                        |\n\n2. 微内核相关的函数特征：`Ke`、`Ki` 开头的函数以及 `K` 开头的结构体一般与微内核有关，比如 `KTHREAD`、`KPROCESS`，而 `E` 开头的结构体是对 `K` 的补充，比如 `EPROCESS`、`ETHREAD`。另外就是，`Ke` 一般是导出函数，`Ki` 则不导出：`external` 和 `internal`。\n\n### `Nt` 和 `Zw` 前缀的含义？\n\n经常看到 `Ntxxx` 和 `Zwxxx` 函数，两者仅前缀不同，比如 `NtCreateProcess`、`ZwCreateProcess`，它们到底有什么区别？\n\nMicrosoft 已明确说明：`Nt` 是 Windows NT 的缩写，`Zw` 没有词义展开。参见 [What Does the Zw Prefix Mean?](https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/what-does-the-zw-prefix-mean-)。\n\n在 Win32 开发和驱动开发中，都有 `Nt*` 和 `Zw*` 函数，它们有什么区别呢？\n\n#### Win 32 开发（用户态）\n\n在用户态 (`Ring 3`) 视角下，`ntdll.dll` 导出的 `NtOpenProcess` 与 `ZwOpenProcess` 本质上是完全相同的别名，指向同一个函数地址：\n> 从用户态发起系统调用时，`Nt*` 与 `Zw*` 行为相同；\n\n![405b723db8430e813ae659de64ab787e&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/42c745386d2f1dd1d22e48f78db3fde6a12be96aa30dc5497a86f0e76e069fcc.jpg)\n\n实际上这是系统调用，先前已经分析过：\n1. 调用 `Nt*` 或 `Zw*`。\n2. 通过系统调用进入系统服务分派流程：\n    - 构造陷阱帧；\n    - 设置 `PreviousMode = UserMode`。\n3. 根据服务号调用内核态的 `Nt*` 函数。\n4. `Nt*` 根据 `PreviousMode` 检查用户参数、句柄和访问权限。\n> 相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n#### 驱动开发（内核态）\n\n同样的，内核态也有这两个函数，并且与用户态有很大不同，`NtOpenProcess` 是真正在内核空间处理逻辑的实体函数，而 `ZwOpenProcess` 仅仅是一个二次包装的系统调用发起者（它会将先前模式设为 `KernelMode` 再调用对应的 `Nt*` 函数）：\n\n1. `Nt*` 是真正的逻辑实现，会依据 `PreviousMode` 决定是否执行用户参数检查，WRK 中相关源码：\n   ![d9cda9e6836194b776a54af594a6860e&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/3b5bfebd9001b7f92c58076ba6d6d3583ec6631094ec0758370f503d818f2634.jpg)\n\n2. `Zw*` 则是和用户态的 `Nt` / `Zw` 逻辑差不多，如下是反汇编 `ntoskrnl.exe` 的内容：\n   ![1bc591e5ab101e94eab1954e171467c1&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/0d15dceaaccc24ab68eaf66caea473e4d40bab51048a1feacbcb211a6337dbcb.jpg)\n    - 进入系统服务分派器；\n    - 将本次调用的 `PreviousMode` 临时设置为 `KernelMode`；\n    - 根据服务号调用对应的 `Nt*`；\n    - 返回时恢复原来的 `PreviousMode`。\n> `_KiSystemService` 的逻辑参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n\nWinDbg 查看内核中 `NtOpenProcess`、`ZwOpenProcess` 两个函数的反汇编：\n\n![96627906119f75052aa26847ff40f950&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/02c3576248cb2e2e0544560b17929c87494e1f7900b2cf61d39c5436d3ccb60d.jpg)\n\n**核心逻辑**：最终执行的通常是同一个 `Nt*` 实现；区别在于调用路径不同，导致 `Nt*` 看到的 `PreviousMode` 不同。\n\n> [!NOTE] 驱动是如何得到 `Nt` 函数地址的呢？\n> 和 DLL 加载一样，利用导入表、导出表和重定位表实现直接调用 `Nt` 函数，而不通过系统服务表。\n\n### 文档状态与导出状态\n\n“是否文档化”和“是否导出”是两个独立维度：\n\n**导出的接口**：导出表中可以找到。\n**文档化的接口**：可以查到相关的使用方式。\n\n对于**未导出且未文档化的内部例程**：通常只能通过逆向工程、**特征码搜索**或**解析内核 PDB 符号文件**定位。\n\n---\n\n查询接口签名、IRQL、参数所有权和目标系统要求时，应以 [Microsoft Learn 的 Windows 驱动 DDI 索引](https://learn.microsoft.com/windows-hardware/drivers/ddi/) 为准。\n\n![2448f748043a29f35ed0db2ceda5014e&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/2636ce64b13726efb9e6b8502033ea6ae211c6c7774784dff2a5aa21b658ac7a.jpg)\n\n## 驱动对象\n\nI/O 管理器为每个加载的内核驱动分配 `DRIVER_OBJECT`（驱动对象），并将指针传递给驱动的入口函数。\n\n驱动对象也是内核对象的一种，是 Windows 内核分配的用来表征当前驱动程序实例的核心数据结构，可以通过 VS 定义或 `WinDbg` 查看其内部成员：\n> 相关参考：[Windows 内核对象](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/)\n\n![259251eb1f485e61d74544038c209162&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/bdc4fadb6a9f4167fc104e8e1e868035f147fc19299ecfc91c3ddc582f07df53.jpg)\n该结构体完整包含了驱动的全局信息与分发函数表，详细释义如下：\n\n```c\ntypedef struct _DRIVER_OBJECT {\n    CSHORT Type;\n    CSHORT Size;\n    PDEVICE_OBJECT DeviceObject;\n    ULONG Flags;\n    PVOID DriverStart;       // 结构体对应的驱动程序在内核空间的首地址\n    ULONG DriverSize;        // 结构体对应的驱动程序内存占用大小\n    PVOID DriverSection;     // 指针，指向当前驱动的 _LDR_DATA_TABLE_ENTRY 结构体\n    PDRIVER_EXTENSION DriverExtension;\n    UNICODE_STRING DriverName; // 结构体对应的驱动程序名字\n    PUNICODE_STRING HardwareDatabase;\n    PFAST_IO_DISPATCH FastIoDispatch;\n    PDRIVER_INITIALIZE DriverInit;\n    PDRIVER_STARTIO DriverStartIo;\n    PDRIVER_UNLOAD DriverUnload; // 指向驱动程序卸载函数的入口地址\n    PDRIVER_DISPATCH MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + 1]; // IRP 派遣处理函数表\n} DRIVER_OBJECT, *PDRIVER_OBJECT;\n```\n\n\n可通过 `DbgPrint` 打印驱动对象的指针地址，进一步观察其成员数据：\n\n```c\nNTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)\n{\n    DbgPrint(\"%x \\n\", DriverObject);\n    \n    // 设置一个卸载函数，当驱动卸载时触发\n    DriverObject->DriverUnload = DriverUnload;\n    return STATUS_SUCCESS;\n}\n```\n\n\n![16a53eb84fb894e3e3155429b66853b5&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/fbf4e2e10df7c2c6e13d4a54c4d38952dae099620994b4cb68bd599bf802818f.jpg)\n\n\n在 WinDbg 中可用 `dt`（Display Type）结合对象地址解析字段：\n\n```text\ndt nt!_DRIVER_OBJECT <驱动对象地址>\n```\n\n![842fbc397f453eef4c701d0b073eff83&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/71ea2a5e39dd9fcd1e33ed8387b4e1ab44dcb875997d61779508fb421d3df5de.jpg)\n\n> `Type` 和 `Size` 等成员值在同一版本内核中是固定的，可以做为判定某片内存区域是不是驱动起始地址的特征，尝试遍历出系统里的所有驱动。\n\n\n#### 关键成员：`DriverSection`\n\n值得一提的是，驱动对象中的 `DriverSection` 成员实际上指向了表示内核模块加载信息的隐藏结构 `_LDR_DATA_TABLE_ENTRY`。\n\n在该结构内部维护着一个名为 `InLoadOrderLinks` 的双向链表，通过它可以在内存中直接遍历当前系统内所有已加载驱动模块的基址与路径信息（该特性常被用于底层内核级隐藏防御或 Rootkit 扫描对抗分析）：\n\n![5605a0ef1b7fe1a6a6d3f5c93bd8224f&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/0bf21574665a61d33fb519a242d0231cb5dcdc2b71cfa5f9aad1111d634dc8b6.jpg)\n\n> 断链隐藏的具体实现与历史实验参考：[Windows 驱动隐藏原理与历史实验](/notes/n-f350a698c7d44c3b84e4d17e43548e40/)\n\n#### 关键成员：`MajorFunction`\n\n驱动对象中的 `MajorFunction` 成员，这是一个存储函数地址的列表，存储 3 环和 0 环交互的业务函数地址。\n\n我们可以**替换**其它驱动对象中该成员的内容，执行我们的函数，达到 Hook 的目的。\n\n## IRQL 与调用约束\n\nIRQL 是软件逻辑 + 硬件机制实现的中断请求优先级，相关内容参考：[中断请求优先级与 IRQL](/notes/n-d4f651574a52425791b6f0f74f89a06c/)\n\nIRQL（Interrupt Request Level，中断请求级别）表示当前逻辑处理器的执行优先级。数值越大，优先级越高；提升到某一级别后，同级及更低级别的中断会被屏蔽，处理完成后必须恢复原 IRQL。\n> Windows XP 中，`_KPCR.Irql` 指示当前 IRQL\n\n当前 IRQL 会直接限制代码能做什么。例如，高 IRQL 下不能访问可分页内存，也不能调用仅允许在 `PASSIVE_LEVEL` 运行的函数等。\n\n通过 IRQL 可以实现让操作系统跳过时钟中断的逻辑——线程调度。\n> 或者通过关中断也可以实现\n\n## WDK 基本数据类型\n\n驱动代码应使用能明确表达宽度、符号和指针语义的 WDK/Windows 类型，避免使用有位宽歧义的变量类型：\n\n| WDK 写法   | 原生 C 语言对应表达       |\n| -------- | ----------------- |\n| `ULONG`  | `unsigned long`   |\n| `UCHAR`  | `unsigned char`   |\n| `UINT`   | `unsigned int`    |\n| `VOID`   | `void`            |\n| `PULONG` | `unsigned long *` |\n| `PUCHAR` | `unsigned char *` |\n| `PUINT`  | `unsigned int *`  |\n| `PVOID`  | `void *`          |\n\n在 Windows 上，`ULONG` 在 32 位和 64 位目标中均为 32 位；表示指针宽度或大小时应选择 `ULONG_PTR`、`SIZE_T` 等类型。\n\n使用原生 C 类型可能导致跨平台移植（如 32 位到 64 位系统）时数据宽度不一致。遵循 `WDK` 类型标准可确保底层代码的跨平台兼容性与安全，避免硬编码位宽问题。\n\n## NTSTATUS 状态码\n\n许多标准驱动例程和内核支持例程使用 `NTSTATUS` 作为返回类型，例如 `PsCreateSystemThread`、`ZwOpenProcess` 和 `ZwOpenEvent`。\n\n返回值代表的具体含义可以在 `ntstatus.h` 查询：\n![bc411956f1b53d0c916ae690297f76ff&#95;MD5&#46;jpg](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/media/76a251626aa60e90f2c1b4098e6b3fcd66d72d51036c145cb8b86a62dde25d6d.jpg)\n\n\n不能只用 `status == STATUS_SUCCESS` 判断所有成功情况，因为 `NTSTATUS` 还包含信息状态，应使用提供的宏来判定一次调用是否成功：\n\n| 宏                        | 判断的状态类别 |\n| ------------------------ | ------- |\n| `NT_SUCCESS(status)`     | 成功或信息   |\n| `NT_INFORMATION(status)` | 信息      |\n| `NT_WARNING(status)`     | 警告      |\n| `NT_ERROR(status)`       | 错误      |\n\n宏只负责分类，返回值的具体含义/状态还应结合文档查询，比如：\n\n| 宏名称                        | 实际值          | 类型与含义              |\n| -------------------------- | ------------ | ------------------ |\n| `STATUS_SUCCESS`           | `0x00000000` | 成功                 |\n| `STATUS_INVALID_PARAMETER` | `0xC000000D` | 错误：参数无效            |\n| `STATUS_BUFFER_OVERFLOW`   | `0x80000005` | 警告：缓冲区不足，可能已返回部分数据 |\n## 内核异常处理\n\nWindows 使用 SEH（Structured Exception Handling，结构化异常处理）传递访问冲突、对齐错误等异常。如果某项操作按文档可能引发异常，例如探测或访问用户缓冲区，驱动必须在 `__try` / `__except` 中处理；未处理的内核异常可能导致 bug check。\n\n```c\n__try\n{\n    // 填入文档说明可能引发异常的操作\n}\n__except (filter_value)\n{\n    // 填入异常处理与清理逻辑\n}\n```\n\n`filter_value` 决定异常后的控制流：\n\n| 宏名称 | 实际值 | 含义 |\n| --- | ---: | --- |\n| `EXCEPTION_EXECUTE_HANDLER` | `1` | 进入 `__except` 代码块 |\n| `EXCEPTION_CONTINUE_SEARCH` | `0` | 当前层不处理，继续查找异常处理器 |\n| `EXCEPTION_CONTINUE_EXECUTION` | `-1` | 从异常点恢复；仅在异常可继续且原因已经修复时才安全 |\n内核支持 SEH（`__try`），但不支持 C++ 异常（`try`）。\n> SEH 的完整机制详解参考：[Windows x86 VEH 与 SEH](/notes/n-513b4c801b634b30839654b1a72897cc/)\n\n## 内核内存管理\n\n内核态常见内存操作包括分配、填充、复制、移动和释放：\n\n| 操作    | C 运行库概念   | 内核例程                                  | 说明                      |\n| ----- | --------- | ------------------------------------- | ----------------------- |\n| 分配    | `malloc`  | `ExAllocatePool2` / `ExAllocatePool3` | Windows 10 2004 及以后优先使用 |\n| 填充    | `memset`  | `RtlFillMemory`                       | 按字节填充                   |\n| 非重叠复制 | `memcpy`  | `RtlCopyMemory`                       | 源和目标不得重叠                |\n| 可重叠移动 | `memmove` | `RtlMoveMemory`                       | 支持源和目标重叠                |\n| 释放    | `free`    | `ExFreePool` / `ExFreePoolWithTag`    | 与分配策略和 Pool Tag 配对      |\n使用 `ExAllocatePool2` 时应提供非零 Pool Tag、检查返回的 `NULL`，并遵守 IRQL 与池类型约束：\n\n- 调用者必须运行在 `IRQL <= DISPATCH_LEVEL`。\n- 在 `DISPATCH_LEVEL` 分配或访问的缓冲区必须位于非分页池。\n- 仅在 `IRQL <= APC_LEVEL` 且后续访问也不会发生在更高 IRQL 时，才可使用分页池。\n- 只访问明确分配的字节范围，并在所有退出路径释放资源。\n\n在驱动中申请得到的是内核空间中的内存，而非用户空间。\n> 相关内容参考：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)\n\n## 内核字符串\n\n### 字符缓冲区与计数字符串\n\n内核支持多种字符串数据结构：`CHAR`、`WCHAR`、`ANSI_STRING` 和 `UNICODE_STRING`。\n\n其中，前两者是 C 语言原生 `char` 和 `wchar_t` 的内核别名，因其仅以 `0x00` 结尾且不自带长度边界属性，极易因字符串操作越界引发蓝屏崩溃，故在内核编程中不被推荐使用。\n\n现代内核开发强烈推荐使用内置边界长度控制的安全结构体 `ANSI_STRING` 和 `UNICODE_STRING`。\n\n`ANSI_STRING` 的基础布局如下：\n\n```c\ntypedef struct _STRING {\n    USHORT Length;\n    USHORT MaximumLength;\n#ifdef MIDL_PASS\n    [size_is(MaximumLength), length_is(Length) ]\n#endif // MIDL_PASS\n    _Field_size_bytes_part_opt_(MaximumLength, Length) PCHAR Buffer;\n} STRING;\n\ntypedef STRING ANSI_STRING;\n```\n\n`UNICODE_STRING` 的布局如下：\n\n```c\ntypedef struct _UNICODE_STRING {\n    USHORT Length;\n    USHORT MaximumLength;\n#ifdef MIDL_PASS\n    [size_is(MaximumLength / 2), length_is((Length) / 2) ] USHORT * Buffer;\n#else // MIDL_PASS\n    _Field_size_bytes_part_opt_(MaximumLength, Length) PWCH Buffer;\n#endif // MIDL_PASS\n} UNICODE_STRING;\n```\n\n三个核心成员的语义是：\n\n- `Buffer`：字符缓冲区指针。`Buffer` 不保证以 NUL 结尾，不能直接按普通 `wchar_t *` 的规则处理。\n- `Length`：当前有效内容的**字节数**，通常不包含终止 NUL。\n- `MaximumLength`：缓冲区可容纳的总**字节数**。\n\n观察可知，安全结构体的核心优势在于维护了 `Buffer`（指针）、`Length`（有效字节数）和 `MaximumLength`（分配总空间），基于这三个成员，内核 API 在读写字符串时可精准执行长度检查，从而杜绝越界访问。\n\n### 初始化、复制、比较与转换\n\n| 操作 | `ANSI_STRING` | `UNICODE_STRING` |\n| --- | --- | --- |\n| 初始化描述符 | `RtlInitAnsiString` | `RtlInitUnicodeString` |\n| 复制 | `RtlCopyString` | `RtlCopyUnicodeString` |\n| 比较 | `RtlCompareString` | `RtlCompareUnicodeString` |\n| 编码转换 | `RtlAnsiStringToUnicodeString` | `RtlUnicodeStringToAnsiString` |\n\n`RtlInitAnsiString` 和 `RtlInitUnicodeString` 主要初始化描述符，通常不为源文本执行深拷贝。\n\n编码转换函数若按参数要求为目标字符串分配了缓冲区，调用者必须分别使用 `RtlFreeUnicodeString` 或 `RtlFreeAnsiString` 释放。\n\n> 相关内容参考：[C&#12289;C&#43;&#43; 字符串编码与 Windows A&#12289;W 接口](/notes/n-9f8bef2496124e2da6233056a60e88ca/)\n",
+  "id": "aa89b77c-5115-42d7-8cbb-e8e10b350cc4",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "lang/c"
+    ],
+    "title": "Windows 内核编程基础",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "02c3576248cb2e2e0544560b17929c87494e1f7900b2cf61d39c5436d3ccb60d.jpg",
+    "0bf21574665a61d33fb519a242d0231cb5dcdc2b71cfa5f9aad1111d634dc8b6.jpg",
+    "0d15dceaaccc24ab68eaf66caea473e4d40bab51048a1feacbcb211a6337dbcb.jpg",
+    "2636ce64b13726efb9e6b8502033ea6ae211c6c7774784dff2a5aa21b658ac7a.jpg",
+    "3b5bfebd9001b7f92c58076ba6d6d3583ec6631094ec0758370f503d818f2634.jpg",
+    "42c745386d2f1dd1d22e48f78db3fde6a12be96aa30dc5497a86f0e76e069fcc.jpg",
+    "71ea2a5e39dd9fcd1e33ed8387b4e1ab44dcb875997d61779508fb421d3df5de.jpg",
+    "76a251626aa60e90f2c1b4098e6b3fcd66d72d51036c145cb8b86a62dde25d6d.jpg",
+    "bdc4fadb6a9f4167fc104e8e1e868035f147fc19299ecfc91c3ddc582f07df53.jpg",
+    "d2e8a95639c396c05d4c344b488ab9dd9833f0f2455b68e78c7d6d3f1c90de77.png",
+    "fbf4e2e10df7c2c6e13d4a54c4d38952dae099620994b4cb68bd599bf802818f.jpg",
+    "fc4b43cf5a76689550926254e324292a6512f6f6d4ba58d88e6da04eb3555b76.png"
+  ],
+  "url": "/notes/n-aa89b77c511542d78cbbe8e10b350cc4/"
+}

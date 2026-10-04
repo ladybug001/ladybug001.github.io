@@ -1,0 +1,71 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c40336d878f84b02596a",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-2efa9238db55de63c0fb",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-88122992bdfda62e3043",
+      "kind": "heading",
+      "offset": 433
+    },
+    {
+      "id": "h-29ca4e35ca00f0a8b93f",
+      "kind": "heading",
+      "offset": 992
+    },
+    {
+      "id": "h-b7469a8191cb2a961938",
+      "kind": "heading",
+      "offset": 1588
+    },
+    {
+      "id": "h-e19b6c55b13f85d40b59",
+      "kind": "heading",
+      "offset": 2826
+    },
+    {
+      "id": "h-39ef8132b252786c57c2",
+      "kind": "heading",
+      "offset": 2993
+    },
+    {
+      "id": "h-e907b263b9eda983bdcc",
+      "kind": "heading",
+      "offset": 4458
+    },
+    {
+      "id": "h-14e4995b40e74b66e237",
+      "kind": "heading",
+      "offset": 5512
+    },
+    {
+      "id": "h-b1d729e5ee025bc805a3",
+      "kind": "heading",
+      "offset": 5985
+    },
+    {
+      "id": "h-543f64ad148c64827f34",
+      "kind": "heading",
+      "offset": 6126
+    }
+  ],
+  "body": "# Windows 定时器机制\n\n## 概述\n\n定时器用于在规定时间到达后执行某类操作。Windows 定时器机制涉及的核心概念：\n\n1. 时钟中断\n2. `KPCR` 中的定时器链表\n\n时钟中断让内核有机会发现定时器已经到期，时钟中断的处理例程会检查 `KPCR` 中的定时器链表，依次遍历定时器。如果发现到期的定时器，`KiTimerExpiration`（本身作为 DPC 在 `DISPATCH_LEVEL` 运行）会执行两个操作：\n\n1. 将定时器对象置为 Signaled 状态，通知所有等待该定时器的线程（定时器是可等待对象，参考：[Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/)）\n2. 如果定时器关联了 DPC/APC，则将该 DPC/APC 入队。\n\n## KTIMER：内核定时器基础\n\n经典版本中，`KTIMER` 可以用下面的结构说明其核心关系：\n\n```c\ntypedef struct _KTIMER\n{\n    DISPATCHER_HEADER Header;\n    ULARGE_INTEGER DueTime;\n    LIST_ENTRY TimerListEntry;\n    struct _KDPC* Dpc;\n    LONG Period;\n} KTIMER, *PKTIMER;\n```\n\n- `Header`：调度对象头（可等待对象的同步语义，参考 [Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/)）。定时器到期后通过 `Header` 变为 Signaled，唤醒等待线程。`Header.Type` 还区分通知型（满足所有等待者）和同步型（仅满足一个等待者）。\n- `DueTime`：定时器的到期时间。\n- `TimerListEntry`：定时器激活后，用于加入内核定时器管理结构。\n- `Dpc`：可选的关联 DPC。\n- `Period`：周期；`0` 表示一次性定时器。\n\n### 配合 DPC\n\n如果设置 `KTIMER` 时同时提供一个 `KDPC`，定时器到期后，内核还会尝试将这个 DPC 加入处理器的 DPC 队列。\n\n如果 `KTIMER.Dpc == NULL`，定时器仍可用于等待和唤醒线程，只是不会额外投递 DPC。\n\n> DPC 面向处理器，不关心线程上下文（详见 [Windows DPC 机制](/notes/n-d0947d9f50c64f8b91d978e8fd3409df/)）。\n\n如下所示建立 `KDPC` 与 `KTIMER` 的关联：\n\n```c\nKTIMER Timer;\nKDPC TimerDpc;\n\nKeInitializeTimer(&Timer);\nKeInitializeDpc(&TimerDpc, TimerDpcRoutine, Context);\n\nKeSetTimerEx(\n    &Timer,\n    DueTime,\n    Period,\n    &TimerDpc\n);\n```\n\n执行过程：\n\n```text\nKeSetTimerEx\n    ↓\nKTIMER 进入定时器管理结构\n    ↓\n内核发现 KTIMER 到期\n    ↓\nKTIMER 变为 Signaled\n    ↓\nKDPC 加入目标处理器的 DPC 队列\n    ↓\n处理器条件允许时执行 DPC\n```\n\n## ETIMER 与 APC\n\n除了 DPC 配合定时器，APC也可以。APC 定时器面向指定线程，可访问该线程的用户态地址空间（详见 [Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)）。\n\n经典实现中，执行体定时器对象可抽象为：\n\n```c\ntypedef struct _ETIMER\n{\n    KTIMER KeTimer;\n    KAPC TimerApc;\n    KDPC TimerDpc;\n\n    LIST_ENTRY ActiveTimerListEntry;\n    KSPIN_LOCK Lock;\n\n    LONG Period;\n    UCHAR ApcAssociated;\n    UCHAR WakeTimer;\n\n    LIST_ENTRY WakeTimerListEntry;\n} ETIMER, *PETIMER;\n```\n\n关键字段（同步相关成员省略，参考 [Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/)）：\n\n- `KeTimer`：底层 `KTIMER`，负责计时和到期信号。\n- `TimerDpc`：当存在 APC 完成例程时，用于承接定时器到期事件的内部 DPC——也就是通过该 DPC 将 APC 插入到目标线程。\n- `TimerApc`：与目标线程关联、最终进入该线程 APC 队列的 `KAPC`。\n- `ActiveTimerListEntry`：把带 APC 关联的活动定时器加入相应管理链。\n- `Period`：周期。\n- `ApcAssociated`：表示当前是否关联了 APC 完成例程。没有提供完成例程时不成立，底层 `KeTimer` 仍可单独作为等待对象使用。\n- `WakeTimer`、`WakeTimerListEntry`：与可唤醒系统的定时器管理有关，具体语义和布局均具有版本性。\n\n用户态使用 `CreateWaitableTimer` + `SetWaitableTimer` 创建和启动可等待定时器。\n> `SetWaitableTimer` 不会让线程等待\n\n如果 `SetWaitableTimer` 提供了完成例程，则逻辑链：\n\n```text\nETIMER.KeTimer 到期\n    ↓\n内部 TimerDpc 入队并等待条件满足时执行\n    ↓\nTimerDpc 将 TimerApc 加入目标线程的 APC 队列\n    ↓\n目标线程进入可警醒等待\n    ↓\n用户 APC 被分派\n    ↓\n执行 TimerAPCProc\n```\n\n如果没有提供完成例程，可等待定时器仍然可以只作为普通等待对象使用。\n\n---\n## Win32 窗口定时器\n\nWindows **窗口定时器**主要用于：让 GUI 线程每隔一段时间收到一个消息，从而在自己的消息循环中执行一次轻量级任务。\n> 相关内容参考：[Windows 窗口程序](/notes/n-5b50f7a485de48dcb0d1e1868933e003/)\n\n接下来我们了解它的实现原理。\n\n### win32k 内部机制\n\n窗口定时器属于 win32k 窗口管理子系统，窗口定时器的结构：\n\n```c\ntypedef struct _TIMER\n{\n    LIST_ENTRY ptmrList;\n\n    PTHREADINFO pti;\n    PWND pWnd;\n\n    UINT_PTR nID;\n\n    INT cmsCountdown;\n    INT cmsRate;\n\n    ULONG flags;\n    TIMERPROC pfn;\n} TIMER, *PTIMER;\n```\n\n字段的概念职责如下：\n\n- `ptmrList`：加入 win32k 的窗口定时器链表或其他管理结构。\n- `pti`：所属 GUI 线程。\n- `pWnd`：关联的内核窗口对象；用户态以 `HWND` 标识。\n- `nID`：窗口范围内或线程范围内使用的定时器 ID。\n- `cmsCountdown`：剩余计时。\n- `cmsRate`：定时间隔。\n- `flags`：就绪、系统定时器、一次性定时器等内部状态；具体位定义版本相关。\n- `pfn`：可选的 `TimerProc`。\n\n\n窗口定时器使用 `SetTimer` 创建、`KillTimer` 销毁：\n1. `SetTimer`：\n```cpp\nUINT_PTR SetTimer(\n\n[in, optional] HWND      hWnd,    //要与计时器关联的窗口的句柄 \n\n[in]           UINT_PTR  nIDEvent,  // 非零计时器标识符 即这个计时器的ID\n\n[in]           UINT      uElapse,   // 超时值（以毫秒为单位） 即多久执行一次\n\n[in, optional] TIMERPROC lpTimerFunc  // 超时值用完时 要执行的回调函数\n\n);\n```\n2. `KillTimer`：\n```cpp\nBOOL KillTimer(\n  [in, optional] HWND     hWnd,  // 要关闭的定时器绑定的窗口句柄\n  [in]           UINT_PTR uIDEvent //要关闭定时器的ID\n);\n```\n\n窗口定时器不是一个可等待对象——不会挂入内核定时器链表中。而是由 win32k 的窗口管理逻辑**使用一个内核定时器来统一管理所有窗口定时器**：该内核定时器到期时固定检查是否有需要处理的窗口定时器，若有则传递消息。\n\n执行过程：\n\n```text\nSetTimer\n    ↓\nwin32k 创建或更新窗口定时器记录\n    ↓\n内核窗口定时器到期\n    ↓\n讲 WM_TIMER 消息传递给相关的 GUI 线程\n    ↓\nGetMessage / PeekMessage 取得 WM_TIMER\n    ↓\nDispatchMessage\n    ├─ 未提供 TimerProc → 调用 WndProc\n    └─ 提供 TimerProc   → 调用 TimerProc\n```\n\n`TimerProc` 不是 DPC，也不是 APC；它由 GUI 线程通过消息循环在用户态执行。\n\n`WM_TIMER` 是低优先级消息。如果 GUI 线程长时间不取消息，回调就会延迟。`SetTimer` 也不是高精度定时器，例如请求 `1 ms` 并不代表回调能够每毫秒执行一次。\n\n### 使用示例：DLL 注入场景\n\n针对 GUI 进程，当我们注入 DLL 到目标线程后，在 DLL 主函数中调用 `SetTimer`，传入目标窗口句柄和函数地址让目标主动执行我们的代码逻辑：\n\n```cpp\n// 窗口定时器回调函数，函数原型必须符合 TIMERPROC 的定义。\n// 回调将在设置定时器的窗口线程分派 WM_TIMER 时执行。\nVOID CALLBACK 主线程代码(\n    HWND hWnd,\n    UINT uMsg,\n    UINT_PTR timerId,\n    DWORD dwTime)\n{\n    // 在此处执行依赖当前窗口线程上下文的代码。\n}\n\nvoid CPAGE00::OnBnClickedButton2()\n{\n    // 读取不依赖特定线程上下文的数据，即不涉及当前线程的 FS/TEB。\n    // DLL 注入目标进程后，与目标程序共享同一个虚拟地址空间，\n    // 因此可以直接访问目标进程中的有效地址。\n\n    uintptr_t 地址 = 0x01231231;\n\n    // 假设该地址处存放的是 int 类型数据。\n    int* 数据指针 = reinterpret_cast<int*>(地址);\n\n    // 解引用指针，读取地址中的实际数据。\n    printf(\"数据是：%d\\n\", *数据指针);\n\n    // 如果代码依赖某个窗口线程的 TEB、TLS 等线程私有数据，\n    // 则需要让代码在对应的窗口线程上下文中执行。\n\n    HWND 游戏窗口句柄 = FindWindowA(\"类名\", \"标题名\");\n\n    if (游戏窗口句柄 == NULL)\n    {\n        printf(\"未找到目标窗口\\n\");\n        return;\n    }\n\n    // 设置窗口定时器。\n    // 定时器到期后，窗口线程在处理并分派 WM_TIMER 时调用主线程代码。\n    if (::SetTimer(\n            游戏窗口句柄,\n            10086,       // 定时器 ID\n            1,           // 时间间隔，单位为毫秒\n            主线程代码) == 0)\n    {\n        printf(\"SetTimer 设置失败\\n\");\n    }\n}\n```\n\n## 周期性执行 DPC/APC\n\n通过定时器 + DPC/APC，可以实现周期性 HOOK / 检查有无代码修改，因此在安全对抗中需要找到并排查这些隐藏的周期性内核行为。\n> 相关内容参考：[[原创]x64枚举DPC定时器](https://bbs.kanxue.com/thread-204155.htm)\n\n\n实现周期性 DPC/APC 定时器有两种标准方式：\n\n- **自动周期模式**：调用 `KeSetTimerEx(Timer, DueTime, Period, Dpc)`，当 `Period > 0` 时，内核在每次定时器到期后自动重新注册定时器并排入关联的 DPC/APC，无需手动重置。\n- **手动重置模式**：在 DPC/APC 回调函数内部再次调用 `KeSetTimer(Timer, DueTime, Dpc)` 设定一次性定时器，实现自我续期。\n\n**错误的实现方式**：我们在 DPC/APC 回调函数执行时，插入一个新的 DPC/APC。**这会导致某个核心陷入死循环**——因为会执行 DPC/APC 直到链表为空。\n\n## 异步机制对比\n\n无论是编程语言还是 APC 异步、定时器异步，**核心逻辑**：循环 + 任务队列。\n> 异步编程的本质与实现机制\n\n只是\"循环\"所处的维度不同：\n1. 编程语言是主动轮询\n2. APC 异步则是 0 环和 3 环不停的切换。\n3. 定时器异步则是不停的时钟中断。\n\n## 总结\n\nWindows 定时器 `KTIMER` 负责内核计时与等待语义，发现\"时间已到\"，再把后续工作交给合适的执行路径：`KDPC` 面向处理器，`KAPC` 面向指定线程。窗口定时器由 win32k 维护，并经 `WM_TIMER` 交给 GUI 消息循环。\n\n",
+  "id": "48ef5d04-ee45-4d78-a764-9c6a06ad0c08",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows",
+      "cs/concurrency"
+    ],
+    "title": "Windows 定时器机制"
+  },
+  "resources": [],
+  "url": "/notes/n-48ef5d04ee454d78a7649c6a06ad0c08/"
+}

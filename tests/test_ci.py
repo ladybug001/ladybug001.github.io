@@ -69,9 +69,9 @@ class CITests(unittest.TestCase):
             project = Path(directory)
             (project / "pipeline").mkdir()
             (project / "pipeline/toolchain.toml").write_bytes((PROJECT / "pipeline/toolchain.toml").read_bytes())
-            folder = project / ".local/tools/hugo/0.167.0"
+            folder = project / ".local/tools/hugo-extended/0.167.0"
             folder.mkdir(parents=True)
-            archive = folder / ("hugo.zip" if sys.platform == "win32" else "hugo_0.167.0_linux-amd64.tar.gz")
+            archive = folder / ("hugo.zip" if sys.platform == "win32" else "hugo_extended_0.167.0_linux-amd64.tar.gz")
             archive.write_bytes(b"corrupted")
             with patch("publisher.tooling.urlopen", side_effect=AssertionError("Unexpected network")), self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
                 install_hugo(project)

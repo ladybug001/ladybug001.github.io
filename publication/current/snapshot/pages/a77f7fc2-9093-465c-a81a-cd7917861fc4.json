@@ -1,0 +1,53 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c0f5dc25dc8eb349e745",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-9ab73e9ddccc71e90bfb",
+      "kind": "heading",
+      "offset": 306
+    },
+    {
+      "id": "h-9a37b0e567a356a8dcb6",
+      "kind": "heading",
+      "offset": 568
+    },
+    {
+      "id": "h-8d7190011628ad5b9b0f",
+      "kind": "heading",
+      "offset": 3530
+    },
+    {
+      "id": "h-7c233f6950f743200af3",
+      "kind": "heading",
+      "offset": 4892
+    }
+  ],
+  "body": "\n# MFC 界面资源与控件绑定机制\n\n**相关内容**：\n- VC&#43;&#43; 6&#46;0 安装与配置\n- [Windows PE 资源目录的开发应用](/notes/n-8e673494e6614944a92b23ea454ba7f1/)\n- [MFC 开发基础](/notes/n-581da27d7b3646a1b1298f1432e2939d/#h-ae40062f67a05604a9e8)\n- [MFC 对话框与控件](/notes/n-60887c23e81547e6a416ad0cbf121244/#h-1257774468f044ac85f3)\n\n---\n\n## 背景与前置知识\n\n在 `MFC`、`Qt5` 等框架的开发中，对于 `UI` 界面的设计，开发者往往只需要在可视化界面中拖拽相应的控件即可。但是，如果不搞懂背后 `IDE` 替我们做了哪些事情，学习时就会云里雾里。\n\n> [!NOTE] 提示\n> 本节内容均以 `VC6` 环境下的 `MFC` 项目为例进行剖析，但其底层的“资源与代码绑定”设计思想具有普适性，同样适用于 `Qt5`、`Qt6` 等框架。在阅读本节前，建议先搞清楚不依赖 `IDE` 手动创建 `MFC` 项目的流程。\n\n---\n\n## 剖析步骤：从资源到代码的绑定过程\n\n1. **创建基础工程**\n   参考 [MFC 开发基础](/notes/n-581da27d7b3646a1b1298f1432e2939d/#h-ae40062f67a05604a9e8)，在 `VC6` 中创建一个 `Win32 Application`，完成对 `MFC` 的依赖设置，测试运行正常。\n   ![2394a64a834697a2b5919385980d4d87&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/180aeb4d931926088fc08e732a999005367b524c55ef2e712978c344a8c0567e.jpg)\n\n2. **新建资源文件**\n   使用 `VC6` 插入一个资源：点击 `文件` $\\rightarrow$ `新建`，选择 `Resource Script` 建立资源文件。\n   ![](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/3d58f2f6cacfc6f21f6b47d36bef177d7a3e9e3573b3017d2fe665dec86859ff.jpg)\n\n3. **插入 Dialog 资源**\n   完成上面一步后，在工程中发现多了两个文件：`resource.rc` 和 `resource.h`。前者是窗口属性（脚本）描述文件，后者存储资源 ID。右键资源文件 $\\rightarrow$ `插入`，选择 `Dialog`。效果如下：\n   ![f1dd579e7f74e6173b5475f4cfe333d1&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/09b0070e011ed9f4ea6d6a690d1194fdea8ed936d5797f288d16d911f0de64c1.jpg)\n\n4. **资源描述与预览**\n   经过插入，资源文件中多了一个对话框项。这个项本质上是文本描述数据，`IDE` 会依据此数据实现实时预览界面。\n   ![6569db849301a8562113fde2dac065db&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/657101b96d41c936be9d954cb6117f9b7b86aa4649332349c5a1e48b0253acde.jpg)\n\n5. **唤出类向导 (`ClassWizard`)**\n   此时，资源文件描述的界面和底层代码**还没有关联起来**。我们跳转到窗口预览界面，右键空白处 $\\rightarrow$ 选择“**建立类向导**”（`ClassWizard`）（顾名思义，就是将当前窗口资源绑定到一个对应的 `C++` 类）。\n   ![064ed8d73af551bf2623c3e1893dd74a&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/07d5226d5ce0359d1a95e430af8868b9b19faa75612248ef10276b5c020eccce.jpg)\n\n6. **生成 `.clw` 数据库文件**\n   此时系统会提示：“`ClassWizard` 的数据库文件不存在，是否要从已有文件中导入以重新生成？”，我们选择“是”。为什么会这样？因为我们是手动插入的资源，`VC6` 还没有建立类向导的数据库文件（即 `.clw`，该文件是 `VC6` 用来记录“哪些窗口资源关联了哪些类”以及“类中包含什么控件成员、消息映射”等元信息的）。如下所示：\n   ![8f6becb591d80fa33f30afdb95d73837&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/81c06b6100e533ba62879a01aa2e6b29c6b005bafc8cde54b476e99bcf3cb9c2.jpg)\n\n7. **创建关联的对话框类**\n   紧接着，由于我们的 `Dialog` 界面还没有对应的类，系统会弹窗询问是否要创建一个新类。我们选择“是”，并为其命名为 `CMyDialog`。\n   ![fa67ca1feae4643fdbac9578dcecf14a&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/37131232dc1ed87e8e57bf318bcdac77d215c6a78bbef6bbe0a8158a868a6c85.jpg)\n   > **提示**：如果已经创建过类，后续打开 `ClassWizard` 就可以直接进行控件的**消息映射**（如点击事件）和**变量绑定**（`Control/Value` 绑定）。这就是可视化拖拽画控件最方便的地方，底层由 `IDE` 自动生成对应的宏与映射代码。\n\n8. **检查生成的代码**\n   完成后，会发现项目中多出了 `MyDialog.h` 和 `MyDialog.cpp` 文件。这标志着**界面资源与类的关联**已创建完毕，但我们在主程序的代码逻辑中还没有去实例化和使用它。\n\n9. **在应用中调用对话框**\n   根据 `MFC` 的生命周期，我们需要重写应用类的 `InitInstance` 函数，并在其中实例化并显示我们的对话框窗口（对话框显示代码可参考 [MFC 对话框与控件](/notes/n-60887c23e81547e6a416ad0cbf121244/#h-1257774468f044ac85f3)）。\n   \n   修改之前的 `main.cpp`（或对应的应用主源文件）代码，去掉不需要的 `CMainWindow` 类代码，引入对话框头文件并重写 `InitInstance` 函数。\n   \n   修改后，运行如下：\n   ![e9db8adabb604d71e8dbe5f7749907b3&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/0a4dda1689750024275a5d2c8bf3a1f7bb68721aa6d42217da0aa8615510cc60.jpg)\n\n> [!WARNING] 资源头文件引用注意\n> 在自动生成的 `MyDialog.h` 或手动编写的逻辑中，务必引入 `\"resource.h\"` 文件。该文件包含了资源 ID（如对话框 ID `IDD_DIALOG1` 等）。若缺少此文件，程序将无法识别资源宏，导致编译失败。\n\n---\n\n## 进阶剖析：UI 属性修改是如何生效的？\n\n接下来，我们在 UI 界面修改窗口的一些属性。比如显示最大、最小化按钮：右键窗口 $\\rightarrow$ 属性 $\\rightarrow$ 样式，勾选最大化、最小化选项，重新编译。差异如下：\n![d7ab16bf40db1d681c364f9e1ed0f801&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/bc74ecab2a5e8e721fb36a4a41c9776dd2bd9fc175e09a6b2cdfd6966dffa4d1.jpg)\n\n窗口右上角多出了两个选项，这是如何实现的呢？\n\n通过比对文件的修改时间，发现 `IDE` 实际并没有修改代码文件，只修改了三个 `resource.*` 文件：\n![9a15ecdf6006ef786a4778412c13ffbd&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/5489b5e77de749e6b59f49924cd25931a5cea2d5910afa4daae7217009dddff1.jpg)\n\n我们知道第三个文件（`.rc`）会参与到编译过程。所以比对修改前后的该文件，果然发现了端倪：\n![8dd3e69305e094c471ff64cb1973c659&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/80e4fa0190781a2e5a82166bd9ddc971afb11973d4ddd9cfe8a9d145ed5825c9.jpg)\n\n从上图中可以看到资源脚本的内容发生了变化，这正是导致窗口行为不一致的原因。那么，**代码是如何找到并且使用这个描述的呢？**\n\n还记得上面说过，缺失 `resource.h` 文件会导致 `MyDialog.h` 头文件报错。其报错的具体代码行是 `enum { IDD = IDD_DIALOG1 };`，相关变量引用关系如下：\n![751c5e2da981765547be1e8b20ddd426&#95;MD5&#46;jpg](/notes/n-a77f7fc29093465ca81acd7917861fc4/media/f989af3397f080d0accdc166a78dd5c76a79de82fcacda16312be7da6dc3ecfa.jpg)\n\n由这三幅图可以看到：\n1. 资源 ID `IDD_DIALOG1` 定义在 `resource.h` 中。\n2. 该宏被赋值给类的枚举常量 `IDD`。\n3. 接着 `IDD` 又被传给父类 `CDialog` 的构造函数用于初始化。\n\n因此真相大白：**程序通过资源 ID 找到 `.rc` 资源文件中描述窗口属性的数据，然后底层通过这些数据完成对应窗口的创建与渲染**。\n> 如何使用资源文件渲染窗口，参考：[Windows PE 资源目录的开发应用](/notes/n-8e673494e6614944a92b23ea454ba7f1/)\n\n---\n\n## 总结\n\n本笔记解答了以下两个问题：\n\n1. **资源文件的目的？为什么资源文件能实现 UI 绘制？**\n   - **解答**：资源文件（`.rc`）使用特定的脚本语言描述了 UI 的布局和属性。程序在运行时，通过资源 ID 从编译后的资源段中读取这些描述数据，交由系统 API 最终完成 UI 的绘制。\n\n2. **IDE 对资源文件中的窗口、控件设置属性或消息响应函数时，背后发生了什么？**\n   - **解答**：在 `IDE` 中修改属性，本质上是修改了 `.rc` 资源脚本文件。而设置消息响应或变量绑定时，`IDE` 通过 `.clw` 数据库文件的记录，自动在对应的 `C++` 类中修改头文件（增加成员和消息映射声明）并向实现文件注入消息映射宏及事件处理函数的骨架。\n",
+  "id": "a77f7fc2-9093-465c-a81a-cd7917861fc4",
+  "metadata": {
+    "tags": [
+      "lang/cpp/mfc",
+      "os/windows"
+    ],
+    "title": "MFC 界面资源与控件绑定机制"
+  },
+  "resources": [
+    "07d5226d5ce0359d1a95e430af8868b9b19faa75612248ef10276b5c020eccce.jpg",
+    "09b0070e011ed9f4ea6d6a690d1194fdea8ed936d5797f288d16d911f0de64c1.jpg",
+    "0a4dda1689750024275a5d2c8bf3a1f7bb68721aa6d42217da0aa8615510cc60.jpg",
+    "180aeb4d931926088fc08e732a999005367b524c55ef2e712978c344a8c0567e.jpg",
+    "37131232dc1ed87e8e57bf318bcdac77d215c6a78bbef6bbe0a8158a868a6c85.jpg",
+    "3d58f2f6cacfc6f21f6b47d36bef177d7a3e9e3573b3017d2fe665dec86859ff.jpg",
+    "5489b5e77de749e6b59f49924cd25931a5cea2d5910afa4daae7217009dddff1.jpg",
+    "657101b96d41c936be9d954cb6117f9b7b86aa4649332349c5a1e48b0253acde.jpg",
+    "80e4fa0190781a2e5a82166bd9ddc971afb11973d4ddd9cfe8a9d145ed5825c9.jpg",
+    "81c06b6100e533ba62879a01aa2e6b29c6b005bafc8cde54b476e99bcf3cb9c2.jpg",
+    "bc74ecab2a5e8e721fb36a4a41c9776dd2bd9fc175e09a6b2cdfd6966dffa4d1.jpg",
+    "f989af3397f080d0accdc166a78dd5c76a79de82fcacda16312be7da6dc3ecfa.jpg"
+  ],
+  "url": "/notes/n-a77f7fc29093465ca81acd7917861fc4/"
+}

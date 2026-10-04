@@ -1,0 +1,63 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-4303be64cf5957125d38",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-39585024f273a43542e1",
+      "kind": "heading",
+      "offset": 293
+    },
+    {
+      "id": "h-b9a8362f183bfd79d558",
+      "kind": "heading",
+      "offset": 346
+    },
+    {
+      "id": "h-0da66a730a4621d4cc1e",
+      "kind": "heading",
+      "offset": 1148
+    },
+    {
+      "id": "h-540a3c097ae84cced8a8",
+      "kind": "heading",
+      "offset": 1345
+    },
+    {
+      "id": "h-049b8a39c02a19c6de61",
+      "kind": "heading",
+      "offset": 1694
+    },
+    {
+      "id": "h-3e15aa4a5852a9a1125f",
+      "kind": "heading",
+      "offset": 2178
+    },
+    {
+      "id": "h-7ee3984df0cbb01b5305",
+      "kind": "heading",
+      "offset": 2297
+    },
+    {
+      "id": "h-d30c23d3ff0acf623a22",
+      "kind": "heading",
+      "offset": 3064
+    }
+  ],
+  "body": "# C++ 多重继承下的虚函数重写\n\n前置知识：[C&#43;&#43; 虚函数与虚函数表](/notes/n-7794ffc3e8894de895729386e783249b/)、[C&#43;&#43; 继承与虚继承机制](/notes/n-da561297c8704e938e5625a35698d9eb/)、[编程语言&#65306;规范与实现分离](/notes/n-dca8dc00e8664e00ab4a00c31b2a057c/)、[C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/)\n\n## 问题现场\n\n多个父类都有同签名虚函数时，子类写一个同名函数，到底覆盖谁？能不能只覆盖其中一个？\n\n### 示例代码\n\n> [!note] 示例环境\n> 这段代码来自旧版 MSVC 控制台工程，`stdafx.h`、`_tmain`、`_TCHAR` 都是该工程模板里的内容。重点不在工程脚手架，而在多继承下的虚函数分派。\n\n```cpp\n// mySon.cpp : 定义控制台应用程序的入口点。\n//\n\n#include \"stdafx.h\"\n\nclass Father\n{\npublic:\n\tint age;\n\tFather()\n\t\t:age(50)\n\t{\n\t}\n\n\tvirtual void printAge(){\n\t\tprintf(\"%d\\n\",this->age);\n\t}\n\n};\n\nclass Mather\n{\npublic:\n\tint age;\n\tMather()\n\t\t:age(45)\n\t{\n\t}\n\n\tvirtual void printAge(){\n\t\tprintf(\"%d\\n\",this->age);\n\t}\n\n};\n\n\n\nclass Son:public Father,public Mather\n{\npublic:\n\tint age;\n\tSon()\n\t\t:age(20)\n\t{\n\t}\n\n\tvirtual void printAge(){\n\t\tprintf(\"%d\\n\",this->age);\n\t}\n\n};\n\n\n\nint _tmain(int argc, _TCHAR* argv[])\n{\n\tSon *pSon = new Son();\n\tMather *pMather;\n\tFather *pFather;\n\n\tpMather = pSon;\n\tpFather = pSon;\n\t\n\t\n\tpSon->printAge();\n\tpMather->printAge();\n\tpFather->printAge();\n\n\tgetchar();\n\treturn 0;\n}\n```\n\n### 内存布局\n\n`Son` 的内存布局如下：\n\n![c70564b43719784a785e3c58da79f7b7&#95;MD5&#46;jpg](/notes/n-280e5cee71ff44e39a7c81ac3dc78743/media/5ff1e1c3f9ec2e1c44aac32e741519834f9c4b0bbe92cb40173a95f09bcaed39.jpg)\n\n### 运行结果\n\n运行结果如下：\n\n![eca88e3e99366f88c7e07878f4b45ec9&#95;MD5&#46;jpg](/notes/n-280e5cee71ff44e39a7c81ac3dc78743/media/856dc2095d28f3a36119dca8aef0448f091fef729baeda4728d7d3f75e7531e4.jpg)\n\n实际输出是三次 `20`，也就是三次调用都读到了 `Son::age`。\n\n问题来了：`Father::age`、`Mather::age`、`Son::age` 在对象里的偏移不同，为什么通过 `pSon`、`pFather`、`pMather` 调用 `printAge()`，最后都打印 `Son::age`？\n\n## 覆盖规则\n\n这里不是重载，而是虚函数覆盖。\n\n- 重载：同一作用域里，同名函数的参数列表不同。\n- 覆盖：派生类用同签名函数重写基类虚函数。\n\n`Father::printAge()` 和 `Mather::printAge()` 签名相同，`Son::printAge()` 也同签名。所以 `Son` 里的这一个 `printAge()` 会同时成为两条基类路径上的最终覆盖函数，也就是同时覆盖两个虚函数槽。\n\n在当前写法下，能不能指定只覆盖其中一个？答案是不能。因为你无法在 `Son` 里再写两份完全相同的 `printAge()`，分别绑定到 `Father` 和 `Mather`。\n\n如果确实要区分两边，只能改接口设计。例如改函数名、改签名、引入中间适配类，或者在统一入口里再分派到不同逻辑：\n\n```cpp\nvirtual void printAge()\n{\n\tif (/* condition */) {\n\t\tFather::printAge();\n\t} else {\n\t\tMather::printAge();\n\t}\n}\n```\n\n## `this` 修正\n\n`Son::printAge()` 函数体里的 `this` 是 `Son*`，不是 `Father::age` 或 `Mather::age`，所以 `this->age` 读的是 `Son::age`。\n\n### thunk 跳板\n\n那问题又来了：`pMather` 本来指向的是 `Mather` 子对象，不是 `Son` 对象头。它怎么能带着正确的 `this` 进入 `Son::printAge()`？\n> 相关内容参考：[C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/)\n\n\n答案是 adjustor thunk，也就是 `this` 调整跳板。\n\n三次 `printAge` 调用的汇编如下：\n\n![1401a1677860f186520ae0109e4a2bdd&#95;MD5&#46;jpg](/notes/n-280e5cee71ff44e39a7c81ac3dc78743/media/84a6ee557bd5d9f469f8d2af4d644a5ee02443486ce75613152ad91319881803.jpg)\n\n`pSon` 和 `pFather` 这两路，`this` 本来就指向 `Son` 对象头，可以直接进入 `Son::printAge()`。\n\n**`pMather` 这一路不同**：它指向的是 `Mather` 子对象地址。虚表项不会直接指向最终函数体，而是先指向一个 thunk。这个 thunk 负责把 `this` 从 `Mather` 子对象地址修正回 `Son` 对象头，然后再跳到真正的 `Son::printAge()`。\n\n所以看起来三种指针都在调用同一个虚函数；实际执行入口并不完全一样，`Mather*` 那一路先多走了一步 `this` 修正。\n\n> [!note] 实现边界\n> thunk 是 MSVC/具体 ABI 的常见实现方式。C++ 标准只保证虚调用能正确分派，不规定必须用这种汇编形态实现。\n\n## 结论\n\n- `Son::printAge()` 同时覆盖 `Father::printAge()` 和 `Mather::printAge()`。\n- 进入 `Son::printAge()` 后，`this` 已经被修正为 `Son*`，所以 `this->age` 读到的是 `Son::age`。\n- `Mather*` 路径之所以也能正确工作，是因为虚调用入口先经过 thunk，把 `this` 从 `Mather` 子对象地址调回 `Son` 对象头。\n\n**至此真相大白**：`Son::printAge()` 只有一份真正的函数逻辑，但编译器会为不同的基类调用路径准备不同的入口。需要修正 `this` 的路径会先进入 thunk，把 `this` 调整到 `Son` 对象头，再跳到共用逻辑；而这里 `Father` 子对象刚好和 `Son` 对象开头重合，所以这一路不需要额外生成 thunk 来调整 `this`。\n\n\n\n",
+  "id": "280e5cee-71ff-44e3-9a7c-81ac3dc78743",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 多重继承下的虚函数重写"
+  },
+  "resources": [
+    "5ff1e1c3f9ec2e1c44aac32e741519834f9c4b0bbe92cb40173a95f09bcaed39.jpg",
+    "84a6ee557bd5d9f469f8d2af4d644a5ee02443486ce75613152ad91319881803.jpg",
+    "856dc2095d28f3a36119dca8aef0448f091fef729baeda4728d7d3f75e7531e4.jpg"
+  ],
+  "url": "/notes/n-280e5cee71ff44e39a7c81ac3dc78743/"
+}

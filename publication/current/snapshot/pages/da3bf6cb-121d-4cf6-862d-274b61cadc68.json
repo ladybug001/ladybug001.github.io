@@ -1,0 +1,411 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6599b9a61608482c68e9",
+      "kind": "heading",
+      "offset": 7
+    },
+    {
+      "id": "h-cf7b404f88f85c0c7c20",
+      "kind": "heading",
+      "offset": 155
+    },
+    {
+      "id": "h-619a1c60589bcee1aca0",
+      "kind": "heading",
+      "offset": 462
+    },
+    {
+      "id": "h-271f815220e7cf4ab11b",
+      "kind": "heading",
+      "offset": 986
+    },
+    {
+      "id": "h-3711d8195ec09920aa98",
+      "kind": "heading",
+      "offset": 1368
+    },
+    {
+      "id": "h-7ac5bbfe942fb772fd2b",
+      "kind": "heading",
+      "offset": 1799
+    },
+    {
+      "id": "h-fe7b4f2cdcbee0f81c39",
+      "kind": "heading",
+      "offset": 2341
+    },
+    {
+      "id": "h-639ed32d732e71ae9c85",
+      "kind": "heading",
+      "offset": 2351
+    },
+    {
+      "id": "h-623db28859a37ba1d6bf",
+      "kind": "heading",
+      "offset": 2452
+    },
+    {
+      "id": "h-53072b6dce5f8f8819c4",
+      "kind": "heading",
+      "offset": 2590
+    },
+    {
+      "id": "h-307f181feaf94b1d3db0",
+      "kind": "heading",
+      "offset": 2734
+    },
+    {
+      "id": "h-6249b287fd3708b9b1d4",
+      "kind": "heading",
+      "offset": 3002
+    },
+    {
+      "id": "h-7d0f3658668b6cd801f5",
+      "kind": "heading",
+      "offset": 3690
+    },
+    {
+      "id": "h-a57f36325ebc034a73e7",
+      "kind": "heading",
+      "offset": 4336
+    },
+    {
+      "id": "h-7ebd61a9e62a6b55f60d",
+      "kind": "heading",
+      "offset": 4869
+    },
+    {
+      "id": "h-fc4bea6ec03a77aadc80",
+      "kind": "heading",
+      "offset": 4977
+    },
+    {
+      "id": "h-0549e2d7fbecf814f50a",
+      "kind": "heading",
+      "offset": 4993
+    },
+    {
+      "id": "h-ca7765a027ad41b852cf",
+      "kind": "heading",
+      "offset": 7112
+    },
+    {
+      "id": "h-7702a53aa6629f47c773",
+      "kind": "heading",
+      "offset": 7862
+    },
+    {
+      "id": "h-86691b06fa7a6b836511",
+      "kind": "heading",
+      "offset": 8167
+    },
+    {
+      "id": "h-3aede13ba3113e4e28b6",
+      "kind": "heading",
+      "offset": 8257
+    },
+    {
+      "id": "h-3edc7167bb326d919a8f",
+      "kind": "heading",
+      "offset": 9766
+    },
+    {
+      "id": "h-fddaab02d4c624e67921",
+      "kind": "heading",
+      "offset": 12493
+    },
+    {
+      "id": "h-c7b094d95d907b3ee0a5",
+      "kind": "heading",
+      "offset": 12594
+    },
+    {
+      "id": "h-e57382c6eb4c9194cfd7",
+      "kind": "heading",
+      "offset": 13267
+    },
+    {
+      "id": "h-354ec6e5b60fc6eab5be",
+      "kind": "heading",
+      "offset": 13551
+    },
+    {
+      "id": "h-747e37477369110545ab",
+      "kind": "heading",
+      "offset": 13660
+    },
+    {
+      "id": "h-8b5be9082cffd0e58931",
+      "kind": "heading",
+      "offset": 13742
+    },
+    {
+      "id": "h-29eb5b763e8d68bfd45b",
+      "kind": "heading",
+      "offset": 14009
+    },
+    {
+      "id": "h-b0460fe3c58dd5f1c59a",
+      "kind": "heading",
+      "offset": 14592
+    },
+    {
+      "id": "h-23100670a63b2eb963bc",
+      "kind": "heading",
+      "offset": 15235
+    },
+    {
+      "id": "h-bca292c1fc10c4d708c0",
+      "kind": "heading",
+      "offset": 16072
+    },
+    {
+      "id": "h-890b56d345c834ece041",
+      "kind": "heading",
+      "offset": 16192
+    },
+    {
+      "id": "h-532d187c26310fd1e772",
+      "kind": "heading",
+      "offset": 16827
+    },
+    {
+      "id": "h-0add6969b1fea3e8fbc3",
+      "kind": "heading",
+      "offset": 16864
+    },
+    {
+      "id": "h-a8f8ee1f4057cc758523",
+      "kind": "heading",
+      "offset": 17155
+    },
+    {
+      "id": "h-077334283122c1b90873",
+      "kind": "heading",
+      "offset": 17498
+    },
+    {
+      "id": "h-be26b8a7c63d4ae7c4ae",
+      "kind": "heading",
+      "offset": 17632
+    },
+    {
+      "id": "h-68662a655ca8bc33628e",
+      "kind": "heading",
+      "offset": 18615
+    },
+    {
+      "id": "h-f854eaf4fd5490094b31",
+      "kind": "heading",
+      "offset": 18911
+    },
+    {
+      "id": "h-b993d230accc20386d82",
+      "kind": "heading",
+      "offset": 19219
+    },
+    {
+      "id": "h-ce5c2eb36c7e0aed0032",
+      "kind": "heading",
+      "offset": 19395
+    },
+    {
+      "id": "h-0f4d2dca6494fbab4b52",
+      "kind": "heading",
+      "offset": 19748
+    },
+    {
+      "id": "h-72007ae728c898bc69e6",
+      "kind": "heading",
+      "offset": 19890
+    },
+    {
+      "id": "h-00b6a59706aead98cac0",
+      "kind": "heading",
+      "offset": 20045
+    },
+    {
+      "id": "h-9477c13750d2e7ef6068",
+      "kind": "heading",
+      "offset": 21140
+    },
+    {
+      "id": "h-acc528a58ac94610fc77",
+      "kind": "heading",
+      "offset": 21791
+    },
+    {
+      "id": "h-f9a4d85a89361a048042",
+      "kind": "heading",
+      "offset": 21804
+    },
+    {
+      "id": "h-1472059576b60234914c",
+      "kind": "heading",
+      "offset": 22063
+    },
+    {
+      "id": "h-a751b40f10278e858ba3",
+      "kind": "heading",
+      "offset": 22151
+    },
+    {
+      "id": "h-dc0ffda68511d0076a3b",
+      "kind": "heading",
+      "offset": 22284
+    },
+    {
+      "id": "h-7d6e1bc678ed28390fb9",
+      "kind": "heading",
+      "offset": 22394
+    },
+    {
+      "id": "h-3d436a5998eb59f53669",
+      "kind": "heading",
+      "offset": 23175
+    },
+    {
+      "id": "h-00d7ad12fb524acd0040",
+      "kind": "heading",
+      "offset": 23620
+    },
+    {
+      "id": "h-41edba48df128b8283b4",
+      "kind": "heading",
+      "offset": 23956
+    },
+    {
+      "id": "h-52268891e8feb10fd599",
+      "kind": "heading",
+      "offset": 24198
+    },
+    {
+      "id": "h-ec5dca7708badfb4ca04",
+      "kind": "heading",
+      "offset": 24501
+    },
+    {
+      "id": "h-7f9074eec0dc8c304a4e",
+      "kind": "heading",
+      "offset": 24737
+    },
+    {
+      "id": "h-8056c648f38c0c3234de",
+      "kind": "heading",
+      "offset": 26152
+    },
+    {
+      "id": "h-72215d62e47344399b93",
+      "kind": "heading",
+      "offset": 26949
+    },
+    {
+      "id": "h-61e42f6f605d3dbbfcde",
+      "kind": "heading",
+      "offset": 28544
+    },
+    {
+      "id": "h-f706ac4188d3496157ef",
+      "kind": "heading",
+      "offset": 29468
+    },
+    {
+      "id": "h-ea81c0fa1cd30f1eb539",
+      "kind": "heading",
+      "offset": 29483
+    },
+    {
+      "id": "h-32fe2a25eaa4d2495620",
+      "kind": "heading",
+      "offset": 29968
+    },
+    {
+      "id": "h-090c255306079e3f325e",
+      "kind": "heading",
+      "offset": 30212
+    },
+    {
+      "id": "h-1439879d7e8e36ee5cf0",
+      "kind": "heading",
+      "offset": 30615
+    },
+    {
+      "id": "h-922566573de11d102d2f",
+      "kind": "heading",
+      "offset": 30795
+    },
+    {
+      "id": "h-f30a3aad047c27678e12",
+      "kind": "heading",
+      "offset": 31020
+    }
+  ],
+  "body": "# PE 基础\n\n从本章开始学习 PE 相关内容。\n\nPE 文件格式在以下领域有重要应用：\n\n1. 病毒与反病毒；\n2. 外挂与反外挂；\n3. 加壳与脱壳（软件保护与破解）；\n4. 无源码修改功能、软件汉化等。\n\n> [!NOTE]\n> PE 结构是 PE 加载器使用的，文件系统不会使用。\n\n## 可执行文件\n\n在了解 PE 之前，需要先理解什么是可执行文件——即可以由操作系统加载并执行的文件。\n\n- Windows 平台下的可执行文件格式称为 PE（Portable Executable）文件结构；\n- Linux 平台下的可执行文件格式称为 ELF（Executable and Linking Format）文件结构。\n\n两者的一个重要区别在于可移植性：Windows 下编译的 PE 文件通常可以在不同版本的 Windows（如 Windows 7、8、10）上运行；而 Linux 的 ELF 文件在不同内核版本间的兼容性较差，不同内核编译的可执行文件可能无法在其他内核环境下运行。\n\n## 识别 PE 文件\n\n判断一个文件是否为 PE 文件，可以通过 **PE 指纹** 来识别。具体步骤如下：\n\n1. 使用支持十六进制查看的工具（如 `010 Editor`）打开目标文件；\n2. 在文件起始位置找到魔数 `0x5A4D`（ASCII：`MZ`）；\n3. 在偏移 `0x3C` 处读取一个 DWORD 值（如 `0x100`），该值指向 PE 签名的位置；\n4. 跳转到该偏移处，验证是否存在 `0x4550`（ASCII：`PE`）。\n\n如果以上流程能够顺利完成，即可确认该文件是一个 PE 文件。\n\n![163029706c0b454e93659aa9d0381239&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/e33d7a89b0f9410b3f3fedbd74502a8ca914d0575ba4eb24229c257f6546ce7e.jpg)\n\n需要注意的是，PE 文件不仅限于 `.exe` 后缀。`.sys`、`.dll` 等后缀的文件同样是 PE 格式，因此不能仅凭后缀名判断，而应通过文件内部的 PE 指纹来确认。\n\n## PE 文件的整体结构\n\nPE 文件的结构遵循一套规范定义，整体结构如下：\n\n![ba73f42df0c77354fea5868390658ed8&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/057d317504635f83d33c6b7cab0fddb26a3b3ffe2088081a866aa1774cbf0404.jpg)\n\n```\nDOS Header\nNT Headers\n  ├─ Signature\n  ├─ IMAGE_FILE_HEADER\n  └─ IMAGE_OPTIONAL_HEADER\n       └─ DataDirectory[IMAGE_NUMBEROF_DIRECTORY]\nSection Table\nSection Data\n```\n\n\n### 主要结构体\n\nPE 文件中几个核心结构体及其数据宽度如下：\n\n| 结构体 | 宽度（字节） |\n|---|---|\n| `IMAGE_DOS_HEADER` | 64 |\n| `IMAGE_FILE_HEADER` | 20 |\n| `IMAGE_OPTIONAL_HEADER32` | 224 |\n| `IMAGE_SECTION_HEADER` | 40 |\n\n![bc8e6f4d8e1571839f35d543b09c785f&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/6c3c32c54133acc01a6632d163858aa2d1ad1c5c662b2c892eccbd41e487c8c9.jpg)\n\n这些结构体的定义可以在 `Microsoft Visual Studio\\VC98\\Include\\WINNT.H` 头文件中找到。\n\n\n# PE 文件的两种布局\n\n![0e3b89ca5be6f142b94a3dbd1f4615c0&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/82dfabde36fcf2da81669644c6f4503cc192f7192f1e01e377258c6c30e6739a.jpg)\n\n\n如上图所示，PE 文件在磁盘上（静态）和加载到内存中（动态）的布局存在差异，理解这种差异对于分析 PE 文件的执行过程至关重要。\n\n造成两种布局差异的根本原因在于 PE 文件采用了不同的**对齐粒度**：\n\n- **文件状态**：按 `FileAlignment`（默认 `0x200`）进行文件对齐；\n- **内存状态**：按 `SectionAlignment`（默认 `0x1000`，即 4 KB 页大小）进行内存对齐。\n\n> 这两个成员都存储在扩展 PE 头（`IMAGE_OPTIONAL_HEADER`）中。\n\n由于内存对齐粒度（`0x1000`）通常大于文件对齐粒度（`0x200`），各节之间在内存中会产生更多的填充空间，因此同一个 PE 文件在内存中展开后的总大小往往大于文件本身。\n\n## 为什么需要两种对齐方式？\n\n### 文件对齐\n\n文件对齐值通常等于一个磁盘扇区的大小（`0x200` = 512 字节），其作用包括：\n\n- 方便文件系统 / 加载器按块读取；\n- 减少碎片化；\n- 让节数据在文件中布局规整。\n\n### 内存对齐\n\n内存对齐值通常等于一个物理页框的大小（`0x1000` = 4096 字节）。原因是 Windows 内存管理以页为单位进行映射和权限控制，其作用包括：\n\n- 分页映射；\n- 页面权限控制；\n- 按页设置 R / W / X 权限；\n- 按页进行内存管理。\n\n### 总结\n\nPE 需要两种对齐方式，是因为文件和内存中的布局服务于不同目标、遵循不同粒度：\n- `FileAlignment` 主要服务于**文件布局和磁盘读取**；\n- `SectionAlignment` 主要服务于**虚拟内存分页、映射和权限管理**。\n\n## RVA 与 FOA 相互转换\n\n**RVA（Relative Virtual Address，相对虚拟地址）**：PE 文件按内存布局展开后，某个数据或代码位置相对于模块加载基址的偏移。\n\n**FOA（File Offset Address，文件偏移地址）**：某个数据在 PE 文件中的实际文件偏移，即相对于文件起始位置的偏移。\n\n**VA（Virtual Address，虚拟地址）**：PE 文件被加载到内存后，某个数据或代码在进程虚拟地址空间中的实际地址。\n\n三者关系：\n```text\nVA = ImageBase + RVA\n```\n\n### 问题场景\n\n假设需要通过逆向方式修改一个全局变量的初始值。编写如下程序输出全局变量的地址和值：\n\n```cpp\nint a = 0x12345678;\n```\n\n```cpp\nint main() {\n\tprintf(\"Address: 0x%x \\n\", &a);\n\tprintf(\"Value: 0x%x \\n\", a);\n\tgetchar();\n\treturn 0;\n}\n```\n\n![3a488f3f8157bd5ea711bd976e4e82e4&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/b01abbc0a5a8400ec621623bd144d367ca2a29a68dc6f4b514b78f8af1cdb1c6.jpg)\n\n运行程序可以获取变量的内存地址和值。直接在文件中搜索 `0x12345678` 来定位并不可靠，因为文件中可能存在多个相同的字节序列。\n\n而直接使用运行时的内存地址 `0x42BA30` 去文件中查找也不行，因为 PE 文件在文件状态和内存状态下的对齐方式不同，两种状态下的地址需要进行转换。\n\n![84701936935d05f91ee7392ec7a801e3&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/649ebf3cdf72cdafdd8d2d291a955ee360011d3aa69d6ad9c425e067c4e8dd46.jpg)\n\n### 转换公式\n\n这两种状态的地址相互转换称为 **RVA 与 FOA 的转换**：\n\n- **RVA**（Relative Virtual Address）：相对虚拟地址\n- **FOA**（File Offset Address）：文件偏移地址\n\n从 RVA 转换到 FOA 的步骤如下：\n\n1. 计算 RVA：`RVA = 内存地址 - ImageBase`（`ImageBase` 由扩展 PE 头指定，表示 PE 文件在内存中的基地址）；\n2. 判断 RVA 是否位于 PE 头区域：\n    - **是**：`FOA = RVA`（PE 头在文件和内存中的布局一致）；\n    - **否**：确定 RVA 所属的节：\n        1. 当 `节.VirtualAddress <= RVA < 节.VirtualAddress + 节内存对齐后大小` 时，RVA 位于该节中；\n        2. 计算数据在该节中的相对地址差值：`差值 = RVA - 节.VirtualAddress`；\n        3. 计算 FOA：`FOA = 节.PointerToRawData + 差值`。\n\n> [!NOTE] 现代编译器的简化\n> 在较老的编译器中，`FileAlignment` 和 `SectionAlignment` 通常不同，需要严格执行上述转换。但现代编译器编译的程序中，文件对齐与内存对齐的值通常相同，此时 RVA 直接等于 FOA，无需额外转换。\n\n### 实际示例\n\n在当前程序中，`FileAlignment` 与 `SectionAlignment` 相同：\n\n`0x42BA30 - 0x400000`（`ImageBase`）= `0x2BA30`\n\n该值既是 RVA 也是 FOA。使用 WinHex 直接定位到文件偏移 `0x2BA30`：\n\n![b9c854cdc55a0224482bcabd7ab5d11a&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/6b87ea8ad09babaa5679cc002a621cd960f3035e163acfd0fa2594f93befb876.jpg)\n\n修改该处的值并保存，再次运行程序即可看到全局变量的值已发生改变：\n\n![0cc4c3bbade56df6949c65beb328eaae&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/bf308caf6131060c276936faea1f5c0fbc10d8df9bd737341287bb7d3ab61057.jpg)\n\n# PE 文件结构详解\n\n前面已经从整体结构的角度对 PE 文件进行了概览，现在深入分析各结构体的具体成员及其意义。\n以下将按照 PE 文件的整体结构，使用 `010 Editor` 逐一查看各部分在文件中的实际布局。\n\n## DOS 头\n\n### DOS MZ 文件头\n\n首先是 DOS MZ 文件头——`IMAGE_DOS_HEADER` 结构体，占 64 字节。在类似 `010 Editor` 这样每行显示 16 字节的十六进制编辑器中，前 4 行即为该结构体：\n\n![ce0136c67f173aeb5d1472b53164084b&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/a704f745092f3ad86fbf13e98db2c3263785f52b7ab275531c7ebcd0f8bccfc8.jpg)\n\n\nDOS MZ 文件头对应结构体 `IMAGE_DOS_HEADER`，定义如下：\n\n```cpp\ntypedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header\n    WORD   e_magic;                     // Magic number\n    WORD   e_cblp;                      // Bytes on last page of file\n    WORD   e_cp;                        // Pages in file\n    WORD   e_crlc;                      // Relocations\n    WORD   e_cparhdr;                   // Size of header in paragraphs\n    WORD   e_minalloc;                  // Minimum extra paragraphs needed\n    WORD   e_maxalloc;                  // Maximum extra paragraphs needed\n    WORD   e_ss;                        // Initial (relative) SS value\n    WORD   e_sp;                        // Initial SP value\n    WORD   e_csum;                      // Checksum\n    WORD   e_ip;                        // Initial IP value\n    WORD   e_cs;                        // Initial (relative) CS value\n    WORD   e_lfarlc;                    // File address of relocation table\n    WORD   e_ovno;                      // Overlay number\n    WORD   e_res[4];                    // Reserved words\n    WORD   e_oemid;                     // OEM identifier (for e_oeminfo)\n    WORD   e_oeminfo;                   // OEM information; e_oemid specific\n    WORD   e_res2[10];                  // Reserved words\n    LONG   e_lfanew;                    // File address of new exe header\n} IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;\n```\n\n该结构体包含大量成员，但大部分是为 16 位 DOS 环境设计的。在现代 32/64 位环境下，操作系统只关注其中两个关键成员：\n\n- **`e_magic`**：魔数标识，固定值为 `0x5A4D`（`MZ`），用于标识 PE 文件；\n- **`e_lfanew`**：指向 PE 文件头（`IMAGE_NT_HEADERS`）的文件偏移地址。\n\n可以通过实验验证：在十六进制编辑器中将 `IMAGE_DOS_HEADER` 除 `e_magic` 和 `e_lfanew` 之外的所有成员置零，文件仍可正常运行：\n\n![08e50ab99f68468f1563acf7729ff98d&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/025a3c4f3ea679e8ecbde8e9fcd508febe2acd80605621a90b8c73be2294e4f0.jpg)\n\n### DOS Stub\n\n紧随其后的是 **DOS Stub**（DOS 块），其大小不固定。夹在 DOS MZ 文件头与 PE 文件头之间。\n\n如何确定 Stub 的结束位置？通过 `IMAGE_DOS_HEADER` 结构体的 `e_lfanew` 成员获取 PE 文件头的偏移地址。\n\n如下图所示，`e_lfanew` 的值为 `0xF8`：\n\n![d0d0086d019588b1716559274eea5c14&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/d0e68c8e6544226091eddbbbd72f98d7a521cbd30651ddc966c23e91b0266e48.jpg)\n\n因此，绿色框标记的部分即为 DOS Stub：\n\n![ca4a44bab8fd083d95e2bb2c4c947669&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/63ba186018ed2e5d686ccbb27404eed0aa867d92ea62cf0f71bf57aac79ac143.jpg)\n\n\nDOS Stub 的内容可以自由修改或添加，不影响 PE 文件的正常运行：\n\n![4f3d399fb7d9b72d8a93966f50fa7944&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/cbebb5ff2f566cf2d00a3d758cfc6c4a49a578a08e8d45cc15c0144b5b87a948.jpg)\n\n## PE 头\n\nPE 头整体对应 `IMAGE_NT_HEADERS` 结构体：\n\n```cpp\ntypedef struct _IMAGE_NT_HEADERS {\n    DWORD Signature; // PE标识\n    IMAGE_FILE_HEADER FileHeader; // 标准PE头\n    IMAGE_OPTIONAL_HEADER32 OptionalHeader; // 扩展PE头\n} IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;\n```\n\nPE 文件头由三部分组成：PE 签名、标准 PE 头和扩展 PE 头。以下逐一介绍。\n\n### PE 签名\n\nPE 签名（Signature）占 4 字节，值为 `0x4550`（ASCII：`PE\\0\\0`）。该标识不可修改，操作系统启动程序时会检测此标识。\n\n### 标准 PE 头\n\n标准 PE 头（`IMAGE_FILE_HEADER`）占 20 字节，也称为 COFF 文件头：\n\n![7e7d9d0ebdaae6aa797b2dcc47a2b2b5&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/fb635b6ae9d25b212ce84d028c4683b977b136ce9e392080d47a8456bd4da149.jpg)\n\n\n标准 PE 头对应 `IMAGE_FILE_HEADER` 结构体：\n\n```cpp\ntypedef struct _IMAGE_FILE_HEADER {\n    WORD    Machine; // 可以运行在什么样的CPU上\n    WORD    NumberOfSections; // 表示节的数量\n    DWORD   TimeDateStamp; // 编译器填写的时间戳\n    DWORD   PointerToSymbolTable; // 调试相关\n    DWORD   NumberOfSymbols; // 调试相关\n    WORD    SizeOfOptionalHeader; // 扩展PE头的大小\n    WORD    Characteristics; // 文件属性\n} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;\n```\n\n各成员说明：\n\n- **`Machine`**：指定目标 CPU 架构。`0x0` 表示任意 CPU；`0x14C` 表示 Intel 386 及后续型号（x86）；`0x8664` 表示 AMD64/x64 架构。\n\n可以分别提取 32 位与 64 位系统上的 `notepad.exe` 进行对比（`010 Editor` → Tools → Compare Files...）：\n\n![62c4b126642ed572938323d076c4502e&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/102f48b7c501ebfdd484ef470c80c4ad9ce535bd3ed0440ed4b51c777e2f4fd1.jpg)\n\n- **`NumberOfSections`**：节的数量，即节表中 `IMAGE_SECTION_HEADER` 结构体的个数。\n- **`TimeDateStamp`**：编译器生成的 Unix 时间戳，与文件系统中的创建/修改时间无关。\n- **`PointerToSymbolTable`** / **`NumberOfSymbols`**：调试相关，暂不需要深入了解。\n- **`SizeOfOptionalHeader`**：扩展 PE 头的大小。32 位 PE 文件默认为 `0xE0`（224），64 位为 `0xF0`（240）。\n- **`Characteristics`**：文件属性标志，16 位（2 字节）宽度，每一位对应一个属性：\n\n![2698c06b46e7843149c51e51450751f0&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/440671ed887e9bba82636170f6dc9ba83d8d7129ab387c87699a53d29466e6cb.jpg)\n\n### 扩展 PE 头\n\n扩展 PE 头（`IMAGE_OPTIONAL_HEADER`）是 PE 头中数据量最大的部分。默认情况下，32 位环境占 224 字节（`0xE0`），64 位环境占 240 字节（`0xF0`）。\n\n本节介绍 32 位版本的扩展 PE 头。对应结构体 `IMAGE_OPTIONAL_HEADER32`：\n\n```cpp\ntypedef struct _IMAGE_OPTIONAL_HEADER {\n    WORD    Magic; // PE32：10B PE32+：20B\n    BYTE    MajorLinkerVersion; // 链接器版本号\n    BYTE    MinorLinkerVersion; // 链接器版本号\n    DWORD   SizeOfCode; // 所有代码节的总和（文件对齐后的大小），编译器填的（没用）\n    DWORD   SizeOfInitializedData; // 包含所有已经初始化数据的节的总大小（文件对齐后的大小），编译器填的（没用）\n    DWORD   SizeOfUninitializedData; // 包含未初始化数据的节的总大小（文件对齐后的大小），编译器填的（没用）\n    DWORD   AddressOfEntryPoint; // 程序入口\n    DWORD   BaseOfCode; // 代码开始的基址，编译器填的（没用）\n    DWORD   BaseOfData; // 数据开始的基址，编译器填的（没用）\n    DWORD   ImageBase; // 内存镜像基址\n    DWORD   SectionAlignment; // 内存对齐\n    DWORD   FileAlignment; // 文件对齐\n    WORD    MajorOperatingSystemVersion; // 标识操作系统版本号，主版本号\n    WORD    MinorOperatingSystemVersion; // 标识操作系统版本号，次版本号\n    WORD    MajorImageVersion; // PE文件自身的版本号 \n    WORD    MinorImageVersion; // PE文件自身的版本号\n    WORD    MajorSubsystemVersion; // 运行所需子系统版本号\n    WORD    MinorSubsystemVersion; // 运行所需子系统版本号\n    DWORD   Win32VersionValue; // 子系统版本的值，必须为0\n    DWORD   SizeOfImage; // 内存中整个PE文件的映射的尺寸\n    DWORD   SizeOfHeaders; // 所有头加节表按照文件对齐后的大小，否则加载会出错\n    DWORD   CheckSum; // 校验和\n    WORD    Subsystem; // 子系统，驱动程序(1)、图形界面(2) 、控制台/DLL(3)\n    WORD    DllCharacteristics; // 文件特性\n    DWORD   SizeOfStackReserve; // 初始化时保留的栈大小 \n    DWORD   SizeOfStackCommit; // 初始化时实际提交的大小 \n    DWORD   SizeOfHeapReserve; // 初始化时保留的堆大小\n    DWORD   SizeOfHeapCommit; // 初始化时实践提交的大小 \n    DWORD   LoaderFlags; // 调试相关\n    DWORD   NumberOfRvaAndSizes; // 目录项数目\n    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES]; // 表，结构体数组\n} IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;\n```\n\n\n扩展 PE 头的实际大小可通过标准 PE 头的 `SizeOfOptionalHeader` 成员获取或修改：\n\n![9d275c61fd4db8a2f92d281cff9794a1&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/a22139cb4582c4102c032ae2b9f330e28b733d1a9c01cd7766fe0a67ca830910.jpg)\n\n在当前示例中（64 位文件），该值为 `0xF0`，即 240 字节：\n\n![e575436760b07fccfc355a92385f8734&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/10072f73cbd7ea00a7822a996553ee95e28828589b0bd66764b128d91ceb962c.jpg)\n\n![060125fb8e1544754e67f5d8933f489e&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/d804f3d10d3fb8298e7ab026ae139395ac2bb730af07da1789c6166dd6007b3a.jpg)\n\n扩展 PE 头之所以数据宽度较大，是因为其包含一个结构体数组成员：\n\n![7b7c4e0f61a75f7e2aaa9f38281084d0&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/b1763d87adf9f25073ad0cb7ed52e2a6481dc7ebeff04178984f7a70a19106f2.jpg)\n\n```cpp\n#define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16\n```\n\n该成员的宽度为 16 个 `IMAGE_DATA_DIRECTORY` 结构体的总大小，该结构涉及到导入表、导出表等。\n\n\n扩展 PE 头成员众多，重点关注以下关键成员：\n\n#### `Magic`\n\n标识 PE 文件的位数：`0x10B` 表示 PE32（32 位），`0x20B` 表示 PE32+（64 位）。\n\n#### `AddressOfEntryPoint` 与 `ImageBase`\n\n- `AddressOfEntryPoint`：程序入口的 RVA（相对虚拟地址）；\n- `ImageBase`：PE 文件加载到内存后的**首选基地址**。\n\n程序的实际入口地址 = `ImageBase + AddressOfEntryPoint`。\n\n如下图所示，`AddressOfEntryPoint` 为 `0x739D`，`ImageBase` 为 `0x1000000`，因此内存中的入口地址为 `0x100739D`：\n\n![6dcf205ed9ea9bcebed146ac617c5412&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/3fda9b7ba411463fbdd7b4cc1e9be881c8cd9a7b575d2b85afb230cf6a28ac3f.jpg)\n\n使用调试器（如 `DTDebug`）打开该 PE 文件，调试器会自动在程序入口处断点，验证结果正确：\n\n![e6c58e8713a24b2e085e2751c6319aa0&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/d2c646a9dd8f5b283c878043fe04623c8c6ecac8648b26a48dd47cc0badb9702.jpg)\n\n#### `FileAlignment`、`SectionAlignment` 与 `SizeOfHeaders`\n\n- `FileAlignment` 和 `SectionAlignment` 已在前文 [](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/#h-fe7b4f2cdcbee0f81c39) 中详细介绍。\n- `SizeOfHeaders` 表示 DOS 头 + PE 头 + 节表的总大小按 `FileAlignment` 对齐后的值，详见后文 [](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/#h-b0460fe3c58dd5f1c59a)。\n\n#### `SizeOfImage`\n\n表示 PE 文件在内存中展开后的总大小（按 `SectionAlignment` 对齐后的值），可以大于文件的实际大小。该值必须是 `SectionAlignment` 的整数倍。\n\n#### `CheckSum`\n\n校验和，用于验证文件是否被篡改。计算方式为将文件中的字节按双字节累加（不考虑溢出），得到的结果即为校验和。\n\n#### `DllCharacteristics`\n\n表示 PE 文件的特性标志。尽管名称中包含\"Dll\"，但该成员适用于所有 PE 文件，不仅限于 DLL。数据宽度为 16 位（2 字节），每一位对应一个属性：\n\n\n![ab2eba81e80104d9b6d0ac46d62a71e9&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/2f821436fae8554e44f9ae43db6951f4066082310a9b03f5818b7abb6a045eb1.jpg)\n\n## PE 节表与节数据\n\n**节表**决定节数据的相关属性，**节数据**是真正存储程序数据的区域。两者的数量一一对应。\n\n节表由 N 个 `IMAGE_SECTION_HEADER` 结构体组成，每个结构体占 40 字节。节的数量由标准 PE 头的 `NumberOfSections` 成员决定：\n\n![7445eaeecce9e56aefc020d6e39f34e9&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/f0bf8f742906eb19a874baa60db536ecdf4c0ecd5fd7ec3297bcc44b80ae3062.jpg)\n\n如下图中，不同颜色标记的即为各个节，通过编辑器右侧的 ASCII 显示可以大致识别每个节的用途：\n\n![91e8cb687d346c824b32b34419a70336&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/a3a5748ef13d2eb70f4bfeb22062bf8d74746ccc62e22785bd155200fe06de5c.jpg)\n\n当前 PE 文件的节表包含 6 个元素，对应文件中 6 个数据存储区域。\n\n### 节数据的起始位置\n\n节表之后紧接着就是节数据。节数据的起始位置由扩展 PE 头的 `SizeOfHeaders` 成员指明：\n\n![59a1ebef18ab0e808a513bc6143f5610&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/88507c5fae58efd63e8b47788e97e19ad29d75c00e45f2086849e2d71e51cc58.jpg)\n\n`SizeOfHeaders` 表示 DOS 头 + PE 头 + 节表的总大小按 `FileAlignment` 对齐后的值。其存储的数值必须是 `FileAlignment` 的整数倍，`FileAlignment` 的默认值为 `0x200`（512 字节）。\n\n![8aec8c4857bddcb8ec7bff48b7d50c38&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/63b56f99ac971a6775ec09991c72d87365306afde2e6558fac18891f14549bee.jpg)\n\n在当前 PE 文件中，两个成员的值恰好与上述假设一致。对齐后多出的空间默认用 `0x00` 填充，但编译器也可能在此插入附加信息。`SizeOfHeaders` 的值指示了节数据在文件中的起始偏移。\n\n### 节表结构体\n\n节表是一个 `IMAGE_SECTION_HEADER` 结构体数组，每个元素描述一个节的属性。该结构体定义如下：\n\n```cpp\n#define IMAGE_SIZEOF_SHORT_NAME 8\ntypedef struct _IMAGE_SECTION_HEADER {\n    BYTE    Name[IMAGE_SIZEOF_SHORT_NAME]; // ASCII字符串（节名），可自定义，只截取8个字节，可以8个字节都是名字\n    union { // Misc，双字，是该节在没有对齐前的真实尺寸，该值可以不准确\n        DWORD   PhysicalAddress; // 真实宽度，这两个值是一个联合结构，可以使用其中的任何一个\n        DWORD   VirtualSize; // 一般是取后一个\n    } Misc;\n    DWORD   VirtualAddress; // 在内存中的 RVA ，加上ImageBase才是在内存中的真正地址\n    DWORD   SizeOfRawData; // 节在文件中对齐后的尺寸\n    DWORD   PointerToRawData; // 节区在文件中的偏移\n    DWORD   PointerToRelocations; // 调试相关\n    DWORD   PointerToLinenumbers; // 调试相关 \n    WORD    NumberOfRelocations; // 调试相关 \n    WORD    NumberOfLinenumbers; // 调试相关 \n    DWORD   Characteristics; // 节的属性\n} IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;\n```\n#### `VirtualAddress` 和 `PointerToRawData`\n\n`VirtualAddress`：在内存中的 RVA ，加上ImageBase才是在内存中的真正地址\n\n`PointerToRawData`：节区在文件中的偏移\n\n#### `VirtualSize` 和 `SizeOfRawData`\n\n上述结构体中有两个成员描述节的大小：`Misc.VirtualSize` 和 `SizeOfRawData`。\n\n两者关系如下图所示：\n\n![132db4fe9a5639c78b434592595c3af7&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/a25baa1b478cb3af1ccfe62322597d67da921d0c67984646f6d90f7ca364cae3.jpg)\n\n可以看到：\n1. `Misc.VirtualSize`（红色部分）：节在内存中的实际数据大小，**未经过任何对齐**。注意，该值描述的是节在内存中展开后的大小，可能与文件中的数据大小不同——例如包含未初始化数据（`.bss`）的节在文件中无需存储这部分内容，但在内存中需要分配空间并清零（详见下文 [](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/#h-a8f8ee1f4057cc758523)）。\n2. `SizeOfRawData`（红色+绿色部分）：节在文件中占用的大小，已按 `FileAlignment` 对齐。\n\n> 加载器在内存中展开节时，取两者中的较大值，再按 `SectionAlignment` 向上对齐，作为该节在内存中的实际占用大小。\n\n\n上述两个成员的大小关系主要有 **3 种情况**。\n\n##### 两者的大小关系\n###### `SizeOfRawData > VirtualSize`\n\n这是很常见的情况。\n\n原因是 `SizeOfRawData` 需要按 `FileAlignment` 对齐，而 `VirtualSize` 不一定对齐。\n\n例如：\n\n```text\nVirtualSize   = 0x1234\nSizeOfRawData = 0x1400\n```\n\n文件中实际保存了 `0x1400` 字节，但加载到内存时，该节真正有意义的数据大小是 `0x1234`。多出来的部分通常是文件对齐填充数据。\n\n常见于 `.text`、`.rdata`、`.data` 等节。\n\n---\n\n###### `SizeOfRawData < VirtualSize`\n\n这种情况也常见，尤其是 `.bss` 或包含未初始化数据的节。\n\n例如：\n\n```text\nVirtualSize   = 0x3000\nSizeOfRawData = 0x200\n```\n\n表示文件中只保存了 `0x200` 字节的数据，但加载到内存后，该节需要占用 `0x3000` 字节。多出来的部分由系统加载器在内存中补零。\n\n典型场景：\n\n```text\n未初始化全局变量\n未初始化静态变量\n.bss 区域\n```\n\n例如：\n\n```\nchar buf[0x3000];\n```\n\n如果它是未初始化的全局变量，PE 文件里不需要真的存放 0x3000 字节，只需要在内存中分配并清零。\n\n---\n\n###### `SizeOfRawData == VirtualSize`\n\n这种情况表示节在文件中的大小和内存中声明的实际大小刚好一致。\n\n例如：\n\n```text\nVirtualSize   = 0x1000\nSizeOfRawData = 0x1000\n```\n\n这种情况也正常，尤其当节大小刚好满足文件对齐时。\n\n##### 综合示例\n\n理解了上述三种大小关系后，下面通过一个完整示例来展示各字段的计算过程。\n\n假设对齐参数如下：\n\n```text\nSectionAlignment = 0x1000\nFileAlignment    = 0x200\n```\n\n某个节（假设为 `.text`）的真实数据大小为 `0x1234` 字节，则节表成员各字段的值为：\n\n```text\nVirtualAddress   = 0x1000   // 按 SectionAlignment 对齐（第一个节通常从 0x1000 开始）\nVirtualSize      = 0x1234   // 节的真实大小，不需要对齐\nPointerToRawData = 0x400    // 文件中的偏移，按 FileAlignment 对齐\nSizeOfRawData    = 0x1400   // ⌈0x1234 / 0x200⌉ × 0x200 = 0xA × 0x200 = 0x1400\n```\n\n各字段的对齐计算过程：\n\n- `SizeOfRawData`：真实大小 `0x1234` 按 `FileAlignment`（`0x200`）向上对齐 → `⌈0x1234 / 0x200⌉ = 0xA` → `0xA × 0x200 = 0x1400`\n- 文件中多出的 `0x1400 - 0x1234 = 0x1CC` 字节为对齐填充（通常为 `0x00`）\n\n**下一个节的地址计算**：\n\n```text\n下一个节的 VirtualAddress\n= align_up(VirtualAddress + max(VirtualSize, SizeOfRawData), SectionAlignment)\n= align_up(0x1000 + max(0x1234, 0x1400), 0x1000)\n= align_up(0x1000 + 0x1400, 0x1000)\n= align_up(0x2400, 0x1000)\n= 0x3000\n```\n\n```text\n下一个节的 PointerToRawData\n= PointerToRawData + SizeOfRawData\n= 0x400 + 0x1400\n= 0x1800\n```\n\n#### `Characteristics`\n\n与扩展 PE 头中的 DLL 属性标志类似，节也有属性标志，由成员 `Characteristics` 表示。其数据宽度为 32 位（4 字节），每一位对应一个属性：\n\n![8927f2062e1413904181b1dd3b106211&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/d534cb467545e5f9ed9801debe12f70c5b97829ae38d90e869891c6450abf56b.jpg)\n\n完整的节属性常量定义很繁杂，只需要重点关注几类就可以。\n##### 内容类型\n\n```\n// 节包含代码，常见于 .text 节\nIMAGE_SCN_CNT_CODE                0x00000020\n\n// 节包含已初始化数据，文件中有对应的原始数据\n// 常见于 .data、.rdata、.idata、.rsrc、.reloc 等节\nIMAGE_SCN_CNT_INITIALIZED_DATA    0x00000040\n\n// 节包含未初始化数据，文件中通常不存放完整数据\n// 加载到内存后由加载器分配空间并清零\n// 常见于 .bss 节\nIMAGE_SCN_CNT_UNINITIALIZED_DATA  0x00000080\n```\n\n##### 内存权限\n\n```\n// 执行\nIMAGE_SCN_MEM_EXECUTE             0x20000000  \n// 读\nIMAGE_SCN_MEM_READ                0x40000000  \n// 写\nIMAGE_SCN_MEM_WRITE               0x80000000\n```\n\n##### 加载属性\n\n```\n// 节加载后可以被丢弃\n// 常见于 .reloc、调试信息节、初始化后不再需要的节\nIMAGE_SCN_MEM_DISCARDABLE  0x02000000\n\n// 节不可缓存\n// 普通用户态 PE 中较少见，常见于驱动、设备内存、MMIO 等特殊场景\nIMAGE_SCN_MEM_NOT_CACHED   0x04000000\n\n// 节不可分页，必须常驻内存\n// 普通 EXE / DLL 中较少见，驱动中更值得关注\nIMAGE_SCN_MEM_NOT_PAGED    0x08000000\n\n// 节可以被多个进程共享\n// 常见于 DLL、驱动或显式设置的共享节\nIMAGE_SCN_MEM_SHARED       0x10000000\n```\n\n---\n\n# 数据目录表\n\n在前文介绍扩展 PE 头时提到，其最后一个成员 `DataDirectory` 是一个包含 16 个 `IMAGE_DATA_DIRECTORY` 结构体的数组。每个元素描述一个特定数据表（如导出表、导入表、重定位表等）的位置和大小。以下介绍其中几个关键的数据表。\n\n## 导出表\n\nPE 文件之间通过导入表和导出表建立依赖关系。导出表存储着当前 PE 文件提供给其他模块使用的函数列表。\n\n从 PE 文件格式的角度，任何 PE 文件都可以拥有导入表和导出表。但在一般情况下，EXE 文件通常不提供导出表（即不导出函数供他人调用），而 DLL 文件则通常会提供导出表。\n\n### 定位导出表\n\n`DataDirectory` 数组的第一个元素包含导出表的相关信息，它有两个成员：导出表的 RVA 地址和大小。如下图所示，`_IMAGE_EXPORT_DIRECTORY` 即为导出表的结构：\n\n![3103e83f2f9234640e4e6b8fc4df6fb1&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/c56c0ad504f220bcec7063d8280eb1b2a89592ff0d91462d23577be3cbd2a05f.jpg)\n\n以自行编写的 DLL 为例，导出定义文件（`.DEF`）内容如下：\n\n```text\nEXPORTS\n    Add @10\n    Sub @12\n    Div @13 NONAME\n    Mul @15\n```\n\n手动定位导出表：先找到扩展 PE 头最后一个成员（结构体数组）：\n\n![06b31e65cac7951e5b7d21dd6fa2ddbe&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/dd9fb0b917c40e1b0d0629b6dadc888cf1dd626e696c4f95bed87bdc5d578813.jpg)\n\n该数组的第一个结构体包含导出表的地址和大小：\n\n```text\nVirtualAddress: 0x0002AD80\nSize: 0x0000017F\n```\n\n该地址为 RVA，需转换为 FOA。由于当前 PE 文件的文件对齐与内存对齐一致，RVA 等于 FOA，无需转换：\n\n![babfc31f5e08a0e42a3c168e32dce9fd&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/4c37764c966b5e0ad6cad0143379e7ca2c40ab6469ef01e12710f35376af2c72.jpg)\n\n跟进该地址即可找到导出表：\n\n![b9fa72e7195c9a67efea8c1098a037bf&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/dbd3f319d868a4d9451eedfb79256f213b408d8c6cf55d0631fa4004f59a662f.jpg)\n\n### 导出表结构\n\n导出表对应 `IMAGE_EXPORT_DIRECTORY` 结构体（40 字节），但实际找到的导出表整体大小大于 40 字节，因为结构体的最后三个成员各指向一张子表：\n\n```cpp\ntypedef struct _IMAGE_EXPORT_DIRECTORY {\n    DWORD   Characteristics; // 未使用\n    DWORD   TimeDateStamp; // 时间戳，表示当前PE文件（DLL）编译时的时间\n    WORD    MajorVersion; // 未使用\n    WORD    MinorVersion; // 未使用\n    DWORD   Name; // 当前导出表文件名字符串的地址\n    DWORD   Base; // 导出函数起始序号\n    DWORD   NumberOfFunctions; // 所有导出函数的个数\n    DWORD   NumberOfNames; // 以函数名字导出的函数个数\n    DWORD   AddressOfFunctions; // RVA，导出函数地址表\n    DWORD   AddressOfNames; // 导出函数名称表RVA\n    DWORD   AddressOfNameOrdinals; // 导出函数序号表RVA\n} IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;\n```\n\n### 解析导出表成员\n\n#### `Name`\n\n当前导出表文件名，为 ASCII 字符串（遇 `0x00` 终止）：\n\n```text\n0x0002ADD2 -> DLLDemo.dll\n```\n\n![5806f2955d930b79b59ea4a3cf706e32&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/20fd390a7c6de9308e87314b2a500b99a87fb4e334544badbfcb5a54221e6212.jpg)\n\n#### `Base`\n\n导出函数的起始序号，即 `.DEF` 文件中定义的最小序号：\n\n```text\n0x0000000A -> 10\n```\n\n#### `NumberOfFunctions`\n\n所有导出函数的个数。该值按 `.DEF` 中的序号范围计算：如果序号不连续，空缺的位也计入总数。例如实际只有 4 个导出函数，但由于序号不连续，计算结果为 6：\n\n```text\n0x00000006 -> 6\n```\n\n#### `NumberOfNames`\n\n以函数名导出的函数个数。在 `.DEF` 中标记为 `NONAME` 的函数以序号方式导出，不计入此数：\n\n```text\n0x00000003 -> 3\n```\n\n#### `AddressOfFunctions`\n\n导出函数地址表的 RVA。通过 `NumberOfFunctions` 得知有 6 个导出函数，从该地址起依次读取 6 个 DWORD（4 字节）地址。其中值为 `0x00000000` 的表示该序号位无对应函数：\n\n```text\n0x0002ADA8 ->\n\t0x0000100A\n\t0x0000100F\n\t0x00000000\n\t0x00001019\n\t0x00000000\n\t0x00001014\n```\n\n![4b6eccd2b8ec53eba9b8e766b80d8d45&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/8ac52afd5bb7e61dea1318a598ed7e9391cfe3b97856d4cd6c7e5ad174528dca.jpg)\n\n> **注意**：导出函数地址表中存储的是函数的 RVA。\n\n如需查看具体函数代码，可根据偏移地址找到对应字节码，在调试工具（如 `DTDebug`）中查看。\n> 本例中编译器做了优化，跟随地址过去，会发现是 `JMP xxx`，然后才是真实的函数体汇编内容。\n> 有一个中间商，是为了修改函数逻辑时，只通过修改中间商就可以实现更新？\n\n| 函数名 | 地址 | 字节码 |\n|---|---|---|\n| `Add` | `0x0000100A` | `E9 61 00 00 00` |\n| `Sub` | `0x0000100F` | `E9 8C 00 00 00` |\n| `Div` | `0x00001019` | `E9 E7 00 00 00` |\n| `Mul` | `0x00001014` | `E9 B2 00 00 00` |\n\n#### `AddressOfNames`\n\n导出函数名称表的 RVA。该表按函数名首字母 A-Z 排序（排序后，方便通过名字查找目标函数）。\n\n通过 `NumberOfNames` 得知有 3 个按名称导出的函数，从该地址起依次读取 3 个 DWORD 地址：\n\n```text\n0x0002ADC0 ->\n\t0x0002ADDE\n\t0x0002ADE2\n\t0x0002ADE6\n```\n\n**注意**：导出函数名称表中存储的，同样是 RVA 地址。\n\n\n根据地址找到对应的函数名（ASCII 字符串，遇 `0x00` 终止）：\n\n![e96ba9a72dee19d691c2dc7c392a098b&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/36f5b80dd0e0a1bf588565727d5bf87fb507c1e0a89d571a8bf597b7b9586101.jpg)\n\n#### `AddressOfNameOrdinals`\n\n导出函数序号表的 RVA。该表的成员数与 `AddressOfNames` 一致，但每个成员为 WORD（2 字节）。\n\n从该地址起依次读取 3 个 WORD：\n\n```text\n0x0002ADCC ->\n\t0x0000\n\t0x0005\n\t0x0002\n```\n\n![f62d5bc179115e96b252f15e41838908&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/b0eaec0304063e5ca00cab01fe252ad20b406a594da01ff954b77083a3868f9d.jpg)\n\n\n> 该表是前面两张表联系的桥梁。\n\n### 三张子表的关系\n\n调用 DLL 中的函数时，需要使用 `GetProcAddress` 获取函数地址：\n\n```cpp\nFARPROC GetProcAddress(\n    HMODULE hModule, // DLL模块句柄\n    LPCSTR lpProcName // 函数名/序号\n);\n```\n\n第二个参数 `lpProcName` 可以是函数名或序号，其查找原理体现了三张子表之间的关系。\n\n#### 按函数名查找：`GetProcAddress(hModule, \"Mul\")`\n\n1. 在**函数名称表**中查找匹配的函数名，获取其索引；\n2. 用该索引在**函数序号表**中查找对应的序号值；\n3. 用该序号值作为索引在**函数地址表**中查找函数地址。\n\n![d41f3cc3e268df542c4deed3244b4e61&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/94a0c4d667c556bc6b8923d561386d6c183ff57f76afa6a490f981b0a5eeae04.jpg)\n\n#### 按序号查找：`GetProcAddress(hModule, 13)`\n\n1. 用序号减去 `Base`（起始序号）得到索引值；\n2. 用该索引直接在**函数地址表**中查找函数地址。\n\n![75f6ef1dc548d3a26fb57a82617116aa&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/73c2d41fa55c4687da7cb6db06f9c2f767e40680acf5b6041e71be4064f88784.jpg)\n\n## 导入表\n\n导入表存储着当前 PE 文件所依赖的模块及其具体函数信息。\n\n在 `DataDirectory` 数组的第二个结构体中可以找到导入表的地址和大小：\n\n![4ebeddf8c8f2b43e09f997a0baa9fb77&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/03796d2f3d8b073588ae04d292b0ec19c36821d48896d91de6aae0b1bd6ab882.jpg)\n\n与导出表不同，导出表只有一张，而导入表有多张——每张表对应一个依赖模块。导入表结构体 `IMAGE_IMPORT_DESCRIPTOR` 共 20 字节：\n\n```cpp\ntypedef struct _IMAGE_IMPORT_DESCRIPTOR {\n    union {\n        DWORD   Characteristics;\n        DWORD   OriginalFirstThunk; // RVA，指向IMAGE_THUNK_DATA结构数组\n    };\n    DWORD   TimeDateStamp; // 时间戳\n    DWORD   ForwarderChain;\n    DWORD   Name; // RVA，表示依赖模块名字的地址，这是一串字符串\n    DWORD   FirstThunk; // RVA，指向IMAGE_THUNK_DATA结构数组\n} IMAGE_IMPORT_DESCRIPTOR;\n```\n\n根据扩展 PE 头找到导入表信息：\n\n![de2be9ae57ee4f1854391df28366660c&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/bbbea64c5777c2698e912af7b7e4d16f1d48d7df58d196c9170eed32beab5e72.jpg)\n\n```text\nVirtualAddress: 0x0001CE80\nSize: 0x000000DC\n```\n\n跟进 `VirtualAddress` 找到第一张导入表：\n\n![cf0dcb51f667f1699f718dde486f8c83&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/1fdc72475a803117ee51d046e8bb56f5ebd176dc1a5b86fec79acea862514882.jpg)\n\n导入表连续排列，直到遇到 20 字节全零的结构体为止。本例共有 10 张导入表：\n\n![416f376ce89f26ca30cb662a69f091bc&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/f177ebfcec38d51dbce284e429070dbb3a17c91a99778a57cbe1d76f6ce85c74.jpg)\n\n> [!NOTE]\n> 下文示例中的 PE 文件文件对齐与内存对齐一致，即 RVA 等于 FOA，无需转换。\n\n### 确定依赖模块\n\n通过导入表的第四个成员 `Name`（RVA）可以获取依赖模块的名称。以第一张导入表为例：\n\n![cf0dcb51f667f1699f718dde486f8c83&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/1fdc72475a803117ee51d046e8bb56f5ebd176dc1a5b86fec79acea862514882.jpg)\n\n`Name` 值为 `0x0001D5D8`，跟进该地址查看 ASCII 字符串（遇 `0x00` 终止）：\n\n![ec81977bb1ff95222db83258e0228372&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/c1126543de1f6e568ea96ebc3de957e634c10eb6f43c9d25da3d569ee961af4b.jpg)\n\n模块名为 `KERNEL32.dll`，其余导入表可依此方法逐一查找。\n\n使用 `DTDebug` 查看 PE 文件运行时的依赖模块：\n\n![4f7eaad96f2332b904a27aff6813f5b1&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/7ff83312fb2d22db435adca864dfff7114cf508dbb365ba51f8a81d51f5b89bf.jpg)\n\n此处显示的模块数量远多于 10 个，这是因为除了当前 PE 文件直接依赖的模块外，被依赖的模块自身也有依赖（间接依赖），全部展示在此。\n> 依赖关系是一个有向无环图，构建/引入依赖时按照深度优先。\n\n### 确定依赖函数\n\n导入表的第一个成员 `OriginalFirstThunk` 和第五个成员 `FirstThunk` 分别指向 INT（Import Name Table，导入名称表）和 IAT（Import Address Table，导入地址表）：\n\n![97d417406bf8de5723e815dce6c1554f&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/4392b09df048cd33659f2aff85a82c7410ba3d8aec079717a9f544a77b0a1be4.jpg)\n\n在 PE 文件**加载前**，INT 和 IAT 的内容完全相同。两者都指向 `IMAGE_THUNK_DATA32` 结构体数组：\n\n```cpp\ntypedef struct _IMAGE_THUNK_DATA32 {\n    union {\n        PBYTE  ForwarderString;\n        PDWORD Function;\n        DWORD Ordinal; // 序号\n        PIMAGE_IMPORT_BY_NAME  AddressOfData; // 指向IMAGE_IMPORT_BY_NAME\n    } u1;\n} IMAGE_THUNK_DATA32;\n```\n\n该结构体为联合体，宽度 4 字节。INT 中包含多个此结构体，遇到 4 字节全零即表示表结束。\n\n以第一张导入表为例：\n\n```text\nOriginalFirstThunk: 0x0001CFB0\nName: 0x0001D5D8 -> KERNEL32.dll\n```\n\n跟进地址 `0x0001CFB0` 找到 INT：\n\n![376546a3953a763b09991b8ccd433513&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/3e633e5b38369858fe4795085aa8d1becebce997c97e05e9db9d8d5a2caf3f23.jpg)\n\n对于每个 `IMAGE_THUNK_DATA32` 成员，需要判断其**最高位**：\n\n- **最高位为 1**：去除最高位后的值为函数的导出**序号**（按序号导入）；\n- **最高位为 0**：该值为 RVA，指向 `IMAGE_IMPORT_BY_NAME` 结构体（按名称导入）。\n\n```cpp\ntypedef struct _IMAGE_IMPORT_BY_NAME {\n    WORD    Hint;\n    BYTE    Name[1];\n} IMAGE_IMPORT_BY_NAME;\n```\n\n- `Hint`：函数在导出表中的索引（可能为空），非空时可直接用于在导出表中定位函数地址；\n- `Name`：函数名称，为 ASCII 字符串（遇 `0x00` 终止），结构体中仅声明 1 字节是因为名称长度不固定。\n\n以 INT 中第一个成员（地址 `0x0001D45E`）为例，`Hint` 不为空，`Name` 从 `0x45` 开始读取直到 `0x00`，完整函数名为 `ExitThread`：\n\n![4ef3b80472808470e38d72340ad0190b&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/c90d780e73c772dbe5c7894479275e4912e02e444038d0c6cbe7a23419da57bc.jpg)\n\n### 确定函数地址\n\nPE 文件加载前，INT 和 IAT 内容一致：\n![5e3dd6a4a3219da4f44263d50028b876&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/7eb3d3f0a535475cfc60343048ef3bf5864b4785ac1e175c35bb92cbbd72786f.jpg)\n\n\nPE 文件加载后，IAT 中的内容被替换为函数的**实际内存地址**：\n![2ae193efbf62e4b943ed464dc0cc33dd&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/a6047e57f6b35bf5d2dd89bc51ec504f6c547d451864a25e89fc8c5e943d03f1.jpg)\n\n\n调用依赖模块的函数时采用间接调用方式——汇编指令并非直接 `CALL` 函数地址，而是从 IAT 所在内存读取地址后再调用：\n\n![1a1e374e0dbaf2308f1f6d1fa80b8f37&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/b7855aa70e4016ed51a890dad7b15e1445fd447fe96d573a573b28fe45d54af4.jpg)\n\n![5584df8de92386c068931878cbea8968&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/26e6901b149cf0b0efeb5da4b0c9b3da2ad9f2a66f6b272c4947d5724cd987a4.jpg)\n\n> [!NOTE] 为什么同时需要 INT 和 IAT？\n> IAT 中的函数地址在加载后可能被修改（如 Hook 技术），如果只保留一张表，就失去了正确的参照。INT 保留了原始信息，可用于验证和恢复。\n\n## 重定位表\n\n### 为什么需要重定位表\n\nPE 文件中一些硬编码地址在编译时基于 `ImageBase` 计算，但 PE 文件不一定加载到 `ImageBase` 处：\n\n- **EXE 文件**：通常是进程中第一个加载的模块，一般能加载到 `ImageBase` 处（未开启 ASLR 的情况下）；\n- **DLL 文件**：加载时机和顺序不确定，其 `ImageBase` 可能已被其他模块占用，必须加载到其他地址。\n\n当实际加载地址与 `ImageBase` 不同时，所有相关的硬编码地址都需要修正，重定位表就是记录这些需要修正位置的表。\n\n\n> [!QUESTION] 为什么不能都使用 RVA ?\n> 理论上，如果所有的代码和数据寻址都完全使用相对地址，确实可以做到“位置无关代码”。\n> \n> 但并不是所有的汇编指令都支持相对寻址，控制流指令（Call / Jmp）支持相对寻址，数据访问指令（Mov / Cmp等）不支持 EIP 相对寻址。\n\n\n> [!IMPORTANT]\n> EXE 文件可以没有重定位表（它通常最先加载到内存），而 DLL 文件通常必须有重定位表。\n\n### 定位重定位表\n\n重定位表位于 `DataDirectory` 数组的第 6 个结构体（索引 5），包含重定位表的起始 RVA 和大小：\n\n![6caf6fded8f80d95af3b2e8652fcd109&#95;MD5&#46;jpg](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/media/9ead5e149338c8ced2dfc0ae13789df5604e907746fd17712e4553d1dedc1d0c.jpg)\n\n### 重定位表结构\n\n重定位表由多个**重定位块**组成。每个块的开头是 `IMAGE_BASE_RELOCATION` 结构体（8 字节）：\n\n```cpp\ntypedef struct _IMAGE_BASE_RELOCATION {\n    DWORD   VirtualAddress; // RVA，当前块对应的页基地址\n    DWORD   SizeOfBlock; // 当前重定位块的总大小（含本结构体）\n} IMAGE_BASE_RELOCATION, *PIMAGE_BASE_RELOCATION;\n```\n\n该结构体后紧跟若干 WORD（2 字节）类型的重定位项。一个重定位块的实际大小为 `IMAGE_BASE_RELOCATION`（8 字节）+ N × 2 字节。\n\n> [!WARNING]\n> `VirtualAddress` 成员存储的是 RVA，而不是 VA！\n\n### 空间优化原理\n\n假设有以下地址需要修正：\n\n```text\n0x800123\n0x800456\n0x800789\n```\n\n重定位表不会逐个存储完整地址，而是将公共的页基地址 `0x800000` 存入 `VirtualAddress`，后续每个 2 字节的重定位项只存储页内偏移（`0x123`、`0x456`、`0x789`），大大节省空间。\n\n### 重定位项的解析\n\n重定位表按物理页（4 KB）组织，每个重定位块对应一个 4 KB 内存页。\n\n每个重定位项（2 字节）的解析方式：\n\n- **高 4 位**：类型标识。值为 `3`（`IMAGE_REL_BASED_HIGHLOW`）时，表示该项有效；\n- **低 12 位**：页内偏移。最终需要修正的地址 = `VirtualAddress` + 低 12 位。\n\n高 4 位不为 `3` 的项为填充项（通常为 `0`），用于对齐，无需处理。\n\n## Q&A\n\n**Q：为什么属性一会儿是 RVA 一会儿又是 FOA 或者是 VA，如何区分？**\n\n我的理解：\n\n1. 用于辅助 PE 文件从磁盘映射到内存展开的，都是 FOA；\n2. 用于在展开后辅助初始化一些内容的，都是 RVA；\n3. 用于运行时直接寻址的，都是 VA，比如硬编码中的绝对跳转等。",
+  "id": "da3bf6cb-121d-4cf6-862d-274b61cadc68",
+  "metadata": {
+    "tags": [
+      "reverse/windows",
+      "os/windows",
+      "cs/binary-format"
+    ],
+    "title": "Windows PE 文件格式与结构解析",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "025a3c4f3ea679e8ecbde8e9fcd508febe2acd80605621a90b8c73be2294e4f0.jpg",
+    "03796d2f3d8b073588ae04d292b0ec19c36821d48896d91de6aae0b1bd6ab882.jpg",
+    "057d317504635f83d33c6b7cab0fddb26a3b3ffe2088081a866aa1774cbf0404.jpg",
+    "10072f73cbd7ea00a7822a996553ee95e28828589b0bd66764b128d91ceb962c.jpg",
+    "102f48b7c501ebfdd484ef470c80c4ad9ce535bd3ed0440ed4b51c777e2f4fd1.jpg",
+    "1fdc72475a803117ee51d046e8bb56f5ebd176dc1a5b86fec79acea862514882.jpg",
+    "20fd390a7c6de9308e87314b2a500b99a87fb4e334544badbfcb5a54221e6212.jpg",
+    "26e6901b149cf0b0efeb5da4b0c9b3da2ad9f2a66f6b272c4947d5724cd987a4.jpg",
+    "2f821436fae8554e44f9ae43db6951f4066082310a9b03f5818b7abb6a045eb1.jpg",
+    "36f5b80dd0e0a1bf588565727d5bf87fb507c1e0a89d571a8bf597b7b9586101.jpg",
+    "3e633e5b38369858fe4795085aa8d1becebce997c97e05e9db9d8d5a2caf3f23.jpg",
+    "3fda9b7ba411463fbdd7b4cc1e9be881c8cd9a7b575d2b85afb230cf6a28ac3f.jpg",
+    "4392b09df048cd33659f2aff85a82c7410ba3d8aec079717a9f544a77b0a1be4.jpg",
+    "440671ed887e9bba82636170f6dc9ba83d8d7129ab387c87699a53d29466e6cb.jpg",
+    "4c37764c966b5e0ad6cad0143379e7ca2c40ab6469ef01e12710f35376af2c72.jpg",
+    "63b56f99ac971a6775ec09991c72d87365306afde2e6558fac18891f14549bee.jpg",
+    "63ba186018ed2e5d686ccbb27404eed0aa867d92ea62cf0f71bf57aac79ac143.jpg",
+    "649ebf3cdf72cdafdd8d2d291a955ee360011d3aa69d6ad9c425e067c4e8dd46.jpg",
+    "6b87ea8ad09babaa5679cc002a621cd960f3035e163acfd0fa2594f93befb876.jpg",
+    "6c3c32c54133acc01a6632d163858aa2d1ad1c5c662b2c892eccbd41e487c8c9.jpg",
+    "73c2d41fa55c4687da7cb6db06f9c2f767e40680acf5b6041e71be4064f88784.jpg",
+    "7eb3d3f0a535475cfc60343048ef3bf5864b4785ac1e175c35bb92cbbd72786f.jpg",
+    "7ff83312fb2d22db435adca864dfff7114cf508dbb365ba51f8a81d51f5b89bf.jpg",
+    "82dfabde36fcf2da81669644c6f4503cc192f7192f1e01e377258c6c30e6739a.jpg",
+    "88507c5fae58efd63e8b47788e97e19ad29d75c00e45f2086849e2d71e51cc58.jpg",
+    "8ac52afd5bb7e61dea1318a598ed7e9391cfe3b97856d4cd6c7e5ad174528dca.jpg",
+    "94a0c4d667c556bc6b8923d561386d6c183ff57f76afa6a490f981b0a5eeae04.jpg",
+    "9ead5e149338c8ced2dfc0ae13789df5604e907746fd17712e4553d1dedc1d0c.jpg",
+    "a22139cb4582c4102c032ae2b9f330e28b733d1a9c01cd7766fe0a67ca830910.jpg",
+    "a25baa1b478cb3af1ccfe62322597d67da921d0c67984646f6d90f7ca364cae3.jpg",
+    "a3a5748ef13d2eb70f4bfeb22062bf8d74746ccc62e22785bd155200fe06de5c.jpg",
+    "a6047e57f6b35bf5d2dd89bc51ec504f6c547d451864a25e89fc8c5e943d03f1.jpg",
+    "a704f745092f3ad86fbf13e98db2c3263785f52b7ab275531c7ebcd0f8bccfc8.jpg",
+    "b01abbc0a5a8400ec621623bd144d367ca2a29a68dc6f4b514b78f8af1cdb1c6.jpg",
+    "b0eaec0304063e5ca00cab01fe252ad20b406a594da01ff954b77083a3868f9d.jpg",
+    "b1763d87adf9f25073ad0cb7ed52e2a6481dc7ebeff04178984f7a70a19106f2.jpg",
+    "b7855aa70e4016ed51a890dad7b15e1445fd447fe96d573a573b28fe45d54af4.jpg",
+    "bbbea64c5777c2698e912af7b7e4d16f1d48d7df58d196c9170eed32beab5e72.jpg",
+    "bf308caf6131060c276936faea1f5c0fbc10d8df9bd737341287bb7d3ab61057.jpg",
+    "c1126543de1f6e568ea96ebc3de957e634c10eb6f43c9d25da3d569ee961af4b.jpg",
+    "c56c0ad504f220bcec7063d8280eb1b2a89592ff0d91462d23577be3cbd2a05f.jpg",
+    "c90d780e73c772dbe5c7894479275e4912e02e444038d0c6cbe7a23419da57bc.jpg",
+    "cbebb5ff2f566cf2d00a3d758cfc6c4a49a578a08e8d45cc15c0144b5b87a948.jpg",
+    "d0e68c8e6544226091eddbbbd72f98d7a521cbd30651ddc966c23e91b0266e48.jpg",
+    "d2c646a9dd8f5b283c878043fe04623c8c6ecac8648b26a48dd47cc0badb9702.jpg",
+    "d534cb467545e5f9ed9801debe12f70c5b97829ae38d90e869891c6450abf56b.jpg",
+    "d804f3d10d3fb8298e7ab026ae139395ac2bb730af07da1789c6166dd6007b3a.jpg",
+    "dbd3f319d868a4d9451eedfb79256f213b408d8c6cf55d0631fa4004f59a662f.jpg",
+    "dd9fb0b917c40e1b0d0629b6dadc888cf1dd626e696c4f95bed87bdc5d578813.jpg",
+    "e33d7a89b0f9410b3f3fedbd74502a8ca914d0575ba4eb24229c257f6546ce7e.jpg",
+    "f0bf8f742906eb19a874baa60db536ecdf4c0ecd5fd7ec3297bcc44b80ae3062.jpg",
+    "f177ebfcec38d51dbce284e429070dbb3a17c91a99778a57cbe1d76f6ce85c74.jpg",
+    "fb635b6ae9d25b212ce84d028c4683b977b136ce9e392080d47a8456bd4da149.jpg"
+  ],
+  "url": "/notes/n-da3bf6cb121d4cf6862d274b61cadc68/"
+}

@@ -1,0 +1,35 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7fbdb987ba5c726c4b46",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-01578f594d20f978f07b",
+      "kind": "heading",
+      "offset": 199
+    },
+    {
+      "id": "h-062a7dd383e931285519",
+      "kind": "heading",
+      "offset": 982
+    },
+    {
+      "id": "h-6b32b8dc500dc47ed7b0",
+      "kind": "heading",
+      "offset": 1193
+    }
+  ],
+  "body": "\n# Windows 驱动开发 (MOC)\n\n\n> Windows 驱动开发学习路径：从开发与双机调试环境出发，逐步掌握内核编程、地址空间、R3/R0 通信和综合项目，并以历史实验理解旧版 x86 内核 Hook 与隐藏技术的版本边界。\n\n\n阅读前提：具备基本的 C 语言、Visual Studio 项目和虚拟机操作经验；阅读历史安全实验前，应先掌握 WinDbg 的基本使用。\n\n## 阅读顺序\n\n1. [Windows 驱动开发环境配置与 Hello Driver](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/) — 配置 Visual Studio 与 WDK，完成最小驱动的编译、加载和卸载\n2. [Windows 双机调试环境配置](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/) — 建立 WinDbg 双机调试、符号加载与源码定位能力\n3. [Windows 内核编程基础](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/) — 理解内核分层、驱动对象、IRQL、基本类型与常用运行约束\n4. [Windows 内核地址空间与映射](/notes/n-c0009ebda07e410a9ae42e09dc5bdb75/) — 理解经典 x86 系统空间共享和用户页写时复制\n5. [Windows 应用程序与驱动的通信机制](/notes/n-9ec57c571edc4101bfeb488dbfdd4b97/) — 串联设备对象、符号链接、IRP、IOCTL 与缓冲区传递\n6. Windows 驱动综合项目实践 — 综合应用驱动通信、进程保护、内存读写与句柄操作\n7. [Windows 内核 Hook 系统调用](/notes/n-5691ecc0ff994c84bd308a428cf1be43/) — 在旧版 x86 环境中理解 SSDT、Inline Hook 与写保护修改的风险边界\n8. [Windows 驱动隐藏原理与历史实验](/notes/n-f350a698c7d44c3b84e4d17e43548e40/) — 在旧版 x86 环境中观察驱动模块断链与特征抹除；与上一条属于并行实验\n\n## 相关笔记\n\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 进程、内存、系统调用等 Windows 系统机制\n- [x86 保护模式分页机制 &#40;MOC&#41;](/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/) — 页表自映射和页面写保护的前置知识\n\n## 补充前置与调试入口\n\n- [中断请求优先级与 IRQL](/notes/n-d4f651574a52425791b6f0f74f89a06c/) — 深入理解执行级别、可等待操作与分页访问约束。\n- [Windows 内核对象](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/)、[Windows 句柄机制](/notes/n-399db2c150e54f6db70dc0058623ffb0/) — 补充对象引用与用户态访问关系。\n- [Windows 同步与异步执行 &#40;MOC&#41;](/notes/n-fd806559a13b474392ec786d7b239b4b/) — 锁、等待、APC、DPC 与定时器的机制边界。\n- [Windows 调试与逆向分析 &#40;MOC&#41;](/notes/n-da63b3ac0bcb46c7bb4db1de80503df3/) — WinDbg、断点、异常与双机调试。\n- [Windows 内存管理 &#40;MOC&#41;](/notes/n-eaaa660aabe44f52abf865bf51bb3789/) — 补充虚拟区域、物理页和缺页处理。\n",
+  "id": "0d5d90f7-fa00-4030-baa7-ded0fecae31b",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows"
+    ],
+    "title": "Windows 驱动开发 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-0d5d90f7fa004030baa7ded0fecae31b/"
+}

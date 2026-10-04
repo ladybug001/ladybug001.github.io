@@ -1,0 +1,44 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-d02d48bb28875a2acde6",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-20b7bccf7ff0161b50d3",
+      "kind": "heading",
+      "offset": 94
+    },
+    {
+      "id": "h-2d689a59a078c244b952",
+      "kind": "heading",
+      "offset": 186
+    },
+    {
+      "id": "h-060222479bc79c3ef8cc",
+      "kind": "heading",
+      "offset": 692
+    },
+    {
+      "id": "h-0356669bddfc6f4a19bf",
+      "kind": "heading",
+      "offset": 1514
+    },
+    {
+      "id": "h-e6125318d33406fcb12f",
+      "kind": "heading",
+      "offset": 2470
+    }
+  ],
+  "body": "# 初识 smali\n\nsmali 是 dex 字节码反编译而来的，层次类比：\n1. 汇编语言 ←反编译← 机器语言\n2. smali ←反编译← dex 字节码\n\n## smali 语法\n\n学习链接：[16 分钟动画讲解 Java 以及对应的 smali 代码](https://www.bilibili.com/video/BV1Cp4y157bY)\n\n### 关键词\n\n| 名称            | 注释           |\n| ------------- | ------------ |\n| `.class`      | 类名           |\n| `.super`      | 继承的父类        |\n| `.source`     | 源文件名         |\n| `.field`      | 变量           |\n| `.method`     | 方法名          |\n| `.register`   | 寄存器          |\n| `.end method` | 方法体结束标记      |\n| `public`      | 公有           |\n| `protected`   | 受保护，同包或子类可访问 |\n| `private`     | 私有，只能自己使用    |\n| `.parameter`  | 方法参数         |\n| `.prologue`   | 方法开始         |\n| `.line xxx`   | 位于第 xxx 行    |\n\n### 数据类型\n\n| smali 类型       | Java 类型                  | 注释             |\n| -------------- | ----------------------- | -------------- |\n| `V`            | `void`                  | 无返回值           |\n| `Z`            | `boolean`               | 布尔值类型，返回 0 或 1 |\n| `B`            | `byte`                  | 字节类型，返回字节      |\n| `S`            | `short`                 | 短整数类型，返回数字     |\n| `C`            | `char`                  | 字符类型，返回字符      |\n| `I`            | `int`                   | 整数类型，返回数字      |\n| `J`            | `long`（64 位，需要 2 个寄存器存储） | 长整数类型，返回数字     |\n| `F`            | `float`                 | 单浮点类型，返回数字     |\n| `D`            | `double`（64 位，需要 2 个寄存器存储）| 双浮点类型，返回数字     |\n| `Ljava/lang/String;` | `String`           | 文本类型，返回字符串     |\n| `Lxxx/xxx/xxx;`| `Object`                | 对象类型，返回对象      |\n\n### 常用指令\n\n| 关键字             | 注释                                    |\n| ---------------- | ------------------------------------- |\n| `const`          | 重写整数属性，真假属性内容，只能是数字类型                 |\n| `const-string`   | 重写字符串内容                               |\n| `const-wide`     | 重写长整数类型，多用于修改到期时间                     |\n| `return`         | 返回指令                                  |\n| `if-eq`          | 全称 equal（a=b），比较寄存器 a、b 内容，相同则跳       |\n| `if-ne`          | 全称 not equal（a!=b），a、b 内容不相同则跳        |\n| `if-eqz`         | 全称 equal zero（a=0），z 即是 0 的标记，a 等于 0 则跳 |\n| `if-nez`         | 全称 not equal zero（a!=0），a 不等于 0 则跳    |\n| `if-ge`          | 全称 greater than or equal（a>=b），a 大于或等于 b 则跳 |\n| `if-le`          | 全称 less than or equal（a<=b），a 小于或等于 b 则跳   |\n| `goto`           | 强制跳到指定位置                              |\n| `switch`         | 分支跳转，一般会有多个分支线，并根据指令跳转到适当位置           |\n| `iget`           | 获取寄存器数据                               |\n\n**其余指令可用语法工具查询**\n\n\n### 寄存器\n\nART 是寄存器式虚拟机，在 smali 里的所有操作都必须经过寄存器来进行：\n1. **本地寄存器**（用来传递/中转数据）：用 `v` 开头数字结尾的符号来表示，如 `v0`、`v1`、`v2`。\n2. **参数寄存器**（表示函数调用传递的参数）：则使用 `p` 开头数字结尾的符号来表示，如 `p0`、`p1`、`p2`。\n\n\n",
+  "id": "00297985-7fc4-4b60-8dd6-89b83da78b53",
+  "metadata": {
+    "tags": [
+      "reverse/android"
+    ],
+    "title": "Smali 语法基础"
+  },
+  "resources": [],
+  "url": "/notes/n-002979857fc44b608dd689b83da78b53/"
+}

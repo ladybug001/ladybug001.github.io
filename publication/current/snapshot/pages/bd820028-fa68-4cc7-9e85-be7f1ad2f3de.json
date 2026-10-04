@@ -1,0 +1,66 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-2c1d4e484428ecfbc225",
+      "kind": "heading",
+      "offset": 33
+    },
+    {
+      "id": "h-21ed99056e43dd64f879",
+      "kind": "heading",
+      "offset": 98
+    },
+    {
+      "id": "h-99ecd8917eacffe41b97",
+      "kind": "heading",
+      "offset": 396
+    },
+    {
+      "id": "h-b6f84089b3147f020e4a",
+      "kind": "heading",
+      "offset": 604
+    },
+    {
+      "id": "h-5ede158598ec208bef9a",
+      "kind": "heading",
+      "offset": 1549
+    },
+    {
+      "id": "h-e373b415e3d69c77e71c",
+      "kind": "heading",
+      "offset": 2720
+    },
+    {
+      "id": "h-47b61c8b8c1cc4591b9e",
+      "kind": "heading",
+      "offset": 4503
+    }
+  ],
+  "body": "\n# Windows 驱动开发环境配置与 Hello Driver\n\n> - **前置知识**：基本的 C 语言、Visual Studio 项目操作与虚拟机使用经验。\n\n## 开发与调试环境概览\n\nWindows 驱动运行在内核态。驱动中的错误可能直接导致系统蓝屏，因此学习阶段通常采用以下分工：\n\n- **宿主机**：安装 Visual Studio、SDK、WDK 和 WinDbg，用于开发、编译与调试。\n- **虚拟机（目标机）**：加载并运行待测驱动，隔离驱动崩溃带来的影响。\n\n驱动开发的基本流程是：\n\n1. 在宿主机配置开发工具并编译驱动。\n2. 将生成的 `.sys` 文件放入虚拟机。\n3. 先通过驱动加载工具和 DebugView 验证基本生命周期与日志。\n4. 需要断点和源码级调试时，再建立宿主机与虚拟机之间的 WinDbg 内核调试连接。\n\n## 搭建驱动开发环境\n\n应用层程序通常包含 `Windows.h` 使用 Win32 API；内核驱动则使用 WDK（Windows Driver Kit）提供的驱动程序接口（DDI），常见头文件包括 `wdm.h`、`ntddk.h` 和 `ntifs.h`，应按驱动类型与所需接口选择。\n\n应用程序使用 API 要安装 SDK，驱动使用这些头文件，要安装 WDK。\n\n### 1 安装 Visual Studio、SDK 与 WDK\n\n开发驱动程序需要安装 Visual Studio，以及与其配套的 WDK（Windows Driver Kit）。教程及下载地址：[下载Windows 驱动程序工具包 (WDK) - Windows drivers | Microsoft Learn](https://learn.microsoft.com/zh-cn/windows-hardware/drivers/download-the-wdk)\n\n\n安装前应核对 WDK 与本机 SDK 的版本是否匹配。可以通过“控制面板 → 程序卸载”查看 Visual Studio 已安装的 SDK 版本。例如，原环境使用的版本号为 17763：\n\n![7bbb7efad79b32e48079771f837328de&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/0b374427fe583053940c3fc2b8e0da6c61d6321437b0343adc83d5834d7af141.jpg)\n\n在微软官方下载页面，如果未能直接找到对应系统大版本号的直达选择（如 Windows 10 21H2），一种稳妥的做法是下载该系统所有大版本（如 Windows 10）的安装包，并逐一检查：\n\n![c30c761d4e9d54cc445741ce60296bf1&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/bc26d1f7aec7c30a48b8bee96064d4829ad1f1975df6ea2012902141419a8ecd.jpg)\n\n确认版本后，按安装向导完成安装：\n\n![ba9cbc192f98b400341a658467e0300e&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/bbc2595c7fbbf55ebb40497e2a8c1c83d0d5d333d458015013fee4713ea63c2a.jpg)\n\n### 2 创建并配置驱动项目\n\n以 VS2017 为例，新建项目时依次选择 `Visual C++` → `Windows Drivers` → `Empty WDM Driver`：\n\n![d24f8aea30313d0b9488ead7fcd8550a&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/997cc548fe7da055eb1bd7b44b760adec7f08d4efaba203e889cca89b7142bb2.jpg)\n\n\n> [!NOTE] 开发模板选择\n> \n> `WDM` ≈ Win32 API / 裸系统调用接口\n> `KMDF` ≈ `.NET`、`Qt`、`Spring` 之类的高级框架\n> \n> **目前我们选择 `WDM` 就行。**\n\n\n\n创建项目后，进入项目属性页，按下图配置编译与链接选项：\n\n![6a91fe59cd8d6094dbebf4c88343796c&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/82a87eb0b566136f3150135f9c88291a89fb6df699becbfd2abf8539113ca8e0.jpg)\n> 内核驱动通常以 `.sys` 后缀形式的文件存在，同样是 PE 格式，并由系统加载到内核空间。\n\n![84ba6af11828df498be6f99cc1eac691&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/ddd0b6c7b3c0d40b8a09d845753b61650b9fa008e5c552b91f470de108bb3228.jpg)\n\n![8d835251b3e64cdb950fd71d85b9f403&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/5899203e9117d8eeaafc00bf07aef669825e87fc0967d4e2e870751eb33be6e0.jpg)\n\n![ff2919ef48711973e045db7a2dfe1009&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/90136f20c29af8a8bf2a631a63f0bb51933821bab0c9fa88195a502e65feed9d.jpg)\n\n至此，基础驱动开发环境配置完成。\n\n\n## 编写 Hello Driver\n\n在学习和调试阶段，可以让驱动代码文件使用 `.c` 扩展名，按 C 语言方式编译，以便观察相对直接的底层代码：\n> C++ 面向对象等一系列机制导致代码比较臃肿，不方便调试。也避免 C++ 编译器引入过多的代码优化，更便于底层指令调试。\n\n\n![93912588728c1df0c424e1f351ef2839&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/efc22b686d9d5654cecdadbe6ab49cabe2fb59eb9bfb50e101937915f333753e.jpg)\n\n为了尽早发现问题，可以提高项目的警告级别并将警告视为错误：\n\n![50db4b6c5206c6143da5d7a729ef6427&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/4f8e5a738411ccf4f862ce0674aa7ee438c1a31c076bc5fbe0886b8d66e7017f.jpg)\n\n\n项目模板会为我们包含必要的内核头文件 `ntddk.h`：\n> 驱动开发无法包含普通 Win32 的头文件——通过项目属性将用户 SDK 排除在外，原因是执行环境与受支持接口契约不同。\n\n![1ab2782f622eb7fa454de09901c5b226&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/790a64cf4e74e234350d5c36c2d2e1175d16436e6ce555c442c25214b2fef6b5.jpg)\n\n\n类似于 DLL，系统在加载/卸载驱动时也会调用相关的函数：\n> 参考：[Windows 静态库与 DLL 的创建及使用](/notes/n-5b32137e0689438baa994e02aa4ef67a/)\n1. 加载驱动时会调用 `DriverEntry` 函数，其参数为：\n    - `PDRIVER_OBJECT DriverObject`：指向当前驱动对象。其结构与派遣表见 [Windows 内核编程基础](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/#h-19937c0b26b15639130d)。\n    - `PUNICODE_STRING RegistryPath`：指向驱动服务注册表键路径；若需要在 `DriverEntry` 返回后继续使用其内容，应自行复制。\n2. 卸载驱动时会调用 `DriverUnload` 函数。\n\n完整示例：\n```c\n#include <ntddk.h>\n\n// 自定义的驱动程序卸载函数\nVOID DriverUnload(PDRIVER_OBJECT DriverObject)\n{\n    DbgPrint(\"Bye. \\n\");\n}\n\n// 驱动程序入口函数\nNTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)\n{\n    DbgPrint(\"Hello Driver. \\n\");\n\n    // 设置卸载函数，在驱动停止时触发\n    DriverObject->DriverUnload = DriverUnload;\n    return STATUS_SUCCESS;\n}\n```\n\n> 这段最小代码建立了驱动入口、卸载回调与日志观察的基本闭环。\n\n代码编译成功后，可以在项目的 Debug 输出目录中找到对应的 `.sys` 驱动文件：\n\n![3a32a3be8075e5a0235ef403b3a620f2&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/5fc6716b7e3d197772ce18d291c6d6d2c4f221c32437cbb49d961fc3d824bae2.jpg)\n\n## 在虚拟机中加载并验证驱动\n\n与直接在实体机中测试相比，虚拟机能够降低驱动错误影响宿主系统的风险。\n\n将编译好的 `.sys` 文件、`KdmManager` 驱动加载工具以及 `DebugView` 放入虚拟机。使用 `KdmManager` 加载驱动，同时在 `DebugView` 中开启内核日志捕获：\n\n![7a5bd02890a302f5b50466a9a28c21cc&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/5b06980664d5c3be02dbe20c17d88d8bf5761ca38c16bbd1e74f5ccb5138aa04.jpg)\n\n![844543d44beed3114fde973e6657b057&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/13dffa53d967d6be8809a2f376c9b332cba65bec02b54bb4044ee61afd1a3ea9.jpg)\n\n依次执行注册（Register）、运行（Run）、停止（Stop）和卸载（Unload）后，可以在 `DebugView` 中观察驱动输出：\n\n- 点击 Run 后，系统调用 `DriverEntry`，输出 `Hello Driver.`。\n- 点击 Stop 后，系统调用已注册的 `DriverUnload`，输出 `Bye.`。\n\n![d6bf055f4e0cba82be51b8d8ca12f607&#95;MD5&#46;jpg](/notes/n-bd820028fa684cc79e85be7f1ad2f3de/media/209c964ddbef76f4a87c77f3102306a3bab2b090d48b5a7534a0a12fc4675172.jpg)\n\n至此，完成驱动开发的基本加载验证。\n",
+  "id": "bd820028-fa68-4cc7-9e85-be7f1ad2f3de",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "lang/c"
+    ],
+    "title": "Windows 驱动开发环境配置与 Hello Driver"
+  },
+  "resources": [
+    "0b374427fe583053940c3fc2b8e0da6c61d6321437b0343adc83d5834d7af141.jpg",
+    "13dffa53d967d6be8809a2f376c9b332cba65bec02b54bb4044ee61afd1a3ea9.jpg",
+    "209c964ddbef76f4a87c77f3102306a3bab2b090d48b5a7534a0a12fc4675172.jpg",
+    "4f8e5a738411ccf4f862ce0674aa7ee438c1a31c076bc5fbe0886b8d66e7017f.jpg",
+    "5899203e9117d8eeaafc00bf07aef669825e87fc0967d4e2e870751eb33be6e0.jpg",
+    "5b06980664d5c3be02dbe20c17d88d8bf5761ca38c16bbd1e74f5ccb5138aa04.jpg",
+    "5fc6716b7e3d197772ce18d291c6d6d2c4f221c32437cbb49d961fc3d824bae2.jpg",
+    "790a64cf4e74e234350d5c36c2d2e1175d16436e6ce555c442c25214b2fef6b5.jpg",
+    "82a87eb0b566136f3150135f9c88291a89fb6df699becbfd2abf8539113ca8e0.jpg",
+    "90136f20c29af8a8bf2a631a63f0bb51933821bab0c9fa88195a502e65feed9d.jpg",
+    "997cc548fe7da055eb1bd7b44b760adec7f08d4efaba203e889cca89b7142bb2.jpg",
+    "bbc2595c7fbbf55ebb40497e2a8c1c83d0d5d333d458015013fee4713ea63c2a.jpg",
+    "bc26d1f7aec7c30a48b8bee96064d4829ad1f1975df6ea2012902141419a8ecd.jpg",
+    "ddd0b6c7b3c0d40b8a09d845753b61650b9fa008e5c552b91f470de108bb3228.jpg",
+    "efc22b686d9d5654cecdadbe6ab49cabe2fb59eb9bfb50e101937915f333753e.jpg"
+  ],
+  "url": "/notes/n-bd820028fa684cc79e85be7f1ad2f3de/"
+}

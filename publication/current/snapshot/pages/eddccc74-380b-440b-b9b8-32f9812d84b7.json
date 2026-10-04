@@ -1,0 +1,40 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-ed9ca1c0cf446deb2e17",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-ac3c543ec2f59972f227",
+      "kind": "heading",
+      "offset": 71
+    },
+    {
+      "id": "h-12e2adc668082b87ad32",
+      "kind": "heading",
+      "offset": 235
+    },
+    {
+      "id": "h-9332202903ce5000af26",
+      "kind": "heading",
+      "offset": 491
+    },
+    {
+      "id": "h-b751c8e9bef0de18edad",
+      "kind": "heading",
+      "offset": 1081
+    }
+  ],
+  "body": "# C++ STL (MOC)\n\n> C++ 标准模板库（STL）的系统索引：涵盖容器、迭代器、算法三大核心组件及其自定义扩展。\n\n## 分类\n\n- **顺序容器**：元素主要按插入顺序组织，典型有 `vector`、`deque`、`list`。\n- **关联容器**：元素按键值组织，典型有 `set`、`map`。\n- **容器适配器**：基于其他容器封装出特定访问语义，典型有 `stack`、`queue`、`priority_queue`。\n\n## 学习前置\n\n- [C&#43;&#43; 模板机制](/notes/n-ee8743c7e4904a32b0036908655eae75/) — 理解泛型参数、实例化与 STL 接口的基础。\n- [C&#43;&#43; 面向对象编程 &#40;MOC&#41;](/notes/n-0a0112f464fc4c52937fc3acc6f4f4b1/) — 自定义类型的生命周期与比较行为。\n\n容器提供存储和访问规则，迭代器连接容器与算法。学习时沿下面的顺序建立关系；查阅时按容器类别直接进入对应笔记。\n\n## 阅读顺序\n\n1. [C&#43;&#43; STL 概览](/notes/n-f88b01de4a4542699d451c04989b57c8/)\n2. [C&#43;&#43; STL 顺序容器](/notes/n-b55d4550279c482f9b6ab0ffdec00610/) — vector、deque、list 等顺序容器\n3. [C&#43;&#43; STL 关联容器](/notes/n-8ccb9021abe24353865169ddbba30245/) — set、map 等键值组织容器\n4. [C&#43;&#43; STL 容器适配器](/notes/n-aaa01bfad5a94f74a9a1fa4eda7efa59/) — stack、queue、priority_queue 等适配器\n5. [C&#43;&#43; STL 迭代器](/notes/n-ff551ebf70d64210a81e33a1d96686cf/) — 迭代器分类与使用\n6. [C&#43;&#43; STL 算法](/notes/n-dcb0173a801f43278f26d10f75515cc3/)\n7. [C&#43;&#43; STL 容器中的自定义对象](/notes/n-97f05cfc6d7b4c109cb3f080ea401870/)\n\n## 相关笔记\n\n- [C&#43;&#43; 模板机制](/notes/n-ee8743c7e4904a32b0036908655eae75/) — STL 的底层基础：模板\n- [C&#43;&#43; 面向对象编程 &#40;MOC&#41;](/notes/n-0a0112f464fc4c52937fc3acc6f4f4b1/)\n- [C&#65295;C&#43;&#43; 语言基础 &#40;MOC&#41;](/notes/n-38d58bba673d4ca996b87b58f8d04951/)\n",
+  "id": "eddccc74-380b-440b-b9b8-32f9812d84b7",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "lang/cpp/stl"
+    ],
+    "title": "C++ STL (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-eddccc74380b440bb9b832f9812d84b7/"
+}

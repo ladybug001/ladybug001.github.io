@@ -1,0 +1,85 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-1705be9234d39b78394f",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-0ba08e9bdde89c532ef0",
+      "kind": "heading",
+      "offset": 59
+    },
+    {
+      "id": "h-395a53bdb2b7b971b769",
+      "kind": "heading",
+      "offset": 372
+    },
+    {
+      "id": "h-5ae73c2c1855700f0a32",
+      "kind": "heading",
+      "offset": 653
+    },
+    {
+      "id": "h-1c071712e6956ff82989",
+      "kind": "heading",
+      "offset": 983
+    },
+    {
+      "id": "h-e3f83389ca8ac8ec1e7f",
+      "kind": "heading",
+      "offset": 1590
+    },
+    {
+      "id": "h-0211e9761559864973d2",
+      "kind": "heading",
+      "offset": 1967
+    },
+    {
+      "id": "h-100f4b4cdcbb0d857d6d",
+      "kind": "heading",
+      "offset": 1986
+    },
+    {
+      "id": "h-ae40062f67a05604a9e8",
+      "kind": "heading",
+      "offset": 3433
+    },
+    {
+      "id": "h-4a0afc2769111bc02827",
+      "kind": "heading",
+      "offset": 3487
+    },
+    {
+      "id": "h-a6fb8225a0e8f0059a8f",
+      "kind": "heading",
+      "offset": 3714
+    },
+    {
+      "id": "h-6c85c8f83617aae0fa6f",
+      "kind": "heading",
+      "offset": 4895
+    }
+  ],
+  "body": "# MFC 开发基础\n\n相关内容：\n1. VC&#43;&#43; 6&#46;0 安装与配置\n\n## 什么是 MFC\n\n> MFC 的本质就是对 `Win32` 的封装。\n\n`MFC`（Microsoft Foundation Classes，**微软基础类**）是通过 `WinAPI` 提供面向对象的精简包装。在 `MFC 6.0` 中大约封装了 200 个类，分别封装了 `WinAPI` 和 `WinSDK` 中的结构和过程。\n\n- **优势**：使用 `MFC` 实际上会更加方便、开发效率更高。\n- **缺点**：根据项目引导生成的代码繁杂冗余，对初学者来说不利于学习和驾驭底层逻辑。\n\n此外，`MFC` 还提供了一个应用程序框架（如程序向导和类向导自动生成的代码），大大减少了程序的重复工作量。\n\n#### MFC 的层次结构图\n\n在 `MSDN Library` 中搜索 `Hierarchy Chart` 即可获得 `MFC` 的层次结构图：\n\n![7e42607845f2da840eb6ca3677c04657&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/e78c3f58c860c73a1d5fb993a95ef2f4186a8c41cb54d95bf1170ea0a16879ad.jpg)\n\n我们重点需要了解 `CWinApp` 和 `CFrameWnd`。\n\n#### CFrameWnd\n\n`CFrameWnd` 类提供了 `Windows` 单文档界面（SDI）重叠或弹出框架窗口的功能，**以及用于管理窗口的成员**。要为应用程序创建有用的窗口，需从 `CFrameWnd` 派生类：\n- 向派生类添加成员变量以存储特定数据。\n- 实现消息处理程序成员函数和消息映射，以指定在消息定向到窗口时的行为。\n\n构造框架窗口有三种方法：\n1. 使用 `Create()` 直接构造（本节重点）。\n2. 使用 `LoadFrame()` 直接构造（后续课程讲解）。\n3. 使用文档模板间接构建（后续课程讲解）。\n\n> **注**：可以认为 `CFrameWnd` 类取代了传统的窗口过程函数（`WndProc`）。\n\n##### Create 成员函数\n\n`CFrameWnd::Create` 成员函数语法格式如下：\n\n```cpp\nBOOL Create(\n    LPCTSTR lpszClassName,    // 如果类名为 NULL，则以 MFC 内建的窗口类产生一个标准外框窗口\n    LPCTSTR lpszWindowName,   // 窗口标题\n    DWORD dwStyle = WS_OVERLAPPEDWINDOW,\n    const RECT& rect = rectDefault,\n    CWnd* pParentWnd = NULL,  // 指向父窗口的指针\n    LPCTSTR lpszMenuName = NULL,\n    DWORD dwExStyle = 0,\n    CCreateContext* pContext = NULL\n);\n// 返回值: 非零表示初始化成功，否则为 0\n```\n\n构造 `CFrameWnd` 对象分为两个步骤：\n1. 首先，调用`CFrameWnd` 对象的构造函数；\n2. 随后，在该构造函数中，又调用 `Create` 成员方法创建实际的 Windows 框架窗口，并将其句柄（HWND）与该 C++ 对象进行**关联**。在此过程中，`Create` 方法会指定窗口类名、窗口标题，并完成窗口样式、父窗口及关联菜单等属性的初始化。\n\n#### CWinApp\n\n`CWinApp` 类是 `Windows` 应用程序对象基类的派生类。应用程序对象提供了用于初始化和运行应用程序的成员函数。\n\n- 每个使用 `MFC` 的应用程序只能（也必须）包含一个 `CWinApp` 派生类的对象。\n- 必须覆盖 `InitInstance()` 成员函数以创建应用程序的主窗口对象。\n- 成员变量 `m_pMainWnd` 用来记录创建的主窗口对象。\n\n![8f282fa674a6af40fbf5cc91b2b74552&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/82772c387a968a4969b7889dcafc2099b5c093d342547953f433f954a5c5ef96.jpg)\n\n## 第一个 MFC 程序\n\n### VC6 创建 MFC 项目\n\n根据 `IDE` 的提示，可以快速创建一个通用的 `MFC` 项目模板。\n\n**操作步骤**：\n1. 新建项目，选择 `MFC AppWizard (exe)`。\n![20248eb65d63d7168f648ef6c96df197&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/4bbc10a113be6fcf1a1baa67d2dca22185f7f2539b5a34e8c90bdd6ea9156267.jpg)\n2. 选择 `Dialog Based`（基于对话框）。\n![8f3b44bf7d1fe1190230d703a9a250b5&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/4ba864b4fa434fc4f324f0d2f9fd34abe6d9c8a57842da0df943f24d1210dc71.jpg)\n3. 点击 `Finish`。\n![909ceeb295ef37cdc312673acad11c2b&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/d904aeb1aad854e969759cbac9cfd6f503e5b19720a54a9b56898a47c08903a3.jpg)\n\n`MFC` 绘制窗口是可视化拖动控件，直接点击 `Controls` 工具栏并在窗口中创建对应控件即可：\n![e196a1cc65792c4f251d88920af5d43d&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/529a99db9bdda6e2dec9ae4dbd1ef0566c54b8f4ec3f8734aa0a015826608737.jpg)\n\n在可视化界面的背后，`IDE` 已经替我们生成了大量的框架代码：\n![3ae67ed213fb949c34794dae71422a2a&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/b06f3576945f57322c712057af36c3c72434f28a398afd94f4d299e7a100167f.jpg)\n\n双击控件即可自动跳转并创建对应的事件处理函数：\n![c4a316158e761770b6e79702748d19bf&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/aca3f7552eee647a55937a91aa8623bef7fc45236385d198fbf2c7aab9f78016.jpg)\n![067be82d9ecdf95038b19730aea49a1c&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/569687c844d459a31642cbb2e2aab2c39f4065ec42a107edf8cfe5a08913ccaf.jpg)\n### 手动创建 MFC 项目\n\n由于向导生成的代码冗余度高，手写 `MFC` 程序有助于理解底层原理。\n\n#### 本节需要掌握的知识点\n1. **核心要素**：\n    - `CWinApp` 可覆盖的虚函数 `InitInstance()`。\n    - `CWinApp` 成员变量 `m_pMainWnd`。\n    - `CFrameWnd` 的成员函数 `Create()` 及其参数。\n2. **扩展了解**：\n    - 通过 `MSDN` 查看 `MFC` 的层次结构图。\n    - 对 `CWinApp` 和 `CFrameWnd` 的初步认识。\n\n#### 注意事项\n\n基于 `VC6` 手动编写 `MFC` 程序的设置：\n1. 使用 `Win32 Application` 创建空项目。\n2. 配置 `MFC` 运行库：`Project` → `Settings` → `General` → `Microsoft Foundation Classes` 选择 `Use MFC in a Static Library`。\n3. **必须**包含头文件 `afxwin.h`。\n\n**示例代码**：\n> `stdafx.h` 中的主要内容就是 `#include <afxwin.h>`\n```cpp\n#include \"stdafx.h\" // 内部需包含 afxwin.h\n\nclass CMainWindow : public CFrameWnd {\npublic:\n    CMainWindow();\n};\n\nclass CMyWinApp : public CWinApp {\npublic:\n    virtual BOOL InitInstance();\n};\n\nCMyWinApp theApp; // 全局应用程序对象\n\nBOOL CMyWinApp::InitInstance() {\n    m_pMainWnd = new CMainWindow; // 创建主窗口对象\n    m_pMainWnd->ShowWindow(m_nCmdShow); // 显示窗口\n    m_pMainWnd->UpdateWindow(); // 更新窗口\n    return TRUE;\n}\n\nCMainWindow::CMainWindow() {\n    // 创建默认窗口类，标题为 \"HELLO MFC\"\n    Create(NULL, _T(\"HELLO MFC\"));\n}\n```\n\n![f1ae693e401902c3d05ffeceb3f47939&#95;MD5&#46;jpg](/notes/n-581da27d7b3646a1b1298f1432e2939d/media/ef9581e60667d79dd4ab221ae803c26b8ee7695941325f9bb5314c85f834975a.jpg)\n\n> [!NOTE] 为什么代码里没有 WinMain 函数也能运行？\n> `MFC` 库已经在内部实现了一个标准的 `WinMain`。当程序启动时：\n> 1. 全局对象 `theApp` 的构造函数会在 `WinMain` 运行之前执行，将自己注册到 `MFC` 内部管理机制中。\n> 2. `MFC` 的 `WinMain` 通过调用 `AfxGetApp()` 获取 `theApp` 指针，随后调用重写的 `InitInstance()`。\n\n#### 总结\n\n基于 `MFC` 的窗口程序必须且只能有一个从 `CWinApp` 派生的全局对象。并且要覆盖掉虚函数 `InitInstance()`，并在其中创建窗口（通过创建 `CFrameWnd` 派生类的实例，而该派生类会在构造函数中调用 `Create()` 创建窗口），并将窗口对象保存在 `m_pMainWnd` 中。\n\n---\n\n创建一个带滚动条的 300x300 窗口：\n```cpp\nCMainWindow::CMainWindow() {\n    RECT rect = { 0, 0, 300, 300 };\n    Create(NULL, _T(\"HELLO MFC\"), WS_OVERLAPPEDWINDOW | WS_VSCROLL, rect);\n}\n```\n",
+  "id": "581da27d-7b36-46a1-b129-8f1432e2939d",
+  "metadata": {
+    "tags": [
+      "lang/cpp/mfc"
+    ],
+    "title": "MFC 开发基础"
+  },
+  "resources": [
+    "4ba864b4fa434fc4f324f0d2f9fd34abe6d9c8a57842da0df943f24d1210dc71.jpg",
+    "4bbc10a113be6fcf1a1baa67d2dca22185f7f2539b5a34e8c90bdd6ea9156267.jpg",
+    "529a99db9bdda6e2dec9ae4dbd1ef0566c54b8f4ec3f8734aa0a015826608737.jpg",
+    "569687c844d459a31642cbb2e2aab2c39f4065ec42a107edf8cfe5a08913ccaf.jpg",
+    "82772c387a968a4969b7889dcafc2099b5c093d342547953f433f954a5c5ef96.jpg",
+    "aca3f7552eee647a55937a91aa8623bef7fc45236385d198fbf2c7aab9f78016.jpg",
+    "b06f3576945f57322c712057af36c3c72434f28a398afd94f4d299e7a100167f.jpg",
+    "d904aeb1aad854e969759cbac9cfd6f503e5b19720a54a9b56898a47c08903a3.jpg",
+    "e78c3f58c860c73a1d5fb993a95ef2f4186a8c41cb54d95bf1170ea0a16879ad.jpg",
+    "ef9581e60667d79dd4ab221ae803c26b8ee7695941325f9bb5314c85f834975a.jpg"
+  ],
+  "url": "/notes/n-581da27d7b3646a1b1298f1432e2939d/"
+}

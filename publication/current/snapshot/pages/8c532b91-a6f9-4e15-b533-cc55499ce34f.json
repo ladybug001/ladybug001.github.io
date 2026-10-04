@@ -1,0 +1,37 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-597de172e4b1674ce944",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-dd164298cbbe4e53911f",
+      "kind": "heading",
+      "offset": 277
+    },
+    {
+      "id": "h-774533032071535886fc",
+      "kind": "heading",
+      "offset": 490
+    },
+    {
+      "id": "h-39be85bc8287e4679533",
+      "kind": "heading",
+      "offset": 764
+    }
+  ],
+  "body": "# Windows 窗口与消息机制 (MOC)\n\n> 从 Win32 窗口程序的创建与事件处理，追踪到消息在用户态与内核态之间的产生、路由、排队和回调。\n\n\nWindows 消息机制的问题：\n\n![6f7ca8bf6a7ab48c09744ca697ffab0e&#95;MD5&#46;jpg](/notes/n-8c532b91a6f94e15b533cc55499ce34f/media/8ba4238a282665bdf93bda06a4b2c74aed2fc4499d4727bc22f7bfd823ef2a9b.jpg)\n\n## 推荐阅读顺序\n\n1. [Windows 窗口程序](/notes/n-5b50f7a485de48dcb0d1e1868933e003/) — 先建立应用层模型：窗口类、窗口对象、消息循环、窗口过程与子控件。\n2. [Windows 窗口消息机制](/notes/n-588dd991e500491c94d1853fffca6bdb/) — 再下钻系统实现：线程消息队列、输入路由、同步与异步消息、内核回调。\n\n## 隔离、绘图与框架应用\n\n- [Windows 窗口站与桌面隔离机制](/notes/n-03cb68347b47416b85e51a2da3d3e18c/) — 理解窗口、消息队列和输入所处的隔离层级。\n- [Windows GDI](/notes/n-b415a25acde7408d9926f7a5612f432c/) — 窗口绘制与图形设备接口。\n- [MFC 框架开发 &#40;MOC&#41;](/notes/n-705b8d5b7602461184ebca4a316e97cd/) — 对照窗口过程、消息循环和绘图接口的框架封装。\n\n## 对照与相关入口\n\n- [Android 组件与界面交互](/notes/n-3e717d798d4e4a66875e4734b91d9e25/) — 比较 Win32 消息循环与 Android Looper 的事件处理方式，补充组件调度与 Binder 机制。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 返回 Windows 领域入口。\n",
+  "id": "8c532b91-a6f9-4e15-b533-cc55499ce34f",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows"
+    ],
+    "title": "Windows 窗口与消息机制 (MOC)"
+  },
+  "resources": [
+    "8ba4238a282665bdf93bda06a4b2c74aed2fc4499d4727bc22f7bfd823ef2a9b.jpg"
+  ],
+  "url": "/notes/n-8c532b91a6f94e15b533cc55499ce34f/"
+}

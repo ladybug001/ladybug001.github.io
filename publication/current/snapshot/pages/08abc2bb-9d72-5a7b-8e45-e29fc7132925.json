@@ -1,0 +1,23 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-cea3f04e47b561f9e5af",
+      "kind": "heading",
+      "offset": 19
+    }
+  ],
+  "body": "# Windows API 热补丁机制\n\n微软在每个重要 API 入口处及其前部，预留几个字节用于热修复，比如 `MessageBoxA` 函数：\n![d6242f13bfda3255e9153cb034cb3e6c&#95;MD5&#46;jpg](/notes/n-08abc2bb9d725a7b8e45e29fc7132925/media/d4517cc0aca95b5f09c76da3b1f1aeb7afd5fccbd994c905c9d980aac974c3c6.jpg)\n\n函数开头的 `MOV EDI, EDI`（`8B FF`）占用两个字节，不影响标志位和寄存器值，效果等同于 2 字节 NOP，是微软专门为 hot patching 设计的占位指令。函数入口上方紧邻 5 个 `CC`（`int 3`）占位字节。\n\n热补丁的跳转流程：\n\n1. 将 `MOV EDI, EDI` 改写为 `JMP SHORT rel8`（`EB XX`），跳转到上方 5 个 `CC` 占位处。\n2. 在这 5 个字节写入 `JMP rel32`（`E9 XX XX XX XX`），绝对跳转到补丁函数。\n\n> [!NOTE] 逆向思维\n> 知道了热补丁占位机制，一个经典应用是绕过 API 头部的软件断点（`int 3` / `0xCC` 覆写）。原理：直接调用 API 会命中首地址上的断点，将调用指针偏移 +2 跳过 `MOV EDI, EDI`，即可从真正的函数体开始执行，绕开首字节拦截。\n\n",
+  "id": "08abc2bb-9d72-5a7b-8e45-e29fc7132925",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows API 热补丁机制"
+  },
+  "resources": [
+    "d4517cc0aca95b5f09c76da3b1f1aeb7afd5fccbd994c905c9d980aac974c3c6.jpg"
+  ],
+  "url": "/notes/n-08abc2bb9d725a7b8e45e29fc7132925/"
+}

@@ -18,8 +18,43 @@ from publisher.snapshot import _tree, inspect_snapshot, materialize_snapshot, ve
 from publisher.storage import atomic_write
 from publisher.tooling import PROJECT, local_hugo, runtime_check
 
+SITE_FILES = {
+    'site/about.md', 'site/hugo.toml', 'site/theme.lock.toml',
+    'site/assets/img/avatar.jpg', 'site/assets/jsconfig.json',
+    'site/assets/scss/custom.scss', 'site/assets/ts/custom.ts',
+    'site/assets/vendor/photoswipe-5.4.4/LICENSE',
+    'site/assets/vendor/photoswipe-5.4.4/photoswipe.css',
+    'site/assets/vendor/photoswipe-5.4.4/photoswipe.esm.min.js',
+    'site/assets/vendor/photoswipe-5.4.4/photoswipe-lightbox.esm.min.js',
+    *{'site/layouts/' + n + '.html' for n in ('about', 'home', 'mocs', 'recent', 'all-notes')},
+    *{'site/layouts/_markup/render-' + n + '.html' for n in
+      ('blockquote', 'passthrough', 'image', 'heading', 'codeblock', 'codeblock-mermaid')},
+    *{'site/layouts/_partials/' + n + '.html' for n in
+      ('helper/paginator', 'widget/taxonomy', 'head/custom-font', 'footer/custom',
+       'article/components/photoswipe', 'article-list/default', 'article-list/compact',
+       'article-list/recent', 'article-list/tags')},
+}
+
 
 def allowed_repository_path(name):
+    if name in SITE_FILES or name == '.github/workflows/hugo-pages.yml':
+        return True
+    if name in {'publication/current/release.json', 'publication/current/presentation.json',
+                'publication/current/snapshot/manifest.json'}:
+        return True
+    if re.fullmatch(r'publication/current/snapshot/(?:pages/[a-f0-9-]{36}\.json|assets/[a-f0-9]{64}\.[a-z0-9]{1,12})', name):
+        return True
+    if name in {"preview.ps1", "docs/hugo-stack.md", "site/hugo.toml", "site/theme.lock.toml",
+                "site/layouts/_markup/render-passthrough.html", "site/layouts/_markup/render-codeblock.html",
+                "site/layouts/_markup/render-codeblock-mermaid.html",
+                "site/layouts/_markup/render-blockquote.html",
+                "site/layouts/home.html", "site/layouts/mocs.html", "site/layouts/all-notes.html",
+                "site/layouts/_partials/article-list/compact.html",
+                "site/layouts/_partials/helper/paginator.html",
+                "site/layouts/_partials/widget/taxonomy.html",
+                "site/layouts/_partials/head/custom-font.html",
+                "site/layouts/_partials/article/components/photoswipe.html"}:
+        return True
     if name in {".gitignore", ".gitattributes", "README.md", ".github/README.md", ".github/workflows/hugo-ci.yml", "docs/hugo-ci.md", "docs/hugo-publication.md", "publication/README.md"}:
         return True
     if name.startswith("pipeline/"):
@@ -60,7 +95,40 @@ def repository_check(project=PROJECT):
     python = next(step for step in job["steps"] if step.get("uses", "").startswith("actions/setup-python@"))
     if checkout["with"]["persist-credentials"] != "false" or python["with"]["python-version"] != data["python"]:
         raise ValueError("CI checkout credentials/Python do not match policy")
+    if '.github/workflows/hugo-pages.yml' in paths:
+        production_workflow_check(project)
+    if any(name.startswith('publication/current/') for name in paths):
+        from production import inspect_release
+        inspect_release(project)
     return len(paths)
+
+
+def production_workflow_check(project=PROJECT):
+    workflow = yaml.load((Path(project) / '.github/workflows/hugo-pages.yml').read_text(encoding='utf-8'), Loader=yaml.BaseLoader)
+    data = runtime_check(project)
+    if (set(workflow['on']) != {'push', 'workflow_dispatch'} or
+            workflow['on']['push']['branches'] != ['main'] or
+            workflow['permissions'] != {'contents': 'read'} or
+            set(workflow['jobs']) != {'build', 'deploy'}):
+        raise ValueError('Production workflow events/jobs/permissions differ from reviewed policy')
+    build, deploy = workflow['jobs']['build'], workflow['jobs']['deploy']
+    if any(k in build for k in ('permissions', 'environment', 'secrets')):
+        raise ValueError('Production build must not acquire deployment privileges')
+    if (deploy['permissions'] != {'contents': 'read', 'pages': 'write', 'id-token': 'write'} or
+            deploy['needs'] != 'build' or deploy['if'] != "github.ref == 'refs/heads/main'" or
+            deploy['environment']['name'] != 'github-pages'):
+        raise ValueError('Deployment must use verified main artifact and github-pages environment')
+    actual = [s['uses'] for job in (build, deploy) for s in job['steps'] if 'uses' in s]
+    expected = ['actions/checkout@' + data['actions']['checkout'],
+                'actions/setup-python@' + data['actions']['setup_python'],
+                'actions/upload-pages-artifact@' + data['actions']['upload_pages'],
+                'actions/deploy-pages@' + data['actions']['deploy_pages']]
+    if actual != expected:
+        raise ValueError('Production Actions differ from reviewed commit pins')
+    if (build['steps'][0]['with']['persist-credentials'] != 'false' or
+            build['steps'][1]['with']['python-version'] != data['python'] or
+            not any(s.get('run') == 'python -B pipeline/production.py build --verify-repeat' for s in build['steps'])):
+        raise ValueError('Production checkout/runtime/build differs from policy')
 
 
 def run_tests():

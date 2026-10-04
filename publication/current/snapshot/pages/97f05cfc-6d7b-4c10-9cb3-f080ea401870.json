@@ -1,0 +1,47 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-240d1ece187bee97a028",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-f53f4c61da93e3a2c88c",
+      "kind": "heading",
+      "offset": 111
+    },
+    {
+      "id": "h-06af83cc3c85a5a3d231",
+      "kind": "heading",
+      "offset": 484
+    },
+    {
+      "id": "h-879ca838d527fb0ca7ab",
+      "kind": "heading",
+      "offset": 1622
+    },
+    {
+      "id": "h-fae4fd301afbff30394e",
+      "kind": "heading",
+      "offset": 3033
+    },
+    {
+      "id": "h-31e57b199a1287e94a8e",
+      "kind": "heading",
+      "offset": 4357
+    }
+  ],
+  "body": "# C++ STL 容器中的自定义对象\n\n上级：[C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/)\n\n## 使用自定义对象\n\n在 `STL` 中使用自定义对象，常见有三种情况：\n\n1. 向 `vector`、`deque`、`list`、`stack`、`queue` 等顺序容器或容器适配器中放入自定义对象。\n2. 向 `set` / `map` 等**有序关联容器**中放入自定义对象。\n3. 向 `unordered_set` / `unordered_map` 等**无序关联容器**中放入自定义对象。\n\n需要先明确一个原则：\n\n- 如果自定义对象只是作为“普通元素”或 `map` 的 `value` 出现，通常不一定需要额外比较器。\n- 如果自定义对象要作为 `set` 的元素，或作为 `map` / `unordered_map` 的 `key`，就必须额外满足容器对“有序性”或“哈希性”的要求。\n\n## 第一种情况：顺序容器/适配器中使用自定义对象\n\n向 `vector`、`deque`、`list`、`stack`、`queue` 中添加自定义对象时，容器通常会保存对象副本，因此会涉及拷贝构造或移动构造。\n\n示例代码如下：\n\n```cpp\n#include <vector>\n#include <string>\n#include <iostream>\n#include <tchar.h>\nusing namespace std;\n\nclass Member {\npublic:\n    Member(const string strName, const int id) {\n        this->mStrName = strName;\n        this->mId = id;\n    }\n\n    void Print() {\n        cout << \"Name: \" << this->mStrName << endl;\n        cout << \"Id: \" << this->mId << endl;\n    }\n\nprivate:\n    string mStrName;\n    int mId;\n};\n\nint _tmain(int argc, _TCHAR* argv[])\n{\n    vector<Member> v1;\n    v1.push_back(Member(\"name1\", 1));\n    v1.push_back(Member(\"name2\", 2));\n\n    vector<Member>::iterator itA = v1.begin();\n    itA->Print();\n    itA++;\n    itA->Print();\n    return 0;\n}\n```\n\n![48a41c7db37cbafcd786846907a09a5d&#95;MD5&#46;jpg](/notes/n-97f05cfc6d7b4c109cb3f080ea401870/media/75fd818afdbbdd1b9a623c6dff93d8e438e58a2a9f8088ee47248d49bbd93f72.jpg)\n\n补充说明：\n\n1. 这类容器一般不要求元素可排序，也不要求元素可哈希；只要类型本身可被正确构造、拷贝或移动即可。\n2. 如果对象内部管理堆内存、文件句柄、锁等资源，就要额外注意拷贝构造、赋值运算符和析构函数是否正确实现。\n3. 如果希望减少临时对象构造，很多场景下可以优先考虑 `emplace_back()` 而不是 `push_back(Member(...))`。\n\n## 第二种情况：有序关联容器中使用自定义对象\n\n向 `set` / `map` 等有序关联容器中放入自定义对象时，除了对象本身可复制以外，还需要提供**排序依据**。这里有一个容易混淆的点：\n\n1. 对于 `set<T>` / `multiset<T>`，元素本身就是键，因此自定义对象 `T` 必须可比较。\n2. 对于 `map<Key, Value>` / `multimap<Key, Value>`，只有 `Key` 需要满足排序要求；如果自定义对象只是 `Value`，则通常不需要比较器。\n\n示例代码如下：\n\n```cpp\n#include <set>\n#include <string>\n#include <algorithm>\n#include <iostream>\n#include <tchar.h>\nusing namespace std;\n\nclass Member {\npublic:\n    string mStrName;\n    int mId;\n\n    Member(const string strName, const int id) {\n        this->mStrName = strName;\n        this->mId = id;\n    }\n\n    void Print() const {\n        cout << \"Name: \" << this->mStrName << endl;\n        cout << \"Id: \" << this->mId << endl;\n    }\n};\n\nstruct MemFunctor {\n    bool operator()(const Member& stu1, const Member& stu2) const {\n        return stu1.mId < stu2.mId;\n    }\n};\n\nvoid myPrintFunc(const Member& p) {\n    p.Print();\n}\n\nint _tmain(int argc, _TCHAR* argv[])\n{\n    set<Member, MemFunctor> s;\n    s.insert(Member(\"name1\", 1));\n    s.insert(Member(\"name2\", 2));\n    for_each(s.begin(), s.end(), myPrintFunc);\n    return 0;\n}\n```\n\n![8eb67dd62ce580462567b79f8c313c1c&#95;MD5&#46;jpg](/notes/n-97f05cfc6d7b4c109cb3f080ea401870/media/bee5d3df5994124163242db672b472a225a4345ea9e1a33d53ada47bbf194cb0.jpg)\n\n补充说明：\n\n1. 有序关联容器中的比较器本质上定义了“谁排在谁前面”，通常要求满足**严格弱序**。\n2. 对 `set` 而言，两个元素是否“重复”，并不是看 `operator==`，而是看比较器是否认为它们等价。换句话说，如果 `a < b` 和 `b < a` 都为假，那么容器会把它们视为同一个键值。\n\n## 第三种情况：无序关联容器中使用自定义对象\n\n无序关联容器底层通常基于哈希表，因此这里不再需要“排序依据”，而是需要：\n\n1. **哈希函数**：把对象映射到哈希值。\n2. **相等判断规则**：判断两个对象是否应视为同一个键。\n\n更准确地说：\n\n- `unordered_set<T>` / `unordered_multiset<T>` 需要为 `T` 提供哈希函数和相等判断。\n- `unordered_map<Key, Value>` / `unordered_multimap<Key, Value>` 则只要求 `Key` 满足哈希和相等判断要求。\n\n示例代码如下：\n\n```cpp\n#include <unordered_set>\n#include <string>\n#include <iostream>\n#include <algorithm>\n#include <tchar.h>\nusing namespace std;\n\nclass Member {\npublic:\n    string mStrName;\n    int mId;\n\n    Member(const string& strName, int id) : mStrName(strName), mId(id) {}\n\n    void Print() const {\n        cout << \"Name: \" << mStrName << endl;\n        cout << \"Id: \" << mId << endl;\n    }\n};\n\nstruct MemHash {\n    size_t operator()(const Member& m) const {\n        return hash<int>()(m.mId);\n    }\n};\n\nstruct MemEqual {\n    bool operator()(const Member& a, const Member& b) const {\n        return a.mId == b.mId;\n    }\n};\n\nvoid myPrintFunc(const Member& p) {\n    p.Print();\n}\n\nint _tmain(int argc, _TCHAR* argv[])\n{\n    unordered_set<Member, MemHash, MemEqual> s;\n    s.insert(Member(\"name1\", 1));\n    s.insert(Member(\"name2\", 2));\n    s.insert(Member(\"name3\", 1)); // mId 相同，会被视为重复键\n\n    for_each(s.begin(), s.end(), myPrintFunc);\n    return 0;\n}\n```\n\n补充说明：\n\n1. 哈希函数和相等判断必须保持一致：如果两个对象被认为“相等”，那么它们的哈希值也必须相同。\n2. 反过来，哈希值相同并不代表对象一定相等，这只是哈希冲突，容器还会继续用相等判断规则区分。\n\n## 总结\n\n1. 如果对象只是普通存储元素，优先考虑顺序容器，通常不需要比较器或哈希函数。\n2. 如果对象要作为有序关联容器中的键，必须提供稳定的排序依据。\n3. 如果对象要作为无序关联容器中的键，必须提供一致的哈希函数与相等判断规则。\n4. 如果对象是 `map` / `unordered_map` 的值而不是键，通常不需要额外比较器或哈希函数。\n",
+  "id": "97f05cfc-6d7b-4c10-9cb3-f080ea401870",
+  "metadata": {
+    "tags": [
+      "lang/cpp/stl"
+    ],
+    "title": "C++ STL 容器中的自定义对象"
+  },
+  "resources": [
+    "75fd818afdbbdd1b9a623c6dff93d8e438e58a2a9f8088ee47248d49bbd93f72.jpg",
+    "bee5d3df5994124163242db672b472a225a4345ea9e1a33d53ada47bbf194cb0.jpg"
+  ],
+  "url": "/notes/n-97f05cfc6d7b4c109cb3f080ea401870/"
+}

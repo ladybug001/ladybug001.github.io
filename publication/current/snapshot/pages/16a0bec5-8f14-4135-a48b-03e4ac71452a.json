@@ -1,0 +1,80 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-5712d8181c601fd70d98",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-4ae0c950094daff2ae18",
+      "kind": "heading",
+      "offset": 107
+    },
+    {
+      "id": "h-78bb76148326efd54865",
+      "kind": "heading",
+      "offset": 432
+    },
+    {
+      "id": "h-3de1cefd953ecbc978b0",
+      "kind": "heading",
+      "offset": 442
+    },
+    {
+      "id": "h-1a453cfdc9ccc3620a4d",
+      "kind": "heading",
+      "offset": 1042
+    },
+    {
+      "id": "h-f382d2866578de7e7549",
+      "kind": "heading",
+      "offset": 1564
+    },
+    {
+      "id": "h-b0b95df865b211e9a0e1",
+      "kind": "heading",
+      "offset": 2431
+    },
+    {
+      "id": "h-aae51be2f418336452bf",
+      "kind": "heading",
+      "offset": 2992
+    },
+    {
+      "id": "h-f0bbdc86d3069c125ac8",
+      "kind": "heading",
+      "offset": 3096
+    },
+    {
+      "id": "h-60cee816f9c176cd86ae",
+      "kind": "heading",
+      "offset": 3227
+    },
+    {
+      "id": "h-da43ce5d06227256fe27",
+      "kind": "heading",
+      "offset": 3761
+    },
+    {
+      "id": "h-e0a257ed78864f114079",
+      "kind": "heading",
+      "offset": 4154
+    }
+  ],
+  "body": "\n# Windows 断点与单步执行机制\n\n所谓调试，实际上就是在被调试进程中想方设法地触发异常，当异常产生后，由调试器来接管异常。**有 3 种触发异常的方法：软件断点、内存断点、硬件断点**。\n\n## 统一原理\n\n三类断点使用的触发条件不同，但都会先让 CPU 产生异常，再进入异常分发流程；当存在用户态调试器时，异常最终会通过 `DbgkForwardException` 和 `DbgkpSendApiMessage` 转换成异常调试事件并发送给调试器。\n> 参考：[Windows x86 异常的产生与分发流程](/notes/n-fc98c7868417430fa36063afb251fb17/)\n\n可以把三类断点的后续过程概括为：调试器通过 `WaitForDebugEvent` 取得异常事件，处理后再调用 `ContinueDebugEvent` 恢复目标线程。\n\n三者的共同出口都是异常调试事件，真正的差别在于异常从哪里产生。\n## 三类断点\n\n### 软件断点\n\n软件断点的原理就是中断门，比如 `INT3` 指令的执行过程：\n1. CPU 执行 `INT 3` 指令\n2. 查询中断描述符表，找到对应的中断处理函数（3 号）\n3. 中断处理函数内部会调用 `CommonDispatchException` 函数\n4. 在 `CommonDispatchException` 函数内部又会调用 `KiDispatchException` 函数。\n5. 由于当前异常来自用户空间，我们这里就假设没有内核调试器有用户调试器：然后调用 `_DbgkForwardException` 函数，该函数内部会调用 `DbgkpSendApiMessage` 将异常发送给 3 环调试器。\n> 异常分发的过程参考：[Windows 异常处理机制 &#40;MOC&#41;](/notes/n-46c2bfd4baf7445db160d3a9c39163bc/)\n\n\n调试器与被调试进程的完整流程可以参考下图：\n\n![7ed2f0acea01a5fefcb8d8024210ff9a&#95;MD5&#46;jpg](/notes/n-16a0bec58f144135a48b03e4ac71452a/media/9a85392b82394e4b0ed86d23c0ae71d445d109e41224aa9c7d8bd0aa22233280.jpg)\n\n### 内存断点\n\n内存断点的实现原理和写拷贝的实现原理几乎一致（参考：[x86 缺页异常与 Windows 缺页处理](/notes/n-85c26c688a7d414f97a72dd67c15f9bb/)）：通过调用 `VirtualProtectEx` 函数来跨进程对被调试进程页属性进行修改，对该页的访问会触发缺页异常：\n1. CPU 访问该虚拟页，触发缺页异常。\n2. 查 `IDT` 表找到对应的中断处理函数（这里页异常是 `0x0E` 号中断）。\n3. 结合 VAD 发现该页禁止访问，触发访问违例异常，进入异常分发流程（同样假设存在用户调试器）：\n\t1. 调用 `CommonDispatchException` 函数。\n\t2. 调用 `KiDispatchException` 函数。\n\t3. 进入 `DbgkForwardException` 函数，收集调试事件并发送给调试对象。\n\t4. 最后交给调试器来处理。\n\n**需要注意**：`VirtualProtectEx` 函数修改的并不是某一地址的属性，而是整个页的属性——页内的地址都有可能出现异常，所以调试器需要判断异常位置是否下了内存断点，如果不是的话就应该放行。\n\n### 硬件断点\n\n硬件断点的实现需要使用调试寄存器 `DR0` 到 `DR7`，它们的结构如下：\n\n1. `Dr0-3` 用于设置硬件断点，也就是存储对应的线性地址，由于只有 4 个断点寄存器，所以最多只能设置 4 个硬件调试断点。\n2. `Dr4-5` 是保留的，我们可以不用看。\n3. `Dr6` 寄存器的作用是**确定产生的是哪种类型的单步异常**。硬件调试断点产生的异常是 `STATUS_SINGLE_STEP`（单步异常）。除了硬件断点外，当 `Eflags` 的 `TF` 标志位置为 1 时，也会产生单步异常。当 `B0-3` 中有值时，可以确定是某个硬件断点触发了单步异常。**如果 `B0-3` 的值都为空，那么说明是由 `Eflags` 的 `TF` 标志位为 1 引起的单步异常**。\n4. `Dr7` 是最重要的寄存器，它控制着断点的各类属性，有很多位，每位的含义如下：\n    1. `Lx/Gx`：控制 `Dr0-Dr3` 寄存器是否有效，确定是一次性（`Lx`）还是持久性（`Gx`）断点。每次异常触发后，`Lx` 都被清零，`Gx` 不清零。\n    2. 断点长度（`LENx`）：`00`（1 字节），`01`（2 字节），`11`（4 字节）。\n    3. 断点类型（`R/Wx`）：`00`（执行断点），`01`（写入断点），`11`（访问断点）。\n\n![05eebda06d08780897e1254ee006eb9f&#95;MD5&#46;jpg](/notes/n-16a0bec58f144135a48b03e4ac71452a/media/0dc3d474df7be8e4be57addd619a3e14f26e1d6c1e0c9cac04aa00e3ed4c19dc.jpg)\n\n当你向 `Dr0-3` 存储线性地址后，`Lx` 或 `Gx` 必须有一个为 1，才会触发：当 CPU 执行到该线性地址时，如果发现与调试寄存器中的值相同，就会触发断点异常，进而暂停执行。\n\n#### 执行流程\n\n下完硬件断点后，当 CPU 检测调试寄存器（`Dr0-3`）到执行到对应的线性地址，就会触发单步异常。然后就进行了异常的处理流程：\n\n1. CPU 检测调试寄存器（`Dr0-3`）到执行到对应的线性地址，就会触发单步异常 `STATUS_SINGLE_STEP`。\n2. 查 `IDT` 表找到对应的中断处理函数（这里是 `0x01` 号中断）。\n3. 调用 `CommonDispatchException` 函数。\n4. 调用 `KiDispatchException` 函数。\n5. 进入 `DbgkForwardException` 函数，收集调试事件并发送给调试对象。\n6. 最后交给调试器来处理。\n\n**硬件断点与软件断点或内存断点有所不同**：硬件断点是针对具体线程而言的，没有线程的情况下无法使用硬件断点。比如后两者可以实现要求任意一个线程执行某个位置时断下，但硬件断点是针对具体线程的，以在 `OEP` 处设置断点为例：软件断点和内存断点可以直接在此处设置断点，但硬件断点要先捕获进程创建/线程创建事件，然后修改线程上下文中的 DRX 寄存器才能实现在 OEP 处下断。\n> 也可以采用另一种方法：在 `OEP` 处设置一个软件断点，当软件断点被触发后，再使用硬件断点。\n\n### 断点检测与对抗提示\n\n对于软件断点，可以使用 `CRC` 校验来进行检测；\n\n对于内存断点，可以创建一个线程不断检查目标地址所在虚拟页的保护属性是否被调试器修改。\n\n硬件断点则需要检查相应寄存器是否被置位。\n\n\n## 单步执行\n\n`OD` 调试器的快捷键 `F7` 和 `F8` 对应单步步入和步过：\n\n- 单步步入是按照执行流，对每一行指令进行单步执行。\n- 单步步过则是目前能看到的执行，一条一条执行，**单步步过不会进入调用函数的内部（`CALL` 指令）**。\n\n### 单步步入\n\n单步步入的软件实现逻辑：每执行一条指令，都计算下一条指令的位置，然后设置 `INT3`。但这样效率十分低下，**因此 Intel 在设计 CPU 时考虑到了调试程序的必要性，就在 `EFlags` 寄存器中设置了一个 `TF` 位**。\n\n`TF` 位我们可以称之为单步标志，**当 `TF` 位置 1 时，每执行完一行指令就会产生一个单步异常 `EXCEPTION_SINGLE_STEP`**。\n\n![d5b12762d8b5e7366542d50e81e69efe&#95;MD5&#46;jpg](/notes/n-16a0bec58f144135a48b03e4ac71452a/media/ef4ae01944c98f7f029b71d6a0c88fe11de01ff5e111dcbe408ff76217ae7592.jpg)\n\n\n硬件断点产生的异常是 `STATUS_SINGLE_STEP`，而 `EFlags.TF` 实现逐指令执行时产生的也是该异常，因此此处就不再赘述异常流程。\n\n如何判断 `STATUS_SINGLE_STEP` 异常是被硬件断点还是 `EFlags.TF` 触发的？通过 DR6 判断。\n\n#### 利用 TF 位反调试\n\n```c++\n#include \"pch.h\"\n#include <iostream>\n#include <Windows.h>\nbool CheckDebug(){\n\tprintf(\"hhhh\");\n\t__try{\n\t\t__asm{\n\t\t\tpushfd\n\t\t\tor word ptr[esp],0x100   // 与FLG寄存器进行或  把TF位置为1\n\t\t\tpopfd\n\t\t\tnop\n\t\t}\n\t}\n\t__except(1){    //单步调试,异常会被这里捕获\n\treturn FALSE;  // 没有调试\n\t}\n\treturn TRUE; // 被调试\n}\n\nint main(){\n\n\tbool isDebuging=CheckDebug();\n\tprintf(\"%d\",isDebuging);\n\tsystem(\"pause\");\n\n}\n\n```\n\n### 单步步过\n\n借助 `TF`，单步步入可以让每条指令执行后都暂停；但遇到 `CALL` 时，怎样执行完整个被调用函数，又不进入函数内部逐条停顿？这就是单步步过要处理的场景。\n\n想要实现单步步过，可以通过两种方式：硬件断点、软件断点。实现的原理是在遇到 `CALL` 指令（包括多种类型）后，计算当前指令的长度，并在当前 `EIP + 当前指令长度` 的位置设置断点，即 `CALL` 指令的下一行，然后继续执行，从而实现单步步过的效果。\n\n",
+  "id": "16a0bec5-8f14-4135-a48b-03e4ac71452a",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows 断点与单步执行机制"
+  },
+  "resources": [
+    "0dc3d474df7be8e4be57addd619a3e14f26e1d6c1e0c9cac04aa00e3ed4c19dc.jpg",
+    "9a85392b82394e4b0ed86d23c0ae71d445d109e41224aa9c7d8bd0aa22233280.jpg",
+    "ef4ae01944c98f7f029b71d6a0c88fe11de01ff5e111dcbe408ff76217ae7592.jpg"
+  ],
+  "url": "/notes/n-16a0bec58f144135a48b03e4ac71452a/"
+}

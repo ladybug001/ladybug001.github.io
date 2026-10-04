@@ -1,0 +1,39 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6422c336aacd564a6520",
+      "kind": "heading",
+      "offset": 136
+    },
+    {
+      "id": "h-b7455446fe2f6ef12a9e",
+      "kind": "heading",
+      "offset": 153
+    },
+    {
+      "id": "h-0fb48c71bd7e096de7fa",
+      "kind": "heading",
+      "offset": 167
+    },
+    {
+      "id": "h-d7a3947c8b75bcaaddfc",
+      "kind": "heading",
+      "offset": 342
+    }
+  ],
+  "body": "相关内容：\n1. [MFC 开发基础](/notes/n-581da27d7b3646a1b1298f1432e2939d/)\n2. [MFC 框架原理](/notes/n-392ce0f4430c41fa9b700407eb7d6df3/)\n## MFC CFile 类\n\n### CFile 类打开文件\n\n#### 打开文件的方法\n\n1. 构造一个没有初始化的 `CFile` 对象，然后调用 `CFile::Open()` 函数。\n2. 用 `CFile` 的构造函数直接打开文件。\n3. 如果要创建一个新的文件，而不是打开一个现存文件，则需要在 `CFile::Open()` 或构造函数的第二个参数中包含 `CFile::modeCreate` 标志。\n\n#### 实际使用\n\n在当前工程目录下创建一个 `1.txt` 文件，然后在代码中读写：\n\n![2cdd9c91627d866069f800c08e610d35&#95;MD5&#46;jpg](/notes/n-b7b0be5834a24d3a8b6a05670b631fbc/media/4982b540a4ed0501d915540afd44a264cb79dab99c23db211e9c096a118bca41.jpg)\n\n如果你想打开一个文件（存在则正常打开，不存在则创建），可以按如下写法：\n\n![97dcb5bfd5c7d5a0bed66f16e5540a9f&#95;MD5&#46;jpg](/notes/n-b7b0be5834a24d3a8b6a05670b631fbc/media/b7816a8ae54c1b0073552bf6da2d80b5c6fd221c888907500de1dcd4dc5f2b51.jpg)\n\n创建一个新文件后，需要使用 `Write()` 函数写入内容：\n\n![40cfa9aabe1cb0dffd45bbc8ae1523d5&#95;MD5&#46;jpg](/notes/n-b7b0be5834a24d3a8b6a05670b631fbc/media/ee33ade77c31b0a41eb43428acb05956b1d93fcd1769d233119f06cb989dd686.jpg)\n\n如果你想在现有的内容之后追加写入，直接使用 `Write()` 是会覆盖文件开头的。我们需要使用 `SeekToEnd()` 函数将写入位置的指针移到文件末尾，然后再调用 `Write()` 函数。最后记得要关闭文件：\n\n![826b45f56471caddf499c17519e8157d&#95;MD5&#46;jpg](/notes/n-b7b0be5834a24d3a8b6a05670b631fbc/media/d8751b5de7e3457f21a10208c0d437a59c2e5925ad5804eac5769f9c44d399e4.jpg)\n\n如果在栈上创建了局部变量 `CFile cf;`，你可以不显式调用 `Close()` 函数，因为当局部函数执行完毕后，`CFile` 的析构函数会自动帮我们关闭释放。但如果你是在堆中通过 `new` 创建的话，就一定要手动去管理释放。\n\n`CFile` 的常用属性参考下表：\n\n| 属性 | 含义 |\n| :--- | :--- |\n| `CFile::modeCreate` | 构造新文件。如果文件已存在，则将其长度截断为 0 |\n| `CFile::modeNoTruncate` | 与 `modeCreate` 联合使用：如果文件存在，则不会截断为 0；如果不存在，则创建一个新文件 |\n| `CFile::modeRead` | 以只读方式打开文件 |\n| `CFile::modeWrite` | 以写方式打开文件 |\n| `CFile::modeReadWrite` | 以读写方式打开文件 |\n| `CFile::modeNoInherit` | 阻止文件句柄被子进程继承 |\n| `CFile::shareDenyNone` | 不禁止其它进程读写访问文件（兼容模式） |\n| `CFile::shareDenyRead` | 打开文件，禁止其它进程读取 |\n| `CFile::shareDenyWrite` | 打开文件，禁止其它进程写入 |\n| `CFile::shareExclusive` | 以独占模式打开文件，禁止其它进程的读写。如果已被打开则失败 |\n| `CFile::typeText` | 对回车、换行进行特殊处理（文本模式） |\n| `CFile::typeBinary` | 二进制模式（原样读写） |\n\n",
+  "id": "b7b0be58-34a2-4d3a-8b6a-05670b631fbc",
+  "metadata": {
+    "tags": [
+      "lang/cpp/mfc"
+    ],
+    "title": "MFC CFile 类"
+  },
+  "resources": [
+    "4982b540a4ed0501d915540afd44a264cb79dab99c23db211e9c096a118bca41.jpg",
+    "b7816a8ae54c1b0073552bf6da2d80b5c6fd221c888907500de1dcd4dc5f2b51.jpg",
+    "d8751b5de7e3457f21a10208c0d437a59c2e5925ad5804eac5769f9c44d399e4.jpg",
+    "ee33ade77c31b0a41eb43428acb05956b1d93fcd1769d233119f06cb989dd686.jpg"
+  ],
+  "url": "/notes/n-b7b0be5834a24d3a8b6a05670b631fbc/"
+}

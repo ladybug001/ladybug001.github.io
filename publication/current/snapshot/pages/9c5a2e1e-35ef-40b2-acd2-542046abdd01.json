@@ -1,0 +1,69 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-47a722d38aea4c0f1078",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-ea4a253199db157f996f",
+      "kind": "heading",
+      "offset": 129
+    },
+    {
+      "id": "h-27894e6cf76ad9e946a3",
+      "kind": "heading",
+      "offset": 159
+    },
+    {
+      "id": "h-fe546ddba77768c25375",
+      "kind": "heading",
+      "offset": 700
+    },
+    {
+      "id": "h-950536a4448cca1533be",
+      "kind": "heading",
+      "offset": 994
+    },
+    {
+      "id": "h-4708633886221ab1e4de",
+      "kind": "heading",
+      "offset": 1202
+    },
+    {
+      "id": "h-6310a2ed519950f145f6",
+      "kind": "heading",
+      "offset": 1464
+    },
+    {
+      "id": "h-53b2d3a675f1f05745f6",
+      "kind": "heading",
+      "offset": 1513
+    },
+    {
+      "id": "h-7458036741b4bd43a013",
+      "kind": "heading",
+      "offset": 1618
+    },
+    {
+      "id": "h-6b7bcc9cc6321435a608",
+      "kind": "heading",
+      "offset": 2193
+    },
+    {
+      "id": "h-7d66cc7eb6131562d630",
+      "kind": "heading",
+      "offset": 2755
+    }
+  ],
+  "body": "# JavaScript 属性描述符与内部槽\n\n在 JavaScript 中，对象的属性不仅仅是简单的“键值对”。从底层视角来看，属性被分为严格的三大类，并通过**属性描述符**（Property Descriptor）来控制其行为。\n\n## 属性的三大分类\n\n### 1 数据属性 (Data Properties)\n这是最常见的属性类型，它充当“存钱罐”的角色，用于保存一个具体的值。\n\n**描述符特征**：\n*   **`value`**：属性的实际值（可以是任意类型）。默认为 `undefined`。\n*   **`writable`**：是否可修改。若为 `false`，修改该属性会静默失败（严格模式下报错）。\n*   **`enumerable`**：是否可枚举。若为 `false`，不会出现在 `for...in` 或 `Object.keys()` 中。\n*   **`configurable`**：是否可配置。若为 `false`，则不能删除该属性，不能修改其描述符，也不能将其转换为访问器属性。\n\n**代码示例**：\n```javascript\nconst obj = {};\nObject.defineProperty(obj, 'name', {\n    value: 'John',\n    writable: false,      // 不可改\n    enumerable: true,     // 可遍历\n    configurable: false   // 不可删\n});\n```\n\n### 2 访问器属性 (Accessor Properties)\n它不直接保存值，而是充当“自动存取款机”的角色。它通过一对 getter/setter 函数来代理对属性的读写操作。\n\n**描述符特征**：\n*   **`get`**：读取属性时调用的函数。\n*   **`set`**：写入属性时调用的函数。\n*   **`enumerable`**：同上。\n*   **`configurable`**：同上。\n\n> **注意**：访问器属性**绝不包含** `value` 和 `writable`。在同一个描述符中混用 `value` 和 `get` 会导致 TypeError。\n\n### 3 内部属性/插槽 (Internal Slots)\n这是引擎内部使用的属性，通常用双中括号包裹（例如 `[[Prototype]]`、`[[Class]]`、`[[Value]]`）。\n*   **特征**：它们不属于 JavaScript 语言层面的属性，无法通过 `.` 或 `[]` 直接访问。\n*   **交互**：只能通过特定的内置方法（如 `Object.getPrototypeOf`）间接交互。\n\n---\n\n## 深度对比：数据属性 vs 访问器属性\n\n| 描述符特征 | 数据属性 | 访问器属性 |\n| :--- | :---: | :---: |\n| **`value`** | ✅ 有 | ❌ 无 |\n| **`writable`** | ✅ 有 | ❌ 无 |\n| **`get`** | ❌ 无 | ✅ 有 |\n| **`set`** | ❌ 无 | ✅ 有 |\n| **`enumerable`** | ✅ 有 | ✅ 有 |\n| **`configurable`** | ✅ 有 | ✅ 有 |\n\n---\n\n## 深度案例分析：`__proto__` 的本质\n\n`obj.__proto__` 是解释“访问器属性”最好的例子。\n\n### 1 它是语法糖吗？\n**严格来说，不是。**\n它不是编译器层面的魔法转换（语法糖），而是一个**运行时真实存在**的访问器属性。它定义在 `Object.prototype` 上，被所有普通对象继承。\n\n### 2 底层执行流程\n当你执行 `console.log(obj.__proto__)` 或 `obj.__proto__ = x` 时，引擎实际上是在调用 `Object.prototype` 上的 Getter/Setter。\n\n**伪代码模拟底层实现**：\n```javascript\nObject.defineProperty(Object.prototype, '__proto__', {\n    get() {\n        // 读取 this 的内部插槽 [[Prototype]]\n        return Object.getPrototypeOf(this);\n    },\n    set(newValue) {\n        // 验证并修改 this 的内部插槽 [[Prototype]]\n        if (typeof newValue === 'object' || typeof newValue === 'function') {\n            Object.setPrototypeOf(this, newValue);\n        }\n    },\n    enumerable: false,\n    configurable: true\n});\n```\n\n### 3 证据：原型链断裂导致的失效\n如果 `__proto__` 是语法糖，它应该在任何地方都有效。但实际上，如果一个对象**不继承**自 `Object.prototype`，`__proto__` 就会瞬间变成一个废弃的字符串属性。\n\n```javascript\n// 创建一个没有原型的对象\nconst nakedObj = Object.create(null);\n\n// 1. 读取失败\nconsole.log(nakedObj.__proto__); \n// 输出: undefined\n// 原因：nakedObj 原型链断了，找不到 Object.prototype 上的 getter 方法。\n\n// 2. 赋值退化\nnakedObj.__proto__ = { a: 1 };\n// 结果：nakedObj 现在只是多了一个名为 \"__proto__\" 的普通数据属性。\n// 它不再控制继承关系，因为没有触发 setter。\n```\n\n> **例外**：在**对象字面量定义**（如 `const o = { __proto__: p }`）中，`__proto__` 确实表现为一种特殊的语法行为（类似语法糖），直接在创建阶段初始化对象的 `[[Prototype]]`，而不调用 Setter。\n\n---\n\n## 如何查看属性类型？\n\n使用 `Object.getOwnPropertyDescriptor()` 可以查阅属性的“说明书”。\n\n```javascript\nconst example = { \n    a: 1, \n    get b() { return 2; } \n};\n\n// 查看数据属性 a\nconsole.log(Object.getOwnPropertyDescriptor(example, 'a'));\n// 输出: { value: 1, writable: true, enumerable: true, configurable: true }\n\n// 查看访问器属性 b\nconsole.log(Object.getOwnPropertyDescriptor(example, 'b'));\n// 输出: { get: [Function: b], set: undefined, enumerable: true, configurable: true }\n```",
+  "id": "9c5a2e1e-35ef-40b2-acd2-542046abdd01",
+  "metadata": {
+    "tags": [
+      "lang/javascript"
+    ],
+    "title": "JavaScript 属性描述符与内部槽"
+  },
+  "resources": [],
+  "url": "/notes/n-9c5a2e1e35ef40b2acd2542046abdd01/"
+}

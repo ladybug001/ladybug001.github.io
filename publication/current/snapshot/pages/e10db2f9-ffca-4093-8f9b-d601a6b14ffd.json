@@ -1,0 +1,59 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7162b67a880ce983c73e",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-4a7c627f19b826c73764",
+      "kind": "heading",
+      "offset": 29
+    },
+    {
+      "id": "h-fbd248bdda1e1d3d9c34",
+      "kind": "heading",
+      "offset": 393
+    },
+    {
+      "id": "h-0d33159a8764b2b3bdde",
+      "kind": "heading",
+      "offset": 1042
+    },
+    {
+      "id": "h-ac0958011e5b08871b38",
+      "kind": "heading",
+      "offset": 1243
+    },
+    {
+      "id": "h-5f6b42d055e7ae38b2a1",
+      "kind": "heading",
+      "offset": 2056
+    },
+    {
+      "id": "h-9274cd765c359ebcfd94",
+      "kind": "heading",
+      "offset": 3347
+    },
+    {
+      "id": "h-b9bac96b250c19b1b822",
+      "kind": "heading",
+      "offset": 3527
+    }
+  ],
+  "body": "# JNI 与 NDK：原生方法注册机制\n\n## 概念梳理\n\n- **NDK (Native Development Kit)**：一套用于开发 C/C++ 动态链接库（`.so`）的工具集合，允许开发者用高性能语言编写关键代码，并与 Java 层连接。\n- **JNI (Java Native Interface)**：Java 本地接口。通过它，Java 代码与 C/C++ 代码可以互相调用。在实际运行中，交互的是系统底层实现了该接口的具体实例。\n\n> [!note] 个人思考：JNI 与 NDK 的关系\n> 真正被调用的接口是由 `jni.h` 定义的。系统内存中存在实现了该接口的实例，我们通过导入 JDK/NDK 提供的 `jni.h` 来使用它（逆向 `.so` 文件时也可以配合 IDA 导入 `jni.h` 恢复结构）。\n\n## native 方法与函数表绑定原理\n\n在 Java 文件中，使用 `native` 关键字声明的函数是在 `.so` 文件中实现的。\n\n**1. 触发加载**\n为了确保在调用前 `.so` 已准备就绪，通常在 Java 类的 `static` 静态代码块中加载它（静态代码块，即 `clinit` 函数，确保在类初始化时仅执行一次且先于构造函数）：\n\n```java\npublic class MainActivity extends AppCompatActivity {\n    static {\n        System.loadLibrary(\"ndkdemo\"); \n    }\n    // ...\n    public native String stringFromJNI(); \n}\n```\n\n**2. 函数定位机制**\n\nJava 虚拟机的原生函数调用依赖于**内部函数表**。绑定 `native` 函数，本质上就是把 `.so` 库中的 C/C++ 函数内存地址写入这整张 Java 函数表中。\n> 相关内容参考：[JVM Class 文件格式解析](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/)、[JVM 类加载过程](/notes/n-746101753bdd463c83ff1e5b72717daa/)\n\n当底层系统调用 `dlopen` 将 `.so` 映射进内存后，就会面临两种修改函数表的策略：**动态注册**与**静态注册**。\n\n### 动态注册\n\n**原理**：`.so` 文件如同 DLL，在首次被加载时会触发事件回调（类似 `DLL_ATTACH`）。Android 会回调 `.so` 中的 `JNI_OnLoad` 函数。开发者可以在这个时机主动把函数签名和地址注册给 JVM，一次性完成函数表的写入。\n\n由于涉及到跨语言调用，动态注册需要通过**数据类型签名**向 JVM 精确描述参数和返回值类型。\n\n#### 数据类型与签名对应关系\n\n常见的 Java 与 C++ 类型映射及 JNI 签名格式如下：\n\n| C++ 数据类型 | Java 数据类型 | JNI 数据类型签名 |\n| :--- | :--- | :--- |\n| `jint` | `int` | `I` |\n| `jboolean` | `boolean` | `Z` |\n| `jbyte` | `byte` | `B` |\n| `jchar` | `char` | `C` |\n| `jshort` | `short` | `S` |\n| `jlong` | `long` | `J` |\n| `jfloat` | `float` | `F` |\n| `jdouble` | `double` | `D` |\n| `jobject` | `Object` | `Ljava/lang/Object;` |\n| `jstring` | `String` | `Ljava/lang/String;` |\n| `jarray` | Array | `[elementType` |\n| `jobjectArray`| `Object[]` | `[Ljava/lang/Object;` |\n| `jbyteArray` | `byte[]` | `[B` |\n| `jcharArray` | `char[]` | `[C` |\n| `jshortArray`| `short[]` | `[S` |\n| `jintArray`  | `int[]` | `[I` |\n| `jlongArray` | `long[]` | `[J` |\n| `jfloatArray`| `float[]` | `[F` |\n| `jdoubleArray`|`double[]`| `[D` |\n| `jbooleanArray`|`boolean[]`|`[Z` |\n\n#### 动态注册流程与代码\n\n在 `JNI_OnLoad` 中，通过 `RegisterNatives` 填入带有上述签名的结构体即可完成绑定：\n\n```c++\n#include <jni.h>\n#include <string>\n\nextern \"C\" {\n\nJNIEXPORT jstring JNICALL Java_com_example_ndkdemo_MainActivity_nativeGetStringFromJNI(JNIEnv* env, jobject obj) {\n    std::string hello = \"Hello wuaipojie\";\n    return env->NewStringUTF(hello.c_str());\n}\n\n// 定义本地方法注册函数\nJNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {\n    JNIEnv* env;\n    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {\n        return -1;\n    }\n\n    // 定义要注册的本地方法，其中 \"()Ljava/lang/String;\" 就是方法签名（无参，返回 String）\n    JNINativeMethod methods[] = {\n        {\"nativeGetStringFromJNI\", \"()Ljava/lang/String;\", reinterpret_cast<void*>(Java_com_example_ndkdemo_MainActivity_nativeGetStringFromJNI)}\n    };\n\n    // 获取类引用\n    jclass clazz = env->FindClass(\"com/example/ndkdemo/MainActivity\");\n    if (clazz == nullptr) {\n        return -1;\n    }\n\n    // 主动注册本地方法，写入 JVM 函数表\n    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {\n        return -1;\n    }\n\n    return JNI_VERSION_1_6;\n}\n\n} // extern \"C\"\n```\n\n![44ba1000171552274ec0720f623a18d9&#95;MD5&#46;jpg](/notes/n-e10db2f9ffca40938f9bd601a6b14ffd/media/69e9c1cd0cfe3cf0384c67c95b88c346ca2be193b25eb4f2f51b347b09a05388.jpg)\n\n### 静态注册\n\n**原理**：静态注册在 `.so` 加载时不主动绑定。当 Java 代码**首次调用**该 `native` 函数时，JVM 查表发现函数地址为空（trunk 状态），随之触发失败降级逻辑：按特定的命名规范全局遍历所有已加载的 `.so`，寻找匹配的符号并写入表项（类似 ELF 延迟绑定机制），随后重新执行该函数。\n\n#### 静态绑定的命名规则与参数\n\n虚拟机寻找的 C++ 函数命名规则严格要求为：`Java_包名_类名_方法名`。\n因此静态注册的缺点非常明显：一旦修改 Java 层的类名、包名或方法名，C++ 层的头文件和实现均需重新生成，灵活性极低。\n\n```c++\n#include <jni.h> \n#include <string> \n\n// JNIEXPORT：标记该函数可导出\n// JNICALL：JNI 调用约定\n// jstring：返回的 Java 字符串对象\nextern \"C\" JNIEXPORT jstring JNICALL\nJava_com_example_ndkdemo_MainActivity_stringFromJNI(\n        JNIEnv* env, \n        jobject /* this */) { \n\n    std::string hello = \"Hello from C++\"; \n    return env->NewStringUTF(hello.c_str()); \n}\n```\n\n**JNI 原生函数的参数构成**\n无论是静态还是动态注册，C/C++ 中实现的方法实际接收的参数个数均为 `2+n`，前两个由 JVM 传入，后 `n` 个才是 Java 层的业务参数：\n1. **`JNIEnv *env`**：当前线程的 JNI 环境指针。它包含了一张庞大的函数表，提供了回调 Java 层（如反射、异常抛出、对象创建等）的所有能力。\n2. **`jclass` 或 `jobject`**：取决于 Java 层声明的具体修饰符：\n   - 普通 `native` 方法：传入调用该方法的对象实例指针（`this` 即 `jobject`）。\n   - `static native` 静态方法：传入当前类的 `Class` 对象（`jclass`）。\n",
+  "id": "e10db2f9-ffca-4093-8f9b-d601a6b14ffd",
+  "metadata": {
+    "tags": [
+      "os/android",
+      "reverse/android",
+      "lang/c",
+      "lang/java"
+    ],
+    "title": "JNI 与 NDK：原生方法注册机制"
+  },
+  "resources": [
+    "69e9c1cd0cfe3cf0384c67c95b88c346ca2be193b25eb4f2f51b347b09a05388.jpg"
+  ],
+  "url": "/notes/n-e10db2f9ffca40938f9bd601a6b14ffd/"
+}

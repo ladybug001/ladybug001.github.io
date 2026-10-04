@@ -1,0 +1,46 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-92ff15906a17e4ec73b9",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-8556aae2b6ff1b9b0020",
+      "kind": "heading",
+      "offset": 45
+    },
+    {
+      "id": "h-010306764e0fda7bd053",
+      "kind": "heading",
+      "offset": 218
+    },
+    {
+      "id": "h-53832939c53ffdd8bd49",
+      "kind": "heading",
+      "offset": 519
+    },
+    {
+      "id": "h-fc6e0769a4cd41b93322",
+      "kind": "heading",
+      "offset": 987
+    },
+    {
+      "id": "h-f27c693fda91c54a5263",
+      "kind": "heading",
+      "offset": 1458
+    }
+  ],
+  "body": "# DLL 加载器锁 (Loader Lock)\n\n## 什么是 Loader Lock？\n\nLoader Lock (加载器锁) 是 Windows 操作系统内部使用的一个进程范围的临界区（或互斥锁）。当进程加载（`LoadLibrary`）或卸载（`FreeLibrary`）DLL 时，操作系统会自动获取这个锁。\n\n它的主要目的是**确保 DLL 的初始化和卸载过程是线程安全的**。\n\n## 为什么需要 Loader Lock？\n\n当一个 DLL 被加载到进程中时，它的入口点函数 `DllMain` 会被调用。`DllMain` 通常用于执行一些初始化操作。如果多个线程在同一时间尝试加载或卸载同一个 DLL，它们可能会同时执行 `DllMain`，这在访问共享数据时会引发竞争条件（Race Condition）。\n\n为了防止这种情况，Windows 加载器在调用任何 DLL 的 `DllMain` 函数之前，都会先获取 Loader Lock。这样就保证了在任何时刻，只有一个线程能够在一个进程中执行 DLL 的加载或卸载代码，从而序列化了对 `DllMain` 的访问。\n\n## Loader Lock 导致的问题：死锁\n\n虽然 Loader Lock 解决了线程安全问题，但它也引入了一个著名且难以调试的问题：**死锁 (Deadlock)**。\n\n典型的死锁场景如下：\n1.  线程 A 调用 `LoadLibrary` 加载一个 DLL，因此获取了 Loader Lock。\n2.  该 DLL 的 `DllMain` 函数开始执行初始化代码。\n3.  在 `DllMain` 内部，线程 A 尝试做一些需要等待其他线程完成的工作（例如，调用 `WaitForSingleObject` 等待线程 B）。\n4.  与此同时，线程 B 开始执行，并且它也需要加载一个 DLL（例如，调用 `LoadLibrary` 或其他间接加载 DLL 的 API）。\n5.  线程 B 尝试获取 Loader Lock，但该锁已经被线程 A 持有，于是线程 B 被阻塞。\n6.  现在，线程 A 在等待线程 B，而线程 B 在等待线程 A 持有的 Loader Lock。死锁发生，整个进程的 DLL 加载/卸载机制被卡死。\n\n## DllMain 的安全编程准则\n\n为了避免 Loader Lock 死锁，Microsoft 明确规定了在 `DllMain` 中可以安全执行的操作非常有限。以下是一些核心准则：\n\n**禁止**在 `DllMain` 中做以下事情：\n- 调用 `LoadLibrary` 或 `LoadLibraryEx`（直接导致死锁）。\n- 调用 `FreeLibrary`（直接导致死锁）。\n- 与其他线程进行同步，例如调用 `CreateThread`、`WaitForSingleObject` 等。\n- 调用任何可能间接加载其他 DLL 的函数，例如许多 User32/GDI32 API、COM 的 `CoInitializeEx` 等。\n- 调用 `CreateProcess`。\n\n**推荐**的做法：\n- 将 `DllMain` 的工作量减到最少，只做简单的、不依赖其他模块的初始化（如初始化全局变量/指针）。\n- 将复杂的初始化任务推迟到 DLL 提供的导出函数中，在 `DllMain` 之外由应用程序显式调用。\n\n## 案例分析：调试注入的 DLL 时遇到的问题\n\n以下是一个由 Loader Lock 引起的真实问题的分析，源自笔记的原始记录：\n\n**现象**：\n> 使用 VS 调试自己编写的 DLL，当使用 GUIDEDHACK 注入器注入 DLL 时，如果在 `DllMain` 函数中设置断点，程序会在此处中断。但之后：\n> 1.  VS 无法通过 F5 继续执行，必须分离调试器。\n> 2.  目标程序无法正常退出。\n\n**原因分析**：\n1.  注入器通过 `CreateRemoteThread` 在目标进程中创建一个新线程来调用 `LoadLibrary`，从而加载我们的 DLL。\n2.  这个远程线程成功获取了 Loader Lock，然后进入 `DllMain` 函数。\n3.  此时，VS 调试器命中断点，**暂停了目标进程中的所有线程**。\n4.  注入器（GUIDEDHACK）有一个注入超时机制。由于远程线程在 `DllMain` 中被调试器“卡住”，超出了预设时间，注入器便认为注入失败，并**强制终止了它创建的远程线程**。\n5.  线程被终止时，它并没有机会执行清理代码来**释放它所持有的 Loader Lock**。\n6.  这导致：\n    - VS 调试器无法恢复执行，因为它所调试的线程已经被终止。\n    - 目标程序无法正常退出，因为退出过程通常需要卸载 DLL，而卸载操作也需要获取已被锁死的 Loader Lock。\n\n这个案例完美地展示了 Loader Lock 的脆弱性以及在持有该锁时执行复杂或耗时操作（如此处的调试中断）所带来的风险。",
+  "id": "dd9c0508-4aa0-4886-aaf2-8b6ee955464c",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows",
+      "cs/concurrency"
+    ],
+    "title": "DLL 加载器锁"
+  },
+  "resources": [],
+  "url": "/notes/n-dd9c05084aa04886aaf28b6ee955464c/"
+}

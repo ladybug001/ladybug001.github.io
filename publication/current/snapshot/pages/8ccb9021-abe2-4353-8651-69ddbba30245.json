@@ -1,0 +1,192 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-2f53bee30fba2a31cb36",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-814f095f3495aeffde5c",
+      "kind": "heading",
+      "offset": 97
+    },
+    {
+      "id": "h-0b85dcb8c0d9790b884d",
+      "kind": "heading",
+      "offset": 377
+    },
+    {
+      "id": "h-7686d66efcc1f12fb822",
+      "kind": "heading",
+      "offset": 439
+    },
+    {
+      "id": "h-5dfb979255fd686dd511",
+      "kind": "heading",
+      "offset": 682
+    },
+    {
+      "id": "h-37d2857cba2a1428a820",
+      "kind": "heading",
+      "offset": 1630
+    },
+    {
+      "id": "h-8805d457c75b602303b0",
+      "kind": "heading",
+      "offset": 2046
+    },
+    {
+      "id": "h-6d9725383b03c5ff08fb",
+      "kind": "heading",
+      "offset": 2470
+    },
+    {
+      "id": "h-0a493dc743fa87550331",
+      "kind": "heading",
+      "offset": 2543
+    },
+    {
+      "id": "h-cd1f67a3e12348e01bfb",
+      "kind": "heading",
+      "offset": 2886
+    },
+    {
+      "id": "h-a5cc8dd8ad2e562a500c",
+      "kind": "heading",
+      "offset": 3199
+    },
+    {
+      "id": "h-f9eff26e52917587ec08",
+      "kind": "heading",
+      "offset": 3674
+    },
+    {
+      "id": "h-188942e8e600e999adf7",
+      "kind": "heading",
+      "offset": 4390
+    },
+    {
+      "id": "h-6b66f618a76d3b689112",
+      "kind": "heading",
+      "offset": 4891
+    },
+    {
+      "id": "h-8a5f4e6750cab97c779d",
+      "kind": "heading",
+      "offset": 5329
+    },
+    {
+      "id": "h-b04dbfa22345941b2b30",
+      "kind": "heading",
+      "offset": 5586
+    },
+    {
+      "id": "h-e670ac5bb8e39e58e391",
+      "kind": "heading",
+      "offset": 5911
+    },
+    {
+      "id": "h-fc4ad37c7a07b14ccd2f",
+      "kind": "heading",
+      "offset": 6185
+    },
+    {
+      "id": "h-a8aea6851e99e52c2dc6",
+      "kind": "heading",
+      "offset": 6267
+    },
+    {
+      "id": "h-4fed36e4b23e2d682923",
+      "kind": "heading",
+      "offset": 6549
+    },
+    {
+      "id": "h-7aa0109b64d5261b437c",
+      "kind": "heading",
+      "offset": 6742
+    },
+    {
+      "id": "h-63f712d5c495476a937c",
+      "kind": "heading",
+      "offset": 6903
+    },
+    {
+      "id": "h-d0e33c8a529ee58627fb",
+      "kind": "heading",
+      "offset": 7002
+    },
+    {
+      "id": "h-6ee5e675068d4ce87ecb",
+      "kind": "heading",
+      "offset": 7122
+    },
+    {
+      "id": "h-c79f965ca5e1d3c5f926",
+      "kind": "heading",
+      "offset": 7235
+    },
+    {
+      "id": "h-e489b410b56ca02db6a5",
+      "kind": "heading",
+      "offset": 7528
+    },
+    {
+      "id": "h-3d70566104fa14b31adc",
+      "kind": "heading",
+      "offset": 7817
+    },
+    {
+      "id": "h-06d216249c89c5e223c1",
+      "kind": "heading",
+      "offset": 7955
+    },
+    {
+      "id": "h-307861701a4cfdb619ee",
+      "kind": "heading",
+      "offset": 8234
+    },
+    {
+      "id": "h-c1c1001f5b2eb6e256af",
+      "kind": "heading",
+      "offset": 8334
+    },
+    {
+      "id": "h-bedfb219859e5d960e4e",
+      "kind": "heading",
+      "offset": 8434
+    },
+    {
+      "id": "h-f65ff34e497aa70802d8",
+      "kind": "heading",
+      "offset": 8554
+    },
+    {
+      "id": "h-1777b8c12777326b0042",
+      "kind": "heading",
+      "offset": 8670
+    }
+  ],
+  "body": "# STL 关联容器\n\n上级：[C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/)\n\n## 说明\n\n关联容器的核心特点是：元素位置主要由键值和比较规则决定，而不是单纯由插入顺序决定。\n\n按组织方式不同，关联容器通常可以分成两类：\n\n1. **有序关联容器**：`set`、`multiset`、`map`、`multimap`\n2. **无序关联容器**：`unordered_set`、`unordered_multiset`、`unordered_map`、`unordered_multimap`\n\n前者通常基于平衡搜索树，因此元素按键值有序；后者通常基于哈希表，因此元素不按键值排序。无论基于哪种数据结构都可以实现键值的重复。\n\n## 有序关联容器\n\n**有序关联容器，在创建的时候，需要指明大小比较方式（函数）。**\n\n### `set` / `multiset` 容器\n\n1. 底层通常使用平衡搜索树实现，常见实现是红黑树。\n2. 内部元素按键值自动有序排列，查找效率较高。\n3. 不支持 `at()` 和 `[]`。\n4. 不允许直接修改容器中元素的键值，因为这会破坏排序规则。\n5. `set` 不允许重复键值，`multiset` 允许重复键值。\n\n使用前需要包含头文件：\n\n```cpp\n#include <set>\n#include <functional>\nusing namespace std;\n```\n\n#### 2.1.1) 创建容器\n\n创建（初始化）`set` 的常见方式如下：\n\n```cpp\nset<int> s1;                           // 默认按 less<int> 升序\nset<int, less<int>> s2;               // 显式指定升序\nset<int, greater<int>> s3;            // 降序\n\nint nArray[] = {1, 2, 3, 4, 5, 6};\nset<int> s4(nArray, nArray + 4);      // 从数组区间构造\nset<int> s5(s4.begin(), s4.end());    // 从区间构造\nset<int> s6(s5);                      // 拷贝构造\n```\n\n打印 `set` 容器时，可以结合 `for_each()` 使用：\n\n```cpp\n#include <set>\n#include <functional>\n#include <algorithm>\n#include <stdio.h>\n#include <tchar.h>\nusing namespace std;\n\nvoid MyPrintFun(int i) {\n    printf(\"%d \", i);\n}\n\nint _tmain(int argc, _TCHAR* argv[])\n{\n    int nArray[] = {1, 2, 3, 4, 5, 6};\n    set<int> s4(nArray, nArray + 4);\n    for_each(s4.begin(), s4.end(), MyPrintFun);\n    return 0;\n}\n```\n\n![ccda25d70cab1ed84800871aee857369&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/fafdec30e7735b79dd68b13c44994a52a5c0e7c44a1cd889a5bd8fcd681d145d.jpg)\n\n#### 2.1.2) 添加元素\n\n添加元素通常使用 `insert()`：\n\n```cpp\ns4.insert(5);                         // 插入单个元素\ns4.insert(nArray + 5, nArray + 6);   // 插入数组区间\ns4.insert(s1.begin(), s1.end());     // 插入容器区间\n```\n\n`set` 不允许重复键值，因此重复插入相同元素不会新增节点；`multiset` 则允许重复值。\n\n![02e00b822727a20768ac40759699ce04&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/f25f898b35c92e429dba7bd0b137f5f5c0c74a20b41abd3d4227410eae2fc428.jpg)\n\n#### 2.1.3) 删除元素\n\n删除元素通常使用 `erase()`：\n\n```cpp\ns4.erase(5);            // 按键值删除\ns4.erase(s4.begin());   // 删除迭代器指向元素\n\nset<int>::iterator itA = s4.begin();\nset<int>::iterator itB = s4.begin();\nitB++;\nitB++;\ns4.erase(itA, itB);     // 删除区间 [itA, itB)\n```\n\n![a1990424c3034fd4da5d63c3b2179122&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/a6dc233d2f7b8b9f56c0e27c7d511cb9a713e5521abeacef2118b776607ec5a4.jpg)\n\n#### 2.1.4) 修改元素\n\n`set` 容器中的键值不能直接修改。若要“修改”，通常做法是：\n\n1. 删除旧元素。\n2. 插入新元素。\n\n#### 2.1.5) 查找元素\n\n查找元素可以使用 `find()`：\n\n```cpp\nif (s4.find(2) != s4.end()) {\n    printf(\"Find\");\n} else {\n    printf(\"No Find\");\n}\n```\n\n若找到，返回指向该元素的迭代器；若没找到，返回 `end()`。\n\n![186a3d54f6926e1ee46e153359af2015&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/96a108b0f56b453e2acef86330690f9840baaafa8ef9565c220ada4fc2d40197.jpg)\n\n#### 2.1.6) 判断元素是否存在\n\n可以使用 `count()` 判断指定键值出现了多少次：\n\n```cpp\ns4.count(1);\n```\n\n对于 `set` 而言，返回值只能是 `0` 或 `1`；对于 `multiset` 而言，返回值可能大于 `1`。\n\n![faa487714be0b9ca7df14ae0863ea315&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/7317c18bf375fc497ed151e8ed347991a7d597e4b461f00505666618cc9454d7.jpg)\n\n### `map` / `multimap` 容器\n\n\n1. 底层通常也使用平衡搜索树实现，常见实现是红黑树。\n2. 元素由 `key` 和 `value` 两部分组成。\n3. 元素会根据 `key` 自动排序，因此按 `key` 查找较快。\n4. 不能直接修改元素的 `key`；但在 `map` 中可以修改 `value`。\n5. `map` 不允许重复 `key`；`multimap` 允许重复 `key`。\n\n以下是这两个容器的典型存储结构示意：\n\n![dfe59b9ce9e2a156cd70ed7a35f99a4f&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/957b9064bd8dfb149f097d38f1a155ebdb98158e7b7a25665ad9d5c13d50b24c.jpg)\n\n使用前需要包含头文件：\n\n```cpp\n#include <map>\n#include <functional>\nusing namespace std;\n```\n\n#### 2.2.1) 创建容器\n\n常见创建方式如下：\n\n```cpp\nmap<int, string> m1;                              // 默认升序\nmap<int, string, less<int>> m2;                  // 显式升序\nmap<int, string, greater<int>> m3;               // 降序\n\nmap<int, string> m4(m3.begin(), m3.end());       // 从区间构造\nmap<int, string> m5(m4);                         // 拷贝构造\n```\n\n打印 `map` 时，可以使用 `value_type`：\n\n```cpp\n#include <iostream>\n#include <string>\n\nvoid MyPrintFun(map<int, string>::value_type vt) {\n    cout << vt.first << \":\" << vt.second << \" \";\n}\n```\n\n这里 `vt.first` 是键，`vt.second` 是值。\n\n![b9accd526a78870cef4f7bb3a803a5bb&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/0a6a5b00570ab2420c810e36cbb5ef6cded0fd5b1796d390da483e1ee7f28ebc.jpg)\n\n#### 2.2.2) 添加元素\n\n添加元素通常使用 `insert()` 和 `[]`：\n\n```cpp\nm1[1] = \"a\";                                                  // 若 key 不存在会插入，存在则修改 value\nm1.insert(map<int, string>::value_type(2, \"b\"));              // 插入单个键值对\nm2.insert(m1.begin(), m1.end());                              // 插入区间\n```\n\n`map` 不允许重复键值，因此插入重复 `key` 时不会新增新节点。\n\n![794881884f6eb703a61d0105c8d64f85&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/d157aaeb25a9bff7ee3d67da7c2d891b7f9d1b1e0de498dc3bf2e5290b88b47b.jpg)\n\n#### 2.2.3) 删除元素\n\n删除元素使用 `erase()`：\n\n```cpp\nm1.erase(5);            // 按键值删除\nm1.erase(m1.begin());   // 删除迭代器指向元素\n\nmap<int, string>::iterator itA = m1.begin();\nmap<int, string>::iterator itB = m1.begin();\nitB++;\nitB++;\nm1.erase(itA, itB);     // 删除区间 [itA, itB)\n```\n\n![f13fe24af7e232c42237bf2e75e3f0e5&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/6b312b75ef7383e4b8cbeb46cedb3f3e9de4f4ceb935df2ae7709434cf1fc9ad.jpg)\n\n#### 2.2.4) 修改元素\n\n在 `map` 中可以修改 `value`，但不能直接修改 `key`：\n\n```cpp\nm1[2] = \"123123\";\n```\n\n![adf62451cb5886ce31668da75de64082&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/9d2bb927776dcf5edeeaa729075586cc3ad3dcbfdab107a7b335456c0d4d48cf.jpg)\n\n#### 2.2.5) 查找元素\n\n可以使用 `find()`：\n\n```cpp\nif (m1.find(2) != m1.end()) {\n    printf(\"Find\");\n} else {\n    printf(\"No Find\");\n}\n```\n\n找不到时返回 `m1.end()`。\n\n![f1ba07caf7c58baddbe673530592713d&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/9cd71538c46f31ef5448f6de650331dbfef6e58efd5f7c1a9c062c4df9ffe8ff.jpg)\n\n#### 2.2.6) 判断元素是否存在\n\n可以使用 `count()`：\n\n```cpp\nm1.count(1);\n```\n\n对于 `map`，返回 `0` 或 `1`；对于 `multimap`，返回值可能大于 `1`。\n\n![391952ce56b1e68c0ffdc4720879c5a9&#95;MD5&#46;jpg](/notes/n-8ccb9021abe24353865169ddbba30245/media/eb028cd2ff9ea20b9573a82f8fad725530da7b7ddfc6617c35c43edc93b63b01.jpg)\n\n## 无序关联容器\n\n**在创建无序关联容器的时候，需要指明 hash方式（函数）。**\n\n### `unordered_set` / `unordered_multiset` 容器\n\n1. 底层通常基于哈希表实现。\n2. 元素不会按键值排序，遍历顺序通常与插入顺序和键值大小都无关。\n3. 平均情况下，查找、插入、删除的时间复杂度接近 `O(1)`；最坏情况下可能退化为 `O(n)`。\n4. `unordered_set` 不允许重复键值，`unordered_multiset` 允许重复键值。\n5. 如果键是自定义类型，通常需要同时提供哈希函数和相等判断规则。\n\n使用前需要包含头文件：\n\n```cpp\n#include <unordered_set>\nusing namespace std;\n```\n\n#### 3.1.1) 创建容器\n\n```cpp\nunordered_set<int> us1;\nunordered_multiset<int> ums1;\n\nint nArray[] = {1, 2, 3, 4, 5, 6};\nunordered_set<int> us2(nArray, nArray + 4);\nunordered_set<int> us3(us2);\n```\n\n#### 3.1.2) 添加元素\n\n```cpp\nus1.insert(1);\nus1.insert(2);\nus1.insert(2); // unordered_set 不会插入重复键\n\nums1.insert(1);\nums1.insert(1); // unordered_multiset 允许重复键\n```\n\n#### 3.1.3) 删除元素\n\n```cpp\nus1.erase(2);            // 按键值删除\nus1.erase(us1.begin());  // 按迭代器删除\n```\n\n#### 3.1.4) 查找元素\n\n```cpp\nif (us1.find(1) != us1.end()) {\n    printf(\"Find\");\n} else {\n    printf(\"No Find\");\n}\n```\n\n#### 3.1.5) 判断元素是否存在\n\n```cpp\nus1.count(1);   // unordered_set 返回 0 或 1\nums1.count(1);  // unordered_multiset 可能返回大于 1\n```\n\n#### 使用注意点\n\n`unordered_set` / `unordered_multiset` 和 `set` / `multiset` 的最大差异在于：\n\n1. 无序关联容器不保证元素有序，因此不能依赖遍历顺序做“从小到大”或“从大到小”的逻辑。\n2. 无序关联容器没有“按顺序查找”的语义，因此也不适合依赖“前驱/后继”这种有序结构特性。\n3. 当哈希冲突增多时，性能可能下降；因此负载因子（`load factor`）、桶数（`bucket count`）和重哈希（`rehash`）会影响性能表现。\n\n### `unordered_map` / `unordered_multimap` 容器\n\n1. 底层通常也基于哈希表实现。\n2. 元素由 `key` 和 `value` 两部分组成。\n3. 元素不会按 `key` 自动排序，因此遍历顺序不稳定。\n4. 平均情况下按 `key` 查找较快，常见操作复杂度接近 `O(1)`。\n5. `unordered_map` 不允许重复 `key`，`unordered_multimap` 允许重复 `key`。\n\n使用前需要包含头文件：\n\n```cpp\n#include <unordered_map>\n#include <string>\nusing namespace std;\n```\n\n#### 3.2.1) 创建容器\n\n```cpp\nunordered_map<int, string> um1;\nunordered_multimap<int, string> umm1;\n\nunordered_map<int, string> um2(um1);\n```\n\n#### 3.2.2) 添加元素\n\n```cpp\num1[1] = \"a\";   // key 不存在则插入，存在则修改 value\num1[2] = \"b\";\n\num1.insert(unordered_map<int, string>::value_type(3, \"c\"));\numm1.insert(unordered_multimap<int, string>::value_type(1, \"x\"));\numm1.insert(unordered_multimap<int, string>::value_type(1, \"y\"));\n```\n\n#### 3.2.3) 删除元素\n\n```cpp\num1.erase(2);           // 按 key 删除\num1.erase(um1.begin()); // 按迭代器删除\n```\n\n#### 3.2.4) 修改元素\n\n在 `unordered_map` 中可以修改 `value`，但不能直接修改 `key`：\n\n```cpp\num1[1] = \"new value\";\n```\n\n#### 3.2.5) 查找元素\n\n```cpp\nif (um1.find(1) != um1.end()) {\n    printf(\"Find\");\n} else {\n    printf(\"No Find\");\n}\n```\n\n#### 3.2.6) 判断元素是否存在\n\n```cpp\num1.count(1);   // unordered_map 返回 0 或 1\numm1.count(1);  // unordered_multimap 可能返回大于 1\n```\n\n\n\n## 有序与无序的选择\n\n可以用下面这组规则快速判断该用哪一类关联容器：\n\n1. 如果你需要**自动有序**、区间语义、按顺序遍历，优先考虑 `set` / `map`。\n2. 如果你更看重**平均查找效率**，且不关心元素顺序，优先考虑 `unordered_set` / `unordered_map`。\n3. 如果需要重复键值，则分别使用 `multiset` / `multimap` 或 `unordered_multiset` / `unordered_multimap`。\n4. 如果键是自定义对象，无论有序还是无序，都要额外提供相应的比较规则或哈希/判等规则。\n",
+  "id": "8ccb9021-abe2-4353-8651-69ddbba30245",
+  "metadata": {
+    "tags": [
+      "lang/cpp/stl"
+    ],
+    "title": "C++ STL 关联容器"
+  },
+  "resources": [
+    "0a6a5b00570ab2420c810e36cbb5ef6cded0fd5b1796d390da483e1ee7f28ebc.jpg",
+    "6b312b75ef7383e4b8cbeb46cedb3f3e9de4f4ceb935df2ae7709434cf1fc9ad.jpg",
+    "7317c18bf375fc497ed151e8ed347991a7d597e4b461f00505666618cc9454d7.jpg",
+    "957b9064bd8dfb149f097d38f1a155ebdb98158e7b7a25665ad9d5c13d50b24c.jpg",
+    "96a108b0f56b453e2acef86330690f9840baaafa8ef9565c220ada4fc2d40197.jpg",
+    "9cd71538c46f31ef5448f6de650331dbfef6e58efd5f7c1a9c062c4df9ffe8ff.jpg",
+    "9d2bb927776dcf5edeeaa729075586cc3ad3dcbfdab107a7b335456c0d4d48cf.jpg",
+    "a6dc233d2f7b8b9f56c0e27c7d511cb9a713e5521abeacef2118b776607ec5a4.jpg",
+    "d157aaeb25a9bff7ee3d67da7c2d891b7f9d1b1e0de498dc3bf2e5290b88b47b.jpg",
+    "eb028cd2ff9ea20b9573a82f8fad725530da7b7ddfc6617c35c43edc93b63b01.jpg",
+    "f25f898b35c92e429dba7bd0b137f5f5c0c74a20b41abd3d4227410eae2fc428.jpg",
+    "fafdec30e7735b79dd68b13c44994a52a5c0e7c44a1cd889a5bd8fcd681d145d.jpg"
+  ],
+  "url": "/notes/n-8ccb9021abe24353865169ddbba30245/"
+}

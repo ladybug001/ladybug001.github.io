@@ -1,0 +1,158 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6f12f0465ea805e71291",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-1d04e63c09586a801f34",
+      "kind": "heading",
+      "offset": 359
+    },
+    {
+      "id": "h-6ed460860643cc6f234a",
+      "kind": "heading",
+      "offset": 1114
+    },
+    {
+      "id": "h-1a35436573f669701d28",
+      "kind": "heading",
+      "offset": 1647
+    },
+    {
+      "id": "h-4449ac26908a4a41c515",
+      "kind": "heading",
+      "offset": 2240
+    },
+    {
+      "id": "h-999f71a04dcf7e523e95",
+      "kind": "heading",
+      "offset": 2716
+    },
+    {
+      "id": "h-dfddf0527b225254f1ca",
+      "kind": "heading",
+      "offset": 2948
+    },
+    {
+      "id": "h-c0b8794590aa1f42311f",
+      "kind": "heading",
+      "offset": 4273
+    },
+    {
+      "id": "h-e1362e11b99ccad199f9",
+      "kind": "heading",
+      "offset": 4662
+    },
+    {
+      "id": "h-2ec6e70a493ef0ef80ee",
+      "kind": "heading",
+      "offset": 5494
+    },
+    {
+      "id": "h-f788ff959e345097f995",
+      "kind": "heading",
+      "offset": 6167
+    },
+    {
+      "id": "h-de5a44e81446b77af9b8",
+      "kind": "heading",
+      "offset": 6778
+    },
+    {
+      "id": "e-7040f2772a6a11b91ec3-b-7y45we",
+      "kind": "quote-block",
+      "offset": 8996,
+      "prefix": "> "
+    },
+    {
+      "id": "h-80f5018746022975a73d",
+      "kind": "heading",
+      "offset": 9026
+    },
+    {
+      "id": "h-85133ba0035767bb83f9",
+      "kind": "heading",
+      "offset": 9375
+    },
+    {
+      "id": "h-818c97fdca6bb7c0a4b7",
+      "kind": "heading",
+      "offset": 10026
+    },
+    {
+      "id": "h-99c49f21df8d728de568",
+      "kind": "heading",
+      "offset": 10414
+    },
+    {
+      "id": "h-f641b88ecb130c864385",
+      "kind": "heading",
+      "offset": 10765
+    },
+    {
+      "id": "h-ecb4ac79981a979136a6",
+      "kind": "heading",
+      "offset": 12310
+    },
+    {
+      "id": "h-9306cd67a8d4574bd71a",
+      "kind": "heading",
+      "offset": 13277
+    },
+    {
+      "id": "h-9e1f4fdbf65458e299ce",
+      "kind": "heading",
+      "offset": 14004
+    },
+    {
+      "id": "h-88a09aa427f5d0134ab5",
+      "kind": "heading",
+      "offset": 15315
+    },
+    {
+      "id": "h-ac79fef66d77d3b07658",
+      "kind": "heading",
+      "offset": 16160
+    }
+  ],
+  "body": "# Windows 进程创建（04）：地址空间初始化\n\n> [!note] 相关笔记\n> 本组笔记总览见 [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)。\n\n\n强烈建议先阅读：\n\n1. [Windows 进程创建&#65288;03&#45;1&#65289;&#65306;非 PAE 地址空间骨架](/notes/n-715b80e32efa4cada011b9dda96e0bca/)\n2. [Windows 进程创建&#65288;03&#45;2&#65289;&#65306;PAE 地址空间骨架](/notes/n-4e7a476b48e045eb8201a825f75e5557/)\n\n## 参数语义\n\n函数原型：\n\n```c\nNTSTATUS\nMmInitializeProcessAddressSpace (\n    IN PEPROCESS ProcessToInitialize,\n    IN PEPROCESS ProcessToClone OPTIONAL,\n    IN PVOID SectionToMap OPTIONAL,\n    IN OUT PULONG CreateFlags,\n    OUT POBJECT_NAME_INFORMATION *AuditName OPTIONAL\n    )\n```\n\n参数含义：\n\n- `ProcessToInitialize`：正在初始化地址空间的新进程。\n- `ProcessToClone`：可选。如果非空，表示新进程要克隆该进程的地址空间。\n- `SectionToMap`：可选。如果非空，表示新进程要映射一个 `image section`，典型路径是创建普通用户进程。\n- `CreateFlags`：进程创建标志。这里主要关注 `large pages` 相关标志；函数会在映像没有成功使用 `large pages` 时清除对应标志。\n- `AuditName`：可选。用于记录进程映像文件名的审计信息。\n\n`ProcessToClone` 与 `SectionToMap` 不能同时存在，这表示有三种情况：\n\n1. `SectionToMap != NULL` -> 普通新映像进程。\n2. `ProcessToClone != NULL` -> 克隆父进程地址空间。\n3. 两者都为 `NULL` -> `system process` 或特殊系统路径，只完成系统进程初始化。\n\n## 阶段一：补齐可能滞后的系统 PDE\n\n在 32 位平台上，函数首先检查新进程在创建期间是否错过了系统 `PDE` 更新：\n![cc08dcf9dcdcbbf3e9b756f5fb31bab2&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/5a204687496b59d45b183b783413ef723803f0a55dff42f65e5ceeba19197490.jpg)\n\n原因是：`MmCreateProcessAddressSpace` 在复制系统空间 `PDE` 时，新系统映射可能并发发生变化。更新线程无法精确知道新进程当时复制到了哪里，因此会标记 `PdeUpdateNeeded`。本函数在 `attach` 到新进程之前再次同步，避免之后发生中断或访问时看到不完整的系统映射。\n\n> [!NOTE]\n> 这一步是对 `MmCreateProcessAddressSpace` 中“加入 `MmProcessList` 后再填充系统 `PDE`”设计的补偿。加入进程链表后，系统 `PDE` 更新路径才能发现这个新进程并标记后续同步需求。\n\n## 阶段二：`attach` 新进程并切换地址空间状态\n\n随后函数 `attach` 到新进程地址空间：\n![ce789ae24edde8ab3909783c25ddef4a&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/27f02a054bc01a4d71e14f4125dba52cf30d16c124c84546ec0c9a1320dfa190.jpg)\n\n\n这段代码完成两个关键动作：\n\n1. 通过 `KeAttachProcess` 让当前线程进入新进程地址空间。此后 `PDE_BASE`、`VAD_BITMAP_SPACE`、`MmWorkingSetList` 等固定虚拟地址都按新进程上下文解释。\n2. 把 `AddressSpaceInitialized` 从状态 1 切换到状态 2。\n\n状态含义：\n\n```text\n0：地址空间尚未创建或已经回滚\n1：MmCreateProcessAddressSpace 已经分配基础页，但尚未完成初始化\n2：MmInitializeProcessAddressSpace 正在/已经完成正式初始化\n```\n\n这解释了为什么前面仅有物理页还不够：只有 `attach` 到目标地址空间后，固定虚拟地址窗口才指向新进程自己的页表和 `HyperSpace`。\n\n## 阶段三：初始化地址空间基础字段\n\n进入新进程上下文后，函数初始化地址空间相关锁和 VAD 根：\n![77c1734d6c699ed920cac7cab02351d3&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/3ac5e66c3e93511fec6ca7e39ce1dce075d298417b799b1880e195dd8c4765bc.jpg)\n\n字段含义：\n\n- `AddressCreationLock`：保护进程地址空间创建、删除、映射等结构性变化。\n- `WorkingSetMutex`：保护 `working set` 操作。\n- `VadRoot`：进程 `VAD` 平衡树根，后续映像、保留区和共享页 `VAD` 都会插入这里。**此时 `VAD` 树只是空的。**\n- `LastTrimTime`：工作集修剪相关时间戳。\n- `VmWorkingSetList`：指向当前进程的 working set list 虚拟地址。\n\n## 阶段四：初始化基础页的 PFN 元数据\n\n接着函数获取 `PFN lock`，初始化前一阶段分配的基础物理页在 PFN 数据库中的状态：\n![0d7d884fa26ff651e30d265e95214180&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/846cff8cb6e9a848790415c01e4595f5bcb0c32f3d1765b3cb6f4ea8e67cfbcc.jpg)\n\n### 初始化页目录页\n\n![4f0c2f5fa479092e257fa1678e966c2f&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/5e415284a754de1737400bc072cae50e103a62e858e2ff64ed5911830e214b37.jpg)\n\n> `_MI_PAGING_LEVELS` 用于表示当前内核使用几级分页模式。\n\n\n不同分页层级下，代码会用不同的 `MiGet*Address` 辅助函数定位映射顶级页表页的页表项或`HYPER_SPACE`的页表项。这里的 `PointerPte` 指向“页表项的虚拟地址”\n\n\n然后得到页框号调用 `MiInitializePfn` 更新 `PFN` 数据库，把页目录物理页正式登记为 `ActiveAndValid`：\n![9f385186b2d4f7d81b1b30481d98327f&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/f2c1b1ab830095f7aa5008d32c35a0b84c83d409f3fe147dfdeb6dccd013f3de.jpg)\n\n\n`MiInitializePfn` 会设置的关键 PFN 字段包括：\n\n```text\nPfn->PteAddress      = PointerPte\nPfn->OriginalPte     = demand-zero 或原 PTE 内容\nPfn->ReferenceCount += 1\nPfn->ShareCount     += 1\nPfn->PageLocation    = ActiveAndValid\nPfn->Modified        = 1\nPfn->PteFrame        = 包含该 PTE 的页表页 PFN\n```\n\n对于页目录页，`PteFrame` 通常会指向它自身，这是页表自映射带来的结果。\n\n> [!NOTE]\n> `MmCreateProcessAddressSpace` 里曾经设置过 `Pfn1->PteAddress = (PMMPTE)PDE_BASE`。它只是提前登记页目录页在目标进程自映射窗口中的规范位置。本阶段的 `MiInitializePfn` 才正式补齐 PFN 引用计数、页状态和包含页表页关系。\n\n对应 PAE 拥有多张 PDT 的情况，需要多次初始化 `PFN` 数据库中的数据：\n![105eceac34dd630316f3e7356e89da67&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/6f0fddd62735e7e9eb1036c810f3b4807091ad0496d34e618959c00bef43d911.jpg)\n\n非 PAE 只有一张 `page directory` 页，不需要这段循环。\n\n### 初始化 HyperSpace 页表页\n\n随后初始化映射 `HyperSpace` 的页表页，更新 `HYPER_SPACE` 的 `PFN` 数据库项：\n![28f5e4d2175973511779a2f60d28a453&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/baf499a7a10d1165ac61433148d351ab051dc18010a1a23c441143033d5bd515.jpg)\n\n初始化它的 `PFN` 后，内存管理器才能正确追踪这张页表页的生命周期、引用关系和 `working set` 固定条目。\n\n> `HYPER_SPACE` 对应的 `PDE` 指向 `HyperSpaceIndex` 这张页表页。\n\n## 阶段五：初始化 `VAD bitmap` 与 `working set` 页\n\n函数接着处理 `VAD_BITMAP_SPACE` 开始的两个页的 `PFN`：\n![3c89e410d56064c05ae13cfbd71fa4d3&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/6c3433ffb69f8416c749d6238dce0918e64e967bffcd49e7f36624dec521e046.jpg)\n\n为什么是两个页？虽然变量名叫 `VadBitMapPage`，但这里循环两页，源码注释说明：\n\n1. 第一页是 `VAD bitmap` 页。\n2. 第二页是紧随其后的 `working set list` 页；注意：在 `/3GB` 布局下，`VAD bitmap` 跨 1.5 页，`working set list` 只使用第二页的后半部分。\n\n这里先把 PTE 临时改成 `DemandZeroPte`，再调用 `MiInitializePfn`，最后恢复成有效 PTE。这样 PFN 的 `OriginalPte` 会记录 demand-zero 语义，而当前映射仍然保持有效。\n\n> `DemandZeroPte` 的含义：这张页的来源是私有零页。换出时，如果它仍是干净的零页，可以直接丢弃并回到 `demand-zero` 状态；如果它已变脏，需要保存，则写入 `pagefile`。\n\n完成后释放 `PFN lock`：\n![f767c3e9853c91ab9b36d505e4f6b772&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/bf0e96f528b2f6520ff252851f3beb5dda75e6e15f5b27d5c6d6a0d66fa50ec5.jpg)\n\n## 阶段六：可选初始化 LockedPagesList\n\n如果系统启用了 locked page 跟踪，会为进程分配并初始化 `LockedPagesList`：\n![55603966adedd0a18ba4c57a1c568cd6&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/09505e729961fbcbfd1bbd5eaef0aa9c153c2ac1af5e081417194b87aacdd457.jpg)\n\n这不是地址空间创建的必要条件。分配失败时函数不会失败，只是当前进程没有 `locked page` 跟踪结构。\n\n> [!NOTE]\n> `LockedPagesList` 与 `resident available` 有间接关系：锁定页会增加全局 `MmSystemLockPagesCount`，而 `MI_NONPAGEABLE_MEMORY_AVAILABLE()` 定义为 `MmResidentAvailablePages - MmSystemLockPagesCount`。`MmCreateProcessAddressSpace` 在预留 `MinimumWorkingSetSize` 前会用该宏检查常驻页预算。因此 `locked pages` 会影响进程地址空间创建的 `resident budget`；但 `LockedPagesList` 本身只是每进程锁页跟踪/泄漏诊断结构，不是该预算扣减的直接对象。\n\n## 阶段七：初始化 `working set list`\n\n核心调用：\n\n![a7c92bb4f49057a7ef4632f42b5ff1d3&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/b1f0936145dcb8fd3cb79730275163f8ae522202fcbdd4d8f080377755de3700.jpg)\n\n该函数初始化这个进程的工作集表 `MmWorkingSetList`，把创建地址空间时已经常驻的几张“基础结构页”登记进去。\n\n> 工作集记录的是那些有物理页支撑的虚拟页，以及对应的 `PFN`。\n\n固定条目就是先前 `MmCreateProcessAddressSpace` 创建的页：页目录页、`HyperSpace` 页表页、`VAD bitmap` 页、`working set list` 页。\n\n\n`MiInitializeWorkingSetList` 是一个重要分界点：在它之前，函数只能处理页表骨架和 `PFN` 元数据；在它之后，函数可以继续执行可能触发 `page fault` 的 `VAD`、`section` 和 `pool` 分配路径。**从这里开始，新地址空间已经具备处理缺页的基础条件。**\n\n## 阶段八：为非 `large-address-aware` 映像保留高地址区以及创建 `shared user data VAD`\n\n本函数随后处理 `KUSER_SHARED_DATA` 对应的用户态共享页 `VAD`：\n![8043ec6def57cfab60d6e42fa7f42fca&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/9f7472b36e169a3b7cb84dface5e2e955dadb1357faa7ef2ac2b1de84e96244f.jpg)\n\n**第一部分：创建共享用户数据页的 VAD**\n\n`KUSER_SHARED_DATA` 是内核向用户态公开的共享数据页，不同进程可以通过同一个固定用户地址访问到它。这里要区分两种情况：\n\n- x86 普通 2GB 用户空间下，`KUSER_SHARED_DATA` 位于用户可读地址范围内，但通常高于 `MM_HIGHEST_VAD_ADDRESS`，也就是高于普通用户分配路径可管理的最高 `VAD` 地址。\n- x86 `/3GB` 或 Win64 下，`KUSER_SHARED_DATA` 落入用户可分配地址范围，需要显式 `VAD` 保护。\n\n普通 2GB x86 路径不需要额外 `VAD`，因为该共享页不在用户可分配区间。若该共享页落入用户可分配范围，则必须创建不可删除的 `VAD`，把该地址范围标记为已占用。\n\n> `VAD` 树管理的是用户虚拟地址空间，不包括内核虚拟地址空间。相关参考：[VAD 的管理范围](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/#h-7066944fd865aa481d4e)\n\n第一部分判断共享用户数据页是否落入当前进程可由 `VAD` 管理的用户地址范围，并且当前不是克隆进程。这个条件覆盖 x86 `/3GB` 这类布局，也覆盖 Win64 共享页落入用户可分配范围的情况。若条件成立，函数会先调用 `MiAllocateVad` 为共享用户数据页所在的 64KB 区域创建一个不可删除的 `VAD`：\n\n> 克隆进程不需要重复处理，因为源进程的 `VAD` 树中已经包含对应节点。\n\n```c\nVadShare = MiAllocateVad(\n    MM_SHARED_USER_DATA_VA,\n    MM_SHARED_USER_DATA_VA + X64K - 1,\n    FALSE\n);\n```\n\n这里还只是为 `MM_SHARED_USER_DATA_VA` 预先分配 `VAD` 节点，并没有立即插入 `VAD` 树。\n\n**第二部分：根据映像属性创建高地址保留 VAD**\n\n如果当前还需要映射 `image section`，内核会结合映像文件的 `large-address-aware` 标志、映像机器类型、当前系统架构以及进程地址空间策略，计算该进程实际允许使用的最高用户地址。\n\n> `large-address-aware` 是映像文件是否能安全使用高用户地址的兼容性标志，不要与 `large pages` 的大页映射机制混淆。\n\n如果某些高地址范围不应该被该进程使用，就创建并插入一个不可删除的 `VadReserve`，将这段高地址区占住，防止后续 `VirtualAlloc`、`MapViewOfSection` 等操作分配到这些地址。\n\n换言之，这部分逻辑是通过 `VAD` 树人为收窄进程的可用用户地址空间，使非 `LAA` 程序只能使用 2GB 以下地址，而特定 `WOW64`/`LAA` 程序最多扩展到 4GB 边界。\n\n> 典型目的就是兼容那些默认假设用户地址不会超过 2GB 的非 LAA 程序。\n\n\n**注意**：`VadReserve` 的插入发生在第二部分内部，不等到第三部分。\n\n**第三部分：插入共享用户数据页 VAD**\n\n最后，如果第一部分成功创建了 `VadShare`，函数才将它插入新进程的 VAD 树：\n\n```c\nMiInsertVadCharges(VadShare, ProcessToInitialize);\nMiInsertVad(VadShare, ProcessToInitialize);\n```\n\n至此，`MM_SHARED_USER_DATA_VA` 对应区域正式进入该进程的 VAD 管理范围。后续虚拟地址分配会把这段范围视为已占用，从而避免破坏共享用户数据页映射。\n\n> `MiInsertVadCharges` 和 `MiInsertVad`的作用，参考：[VAD 记账与插入](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/#h-b364fb419f7fb57af1dd)\n\n\n\n\n> `commit` 表示 A + B 合起来还能提供多少未来可兑现的 backing store。当前 A 还剩 30 个可用物理资源，B 还有 100 个仓库资源，因此简化来看还剩 130 个可承诺资源。如果某进程此时 commit 100 个 R，系统只是在 commit 账本上扣掉 100 个承诺额度，并不会修改 `MmAvailablePages`，等它真正访问时才按需分配物理页并扣减 `MmAvailablePages`，必要时通过 B 保存换出的内容。\n\n\n\n\n## 阶段九：页表页 `commit bitmap`\n\n代码位置：`procsup.c:1073-1142`。这部分代码会根据分页层级创建不同的页表页 `commit bitmap`，但核心作用一致：记录用户地址空间中页表页、页目录页等结构页的 `commit` 记账状态。\n\n下图展示的是 PAE 模式下的页表页 `commit bitmap` 创建：\n\n![aa7782ac5cbf60059caf2465c07364c2&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/0a7273ad868936bc311cbad389d135cbb71c3bf54b6c53ac6d065412fd1e8fdd.jpg)\n\n### 什么是页表页 commit bitmap？\n\n页表是多级结构。目标进程的顶级页表页已在 `MmCreateProcessAddressSpace` 中完成 `commit` 记账，由后续 `CR3` 语义引用，并保持常驻；但下级页表页可能尚未分配，也可能不常驻。\n\n这里需要区分两件事：**页表页的 `commit` 是否已记账**，以及**页表页的物理页当前是否存在**。\n1. `commit` 表示系统已为该页表页预留必要的资源额度，但不代表该页表页当前一定有物理页支撑。\n2. 若某级页表项的 `Present/Valid` 位为 0，`MMU` 在地址转换时会触发缺页异常。\n> 普通数据页缺页的判断逻辑类似，参考：[x86 保护模式分页机制 &#40;MOC&#41;](/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/)\n\n**关于 `MiInsertVadCharges` 函数的补充**：除了会根据 `VAD` 覆盖的虚拟地址范围计算该范围本身的 `commit`，还计算可能涉及的页表页 `commit`；随后通过 `bitmap` 判断这些页表页是否已经记账。未记账的部分会计入 `PageCharge`，`commit` 成功后再置位 `bitmap`，从而避免重复扣费，并支持 `VAD` 删除时正确退还。\n> 相关内容参考：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)\n\n\n## 阶段十：高地址优先分配策略\n\n如果注册表或系统配置要求用户地址分配从高地址向低地址进行，函数设置进程标志：\n![2c0eaab7bef148ca24ad0985b098ab03&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/e41a0a8261f2e920951d2ee3d5376aeeaa614cd608ecce6591b5ea4cd334e72c.jpg)\n\n注意它不会盲目对所有进程启用 `top-down`。源码注释说明，如果非 `large-address-aware` 程序已经用兼容 `VAD` 占住 `2GB -> 3GB`，再默认 `top-down` 可能会让后续分配挤占关键 DLL 的理想位置，导致进程启动失败。\n\n## 阶段十一：Win64 `compatibility area VAD`\n\n在 `procsup.c:1163-1227`，Win64 路径还会预留一段 `compatibility area`。\n\n这段逻辑主要服务于 `WOW64`、`CSRSS` 等用户态组件：它们后续可以按需释放或拆分 `KUSER_SHARED_DATA` 下方的兼容地址区，因此这里需要先创建并插入 `VAD` 节点占位：\n\n![62353d0a04a0b32391fa413f502d42bb&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/c7b9c4e98e0b743883f4bc84b4b7123c6ecfd0152784bec0a29b6b633d783652.jpg)\n\n## 阶段十二：映像进程路径\n\n如果 `SectionToMap != NULL`，本函数进入普通用户进程映像映射路径。\n\n![3e722df63c0274ec1a45af6de20b4ce9&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/97089e91f6d90c4283dd8221d825584a4dcfd4004e604aa710d584c4cef2283e.jpg)\n\n逻辑开头会确认 `SectionToMap` 是 `image section`，从 `file object` 提取短文件名并填入 `ProcessToInitialize->ImageFileName`；随后在需要时初始化审计名称、记录子系统版本，并调用核心映射函数：\n![f54cadc699a8d072388b4b452789b07b&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/0b1bd391669d7269efe8dbbc1027a10dead3b39763e5e1ab2f58b12b4c9a95ca.jpg)\n\n检查调用是否成功：\n\n![edb822eaffc63f7a99dc232916c0116e&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/e28b29d6c650067a614279ec770dfa7a11556c9df629510683246dffdf1fc574.jpg)\n\n映射成功后，函数先处理 `large pages` 标志：如果创建请求包含 `PROCESS_CREATE_FLAGS_LARGE_PAGES`，就反查映像基址对应 `PDE` 是否真的映射大页；如果不是，则清除该创建标志，表示主映像实际没有使用 `large pages`。后续 `PspCreateProcess` 写入到 `PEB` 中的 `ImageUsesLargePages` 反映实际结果。\n\n> 可以看到要求 PDE、PTE 的页表项同时起作用才是真的 large page。\n\n随后映射 `system DLL`。这里的 `system DLL` 不是泛指系统目录中的 DLL，而是 `\\SystemRoot\\System32\\ntdll.dll`。`UseLargePages` 只表示新进程主映像是否实际使用 `large pages` 映射，不等价于整个进程地址空间都使用大页，也不会影响 `system DLL` 映射。\n\n> WRK 时代 `system DLL` 倾向固定地址加载；现代系统引入 `ASLR` 后，主映像和系统映像的加载地址都可能变化。\n\n源码中特别说明：主映像映射可能返回 `STATUS_IMAGE_NOT_AT_BASE`，这个状态需要保留给上层；只有 `system DLL` 映射失败时才覆盖它。\n\n映像路径收尾：\n![1d23155b5904aa4241f846855b00ff33&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/54edcf094903d742b448c5e08ecec44946c94e8d0049248e60c8e9465bd22c9b.jpg)\n\n`MiAllowWorkingSetExpansion` 的作用是将当前进程的工作集挂入到全局的工作集管理链表中。\n\n## 阶段十三：`clone` 进程路径\n\n如果 `SectionToMap == NULL` 且 `ProcessToClone != NULL`，函数进入 `clone` 地址空间路径：\n![49aaa07494ba95a4d050a95fed82594d&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/f837173b55dad66ec3c3f4c6287fdc1529c243e034c0c71a7ec626e2478113d0.jpg)\n\n这个分支会先 `detach` 出新进程上下文，再调用 `MiCloneProcessAddressSpace`。原因是 `clone` 逻辑需要同时读取源进程地址空间、修改目标进程页表和 `VAD` 结构，不能继续把当前线程固定在目标进程上下文中。\n\n`MiCloneProcessAddressSpace` 函数的源码注释为：\n\n```text\n此例程大费周章，以便在待初始化的进程中创建指定进程地址空间的副本。其实现方式是检查每个虚拟地址描述符（VAD）的继承属性。如果 VAD 所描述的页面应当被继承，则会检查每个页表项（PTE）并将其复制到新的地址空间中。\n\n对于私有页面，将构造 fork 原型 PTE（prototype PTE），随后这些页面在两个进程之间转变为共享且写时复制（copy-on-write）的状态。\n```\n\n`clone` 成功时不可能使用 `large pages` 映像映射，因此函数后面会清除 `PROCESS_CREATE_FLAGS_LARGE_PAGES`。\n\n![69a35fd00420eeedc7e504887ba9b667&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/e2bceccdea3fe38bb318d7e1f0432fdcf34e10b996f854543ff25d0fc0d3baab.jpg)\n\n> 后续 `PspCreateProcess` 写入到 `PEB` 中的 `ImageUsesLargePages` 反映实际结果。\n\n## 阶段十四：`system process` 路径\n\n如果 `SectionToMap == NULL` 且 `ProcessToClone == NULL`，函数把它视为 `system process` 或特殊系统路径：\n![dd840f1e27a2a124856a1f14b33bb716&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/01195115bbb0892044346b05bbd6e74d47d4f925e9a9fb7803302d4440aaa967.jpg)\n\n> 这里的 `System process` 既包括广义的系统进程，也包括 Windows 中名为 `System` 的进程。\n\n该路径不映射 `image section`，也不克隆父进程地址空间，只完成了前面已经执行过的地址空间基础初始化。\n\n随后进入 `clone` 路径相同的退出逻辑：成功时不可能使用 `large pages` 映像映射，因此函数后面会清除 `PROCESS_CREATE_FLAGS_LARGE_PAGES`。\n\n![69a35fd00420eeedc7e504887ba9b667&#95;MD5&#46;jpg](/notes/n-4e7721abe8c84130a292e886ccb41126/media/e2bceccdea3fe38bb318d7e1f0432fdcf34e10b996f854543ff25d0fc0d3baab.jpg)\n\n> 后续 `PspCreateProcess` 写入到 `PEB` 中的 `ImageUsesLargePages` 反映实际结果。\n\n## 总体流程\n\n```mermaid\nflowchart TD\n    A[\"入口: MmInitializeProcessAddressSpace\"] --> B{\"32位且 PdeUpdateNeeded?\"}\n    B -- \"是\" --> C[\"MiUpdateSystemPdes 同步系统 PDE\"]\n    B -- \"否\" --> D[\"attach 到新进程\"]\n    C --> D\n    D --> E[\"AddressSpaceInitialized: 1 -> 2\"]\n    E --> F[\"初始化锁、VAD 根、LastTrimTime、VmWorkingSetList\"]\n    F --> G[\"PFN lock\"]\n    G --> H[\"MiInitializePfn: 页目录页\"]\n    H --> I[\"MiInitializePfn: HyperSpace 页表页\"]\n    I --> J[\"MiInitializePfn: VAD bitmap / working set 页\"]\n    J --> K[\"释放 PFN lock\"]\n    K --> L[\"可选初始化 LockedPagesList\"]\n    L --> M[\"MiInitializeWorkingSetList\"]\n    M --> N{\"shared user data 需要 VAD?\"}\n    N -- \"是\" --> O[\"创建不可删除 shared user data VAD\"]\n    N -- \"否\" --> P[\"初始化页表页 commit bitmap\"]\n    O --> P\n    P --> Q[\"按配置设置 top-down 分配标志\"]\n    Q --> R{\"Win64 且非 clone?\"}\n    R -- \"是\" --> S[\"插入 compatibility area VAD\"]\n    R -- \"否\" --> T{\"SectionToMap?\"}\n    S --> T\n    T -- \"是\" --> U[\"映射 image section\"]\n    U --> V[\"映射 system DLL\"]\n    V --> W[\"允许 working set expansion / detach / return\"]\n    T -- \"否\" --> X{\"ProcessToClone?\"}\n    X -- \"是\" --> Y[\"detach / MiCloneProcessAddressSpace\"]\n    Y --> Z[\"允许 working set expansion / 清 large pages 标志 / return\"]\n    X -- \"否\" --> AA[\"system process: detach / success\"]\n    AA --> AB[\"清 large pages 标志 / return\"]\n```\n\n## 与 MmCreateProcessAddressSpace 的关系\n\n可以把两个函数理解为“分配骨架”和“激活骨架”的关系。\n\n`MmCreateProcessAddressSpace` 做的事：\n\n- 预收 `commit`。\n- 检查 `resident available` 预算。\n- 分配页目录页、`HyperSpace` 页表页、`VAD bitmap` 页、`working set list` 页。\n- 填入 `DirectoryTableBase[0]` 和 `DirectoryTableBase[1]`。\n- 建立系统 `PDE` 副本、`HyperSpace` 映射、页目录自映射。\n- 设置 `AddressSpaceInitialized == 1`。\n\n`MmInitializeProcessAddressSpace` 做的事：\n\n- `attach` 到新进程，让固定虚拟地址按新进程解释。\n- 设置 `AddressSpaceInitialized == 2`。\n- 把前一阶段分配的基础页正式登记到 `PFN` 数据库。\n- 初始化 `working set list`，并把基础页作为 `locked direct WSLE`。\n- 创建 `shared user data VAD`、页表页 `commit bitmap`、高地址保留 `VAD` 和 Win64 兼容区 `VAD`。\n- 根据创建类型\n\t- 映射 `image section` 和 `system DLL`（`ntdll.dll`）。\n\t- 或克隆父进程地址空间。\n\t- 若是 `system process` 初始化，则不做多余动作。\n\n一句话：\n\n> `MmCreateProcessAddressSpace` 让新进程“有页表骨架”，`MmInitializeProcessAddressSpace` 让这套骨架“成为可处理缺页、可维护 `working set`、可承载 `VAD` 和映像映射的正式地址空间”。\n\n## 关键设计点总结\n\n1. 本函数必须在新进程上下文中执行，因为 `PDE_BASE`、`VAD_BITMAP_SPACE`、`MmWorkingSetList` 等地址都依赖当前进程的页表解释。\n2. `AddressSpaceInitialized` 从状态 1 切到状态 2，表示地址空间从“物理页骨架已分配”进入“内存管理结构正式可用”阶段。\n3. `MiInitializePfn` 是本函数前半段的关键，它把页目录页、`HyperSpace` 页表页、`VAD bitmap` 页和 `working set` 页正式变成 `ActiveAndValid` 的地址空间结构页。\n4. `MiInitializeWorkingSetList` 会把基础页放入 `locked direct working set` 条目，因此它们不是普通可随意修剪的用户页。\n5. `shared user data VAD` 只在共享页落入用户可分配地址范围时需要；x86 普通 2GB 用户空间下通常不需要，原因是 `KUSER_SHARED_DATA` 高于最高可分配 `VAD` 地址。\n6. 对非 `large-address-aware` 的 x86 映像，函数会保留 `2GB -> MM_HIGHEST_VAD_ADDRESS` 范围，避免旧程序获得其不兼容的高用户地址。\n7. 映像进程路径负责映射主 `image section` 和 `system DLL`；`clone` 路径则交给 `MiCloneProcessAddressSpace` 复制父进程地址空间。\n8. `large pages` 标志只有映像路径可能保留；`clone` 和 `system process` 路径成功后都会清除该标志。\n\n**总体来看，`MmInitializeProcessAddressSpace` 是进程地址空间从“内核临时搭建的页表骨架”进入“完整内存管理对象”的分界点。它把物理页、`PFN`、`working set`、`VAD`、映像 `section` 和 `system DLL` 映射串起来，使新进程真正具备运行用户态代码前所需的地址空间基础。**\n\n\n> 本文中的 `system process` 均指源码注释中的广义路径，不特指 Windows 中名为 `System` 的进程。\n",
+  "id": "4e7721ab-e8c8-4130-a292-e886ccb41126",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "os/windows/mm",
+      "reverse/windows",
+      "arch/x86",
+      "lang/c"
+    ],
+    "title": "Windows 进程创建（04）：地址空间初始化"
+  },
+  "resources": [
+    "01195115bbb0892044346b05bbd6e74d47d4f925e9a9fb7803302d4440aaa967.jpg",
+    "09505e729961fbcbfd1bbd5eaef0aa9c153c2ac1af5e081417194b87aacdd457.jpg",
+    "0a7273ad868936bc311cbad389d135cbb71c3bf54b6c53ac6d065412fd1e8fdd.jpg",
+    "0b1bd391669d7269efe8dbbc1027a10dead3b39763e5e1ab2f58b12b4c9a95ca.jpg",
+    "27f02a054bc01a4d71e14f4125dba52cf30d16c124c84546ec0c9a1320dfa190.jpg",
+    "3ac5e66c3e93511fec6ca7e39ce1dce075d298417b799b1880e195dd8c4765bc.jpg",
+    "54edcf094903d742b448c5e08ecec44946c94e8d0049248e60c8e9465bd22c9b.jpg",
+    "5a204687496b59d45b183b783413ef723803f0a55dff42f65e5ceeba19197490.jpg",
+    "5e415284a754de1737400bc072cae50e103a62e858e2ff64ed5911830e214b37.jpg",
+    "6c3433ffb69f8416c749d6238dce0918e64e967bffcd49e7f36624dec521e046.jpg",
+    "6f0fddd62735e7e9eb1036c810f3b4807091ad0496d34e618959c00bef43d911.jpg",
+    "846cff8cb6e9a848790415c01e4595f5bcb0c32f3d1765b3cb6f4ea8e67cfbcc.jpg",
+    "97089e91f6d90c4283dd8221d825584a4dcfd4004e604aa710d584c4cef2283e.jpg",
+    "9f7472b36e169a3b7cb84dface5e2e955dadb1357faa7ef2ac2b1de84e96244f.jpg",
+    "b1f0936145dcb8fd3cb79730275163f8ae522202fcbdd4d8f080377755de3700.jpg",
+    "baf499a7a10d1165ac61433148d351ab051dc18010a1a23c441143033d5bd515.jpg",
+    "bf0e96f528b2f6520ff252851f3beb5dda75e6e15f5b27d5c6d6a0d66fa50ec5.jpg",
+    "c7b9c4e98e0b743883f4bc84b4b7123c6ecfd0152784bec0a29b6b633d783652.jpg",
+    "e28b29d6c650067a614279ec770dfa7a11556c9df629510683246dffdf1fc574.jpg",
+    "e2bceccdea3fe38bb318d7e1f0432fdcf34e10b996f854543ff25d0fc0d3baab.jpg",
+    "e41a0a8261f2e920951d2ee3d5376aeeaa614cd608ecce6591b5ea4cd334e72c.jpg",
+    "f2c1b1ab830095f7aa5008d32c35a0b84c83d409f3fe147dfdeb6dccd013f3de.jpg",
+    "f837173b55dad66ec3c3f4c6287fdc1529c243e034c0c71a7ec626e2478113d0.jpg"
+  ],
+  "url": "/notes/n-4e7721abe8c84130a292e886ccb41126/"
+}

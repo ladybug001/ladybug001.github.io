@@ -1,1 +1,3 @@
 * text=auto eol=lf
+# Hashed attachment bytes must survive Git unchanged, including SVG line endings.
+publication/current/snapshot/assets/* -text

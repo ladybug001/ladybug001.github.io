@@ -1,0 +1,52 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-2b70ece6f57cc51131f7",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-a894fd6cbbc27643d1ea",
+      "kind": "heading",
+      "offset": 79
+    },
+    {
+      "id": "h-0715912c89618f79550f",
+      "kind": "heading",
+      "offset": 385
+    },
+    {
+      "id": "h-6f94ac28beca52972348",
+      "kind": "heading",
+      "offset": 694
+    },
+    {
+      "id": "h-2d103a8a1622114ad5e6",
+      "kind": "heading",
+      "offset": 1043
+    },
+    {
+      "id": "h-f8d7b9f4bd4e01afa4b0",
+      "kind": "heading",
+      "offset": 1270
+    },
+    {
+      "id": "h-66160c5f5e35d820e17f",
+      "kind": "heading",
+      "offset": 1460
+    }
+  ],
+  "body": "# C/C++ 语言基础 (MOC)\n\n> C/C++ 共通的编译链接、类型与内存布局、资源管理、调用机制及字符编码。各组按知识依赖阅读。\n\n## 编译与工程\n\n1. [预处理&#12289;编译&#12289;汇编&#12289;链接](/notes/n-cf811ca4a4a742a2ad51882a328d7324/) — 建立源码到可执行文件的构建流程。\n2. [C&#12289;C&#43;&#43; 预编译头](/notes/n-9c017c01ec07432aac2a961420590912/) — 理解头文件预处理与编译加速。\n3. [Visual Studio C&#43;&#43; 项目配置](/notes/n-ed9672c894ab4ee9a8bcef44a748d6d5/) — 配置项目、头文件、库与构建选项。\n\n## 类型与内存布局\n\n1. C 类型转换 — C 风格转换与类型解释。\n2. [C&#43;&#43; 类型转换](/notes/n-1e07b0b5c4054451a329d0c233154c29/) — 区分 C++ 的四种转换操作。\n3. [C&#12289;C&#43;&#43; 结构体内存对齐](/notes/n-f660ebcdb8294e4db7c059b22d42bf7d/) — 理解成员偏移、填充与布局。\n4. [C&#43;&#43; static 与 const 关键字](/notes/n-c6c0138082f6405b9fca7d3d725dffd2/) — 静态存储与常量语义。\n\n## 内存与资源管理\n\n1. [C&#12289;C&#43;&#43; 动态内存分配&#65306;malloc&#12289;free&#12289;new 与 delete](/notes/n-e08b7207198d40bc84c43f94669e0df0/) — 区分空间分配与对象构造、析构。\n2. [C&#12289;C&#43;&#43; 浅拷贝与深拷贝](/notes/n-ac9e4a95b1194218b94518877e92c06e/) — 理解对象复制与资源所有权。\n3. [C&#43;&#43; 面向对象编程 &#40;MOC&#41;](/notes/n-0a0112f464fc4c52937fc3acc6f4f4b1/) — 继续学习对象生命周期、继承与多态。\n\n## 字符串与编码\n\n1. [计算机基础&#65306;字符集与字符编码](/notes/n-4a987656b6dc40e4991208df376a3e3d/) — 区分字符集合、码点与编码方式。\n2. [C&#12289;C&#43;&#43; 字符串编码与 Windows A&#12289;W 接口](/notes/n-9f8bef2496124e2da6233056a60e88ca/) — 将编码知识用于字符串和 Windows 接口。\n\n## 调用与编译结果\n\n- [C&#12289;C&#43;&#43; switch 与 if 的实现差异](/notes/n-0f9f4f6585294260a786e2b216bbe300/) — 观察条件分支、跳转表与编译结果。\n- [Windows 调用约定](/notes/n-317c7f66091b53e38284739a6b5784e9/) — ABI 与函数调用。\n\n## 后续应用\n\n- [C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/) — 泛型容器、迭代器与算法。\n- [Windows PE 与逆向工程 &#40;MOC&#41;](/notes/n-c3b3e9cd34d44e929aaae83f6caebbec/) — 编译链接知识在 PE 与 DLL 分析中的应用。\n- [Linux ELF 文件格式](/notes/n-95e8c75c9da6476fbc85e09535265997/) — 对照另一种目标文件与可执行文件格式。\n",
+  "id": "38d58bba-673d-4ca9-96b8-7b58f8d04951",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "lang/c",
+      "lang/cpp"
+    ],
+    "title": "C／C++ 语言基础 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-38d58bba673d4ca996b87b58f8d04951/"
+}

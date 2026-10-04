@@ -1,0 +1,97 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-000e5699d3e29f118fdf",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-51e68fff30f9edd5110e",
+      "kind": "heading",
+      "offset": 181
+    },
+    {
+      "id": "h-b4e8ef8db70f7f108661",
+      "kind": "heading",
+      "offset": 427
+    },
+    {
+      "id": "h-cbc65e065c864ec90551",
+      "kind": "heading",
+      "offset": 1089
+    },
+    {
+      "id": "h-001444162139a2d25044",
+      "kind": "heading",
+      "offset": 1124
+    },
+    {
+      "id": "h-5779d84cd26b3be9c6e5",
+      "kind": "heading",
+      "offset": 2807
+    },
+    {
+      "id": "h-ce390cf05fe4d57fbbb6",
+      "kind": "heading",
+      "offset": 3379
+    },
+    {
+      "id": "h-2b315edf6e4fa41c11a4",
+      "kind": "heading",
+      "offset": 3737
+    },
+    {
+      "id": "h-63231f774f7bf715552e",
+      "kind": "heading",
+      "offset": 3752
+    },
+    {
+      "id": "h-a614cb9c93e12b0b1456",
+      "kind": "heading",
+      "offset": 4386
+    },
+    {
+      "id": "h-89712130b87b827396a0",
+      "kind": "heading",
+      "offset": 4736
+    },
+    {
+      "id": "h-81a7804679800aa4689b",
+      "kind": "heading",
+      "offset": 4961
+    },
+    {
+      "id": "h-3e035f66d4cce8b924d2",
+      "kind": "heading",
+      "offset": 5153
+    },
+    {
+      "id": "h-606e4c3313d95987ab0c",
+      "kind": "heading",
+      "offset": 5164
+    },
+    {
+      "id": "h-6cbc21f8aa5b9741d64c",
+      "kind": "heading",
+      "offset": 5552
+    },
+    {
+      "id": "h-e8eae402630f46abae63",
+      "kind": "heading",
+      "offset": 5965
+    }
+  ],
+  "body": "# Java ClassLoader 机制\n\n`ClassLoader` 是负责查找并加载类数据的对象。它完成类加载过程中的“加载”阶段：读取类的二进制数据，并在 JVM 中生成对应的 `Class<?>` 对象。\n\n> 参考：[JVM 类加载过程](/notes/n-746101753bdd463c83ff1e5b72717daa/)\n\n## 类加载器的职责\n\n`ClassLoader` 的核心职责可以概括为：\n\n1. 根据类的二进制名称查找类数据；\n2. 读取类的字节流；\n3. 调用 `defineClass()`，将字节数据转换成 JVM 中的 `Class<?>` 对象。\n\n数组类比较特殊，它没有对应的 `.class` 文件，也不是由 `ClassLoader` 调用 `defineClass()` 创建的，而是由 JVM 直接生成。引用类型数组使用其组件类型的定义类加载器，基本类型数组没有类加载器。\n\n## Java 类加载器层级\n\nJDK 8 中常见的三个类加载器如下：\n\n1. **`BootstrapClassLoader`（启动类加载器）**：由 JVM 实现，在 Java API 中通常表示为 `null`。在 JDK 8 HotSpot 中，它主要加载 `rt.jar` 等核心类库以及 `-Xbootclasspath` 指定路径中的类。\n2. **`ExtensionClassLoader`（扩展类加载器）**：主要加载 `%JRE_HOME%/lib/ext` 目录以及 `java.ext.dirs` 指定路径中的类库。\n3. **`AppClassLoader`（应用程序类加载器）**：通常也是系统类加载器，负责加载应用 `classpath` 中的类和 JAR 包。\n\n从 JDK 9 开始，扩展机制被移除，`ExtensionClassLoader` 被 `PlatformClassLoader`（平台类加载器）取代。虽然具体实现和类库组织发生了变化，但“启动类加载器 → 平台类加载器 → 系统类加载器”仍构成常见的委派层级。\n\n除启动类加载器外，常见类加载器都由 Java 实现并继承 `java.lang.ClassLoader`。如果我们要自定义自己的类加载器，同样需要继承 `ClassLoader`。\n\n每个 `ClassLoader` 都可以通过 `getParent()` 获取用于委派的父加载器。当返回值为 `null` 时，通常表示委派链已经到达由 JVM 实现的启动类加载器。\n\n## 双亲委派机制\n\n### `loadClass()` 与 `findClass()`\n\n`ClassLoader` 中与类加载直接相关的两个方法是：\n\n- **`protected Class<?> loadClass(String name, boolean resolve)`**：加载指定的类。默认实现先检查类是否已经加载，再将请求委派给父加载器；父加载器无法完成时，才调用当前加载器的 `findClass()`。`resolve` 决定加载后是否立即调用 `resolveClass()` 完成链接。\n- **`protected Class<?> findClass(String name)`**：根据类的二进制名称查找类数据。默认实现会抛出 `ClassNotFoundException`。自定义类加载器通常重写此方法，并在取得字节数组后调用 `defineClass()` 生成 `Class<?>` 对象。\n\n下面是 JDK 8 中 `java.lang.ClassLoader.loadClass()` 的相关实现片段：\n\n```java\nprotected Class<?> loadClass(String name, boolean resolve)\n        throws ClassNotFoundException {\n    synchronized (getClassLoadingLock(name)) {\n        // 首先检查该类是否已经加载过\n        Class<?> c = findLoadedClass(name);\n        if (c == null) {\n            long t0 = System.nanoTime();\n            try {\n                if (parent != null) {\n                    // 父加载器不为空时，委派给父加载器\n                    c = parent.loadClass(name, false);\n                } else {\n                    // 父加载器为空时，委派给启动类加载器\n                    c = findBootstrapClassOrNull(name);\n                }\n            } catch (ClassNotFoundException e) {\n                // 父加载器无法找到该类，继续由当前加载器尝试\n            }\n\n            if (c == null) {\n            \t//当父类加载器无法加载时，则调用findClass方法来加载该类\n                long t1 = System.nanoTime();\n                c = findClass(name);\n\n                // 统计类加载器相关信息\n                sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);\n                sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);\n                sun.misc.PerfCounter.getFindClasses().increment();\n            }\n        }\n        if (resolve) {\n            // 对类执行链接操作\n            resolveClass(c);\n        }\n        return c;\n    }\n}\n```\n\n### 委派过程\n\n默认的类加载过程可以概括为：\n\n1. **检查缓存**：通过 `findLoadedClass()` 检查目标类是否已经加载，若已加载则直接返回。\n2. **向上委派**：若目标类尚未加载，将请求逐级委派给父加载器，直至启动类加载器。\n3. **向下尝试**：父加载器无法找到目标类时，当前加载器才调用自身的 `findClass()`。如果整条委派链都无法找到目标类，则抛出 `ClassNotFoundException`。\n\n![7f52570d4b8e55116de3d8b8bd8e422f&#95;MD5&#46;jpg](/notes/n-d06529d6c1464564a52c627bc1a3719a/media/f5400e516a0a54b9b1161bff5066b1701ba5dc96c0463ee2fbef9a2a3978e73b.jpg)\n\n如果自定义类加载器仍要遵守双亲委派，通常只需重写 `findClass()`；如果要改变委派顺序，则需要重写 `loadClass()`。\n\n双亲委派使上层类库能够被下层加载器共享，并优先保证 Java 核心类由受信任的上层加载器加载，避免应用代码用同名类替换核心 Java 类。与此同时，不同的下层加载器仍可以定义彼此隔离的应用类。\n\n### 父加载器采用组合关系\n\n类加载器之间的父子关系通常是组合实现的，而不是 Java 类继承。`ClassLoader` 通过成员字段保存父加载器：\n\n```java\npublic abstract class ClassLoader {\n    // 组合关系\n    private final ClassLoader parent;\n\n    protected ClassLoader(ClassLoader parent) {\n        this(checkCreateClassLoader(), parent);\n    }\n}\n```\n\n因此，一个自定义加载器可以继承 `ClassLoader`，同时把加载请求委派给另一个与它没有继承关系的加载器。这体现了“组合优于继承”的设计原则。\n\n## 类加载请求与加载器角色\n\n### 隐式加载与显式加载\n\n程序使用某个尚未加载的类时，JVM 会根据指令和类使用场景触发加载：\n\n```java\npublic class Main {\n    public static void main(String[] args) {\n        // JVM 遇到 new 指令时加载 User 类\n        User user = new User();\n\n        // JVM 遇到 invokestatic 指令时加载 Config 类\n        Config.loadSettings();\n    }\n}\n```\n\n程序也可以显式请求加载指定类：\n\n```java\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        // 通常只完成加载，不会立即触发类初始化\n        ClassLoader classLoader =\n                Thread.currentThread().getContextClassLoader();\n        Class<?> pluginClass =\n                classLoader.loadClass(\"com.example.DynamicPlugin\");\n    }\n}\n```\n\n\n### 初始类加载器与定义类加载器\n\n- **初始类加载器（Initiating Loader）**：最初接收加载请求，并最终获得目标 `Class<?>` 对象的加载器。它可能自己定义类，也可能把请求委派给其他加载器。\n- **定义类加载器（Defining Loader）**：最终读取类数据并调用 `defineClass()`，创建目标 `Class<?>` 对象的加载器。\n\n每个非数组类或接口都会记录自己的定义类加载器。某个类在运行期间需要（隐式）加载另一个类时，通常由其定义类加载器发起加载。\n> 数组类和接口比较特殊，不是通过 `ClassLoader` 创建的（数组类没有对应的二进制字节流），而是由 JVM 直接生成；引用类型数组沿用组件类型的定义类加载器，基本类型数组没有类加载器。\n\n### 线程上下文类加载器\n\n双亲委派只规定请求如何向父加载器传递，并不会自动让父加载器反向查找子加载器能够看到的类。\n\n反向实现父加载器查找子加载器：将一个子加载器保存在线程私有数据里，跟线程绑定，然后在父加载器需要的时候取出来使用：\n\n```java\nClassLoader contextLoader =\n        Thread.currentThread().getContextClassLoader();\n```\n\n\n## 类加载器与 Java 类的唯一身份\n\nJVM 判断两个类是否为同一个 Java 类时，不仅比较类的二进制名称，还会比较定义它们的类加载器。只有名称和定义类加载器都相同，两个 `Class<?>` 对象才表示同一个运行时 Java 类。\n\n因此，即使两个类来自内容完全相同的 `.class` 文件，只要由不同的类加载器分别定义，它们仍是不同的 Java 类，彼此之间可能出现类型转换失败。\n\n\n## 获取和检查类加载器\n\n### 获取加载器\n\n```java\n// Demo 类的定义加载器\nClassLoader definingLoader = Demo.class.getClassLoader();\n\n// 系统类加载器\nClassLoader systemLoader = ClassLoader.getSystemClassLoader();\n\n// 当前线程的上下文类加载器\nClassLoader contextLoader =\n        Thread.currentThread().getContextClassLoader();\n```\n\n`Class.getClassLoader()` 返回定义该类的加载器。由启动类加载器定义的类通常返回 `null`。\n\n`Thread.getContextClassLoader()` 返回当前线程携带的上下文类加载器。\n\n### 打印父加载器链\n\n```java\nstatic void printParents(String label, ClassLoader start) {\n    System.out.println(label + \":\");\n    ClassLoader current = start;\n    while (current != null) {\n        System.out.println(\"  -> \" + current);\n        current = current.getParent();\n    }\n    System.out.println(\"  -> <bootstrap>\");\n}\n```\n\n父加载器链表示加载请求的委派关系，但不能单独证明某个类最终由谁定义。要确认 Java 类的唯一身份，需要直接检查目标 `Class<?>` 对象的定义加载器。\n\n### 检查 Java 类的定义加载器\n\n```java\nstatic void printClass(Class<?> clazz) {\n    System.out.println(clazz.getName()\n            + \" -> \" + clazz.getClassLoader());\n}\n```\n",
+  "id": "d06529d6-c146-4564-a52c-627bc1a3719a",
+  "metadata": {
+    "tags": [
+      "lang/java",
+      "cs/runtime"
+    ],
+    "title": "Java ClassLoader 机制"
+  },
+  "resources": [
+    "f5400e516a0a54b9b1161bff5066b1701ba5dc96c0463ee2fbef9a2a3978e73b.jpg"
+  ],
+  "url": "/notes/n-d06529d6c1464564a52c627bc1a3719a/"
+}

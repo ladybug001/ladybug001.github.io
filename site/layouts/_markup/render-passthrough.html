@@ -1,0 +1,2 @@
+{{- /* Keep framework-specific math adaptation outside the Vault. */ -}}
+{{- transform.ToMath .Inner (dict "output" "mathml" "displayMode" (eq .Type "block") "throwOnError" true "strict" "warn") -}}

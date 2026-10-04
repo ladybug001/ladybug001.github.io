@@ -1,0 +1,85 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b00fd1c5b7fb875c335f",
+      "kind": "heading",
+      "offset": 27
+    },
+    {
+      "id": "h-7f6490f4585536d2f363",
+      "kind": "heading",
+      "offset": 200
+    },
+    {
+      "id": "h-300d8f61ec8a28d48547",
+      "kind": "heading",
+      "offset": 208
+    },
+    {
+      "id": "h-47760f9bc3805bebe20c",
+      "kind": "heading",
+      "offset": 649
+    },
+    {
+      "id": "h-7d6f4db8c31c9eef798d",
+      "kind": "heading",
+      "offset": 819
+    },
+    {
+      "id": "h-489c6f718359739af2ae",
+      "kind": "heading",
+      "offset": 1396
+    },
+    {
+      "id": "h-99a0b9baab9c72350f5f",
+      "kind": "heading",
+      "offset": 1690
+    },
+    {
+      "id": "h-a558a9a9a9a0829c4b68",
+      "kind": "heading",
+      "offset": 1838
+    },
+    {
+      "id": "h-b201a9632f46189a68e8",
+      "kind": "heading",
+      "offset": 1985
+    },
+    {
+      "id": "h-4ddeb13d2423a0870542",
+      "kind": "heading",
+      "offset": 2914
+    },
+    {
+      "id": "h-b15fd04b3ab3abc219ba",
+      "kind": "heading",
+      "offset": 3672
+    },
+    {
+      "id": "h-9c50e60473a37975f8e3",
+      "kind": "heading",
+      "offset": 4584
+    },
+    {
+      "id": "h-80541c07dad2e653635a",
+      "kind": "heading",
+      "offset": 8116
+    }
+  ],
+  "body": "# 计算机网络：select 与套接字 IO 多路复用\n\n相关内容：\n\n1. [计算机网络&#65306;TCP 协议与套接字开发](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/)\n2. [计算机网络&#65306;UDP 协议与套接字开发](/notes/n-4435a512e6634510acdb3e397906087e/)\n\n## 套接字发送与接收语义\n\n### 发送\n\n很多人以为 `send(fd, buf, len, 0)` 是“把数据直接发到对方”。\n\n更准确地说，`send()` 通常只是把用户态缓冲区里的一部分数据交给本机内核协议栈。因此，`send()` 返回成功不等于“对方已经收到数据”，只表示有若干字节已经成功交给本机传输系统处理。\n> 后续的协议栈处理、拥塞控制、重传、网卡发送和对端接收，都是由系统内核完成。\n\n`send()` 分阻塞和非阻塞两种情况：\n\n- **阻塞 `send()`**：如果发送缓冲区暂时没有空间，会等到至少拷贝一部分数据到缓冲区后才返回，返回值表示实际拷贝的数据长度，一般需要根据返回值循环发送剩余字节。\n- **非阻塞 `send()`**：立即返回，返回值表示本次实际写入了多少字节；如果缓冲区暂时没有空间，则返回值为 `SOCKET_ERROR`，并通过 `WSAGetLastError()` 得到 `WSAEWOULDBLOCK` 等“暂时不可写”的状态，而不会一直等待。\n\n### 接收\n\n接收方能不能读到数据，取决于对端是否已经发送，也取决于这些数据是否已经进入本机内核接收缓冲区。\n\n`recv()` 也分阻塞和非阻塞：\n- **阻塞模式下**，无数据可读时会等待；\n- **非阻塞模式下**，无数据可读时立即返回 `-1`，并置 `errno` 为 `EAGAIN` / `EWOULDBLOCK`\n\n## 阻塞模型困境\n\n把前面的发送和接收场景放在一起看，在“单线程 + 阻塞 `I/O` + 串行处理连接”的模型下，服务端很多时间都耗在等待上，并没有真正做有效工作。\n\n设想这样一个场景：有多个客户端希望和服务端进行数据收发，但服务器一次只处理一个客户端连接。只要当前客户端长时间不断开连接，或者长时间不发送数据，其他客户端就只能继续等待。\n\n对于实际业务场景，例如电商网站，这种模型显然无法接受。\n\n![eb1c4cba422b49f6706a5e7e3b4e82d5&#95;MD5&#46;jpg](/notes/n-d5191c6925a647e0bb459de7a25cd989/media/5f2d2715ef7e8b2298e959b7a4d55dd8ac7fa6c02d8947cf5f7299a6f68b7339.jpg)\n\n这类模型最直接的问题是：**并发处理能力不足**。它不能在多个连接之间快速切换，少数慢连接就可能拖住整体吞吐。\n\n> 注意区分并发和并行。\n\n这里讨论的重点是：**如何提高服务端在多个客户端之间分配 `I/O` 处理机会的效率**，而不是单纯与客户端“建立更多套接字”。因此关键是**如何避免大量线程或单线程长时间阻塞在 `send()` / `recv()` 上，从而提高整体 `I/O` 处理效率**。\n\n## 多线程方案\n\n为了解决客户端排队等待的问题，一个很直接的方案就是：**为每个客户端连接创建一个线程**。主线程只负责监听客户端连接请求；一旦有新的连接建立，就把后续收发数据的工作交给对应的工作线程。\n\n这种方式的优缺点都很明显：\n\n- **优点**：逻辑直观，编程实现和维护都相对容易。每个线程只处理一个连接，控制流也很清楚。\n- **缺点**：线程数量会随着客户端数量增长；当并发连接数较大时，线程栈内存、上下文切换和调度开销都会迅速上升。\n\n这个模型的关键点在于：**连接数和线程数基本呈线性增长**。因此，它适合作为入门理解多连接处理流程的方案，但不适合高并发场景。\n\n## 自实现非阻塞方式\n\n通过前面说过的非阻塞 `recv` 和 `send` 函数，实现轮询，只处理当前就绪的套接字。\n\n但是显然，自实现比较麻烦，有没有现成的相似的方式？就是 `select` 模型，它的底层逻辑与非阻塞的 `recv` 和 `send` 类似——先判断可不可操作。\n\n## `select` 模型\n\n多线程方式虽然解决了“多个客户端等待”的问题，但随着客户端数量增加，线程模型的资源消耗会越来越大。而且即使单独看一个线程，它很多时候也还是在等 `I/O`，并没有持续做有效工作。\n\n这时候可以用 `select` 模型集中管理多个套接字，从而减少线程数量，节省系统资源。\n\n### 核心思想\n\n`select` 的核心思想是：**先在一组套接字中找出哪些套接字当前适合执行 `I/O`，再只处理这些“已经就绪”的套接字**。\n> 即当前哪些套接字能从其内核缓冲区读取数据，哪些套接字的内核缓冲区能写入数据。\n\n这样做的价值在于：主线程不必在某一个连接上死等，通过挑出“当前有事情可做”的那些套接字，在多个连接之间轮询。\n\n`select` 模型的基本逻辑可以概括为：\n\n1. 把需要监视的套接字放入一个集合中。\n2. 调用 `select()`，筛选出当前适合执行 I/O 的套接字。常见地，可以让 `select()` 检测：\n\t- 可读套接字\n\t\t- 对于**已连接套接字**，可读通常表示：`recv()` 现在能读到数据，或者连接已经关闭。\n\t\t- 对于**监听套接字**，可读通常表示：有新的连接请求到来，此时 `accept()` 通常不会阻塞。\n\t- 可写套接字\n\t\t- 当前发送缓冲区有空间，可以执行 `send()`。很多时候，一个正常连接的套接字几乎一直都是可写的，因此“可写集合”通常只在应用层确实有待发送数据时才有实际意义。\n\t- 异常套接字\n\t\t- 在 `Winsock` 里，它通常用来检测带外数据（OOB）或某些异常条件，不是所有错误的统称。\n3. 遍历筛选结果，并对这些套接字执行对应操作。\n\n![3db675e68e70e0de389cfdfed9190e9c&#95;MD5&#46;jpg](/notes/n-d5191c6925a647e0bb459de7a25cd989/media/72c9ad261647181f46180cb97be25e0d265caddb0e430fd116d1e89b67b9a7e2.jpg)\n\n要注意，`select` 并不会“自动帮你收发数据”。它只负责告诉你：**哪些套接字现在值得处理**。\n\n另外，`select` 反映的是“调用当下的就绪状态快照”。即使某个套接字已经被判定为可读或可写，后续实际调用 `recv()` / `send()` 时，仍然必须正确处理返回值，不能把“就绪”理解成“这次操作一定能完成全部数据收发”。\n\n### `select()` 函数\n\n`select` 模型的核心，就是调用 `select()`：\n\n```cpp\nint select(\n    int nfds,\n    fd_set* readfds,\n    fd_set* writefds,\n    fd_set* exceptfds,\n    const struct timeval* timeout\n);\n```\n\n各参数含义如下：\n\n- `nfds`：在 `Windows` 的 `Winsock` 实现中会被忽略，只是为兼容 `Berkeley sockets` 而保留，常见写法是填 `0`；而在许多 `Unix`/`Linux` 实现中，它表示“被监视的最大文件描述符值 + 1”。\n- `readfds`：输入输出共用参数，用于检查并返回可读套接字集合。\n- `writefds`：输入输出共用参数，用于检查并返回可写套接字集合。\n- `exceptfds`：输入输出共用参数，用于检查并返回异常套接字集合。\n- `timeout`：最大等待时间。传 `NULL` 表示一直阻塞等待；传零值超时则表示“立即返回，只做一次轮询”。\n\n**注意**：`select()` 会原地改写传入的 `fd_set` 类型参数，使其只保留满足条件的套接字。如果还要保留原始监视集合，就必须在调用前先拷贝一份临时集合。\n\n该函数的返回值通常有三种情况：\n\n- `0`：在指定等待时间内没有任何套接字就绪。\n- `> 0`：有若干套接字就绪。\n- `SOCKET_ERROR`：调用失败，需要通过 `WSAGetLastError()` 读取具体错误。\n\n除了 `select()` 本身，还需要了解它所使用的 `fd_set` 结构体和几个常用宏。\n\n### `fd_set` 与操作宏\n\n`fd_set` 是 `Winsock` 中用于存放多个套接字的结构体。默认情况下，它最多可容纳 `64` 个套接字：\n\n```cpp\n#ifndef FD_SETSIZE\n#define FD_SETSIZE 64\n#endif\n```\n\n其结构大致如下：\n\n```cpp\ntypedef struct fd_set {\n    u_int fd_count;\n    SOCKET fd_array[FD_SETSIZE];\n} fd_set;\n```\n\n如果希望增加容量，可以在包含 `winsock2.h` 之前定义更大的 `FD_SETSIZE`：\n\n```cpp\n#define FD_SETSIZE 128\n#include <winsock2.h>\n```\n\n但要注意，增大 `FD_SETSIZE` 只是放宽了集合容量，并不会改变 `select` 线性扫描集合这件事。套接字越多，遍历成本越高，延迟也越大。因此，它更适合连接数量不太大的场景。\n\n| 操作宏 | 作用 | 代码 |\n|---|---|---|\n| `FD_ZERO` | 将套接字集合清空 | `FD_ZERO(&clientSockets);` |\n| `FD_SET` | 添加一个套接字到集合中 | `FD_SET(socketListen, &clientSockets);` |\n| `FD_CLR` | 从集合中删除指定套接字 | `FD_CLR(socketListen, &clientSockets);` |\n| `FD_ISSET` | 查询套接字是否在集合中 | `FD_ISSET(socketListen, &clientSockets);` |\n\n`FD_CLR` 和 `closesocket()` 经常配套出现，但含义并不相同：\n\n- `FD_CLR` 只是把套接字从 `fd_set` 中移除。\n- `closesocket()` 才是真正关闭该套接字。\n- 如果只关闭而不移出集合，后续再把这个无效套接字继续交给 `select()`，就可能引发错误或异常行为。\n\n### `Winsock` 示例\n\n下面给出一个基于 `Winsock` 的典型示例：\n\n```cpp\n#include <winsock2.h>\n#include <stdio.h>\n#include <string.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n\nint main(int argc, char* argv[])\n{\n    // 0. 初始化\n    WORD wsVersion = MAKEWORD(2, 2);\n    WSADATA wsaData = {0};\n    if (WSAStartup(wsVersion, &wsaData) != 0) {\n        return 1;\n    }\n\n    // 1. 创建套接字\n    SOCKET sSocket = socket(AF_INET, SOCK_STREAM, 0);\n    if (sSocket == INVALID_SOCKET) {\n        printf(\"套接字创建失败!\\n\");\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"套接字创建成功!\\n\");\n    }\n\n    // 2. 绑定套接字\n    sockaddr_in sockAddrInfo = {0};\n    sockAddrInfo.sin_addr.S_un.S_addr = inet_addr(\"127.0.0.1\");\n    sockAddrInfo.sin_port = htons(2118);\n    sockAddrInfo.sin_family = AF_INET;\n\n    int bRes = bind(sSocket, (sockaddr*)&sockAddrInfo, sizeof(sockAddrInfo));\n    if (bRes == SOCKET_ERROR) {\n        printf(\"绑定失败!\\n\");\n        closesocket(sSocket);\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"绑定成功!\\n\");\n    }\n\n    // 3. 监听套接字\n    int lRes = listen(sSocket, 5);\n    if (lRes == SOCKET_ERROR) {\n        printf(\"监听失败!\\n\");\n        closesocket(sSocket);\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"监听成功!\\n\");\n    }\n\n    fd_set fdSocket;\n    FD_ZERO(&fdSocket);\n    FD_SET(sSocket, &fdSocket);\n\n    while (true) {\n        fd_set readfds = fdSocket;\n        fd_set writefds = fdSocket;\n\n        int iRes = select(0, &readfds, &writefds, NULL, NULL);\n        if (iRes == SOCKET_ERROR) {\n            break;\n        }\n        if (iRes == 0) {\n            continue;\n        }\n\n        // 这里只是演示 `writefds` 的用法。\n        // 实际工程里，对所有连接无条件 `send(\"Hello\")` 通常并不合理。\n        for (u_int i = 0; i < writefds.fd_count; i++) {\n            if (writefds.fd_array[i] != sSocket) {\n                send(writefds.fd_array[i], \"Hello\", 6, 0);\n            }\n        }\n\n        for (u_int i = 0; i < readfds.fd_count; i++) {\n            if (readfds.fd_array[i] == sSocket) {\n                sockaddr_in s = {0};\n                int l = sizeof(s);\n                SOCKET aSocket = accept(sSocket, (sockaddr*)&s, &l);\n                if (aSocket == INVALID_SOCKET) {\n                    continue;\n                }\n\n                FD_SET(aSocket, &fdSocket);\n                printf(\"Accept Client IP: %s\\n\", inet_ntoa(s.sin_addr));\n            } else {\n                char buf[100] = {0};\n                SOCKET tSocket = readfds.fd_array[i];\n                int iRecv = recv(tSocket, buf, sizeof(buf), 0);\n\n                if (iRecv > 0) {\n                    printf(\"Recv: %s\\n\", buf);\n                } else {\n                    FD_CLR(tSocket, &fdSocket);\n                    shutdown(tSocket, SD_BOTH);\n                    closesocket(tSocket);\n                }\n            }\n        }\n    }\n\n    closesocket(sSocket);\n    WSACleanup();\n    return 0;\n}\n```\n\n这个示例体现了 `select` 模型的几个关键点：\n\n- 所有需要监视的套接字都放入同一个集合里。\n- 每次调用 `select()` 前，要把当前集合拷贝给临时变量，因为 `select()` 会修改传入的 `fd_set`。\n- 监听套接字出现在可读集合中时，说明有新的连接可以 `accept()`。\n- 已连接套接字出现在可读集合中时，说明有数据可读，或者连接已关闭、复位或终止。\n- 当连接断开时，不仅要 `closesocket()`，还要从 `fd_set` 中把它移除。\n\n这个示例还有几个工程上的边界要说清楚：\n\n- `writefds` 在这里主要用于演示。实际项目通常只会把“确实存在待发送数据的连接”放入可写集合，否则大多数正常连接几乎一直可写，会导致循环中反复发送无意义数据。\n- `send()` 返回值需要检查；示例中为了突出 `select` 流程，没有处理部分发送和发送错误。\n- `recv()` 返回 `0` 通常表示对端有序关闭；返回 `SOCKET_ERROR` 则表示出错。更稳妥的做法，是结合 `WSAGetLastError()` 进一步区分错误原因。\n\n![df78cba756e46fa08ba7303174f9a572&#95;MD5&#46;jpg](/notes/n-d5191c6925a647e0bb459de7a25cd989/media/099c6e46dbdb50bb08ff64c4a9e83712dec1780ac7e972dc74c85c8271ecb5d0.jpg)\n\n### 适用边界\n\n相比“一个连接一个线程”，`select` 能减少线程数量和线程调度成本；但它的上限也比较明显，因为它依赖遍历 `fd_set` 做事件检测，连接数量一多，效率就会明显下降。\n\n如果还要追求更高并发，在 `Windows` 下通常会进一步考虑 `WSAPoll`、`IOCP` 等模型；在 `Linux` 下，更常见的是 `epoll`。这也说明了 `select` 的适用边界：**它适合理解 `I/O` 多路复用的思路，也适合中小规模连接场景，但不适合作为高并发服务端的最终形态**。\n",
+  "id": "d5191c69-25a6-47e0-bb45-9de7a25cd989",
+  "metadata": {
+    "tags": [
+      "cs/network",
+      "lang/cpp",
+      "cs/concurrency"
+    ],
+    "title": "计算机网络：select 与套接字 IO 多路复用"
+  },
+  "resources": [
+    "099c6e46dbdb50bb08ff64c4a9e83712dec1780ac7e972dc74c85c8271ecb5d0.jpg",
+    "5f2d2715ef7e8b2298e959b7a4d55dd8ac7fa6c02d8947cf5f7299a6f68b7339.jpg",
+    "72c9ad261647181f46180cb97be25e0d265caddb0e430fd116d1e89b67b9a7e2.jpg"
+  ],
+  "url": "/notes/n-d5191c6925a647e0bb459de7a25cd989/"
+}

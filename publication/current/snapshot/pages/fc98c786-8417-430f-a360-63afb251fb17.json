@@ -1,0 +1,104 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b9bb2fa8cd5ebce7c219",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-e271b8bfa627b26b1488",
+      "kind": "heading",
+      "offset": 143
+    },
+    {
+      "id": "h-b67a8a155d8fe1aaa97e",
+      "kind": "heading",
+      "offset": 681
+    },
+    {
+      "id": "h-8920a65b46e3f58939ee",
+      "kind": "heading",
+      "offset": 1321
+    },
+    {
+      "id": "h-da99ec722c09374f3531",
+      "kind": "heading",
+      "offset": 3320
+    },
+    {
+      "id": "h-074b471efd98af2766aa",
+      "kind": "heading",
+      "offset": 4582
+    },
+    {
+      "id": "h-48d4e54bf15dfcf27c5d",
+      "kind": "heading",
+      "offset": 4863
+    },
+    {
+      "id": "h-2693753264c7ed5ca26d",
+      "kind": "heading",
+      "offset": 5970
+    },
+    {
+      "id": "h-b5f9a8bfb433a58d720a",
+      "kind": "heading",
+      "offset": 7006
+    },
+    {
+      "id": "h-7cd74bd806d9fed90ecc",
+      "kind": "heading",
+      "offset": 7116
+    },
+    {
+      "id": "h-58462d11d6d8c8a05733",
+      "kind": "heading",
+      "offset": 8659
+    },
+    {
+      "id": "h-760d42c1345872984c1c",
+      "kind": "heading",
+      "offset": 9252
+    },
+    {
+      "id": "h-ff4dbc95de65f40df575",
+      "kind": "heading",
+      "offset": 10658
+    }
+  ],
+  "body": "# Windows x86 异常的产生与分发流程\n\n异常与调试是紧密相连的，异常是调试的基础。\n\n异常产生后，首先是要记录异常信息（异常的类型、异常发生的位置等），然后要寻找异常的处理函数，我们称为异常的分发，最后找到异常处理函数并调用，我们称为异常处理。\n\n## 异常的来源与基本分类\n\n我们这里讨论的是内部中断也就是异常，可以分为：自陷、故障和终止。\n> 参考：[x86 中断的分类与触发机制](/notes/n-870bed2e9d0049498ba9ef4e6251c5cc/)\n\n如下两张图所示，我们可以看见下图中进行除0运算，产生了异常（故障/Fault）；\n![cc10700168ce82e2f217e9de95d74857&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/41c6467d8a9e3b2028150ea0bb426e7b173c5bcad9d55f613ab24d9c224bde83.jpg)\n\n下图中使用了 `throw` 关键词，通过软件逻辑主动产生了异常。\n\n![acc769456e08cbae82ce354ab4089cf2&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/e4deec3b3cab6121f4b045d7c1b9665c3206a2705e0ab804257dbd45af78d1d3.jpg)\n\n## 异常的产生、记录与统一分发入口\n\n无论哪种异常，在进入分发之前都需要先填充 `_EXCEPTION_RECORD` 结构体来记录异常信息。该结构体的格式及每个成员的意义如下：\n\n```cpp\ntypedef struct _EXCEPTION_RECORD {\n    DWORD ExceptionCode; // 异常状态码，在Windows中每一种状态（包括异常）都有一个状态码\n    DWORD ExceptionFlags; // 异常状态，0表示CPU异常，1表示软件模拟异常，8（EXCEPTION_STACK_INVALID）表示异常发生时栈已损坏\n    struct _EXCEPTION_RECORD *ExceptionRecord; // 通常情况下该值为空，如果发生嵌套异常（即处理异常时又出现了异常）则指向下一个异常\n    PVOID ExceptionAddress; // 异常发生地址，表示异常发生时的位置\n    DWORD NumberParameters; // 附加参数个数\n    ULONG_PTR ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS]; // 附加参数指针\n} EXCEPTION_RECORD, *PEXCEPTION_RECORD;\n```\n\n下面以两种典型异常为例，分别说明 `_EXCEPTION_RECORD` 是如何被构造的。\n\n### CPU 异常的触发路径：以除 0 异常为例\n\n和中断类似，当发生异常时也会去调用相应的中断服务例程，我们通过除 0 异常，简单了解一下 CPU 的异常处理过程：**指令执行出现异常→查[IDT表](/notes/n-9865620a6a12491a86ee4494a0e2a392/#h-186ce0f54051e71a6089)→执行中断处理函数→执行CommonDispatchException→执行KiDispatchException**。\n\n> [!TIP] IDA 验证步骤\n> 我们通过 IDA 打开 `Ntoskrnl.exe` 先找到 IDT 表，通过 ALT+T 快捷键全局搜索 `_IDT`，找到 IDT 表：\n> ![05cbc8f0635786fa2386e54a89a542b4&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/aeddf81a7f07bf782949e9c30ab728209be0bc2f4283bf63fd42a4182e818a91.jpg)\n>\n> 我们查到除 0 异常对应的中断向量为 0，在 IDT 表中可以找到其对应的处理函数入口：\n> ![effb775f93454ad8fbdd1c504c752bc7&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/3eede1ab000634c47efae6adcef34d635ee45a99f609c8b6208039b512a2850c.jpg)\n>\n> 接着我们在 IDA 中双击跟进，可以看到进入除 0 中断处理函数后的具体代码：\n> ![78ed8bd2dbef66c285f0a3f791e723d0&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/f77824bf205438fc1a4aafa58a2e20232432e2b4ac12fe59fc591eb770898afe.jpg)\n\n该函数前面的逻辑和 `KiSystemService` 函数（系统调用 API 进 0 环后的入口）的代码一样，都是用来保存现场的——构造陷阱帧：\n> 因为两者属于中断，所以开头都要构造陷阱帧，相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n![d17de6ddfe4389ca6b4f92a55ff9d033&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/cd516bf8873a794ab485b1c21723550fd0b296a021f91aee75f35cefa9e74c9e.jpg)\n\n接着向下看发现，该服务例程并没有直接对异常进行处理，而是调用了另一个函数 `CommonDispatchException`。\n\n![2e53e44a72b559fe7abb96a366049b55&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/a27fea38127e8ca7cf67f7d37f97c399ce65f911024f8ff9bea34d19cd018aaf.jpg)\n\n跟进 `CommonDispatchException` 函数，我们可以看见它开辟了一块大小为 0x50 的空间，用于存放 `_EXCEPTION_RECORD` 结构体，并且给结构体的每个成员赋初值。\n\n![ae3de593f26b8d4ed2b345145feef927&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/8256fa8880bd0bae5173aafb26272633a0a3c15b5f0551d9b3b5ede69d821014.jpg)\n\n> `_EXCEPTION_RECORD` 的异常状态码由除 0 异常服务例程传递进来（硬编码进函数的），异常发生地址通过[陷阱帧](/notes/n-a5e29edced624217af32c21baaee2060/#h-b57075e208275089fd9a)（`Trap_Frame`）结构体的 `Eip` 成员获得。\n\n然后传递参数，调用 `KiDispatchException` 函数，异常继续向下传递。\n\n### 软件异常的触发路径：以 `throw` 为例\n\n我们接着来看一下 `throw` 关键词触发异常的过程，在关键词处下断点，然后运行通过反汇编代码我们可以知道它调用的就是 `CxxThrowException` 函数：\n\n![bdd2a78d9043ad276ac04068796b5dbc&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/5d0dc6198cd85a83f01e390368a7375c43c27674a7f2277c4ac8d79a779abc66.jpg)\n\n跟进该函数，会发现它也是调用了另外一个函数 `RaiseException`，并通过栈的方式压入了几个传参：\n\n![7fcabe8dad3295048cd5b0d92ab6ca2f&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/b710be53d5f23759ea1254c3c2075e753abe2cee06a3bea8ac2cbdd45c36d34f.jpg)\n\n接着我们跟进 `RaiseException` 函数发现，正是这几个传参填充了 `_EXCEPTION_RECORD` 结构体：\n\n![782f516f5216027584541b9fe1bc90b9&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/c941c9fb563677b78e18264ee8df9279fc5e3786a2b28b9fa7a83deeb0612ca2.jpg)\n\n注意参数 `ExceptionAddress`，**它的值是 `RaiseException` 函数的首地址**，而并不是真正抛出异常的位置。\n> 另外通过 `throw` 产生的异常，`ExceptionCode` 的值是根据不同的编译环境而生成的，没有固定的解释，不像除 0 异常码这样；\n\n`RaiseException` 函数之后的流程是这样的：`RtlRaiseException`→`NtRaiseException`→`KiRaiseException`。\n\n在执行 `KiRaiseException` 函数时，会将 `ExceptionCode` 的最高位清 0（便于区分 CPU/软件模拟异常），然后调用 `KiDispatchException`：\n![2a1a310de74b540483335b4395155ae7&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/a223202b6022c097405ba9d37e1066896cd388f20536714cdf628b65f3346866.jpg)\n\n### 两条路径汇入 `KiDispatchException`\n\n虽然 `throw` 模拟异常与实际 CPU 异常的调用链有区别，但两者在最后都去调用 `KiDispatchException` 函数，用于异常分发：\n\n![fe6fbcf0c2711adec1d46b4498a2375b&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/a0efe77c5fd7c4f679f32ea69cce533e5fa0740cf90a377cd4dbff6a6b3faad1.jpg)\n\n## `KiDispatchException` 的分发逻辑\n\n无论是 CPU 异常还是模拟异常，无论是用户空间异常还是内核空间异常，**最终都要通过 `KiDispatchException` 函数进行分发**。\n\n理解这个函数是学好异常的关键，这个函数比较庞大，我们以内核、用户两个角度来分析学习。\n\n首先我们需要来了解一下 `KiDispatchException` 函数的格式，及每个参数的作用：\n\n```cpp\nVOID KiDispatchException (\n    PEXCEPTION_RECORD ExceptionRecord, // 异常记录结构体\n    PKEXCEPTION_FRAME ExceptionFrame,  // X86系统下，该值为NULL\n    PKTRAP_FRAME TrapFrame,            // 3环进0环保存现场所用的结构体\n    KPROCESSOR_MODE PreviousMode,      // 先前模式，表示调用来自什么模式，0表示内核模式，1表示用户模式\n    BOOLEAN FirstChance                // 判断是否是第一次分发这个异常，对于同一个异常，Windows最多分发两次\n                                       // 该值为1表示第一次分发，为0表示第二次分发\n)\n```\n\n通过 IDA 直接打开 `Ntoskrnl.exe` 模块，找到 `KiDispatchException` 函数，该函数最开始就是先调用 `_KeContextFromKframes` 函数，将 `Trap_Frame` 备份到 `_Context` 中，为返回 3 环做准备（这里与用户 APC 执行过程一样，**因为该函数支持内核、用户空间的异常分发和处理**，因此我们不知道异常处理函数到底是在用户空间还是内核空间，所以第一件事情就是备份 `Trap_Frame`，**便于中途回到 3 环**）。\n> 相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)\n\n![99cdbe2e67e286c61dc1f4f52edc5b12&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/128bac5eb8628d6cc525a7d5d95c5606bc9e5e83e9ddbc20d97b7f84161d5bb7.jpg)\n\n### 内核态异常的分发流程\n\n接着判断 `PreviousMode`，如果先前模式为 0 则进入内核异常的分发逻辑。在展开具体分支之前，需要先明确内核调试器函数的返回值含义：\n\n1. 返回非 0，表示调试器已经处理异常；执行流程跳转到公共的已处理分支。\n2. 返回 0，表示调试器没有处理异常；若当前是第一次分发，则继续尝试 `RtlDispatchException`，只有它仍未处理异常时才进入第二次机会。\n\n内核异常的分发按以下顺序进行：\n\n1. 判断 `FirstChance`，若为第一次分发：\n    1. 检查是否有内核调试器，有则优先调用（如 WinDbg）。\n    2. 内核调试器未处理该异常（比如 WinDbg 中按 g），则调用 `RtlDispatchException` 尝试用用户指定的处理函数（[SEH](/notes/n-513b4c801b634b30839654b1a72897cc/#h-d5ba1014047a20fddc59)）处理此次异常。\n    3. SEH 也未处理，再次给内核调试器一次机会。\n    4. 仍未处理，调用 `KeBugCheckEx` 蓝屏。\n2. 若非第一次分发（`FirstChance == False`），直接给内核调试器最后一次机会，失败则蓝屏。\n\n![617a192ec1492ae994e02cca67974f5a&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/0ab4a8ff6578fcdb9ce9bec0016914236cb94d9609a62fc2904ed03ab1f3e8f3.jpg)\n\n![a85775d77cb694c677df926c26d4bda7&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/668e8e81f16cbf130e04fb8a37ab3e9ecbea5040444b5c87aeca3a8d7abb87cd.jpg)\n\n进入已处理分支后，`KiDispatchException` 会将 `_Context` 转换回 `Trap_Frame`，然后退出函数并从修正后的现场恢复执行。\n\n如果最后都不行，调用 `KeBugCheckEx`，作用就是**使计算机蓝屏**。\n\n### 用户态异常的分发流程\n\n若判断先前模式为 1 则表示当前异常来自用户空间，跳转到对应代码段。由于用户异常的处理比内核异常更为复杂（可能涉及返回 3 环、VEH/SEH 处理、多次分发），因此重点展开分析。\n\n#### 第一次机会：内核侧分发\n\n若 `FirstChance == TRUE`，说明这是第一次分发，处理顺序如下：\n\n1. 先检查并调用内核调试器；如果内核调试器处理了异常，则进入已处理分支。\n2. 内核调试器未处理时，通过 `DbgkForwardException` 将异常发送给进程的用户调试器；如果用户调试器处理了异常，同样进入已处理分支。\n3. 只有内核调试器和用户调试器都未处理异常时，才准备返回三环所需的陷阱帧环境，并退出 `KiDispatchException` 返回 3 环。\n\n![4e7654fd59bc44c4b09fe436b0851f8d&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/10011685657c39b52f030c5687c6bfe2b625abbf137e921dad89c81fbd522da5.jpg)\n\n`DbgkForwardException` 的作用是将异常发送给 3 环调试器。返回非 0 表示调试器已经处理异常，执行流程会进入已处理分支；返回 0 才会继续准备用户态异常分发。\n\n接下来要尝试用用户指定的处理函数来处理异常。由于用户层异常处理函数必须在 3 环执行，这里返回 3 环的实现方式与执行用户 APC 时类似：\n> 相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)。\n\n1. 保存现有的环境到用户栈\n2. 修改内核栈中的陷阱帧——跳转至指定函数处，执行用户 APC 时返回 3 环后执行的函数是 `KiUserApcDispatcher`，而异常处理时返回 3 环后**执行的函数是 `KiUserExceptionDispatcher`**。\n\n继续向下执行就是为返回 3 环做准备，将 `Trap_Frame` 的值修改为返回 3 环时候的环境，详细的不再多说，**其中最为重要的就是返回 3 环时的地址，即 `Trap_Frame._Eip`（0x68 偏移位）**，如下图代码所示，将 `_Eip` 修改为了 `KiUserExceptionDispatcher` 函数的地址，也就表示返回 3 环后就执行该函数。这里修改完 `Trap_Frame` 之后，直接返回，`KiDispatchException` 函数执行结束。\n\n![b4ecb7af773795131b062bb657688fca&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/8eec9574f090b9cf4f14d64fd3540a32be2988176a862a22a171959a80f519b1.jpg)\n\n由于不同类型的异常，调用 `KiDispatchException` 的函数不同，所以返回 3 环经过的路径也不同：\n![790348fe4a7fbba9bec17419ec3fdbd5&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/d025e4c70673472ae6552464f3f5b348ec6e834d90d1df789cbf32ef003d70ff.jpg)\n\n**虽然返回3环的方式不同，但只要是用户空间的异常**，当线程再次回到 3 环时，执行的都是 `KiUserExceptionDispatcher`。\n\n#### 返回用户态：`KiUserExceptionDispatcher`\n\n`KiUserExceptionDispatcher` 位于 `Ntdll.dll`，它会调用用户态的 `RtlDispatchException`，依次查找 VEH 和 SEH（包括启动函数安装的[链尾兜底 SEH](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/#h-a833013927b879bd8157)）。处理结果及后续路径详见 [Windows x86 RtlDispatchException 异常分发](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/#h-f7c8649d5323873e06bd)。\n\n![9d215d7125c20cbb46b78c02bc7f7b73&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/228ed916d8a8a6618a267dfb1c4f5eb53414f9271cd6eb892e12ea2db113267d.jpg)\n\n> VEH 与 SEH 的数据结构、回调约定及编译器实现，详见 [Windows x86 VEH 与 SEH](/notes/n-513b4c801b634b30839654b1a72897cc/)。\n\n#### 第二次机会：调试器与进程终止\n\n只有当 VEH、普通 SEH 和链尾的兜底 SEH 都没有接管异常时，`KiUserExceptionDispatcher` 才会调用 `ZwRaiseException` 再次进入内核。此时 `FirstChance == False`，`KiDispatchException` 会跳过第一次机会中的用户态处理逻辑：\n\n![c5e8350784cfe6babf6d8b9f62c19448&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/a1549d13f62c0ff347fdff0f20e6f44b0468d17a5ed4cd2f32607cf9d96699d5.jpg)\n\n`DbgkForwardException` 的三个参数依次是异常记录、`DebugPort` 和 `SecondChance`。第二个参数决定使用哪个端口，第三个参数决定本次通知被标记为第一次机会还是第二次机会。因此，上图中的两次调用应按实际顺序理解：\n\n1. `DbgkForwardException(ExceptionRecord, TRUE, TRUE)`：使用 `EPROCESS->DebugPort`，并将异常标记为第二次机会；该端口对应 OD、Xdbg 等用户调试器。\n2. `DbgkForwardException(ExceptionRecord, FALSE, TRUE)`：使用 `EPROCESS->ExceptionPort`，并将异常标记为第二次机会；该端口主要用于通知相关子系统，例如弹出“XXXX 异常终止”等窗口。\n\n如果把第一次分发也计算在内，用户异常流程最多会调用三次 `DbgkForwardException`：第一次分发向 `DebugPort` 发送一次，第二次分发再依次尝试 `DebugPort` 和 `ExceptionPort`。\n\n> [!QUESTION] 调试时“异常处理不了”和“继续向下执行”的区别\n> 在 OD、Xdbg 调试时，关键不是界面上都叫“继续”，而是调试器返回给系统的异常状态：\n>\n> - `DBG_EXCEPTION_NOT_HANDLED` 表示调试器没有处理异常，系统会继续查找 VEH、SEH 和链尾兜底。\n> - `DBG_CONTINUE` 表示调试器声明异常已经处理，系统会从调试器提供的现场恢复执行。对于除零这类故障，如果调试器没有修正寄存器、除数或 `EIP`，原指令会再次执行并产生同一个异常。\n>\n> `SecondChance` 本身不是“是否调用 VEH/SEH”的开关。用户态 VEH、SEH 必须回到用户态执行；它们在第一次分发中都未能处理异常后，用户态包装逻辑才会主动发起第二次分发，重新进入内核，并把异常作为第二次机会交给调试器。\n\n> [!QUESTION] 用户层异常也会导致系统蓝屏？\n> 并不会，`ZwTerminateProcess` 函数正常并不会返回，所以不会执行下面的 `KeBugCheckEx` 函数。\n\n> [!QUESTION] 为什么第二次不需要修改陷阱帧？\n> 第一次可能要返回用户态去执行用户指定的异常处理函数，但是第二次不会，所以不需要准备返回用户态时的环境。\n\n## 总结：完整异常处理时序\n\n最后我们就可以了解整个异常分发、处理的过程（`KiDispatchException` 函数的过程），如下所示：\n\n```\n异常产生（CPU 异常 / 软件模拟异常）\n  → 记录异常信息（填充 _EXCEPTION_RECORD）\n  → KiDispatchException 分发\n    ├─ 内核异常：内核调试器 → RtlDispatchException(SEH) → 内核调试器（第二次）→ 蓝屏\n    └─ 用户异常：内核调试器 → 用户调试器 → 回 3 环\n         → KiUserExceptionDispatcher\n         → RtlDispatchException(VEH → 普通 SEH → 兜底 SEH / UnhandledExceptionFilter)\n         → 若仍未处理则第二次分发 → 用户调试器（第二次）→ 终止进程\n```\n\n`KiDispatchException` 函数的逻辑：\n\n![3637f15d973f416f75094b2d2e7296a9&#95;MD5&#46;jpg](/notes/n-fc98c7868417430fa36063afb251fb17/media/7f5ce2457a2cbfb7f5102d008bd859e27407dde63e9801e4d87b5fd4dc968cac.jpg)\n",
+  "id": "fc98c786-8417-430f-a360-63afb251fb17",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows x86 异常的产生与分发流程"
+  },
+  "resources": [
+    "0ab4a8ff6578fcdb9ce9bec0016914236cb94d9609a62fc2904ed03ab1f3e8f3.jpg",
+    "10011685657c39b52f030c5687c6bfe2b625abbf137e921dad89c81fbd522da5.jpg",
+    "128bac5eb8628d6cc525a7d5d95c5606bc9e5e83e9ddbc20d97b7f84161d5bb7.jpg",
+    "228ed916d8a8a6618a267dfb1c4f5eb53414f9271cd6eb892e12ea2db113267d.jpg",
+    "3eede1ab000634c47efae6adcef34d635ee45a99f609c8b6208039b512a2850c.jpg",
+    "41c6467d8a9e3b2028150ea0bb426e7b173c5bcad9d55f613ab24d9c224bde83.jpg",
+    "5d0dc6198cd85a83f01e390368a7375c43c27674a7f2277c4ac8d79a779abc66.jpg",
+    "668e8e81f16cbf130e04fb8a37ab3e9ecbea5040444b5c87aeca3a8d7abb87cd.jpg",
+    "7f5ce2457a2cbfb7f5102d008bd859e27407dde63e9801e4d87b5fd4dc968cac.jpg",
+    "8256fa8880bd0bae5173aafb26272633a0a3c15b5f0551d9b3b5ede69d821014.jpg",
+    "8eec9574f090b9cf4f14d64fd3540a32be2988176a862a22a171959a80f519b1.jpg",
+    "a0efe77c5fd7c4f679f32ea69cce533e5fa0740cf90a377cd4dbff6a6b3faad1.jpg",
+    "a1549d13f62c0ff347fdff0f20e6f44b0468d17a5ed4cd2f32607cf9d96699d5.jpg",
+    "a223202b6022c097405ba9d37e1066896cd388f20536714cdf628b65f3346866.jpg",
+    "a27fea38127e8ca7cf67f7d37f97c399ce65f911024f8ff9bea34d19cd018aaf.jpg",
+    "aeddf81a7f07bf782949e9c30ab728209be0bc2f4283bf63fd42a4182e818a91.jpg",
+    "b710be53d5f23759ea1254c3c2075e753abe2cee06a3bea8ac2cbdd45c36d34f.jpg",
+    "c941c9fb563677b78e18264ee8df9279fc5e3786a2b28b9fa7a83deeb0612ca2.jpg",
+    "cd516bf8873a794ab485b1c21723550fd0b296a021f91aee75f35cefa9e74c9e.jpg",
+    "d025e4c70673472ae6552464f3f5b348ec6e834d90d1df789cbf32ef003d70ff.jpg",
+    "e4deec3b3cab6121f4b045d7c1b9665c3206a2705e0ab804257dbd45af78d1d3.jpg",
+    "f77824bf205438fc1a4aafa58a2e20232432e2b4ac12fe59fc591eb770898afe.jpg"
+  ],
+  "url": "/notes/n-fc98c7868417430fa36063afb251fb17/"
+}

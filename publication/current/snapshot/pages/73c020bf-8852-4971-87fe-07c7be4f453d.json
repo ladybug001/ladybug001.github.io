@@ -1,0 +1,136 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-f4abc7bed5352529cacc",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-eefab0ca7abac5b1d91a",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-0b7c7b9444f48363b872",
+      "kind": "heading",
+      "offset": 700
+    },
+    {
+      "id": "h-78ac62e5480f0d98a508",
+      "kind": "heading",
+      "offset": 1204
+    },
+    {
+      "id": "h-640bc061329eb37f759b",
+      "kind": "heading",
+      "offset": 3535
+    },
+    {
+      "id": "h-5e35c9a3be85e1b9c0ea",
+      "kind": "heading",
+      "offset": 4195
+    },
+    {
+      "id": "h-a9c0fbc0ad16a5931963",
+      "kind": "heading",
+      "offset": 4583
+    },
+    {
+      "id": "h-8a9f4e1018daefaf216e",
+      "kind": "heading",
+      "offset": 5725
+    },
+    {
+      "id": "h-dada9f21fa2b64f4fb01",
+      "kind": "heading",
+      "offset": 5812
+    },
+    {
+      "id": "h-11c78207620c3cdf29f7",
+      "kind": "heading",
+      "offset": 6295
+    },
+    {
+      "id": "h-afb3ab7576c1e380caac",
+      "kind": "heading",
+      "offset": 6768
+    },
+    {
+      "id": "h-5d9d27a7005ce1f44297",
+      "kind": "heading",
+      "offset": 7423
+    },
+    {
+      "id": "h-8eac0d7138ab138e97be",
+      "kind": "heading",
+      "offset": 7824
+    },
+    {
+      "id": "h-964094fcac4b18d81a9d",
+      "kind": "heading",
+      "offset": 7839
+    },
+    {
+      "id": "h-83a3f0c0dff629211a2a",
+      "kind": "heading",
+      "offset": 8380
+    },
+    {
+      "id": "h-a05d183acc79d11799ae",
+      "kind": "heading",
+      "offset": 9087
+    },
+    {
+      "id": "h-6cb469f505fc87cf7297",
+      "kind": "heading",
+      "offset": 9618
+    },
+    {
+      "id": "h-b443afc90dac5966fe40",
+      "kind": "heading",
+      "offset": 10256
+    },
+    {
+      "id": "h-d408a702aa24a45ed8ca",
+      "kind": "heading",
+      "offset": 10725
+    },
+    {
+      "id": "h-f0d0380a54274989b12d",
+      "kind": "heading",
+      "offset": 11484
+    }
+  ],
+  "body": "# x86 指令结构与机器码编码\n\n## 概述\n\n计算机只认识 `0` 和 `1`（即二进制），任何可执行程序最终都是由 `0` 和 `1` 组成的。细分的话，可以分为两个部分：**数据**和**指令**。\n\n但这两者并没有绝对的物理界限，如果将某个内存地址赋予 CPU 的 `EIP` 寄存器，CPU 就会将该地址处的内容当作指令去执行。\n\n指令有其严格的格式，**如果指向的地址内容没有遵循指令格式，就会执行出错；反之，即使该处原本存放的是数据，只要其内容恰好符合指令格式，CPU 也会将其作为指令执行。**\n\n指令的格式取决于 CPU 架构：`x86`、`x64`、`ARM` 等。所谓的**硬编码（Opcode，操作码）就是机器码、机器指令**。本章节主要讲解 **x86 架构的指令格式**。\n\n\n如下图所示，这是在两款反汇编软件中打开的某个可执行文件（左侧为 DTDebug，右侧为 IDA）。用红色方框标记的部分即为**硬编码**，其右侧是对应的汇编指令。实际上，你看到的汇编指令都是反汇编引擎帮你**从硬编码转换而来的**（可执行文件中只有 `0` 和 `1`，没有汇编文本）。\n\n![96053bb55938fa9161c6b3199c5c66a9&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/6f636bd11da057f5197f4f9d8d1ae01eeef722533266bfab6df1916d5885e2d8.jpg)\n\n## 前缀指令 (Instruction Prefixes)\n\n下图展示了 x86 机器指令的完整结构，包含 6 个部分。我们首先了解第一部分：**前缀指令 (Instruction Prefixes)**。\n\n![0f05d1d932512de1c27edc1c14df10a9&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/2b2864e4aa9424159d2e7d6599817ad4013e5eddfc3a04471897c979ebbb2336.jpg)\n\n在 DTDebug 中可以清晰地找到前缀指令。如下图所示，在硬编码区域，前缀指令之后**有一个冒号 `:`**，这是调试器为了方便观察特意添加的分隔符：\n\n![c8fecfb463d16c084a8dea09be02e094&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/28970d4ea04f42cf1ea9d9f10fdf6c0cd514ef77ce593dfca9c8b8ad88a238fd.jpg)\n\n### 指令分组\n\n根据 Intel 官方文档，前缀指令最多允许 4 个字节，每个字节代表一种特定类型（前缀是可选的，因此长度为 0~4 字节）。前缀指令分为**四组，每组最多只能出现一个前缀**：\n\n1. **LOCK 和 REPEAT 前缀**：\n   - `LOCK` (硬编码 `F0`)：用于**锁地址总线**。例如在多核环境下，如果某个指令带有 `LOCK` 前缀，当该核心在读取目标内存时，其他核心会被阻塞，保证操作的原子性。（是互斥的底层实现原理，相关内容参考：[Windows 并发控制&#65288;1&#65289;&#65306;原子操作&#12289;自旋锁与临界区](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/)）\n   - `REPNE`/`REPNZ` (硬编码 `F2`)：重复指令前缀。根据 `EFLAGS` 寄存器中的 `ZF`（零标志位）为 0 时循环执行。\n   - `REP`/`REPZ` (硬编码 `F3`)：重复指令前缀。根据 `EFLAGS` 寄存器中的 `ZF` 位为 1 时循环执行。\n2. **段覆盖前缀 (Segment Override)**：\n   - 强制使用特定段寄存器进行内存寻址：\n     - `CS` (硬编码 `2E`)\n     - `SS` (硬编码 `36`)\n     - `DS` (硬编码 `3E`)\n     - `ES` (硬编码 `26`)\n     - `FS` (硬编码 `64`)\n     - `GS` (硬编码 `65`)\n\n   在 DTDebug 中的段寄存器位置如图：\n   ![bacd0aea5b7a715b59a8f0533d78a7d4&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/26e568e3886d4fce383afc7aaa8495e940dc53f8eea545d8a918d0190abea698.jpg)\n\n   默认情况下，未加段前缀的内存寻址默认使用 `DS` 段寄存器：\n   ![cb4096c7690cac7beee3c78760be5b2e&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/e830ede65b4a487c06c143568e6598707202c6a8d082b93e1b3f6d92e1fd7778.jpg)\n\n   若需使用其他段，可在对应硬编码前插入段前缀指令（在 DTDebug 中选中并按 `Ctrl+E` 修改）：\n   ![c01ee52093d6c18d67de77c31f22b15d&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/be5ef47edfb502b302d1c11810bcb41e3fe53d9ec8e75c37c8503b0437f1c4d2.jpg)\n\n3. **操作数尺寸反转前缀 (Operand-size override)**：\n   - 硬编码 `66`。用于反转操作数的默认位宽。例如，在 32 位模式下，操作数默认是 32 位的；加上 `66` 前缀后，操作数宽度会变为 16 位。反之在 16 位模式下，加上 `66` 会变为 32 位。\n   - 举例：硬编码 `55` 对应 `PUSH EBP`，在 32 位 CPU 模式下（由 `CS` 段描述符的 `DB` 位决定），它压入 32 位寄存器。\n   ![0df746ccc8b0e9825501abacb9295557&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/b334825fe1fc6a8199afce4ad37303ee96dc1fa6d9832823836d7a3631024c09.jpg)\n   - 如果要在 32 位模式下操作 16 位寄存器（如 `PUSH BP`），可以在硬编码前加上 `66`（即 `66 55`）：\n   ![cc403bf833b05028b4410de67c6b4774&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/f7050d4cf0fadf93803117979f79e6760af88633b3b85b6098579404ad9f65c1.jpg)\n\n4. **地址尺寸反转前缀 (Address-size override)**：\n   - 硬编码 `67`。用于反转内存寻址的默认地址宽度。例如在 32 位模式下寻址默认使用 32 位地址；加上 `67` 前缀后，寻址将按照 16 位地址宽度进行：\n   ![2c2f34581fe58a898c20582bac4bce6f&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/e03d2e708342c4b6289a1b3f00b5fbdba3cf0c5388161d1c715496c84b9465f5.jpg)\n\n> [!NOTE] \n> 尽管前缀指令按功能分为四组，但如果同时使用多个前缀，它们之间的相互顺序是任意的。\n\n## 定长与变长指令\n\n指令结构的第二部分是 **Opcode（操作码）**，这是整个指令的灵魂。一条完整的指令中，其他部分都可以没有，但 `Opcode` 是必须的。\n\n![0f05d1d932512de1c27edc1c14df10a9&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/2b2864e4aa9424159d2e7d6599817ad4013e5eddfc3a04471897c979ebbb2336.jpg)\n\n`Opcode` 的长度为 1~3 字节。观察硬编码排列可以发现，有的指令长度只有 1 个字节，有的则长达 5 个甚至更多字节。**`Opcode`、`ModR/M`、`SIB` 这三者组合决定了一条指令的基本长度（不包含前缀）**，后面的 `Displacement` 和 `Immediate` 仅仅是随着前三者确定的附带数据。\n\n![96053bb55938fa9161c6b3199c5c66a9&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/6f636bd11da057f5197f4f9d8d1ae01eeef722533266bfab6df1916d5885e2d8.jpg)\n\n它们之间的逻辑关系是：**`Opcode` 决定是否存在 `ModR/M`，而 `ModR/M` 决定是否存在 `SIB`**。\n\n### 概念解析\n\n硬编码 `50`、`52` 属于**定长指令**（长度在解析 `Opcode` 后就能立即确定，不一定只有 1 字节）。\n而像 `00 D4`、`00 34 C3` 属于**变长指令**（需要解析后续的 `ModR/M` 等才能确定完整长度）。\n\n![2409fd61fefeb4f5c939567c151ce246&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/1e400a2318d5c0e4897cba70adde3f836bb31c9b9dc6f728a186bc83fd24db08.jpg)\n\n简而言之：**定长指令**可直接通过 `Opcode` 查表确定整条指令长度；**变长指令**则仅靠 `Opcode` 无法确定后续是否跟有附加的寻址/参数字节。\n\n### 区分方法\n\n要区分一条指令是定长还是变长，需要参考 Intel 官方开发者手册中的 **Opcode 映射表**。\n\n在手册的附录 A 中找到 **1 字节 Opcode 映射表，这是 x86 最核心的一张主表**：\n\n![69a5e6938eabe16f8b59106276dc6cf6&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/6c5a2abae4f7c6252708d3e01627308d8e74020bc0e26ee644ae9167754223a8.jpg)\n\n通过查表可知，定长指令 `50` 对应 `PUSH rAX`，`51` 对应 `PUSH rCX`。表中的 **`rAX`** 表示取决于执行模式：64 位下为 `RAX`，32 位下为 `EAX`，16 位下为 `AX`。而 **`eAX`** 则特指 32 位或 16 位寄存器。\n\n![0c4f81777a9b8f31c92d2c72a1080e1f&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/b29e99b96f9bd5272b6e00fb1809eaad90ab3fc454810e3926b001a999a39988.jpg)\n\n---\n如上图所示，变长指令 `00` 对应的指令是 `ADD Eb, Gb`：\n\n![23e67cf71f78534d344bf9fad274e913&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/53375cbadc99912786070b88ec97809a416132861320c777f20212e8369b31ec.jpg)\n\n这里的 `Eb, Gb` 是 Intel 的操作数约定表示法（大小写组合）。文档详细解释了每个字母的含义：\n\n![e158012016a9ad0f7247cf182092aedf&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/ad3c2af35dc82b0926ec8c5fc13937f43b62bb23ae398360432ddc0ee6932101.jpg)\n\n**推论规律**：操作数包含大写字母 `E`、`M`、`G`（尤其是 `E`）等需要通过 `ModR/M` 字节寻址的，即为**变长指令**；否则（直接操作特定寄存器或立即数）则多为**定长指令**。\n\n## 经典定长指令\n\n以下整理了逆向工程中常见的 x86 经典定长指令：\n*(注：此处表格内容以 32 位 x86 环境为基准，其他架构/模式下映射可能不同)*\n\n### PUSH / POP\n\n`PUSH` (压栈) 与 `POP` (出栈)。\n\n| 定长指令 | 汇编代码 | | 定长指令 | 汇编代码 |\n| :-- | :-- | :-- | :-- | :-- |\n| `0x50` | `PUSH EAX` | | `0x58` | `POP EAX` |\n| `0x51` | `PUSH ECX` | | `0x59` | `POP ECX` |\n| `0x52` | `PUSH EDX` | | `0x5A` | `POP EDX` |\n| `0x53` | `PUSH EBX` | | `0x5B` | `POP EBX` |\n| `0x54` | `PUSH ESP` | | `0x5C` | `POP ESP` |\n| `0x55` | `PUSH EBP` | | `0x5D` | `POP EBP` |\n| `0x56` | `PUSH ESI` | | `0x5E` | `POP ESI` |\n| `0x57` | `PUSH EDI` | | `0x5F` | `POP EDI` |\n\n### INC / DEC\n\n`INC` (加 1) 与 `DEC` (减 1)。\n\n| 定长指令 | 汇编代码 | | 定长指令 | 汇编代码 |\n| :-- | :-- | :-- | :-- | :-- |\n| `0x40` | `INC EAX` | | `0x48` | `DEC EAX` |\n| `0x41` | `INC ECX` | | `0x49` | `DEC ECX` |\n| `0x42` | `INC EDX` | | `0x4A` | `DEC EDX` |\n| `0x43` | `INC EBX` | | `0x4B` | `DEC EBX` |\n| `0x44` | `INC ESP` | | `0x4C` | `DEC ESP` |\n| `0x45` | `INC EBP` | | `0x4D` | `DEC EBP` |\n| `0x46` | `INC ESI` | | `0x4E` | `DEC ESI` |\n| `0x47` | `INC EDI` | | `0x4F` | `DEC EDI` |\n\n### MOV 操作\n\n`MOV` (数据传送)。\n`Rb` 表示 8 位寄存器，`Ib` 表示 8 位立即数。\n\n| 定长指令 | 汇编代码 |\n| :-- | :-- |\n| `0xB0` | `MOV AL, Ib` |\n| `0xB1` | `MOV CL, Ib` |\n| `0xB2` | `MOV DL, Ib` |\n| `0xB3` | `MOV BL, Ib` |\n| `0xB4` | `MOV AH, Ib` |\n| `0xB5` | `MOV CH, Ib` |\n| `0xB6` | `MOV DH, Ib` |\n| `0xB7` | `MOV BH, Ib` |\n\n\n针对 32 位操作数 (`MOV ERX, Id`)：\n\n| 定长指令 | 汇编代码 |\n| :-- | :-- |\n| `0xB8` | `MOV EAX, Id` |\n| `0xB9` | `MOV ECX, Id` |\n| `0xBA` | `MOV EDX, Id` |\n| `0xBB` | `MOV EBX, Id` |\n| `0xBC` | `MOV ESP, Id` |\n| `0xBD` | `MOV EBP, Id` |\n| `0xBE` | `MOV ESI, Id` |\n| `0xBF` | `MOV EDI, Id` |\n\n表中的 `Id` 表示 32 位立即数。因为这组定长指令操作的目标寄存器 (`ERX`) 固定为 32 位宽度，相应的立即数也必须占据固定的 4 字节空间。\n\n### XCHG 操作\n\n`XCHG` (内容交换)。\n\n| 定长指令 | 汇编代码 |\n| :-- | :-- |\n| `0x90` | `XCHG EAX, EAX` (即 `NOP`) |\n| `0x91` | `XCHG ECX, EAX` |\n| `0x92` | `XCHG EDX, EAX` |\n| `0x93` | `XCHG EBX, EAX` |\n| `0x94` | `XCHG ESP, EAX` |\n| `0x95` | `XCHG EBP, EAX` |\n| `0x96` | `XCHG ESI, EAX` |\n| `0x97` | `XCHG EDI, EAX` |\n\n由于 `XCHG EAX, EAX` 不产生任何实际效果，Intel 将硬编码 `0x90` 专门定义为 **`NOP`** (No Operation，空指令)，用于占位或填充对齐。\n\n\n\n## 经典变长指令及结构解析\n\n### ModR/M 字段\n\n指令的操作数可能是立即寻址，也可能涉及寄存器间接寻址或内存读写，如何判断是哪一种呢？\n\n这就是 `ModR/M` 字段的作用，它长度固定为 1 字节，以补充描述寻址方式。\n\n经典变长指令示例：\n\n| 变长指令 (`Opcode`) | 汇编形式 | 含义 |\n| :-- | :-- | :-- |\n| `0x88` | `MOV Eb, Gb` | 将 8 位通用寄存器的值写入目标 (寄存器/内存) |\n| `0x89` | `MOV Ev, Gv` | 将 32 位通用寄存器的值写入目标 (寄存器/内存) |\n| `0x8A` | `MOV Gb, Eb` | 将来源 (寄存器/内存) 的 8 位值读入通用寄存器 |\n| `0x8B` | `MOV Gv, Ev` | 将来源 (寄存器/内存) 的 32 位值读入通用寄存器 |\n\n操作数约定缩写说明：\n- **`G`**：通用寄存器 (General Register)。\n- **`E`**：寄存器或内存 (Effective Address)。\n- **`b`**：字节 (Byte，8 位)。\n- **`v`**：受模式影响的字或双字 (Word/Doubleword，常为 32 位)。\n\n#### 结构解析\n\n`ModR/M` 字节的 8 个二进制位被拆分为 3 个逻辑块：\n\n![48e0d3ecedc280fb5937a99d33e06b0c&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/3e50af0b369bb836fccef0c346c3b2e57f13cbd4f4b0b57c5e97b867d42be523.jpg)\n\n1. **`Reg/Opcode`**（位 3~5）：描述 `G` 对应的具体通用寄存器。\n   ![617b5327e43768daafbdae8d87f0b4a6&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/f3390d172600deca46e28cabbc83fcc86a483a3e1390ab821775910dfb255b79.jpg)\n2. **`Mod`**（位 6~7）与 **`R/M`**（位 0~2）：两者联合描述 `E`（寻址模式或目标寄存器）。查阅 Intel 手册的 Table 2-2 可知具体寻址组合：\n   ![01b5476fdeabcfc674611aa7314335a2&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/08555c56925bd936d3eb00cf31f086c3cc6ce2859640438aebcc70c3b5e24567.jpg)\n\n#### 手动解析示例 1\n\n解析硬编码序列：`0x88 0x01`\n\n1. 查阅表得出 `0x88` 是 `MOV Eb, Gb`（存在 `E` 意味着附带 `ModR/M` 字段）。\n2. `ModR/M` 为 `0x01`，其二进制为 `0000 0001`，拆分如下：\n\n| Mod (6~7) | Reg/Opcode (3~5) | R/M (0~2) |\n| :--: | :--: | :--: |\n| `00` | `000` | `001` |\n\n3. 根据 `Reg=000` 查表得出 `AL` 寄存器。\n4. 根据 `Mod=00` 与 `R/M=001` 查表得出 `[ECX]` 内存寻址方式。\n5. 因此最终汇编结果为：`MOV BYTE PTR DS:[ECX], AL`\n\n![d62d257a439533565ae9de3f8b612f78&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/2fbfc368f0d97b483e4eea39151151b9d7837e6f45b73710116b531e6481d410.jpg)\n\n#### Reg/Opcode 扩展\n\n`ModR/M` 结构中的 `Reg/Opcode` 字段并非始终用于指定通用寄存器。在某些特定情况下，它作为 **Opcode 的延续扩展**。\n\n观察 Opcode 映射表的 `0x80`、`0x81` 区域，会发现它们没有指向明确指令，而是标记为 `Immediate Grp 1(1A)`：\n\n![b775ba2a8ec0848ae8051a34a59363c3&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/e136af4f8e3b95787044d64623cd96e0ca89e8bfbc26a7ae49295970ad8acc75.jpg)\n\n此时说明主 `Opcode` 仅提供了部分指令含义。必须依赖 `ModR/M` 的 3~5 位查阅 `Table A-6`（Grp 1 对应的扩展表），才能确定具体的指令（如 ADD, OR, ADC, SBB, AND, SUB, XOR, CMP）：\n\n![865519ad0af121ea0d18bffc6fd0ea95&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/3700e5e1009456160385c14249b8f53b8a24f845a2c2506a599c12ebb086e3f8.jpg)\n\n##### 手动解析示例 2\n\n解析硬编码序列：`0x80 0x65 0x08 0xFF`\n\n1. `0x80`：对应 `Grp 1` 的 `Eb, Ib` 结构。变长指令。\n2. `ModR/M` 是 `0x65`，二进制 `0110 0101`，拆分：\n\n| Mod (6~7) | Reg/Opcode (3~5) | R/M (0~2) |\n| :--: | :--: | :--: |\n| `01` | `100` | `101` |\n\n3. 根据扩展表，`Reg/Opcode` 值为 `100` (即十进制 4)，对应扩展指令 **`AND`**。\n4. 根据 `Mod=01` 与 `R/M=101` 查表得出 `[EBP + disp8]`。\n5. 解析得出基本结构 `AND [EBP + disp8], Ib`。\n6. 提取后续字节填充数据，`disp8 = 0x08`，`Ib = 0xFF`。\n7. 最终指令：`AND BYTE PTR SS:[EBP+0x08], 0xFF`（注意 EBP 默认使用 SS 段）。\n\n### SIB 字段\n\n仅靠 `ModR/M` 字段不足以描述形如 `[EAX + ECX * 2 + 12345678]` 的复杂寻址。为了支持复杂基址变址内存寻址模型，x86 引入了 `SIB` (Scale-Index-Base) 字节。\n\n当你查阅 `Table 2-2`，发现 `ModR/M` 解析出 `[--][--]` 等标记时，即表明该指令在此位置需要追加一个 `SIB` 字节作为补充。例如以下三种组合必带 SIB：\n\n| Effective Address | Mod | R/M |\n| :-- | :--: | :--: |\n| `[--][--]` | `00` | `100` |\n| `[--][--] + disp8` | `01` | `100` |\n| `[--][--] + disp32` | `10` | `100` |\n\n`SIB` 字节的 8 位二进制被分成三块：\n\n![4f2487e1c78dbce6423017fe75963be1&#95;MD5&#46;jpg](/notes/n-73c020bf8852497187fe07c7be4f453d/media/13edde4a0906bd1034f9274d4e990b8b890706526b81e49aa8bd03cf038b3391.jpg)\n\n- **`Scale`**（比例因子，位 6~7）：支持 `1`、`2`、`4`、`8` 的倍乘系数。\n- **`Index`**（变址寄存器，位 3~5）：提供参与运算的偏移寄存器。\n- **`Base`**（基址寄存器，位 0~2）：提供基础地址寄存器。\n\n公式表达：`Base + (Index * Scale) + Displacement`\n\n#### 手动解析示例 3\n\n解析硬编码序列：`0x88 0x84 0x48`\n\n1. `0x88` 是 `MOV Eb, Gb`，附带 `ModR/M`。\n2. `ModR/M` 为 `0x84` (二进制 `1000 0100`)：\n   - `Mod = 10`\n   - `Reg = 000` (`AL` 寄存器)\n   - `R/M = 100` (触发 SIB 扩展，结构为 `[--][--] + disp32`)\n3. `SIB` 为 `0x48` (二进制 `0100 1000`)：\n   - `Scale = 01` (即 `*2` 倍)\n   - `Index = 001` (`ECX` 寄存器)\n   - `Base = 000` (`EAX` 寄存器)\n4. 代入 SIB 公式获得内存地址形式：`[EAX + ECX*2]`。\n5. 最终指令：`MOV BYTE PTR DS:[EAX + ECX*2 + disp32], AL`（因给定的硬编码截断，后续尚缺 4 字节作为 `disp32`）。\n",
+  "id": "73c020bf-8852-4971-87fe-07c7be4f453d",
+  "metadata": {
+    "tags": [
+      "arch/x86"
+    ],
+    "title": "x86 指令结构与机器码编码"
+  },
+  "resources": [
+    "08555c56925bd936d3eb00cf31f086c3cc6ce2859640438aebcc70c3b5e24567.jpg",
+    "13edde4a0906bd1034f9274d4e990b8b890706526b81e49aa8bd03cf038b3391.jpg",
+    "1e400a2318d5c0e4897cba70adde3f836bb31c9b9dc6f728a186bc83fd24db08.jpg",
+    "26e568e3886d4fce383afc7aaa8495e940dc53f8eea545d8a918d0190abea698.jpg",
+    "28970d4ea04f42cf1ea9d9f10fdf6c0cd514ef77ce593dfca9c8b8ad88a238fd.jpg",
+    "2b2864e4aa9424159d2e7d6599817ad4013e5eddfc3a04471897c979ebbb2336.jpg",
+    "2fbfc368f0d97b483e4eea39151151b9d7837e6f45b73710116b531e6481d410.jpg",
+    "3700e5e1009456160385c14249b8f53b8a24f845a2c2506a599c12ebb086e3f8.jpg",
+    "3e50af0b369bb836fccef0c346c3b2e57f13cbd4f4b0b57c5e97b867d42be523.jpg",
+    "53375cbadc99912786070b88ec97809a416132861320c777f20212e8369b31ec.jpg",
+    "6c5a2abae4f7c6252708d3e01627308d8e74020bc0e26ee644ae9167754223a8.jpg",
+    "6f636bd11da057f5197f4f9d8d1ae01eeef722533266bfab6df1916d5885e2d8.jpg",
+    "ad3c2af35dc82b0926ec8c5fc13937f43b62bb23ae398360432ddc0ee6932101.jpg",
+    "b29e99b96f9bd5272b6e00fb1809eaad90ab3fc454810e3926b001a999a39988.jpg",
+    "b334825fe1fc6a8199afce4ad37303ee96dc1fa6d9832823836d7a3631024c09.jpg",
+    "be5ef47edfb502b302d1c11810bcb41e3fe53d9ec8e75c37c8503b0437f1c4d2.jpg",
+    "e03d2e708342c4b6289a1b3f00b5fbdba3cf0c5388161d1c715496c84b9465f5.jpg",
+    "e136af4f8e3b95787044d64623cd96e0ca89e8bfbc26a7ae49295970ad8acc75.jpg",
+    "e830ede65b4a487c06c143568e6598707202c6a8d082b93e1b3f6d92e1fd7778.jpg",
+    "f3390d172600deca46e28cabbc83fcc86a483a3e1390ab821775910dfb255b79.jpg",
+    "f7050d4cf0fadf93803117979f79e6760af88633b3b85b6098579404ad9f65c1.jpg"
+  ],
+  "url": "/notes/n-73c020bf8852497187fe07c7be4f453d/"
+}

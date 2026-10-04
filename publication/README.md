@@ -6,9 +6,16 @@
 It is not exported from an Obsidian Vault and is not a production website.
 All manifests remain `validation_only:true` and `deployable:false`.
 
-No real note snapshot is tracked here yet. Adding a real publication snapshot
-requires explicit content/privacy approval and a reviewed repository policy
-change. Never copy `.local/` reports, private identity state or the entire Vault.
+`current/` is the explicitly approved public deployment hand-off. It contains
+only `snapshot/`, `presentation.json` (published IDs, MOC booleans and modification
+timestamps), and `release.json` (public host and integrity hashes).
+Regenerate it with `python -B pipeline/production.py export --vault <vault>`.
+Never hand-edit it or copy `.local/`, private identities, observations, reports
+or the entire Vault. Cloud builds need none of them.
+
+The portable format's validation flags remain unchanged: they do not confer
+publishing permission. Production is enabled by the separately reviewed Pages
+workflow and public release hand-off, following the owner's deployment request.
 
 Complete local releases use `portable-2`, whereas the small synthetic fixture
 remains `portable-1`. They contain framework-neutral Markdown, a separate anchor

@@ -1,0 +1,262 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-20d2a6d0f9be8d0e0255",
+      "kind": "heading",
+      "offset": 32
+    },
+    {
+      "id": "h-32929054a2e0e2c6460a",
+      "kind": "heading",
+      "offset": 296
+    },
+    {
+      "id": "h-23626099256d10ea4302",
+      "kind": "heading",
+      "offset": 689
+    },
+    {
+      "id": "h-ee8cdd89493263a3e004",
+      "kind": "heading",
+      "offset": 921
+    },
+    {
+      "id": "h-03a2771861ec8a4c6831",
+      "kind": "heading",
+      "offset": 1411
+    },
+    {
+      "id": "h-d23c4af2f6435b59c752",
+      "kind": "heading",
+      "offset": 1581
+    },
+    {
+      "id": "h-9f463a7a5176baf72b59",
+      "kind": "heading",
+      "offset": 2010
+    },
+    {
+      "id": "h-28d6710a529679b90830",
+      "kind": "heading",
+      "offset": 2323
+    },
+    {
+      "id": "h-1296c0610f5ff9fd6970",
+      "kind": "heading",
+      "offset": 2561
+    },
+    {
+      "id": "h-e73654759e9f9a6ac842",
+      "kind": "heading",
+      "offset": 2750
+    },
+    {
+      "id": "h-559476b856b317bc1a9f",
+      "kind": "heading",
+      "offset": 3675
+    },
+    {
+      "id": "h-89d27c49ed145469fd3b",
+      "kind": "heading",
+      "offset": 4578
+    },
+    {
+      "id": "h-a23efdce177fbc623465",
+      "kind": "heading",
+      "offset": 5027
+    },
+    {
+      "id": "h-9fc19ae0a63f78254b33",
+      "kind": "heading",
+      "offset": 5328
+    },
+    {
+      "id": "h-5d74e0adf44bb412b7f4",
+      "kind": "heading",
+      "offset": 5709
+    },
+    {
+      "id": "h-163960011b7c3a0c8d8b",
+      "kind": "heading",
+      "offset": 6207
+    },
+    {
+      "id": "h-45191579fa85bfff96bf",
+      "kind": "heading",
+      "offset": 6957
+    },
+    {
+      "id": "h-5813bc97abb3e91c8db2",
+      "kind": "heading",
+      "offset": 7472
+    },
+    {
+      "id": "h-cf68bc2cc595216febe0",
+      "kind": "heading",
+      "offset": 8118
+    },
+    {
+      "id": "h-a033d0b7e3f2b97f5bc1",
+      "kind": "heading",
+      "offset": 8753
+    },
+    {
+      "id": "h-a6ee864fb205761968cb",
+      "kind": "heading",
+      "offset": 9420
+    },
+    {
+      "id": "h-44448cc937232d484678",
+      "kind": "heading",
+      "offset": 10192
+    },
+    {
+      "id": "h-56f628d9614795b6187a",
+      "kind": "heading",
+      "offset": 10345
+    },
+    {
+      "id": "h-2a4588d40cc83672b52a",
+      "kind": "heading",
+      "offset": 11350
+    },
+    {
+      "id": "h-55880b2087c5bafc26ea",
+      "kind": "heading",
+      "offset": 12175
+    },
+    {
+      "id": "h-eda17fe52aef5d3eaf56",
+      "kind": "heading",
+      "offset": 12564
+    },
+    {
+      "id": "h-0ebfd218f86a78ceef0c",
+      "kind": "heading",
+      "offset": 12581
+    },
+    {
+      "id": "h-1702555f462bc6dd1329",
+      "kind": "heading",
+      "offset": 13291
+    },
+    {
+      "id": "h-5f80aa03b25edcd0fa54",
+      "kind": "heading",
+      "offset": 14997
+    },
+    {
+      "id": "h-f623a31a2217ff7ffd5b",
+      "kind": "heading",
+      "offset": 15331
+    },
+    {
+      "id": "h-be42a58ab3a6d3eaaba1",
+      "kind": "heading",
+      "offset": 16661
+    },
+    {
+      "id": "h-b8a5d33bb1891b5070f0",
+      "kind": "heading",
+      "offset": 16898
+    },
+    {
+      "id": "h-0b9a222ba399921db9a9",
+      "kind": "heading",
+      "offset": 18387
+    },
+    {
+      "id": "h-e1b246ed20410786ab4e",
+      "kind": "heading",
+      "offset": 20609
+    },
+    {
+      "id": "h-303b7eccd8f7d8e2ba4f",
+      "kind": "heading",
+      "offset": 21688
+    },
+    {
+      "id": "h-6e6bc0d3fe8b9a37f9aa",
+      "kind": "heading",
+      "offset": 21877
+    },
+    {
+      "id": "h-1cd33204fd4cafc6c3a5",
+      "kind": "heading",
+      "offset": 22654
+    },
+    {
+      "id": "h-b96186c978483a2b5384",
+      "kind": "heading",
+      "offset": 23498
+    },
+    {
+      "id": "h-45c6eac06ce42eca087d",
+      "kind": "heading",
+      "offset": 24059
+    },
+    {
+      "id": "h-dbb82437bc211471ccc6",
+      "kind": "heading",
+      "offset": 24075
+    },
+    {
+      "id": "h-bb662b773b181b74d4c6",
+      "kind": "heading",
+      "offset": 24805
+    },
+    {
+      "id": "h-1a7d6047e4bf1adb34f4",
+      "kind": "heading",
+      "offset": 25512
+    }
+  ],
+  "body": "# Windows 并发控制（2）：可等待对象、等待块与唤醒机制\n\n前面学习了原子交换操作，知道借助它可以实现互斥和同步，但这种方式属于忙等，对 CPU 的利用率不高。\n> 参考：[Windows 并发控制&#65288;1&#65289;&#65306;原子操作&#12289;自旋锁与临界区](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/)\n\n接下来介绍一种更高效的互斥与同步实现方式——让出等待。让出等待涉及操作系统的设计，因此不可能在应用层自行完整实现。本节主要介绍相关 API 的实现原理，而不是自行实现让出等待机制。\n\n## 等待与唤醒模型\n\nWindows 基于**记录型信号量**思想：每个资源维护一个\"信号状态\"（整数计数或布尔值）与一个等待队列。\n\n线程在等待一个或多个对象且条件暂不满足时，将线程加入等待队列并让出 CPU。除非有其它线程唤醒（对象状态变化、超时或 APC 等原因），否则一直不会被调度，会在状态可用时被唤醒。\n\n这类可以被等待的资源称为可等待对象，调用相关 API 可以申请或释放资源、改变对象状态，并由此触发线程的挂起与唤醒：\n![f69ff199571edd77b7711b213b587b20&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/3743388a550d17afab9f2efd2b8bc6c7a14d2da184af13a0c2447b692e19178f.jpg)\n### 单个资源的等待与唤醒\n\n先看一个简单的例子：\n- 线程 A、B\n- 一个资源 b\n此时线程 B 正在使用 b，线程 A 需要申请 b。\n\n和忙等的逻辑一样，判断资源是否可用仍然需要在循环中不断检查当前资源的状态；**但与忙等不同的是**，循环的下一次执行依赖于其他线程的唤醒：\n1. 线程 A 发现无法申请 b 后，会将自身挂入 b 的等待链表，然后让出 CPU。\n2. 线程 B 释放 b 时，会遍历该链表并唤醒 A，A 被唤醒后继续执行下一次循环。\n\n### 多个资源的等待与唤醒\n\n此时有：\n- 线程 A、B、C、D；\n- 资源 a、b、c、d，各一个。\n\n线程 B、C、D 分别正在使用 b、c、d，线程 A 需要申请 a、b、c、d。\n\nA 有两种申请方案：\n1. 先占用当前可用的 a，再申请 b、c、d，即执行多次单个资源的等待与唤醒。\n2. 等待 a、b、c、d 同时可用。\n> 形成请求并保持，容易导致死锁。\n\n选择 2 可以避免在本次多对象等待中先持有部分对象、再等待其余对象，从而破坏死锁的“请求并保持”条件。\n\n因此，A 会将自己的挂入 a、b、c、d 四个对象的等待链表。任一相关对象的状态发生变化时，都会唤醒 A 重新评估等待条件，只有全部对象同时满足条件时，才会成功结束等待。\n> 线程 A 被唤醒时，会从所有对应对象的等待链表中移除 Ａ。若 A 只从某个等待对象的等待链表中摘除，意味着只有该等待对象已就绪；但 A 需要等待 4 个资源同时就绪，因此这样做没有意义。也就是说，A 的等待块必须同时插入这 4 个等待链表，并在唤醒时同时移除。\n\n这构成了 **Windows 等待与唤醒机制的基本模型**。\n\n---\n## 可等待对象\n\n **可等待对象**：有数目限制的\"资源\"，强调对象具备被等待的能力，通常指带有 `_DISPATCHER_HEADER` 的调度器对象，可以传给 `KeWaitForSingleObject` 等函数。。\n\n **等待对象**：强调某次等待操作中，线程当前正在等待的对象。\n\n### 公共结构：`_DISPATCHER_HEADER`\n\n`_DISPATCHER_HEADER` 是用于实现同步和互斥的结构体，该结构的各个成员及其含义如下：\n\n```text\nkd> dt _DISPATCHER_HEADER\nnt!_DISPATCHER_HEADER\n   +0x000 Type             : UChar      // 类型\n   +0x001 Absolute         : UChar\n   +0x002 Size             : UChar\n   +0x003 Inserted         : UChar\n   +0x004 SignalState      : Int4B      // 信号状态，具体语义取决于对象类型\n   +0x008 WaitListHead     : _LIST_ENTRY  // 等待链表，记录等待的线程\n```\n\n可对待对象的类型、信号状态和等待链表都保存在这个公共头部中。\n\n### 常见的可等待对象\n\nWindows 中有多种不同类型的可等待对象，可以通过 `Type` 字段区分部分常见的可等待对象：\n1. `Type = 5` 信号量；\n2. `Type = 2` 互斥体；\n3. 事件：\n\t1. `Type = 1` 同步事件；\n\t2. `Type = 0` 通知事件。\n\n还有进程、线程、定时器等其他可等待对象，它们更像是与上述某个可等待对象的别名。**例如进程和线程对象等同于通知事件对象**：正常运行时是无信号状态，终止后会保持有信号状态。\n\n不同类型的可等待对象，在信号状态的保持方式、等待成功时的状态消耗方式，以及一次能够满足多少个等待线程等方面有所差异，下面介绍常见对象及其等待语义。\n\n#### 事件对象\n\n事件对象用于表示“某个条件是否已经成立”，适合在线程之间传递状态通知。例如，一个线程完成初始化或产生数据后，可以设置事件，通知其他等待线程继续执行。\n\n事件对象不记录资源数量，其 `SignalState` 通常只有两种状态：\n\n1. `SignalState = 0`：无信号，等待条件尚未成立；\n2. `SignalState = 1`：有信号，等待条件已经成立。\n\n根据有信号状态是否自动清除，事件分为通知事件和同步事件。\n\n##### 内核结构：`_KEVENT`\n\n在 Windows 内核中，事件对象的结构非常简单：\n\n```c\ntypedef struct _KEVENT {\n    DISPATCHER_HEADER Header;\n} KEVENT, *PKEVENT, *PRKEVENT;\n```\n\n`_KEVENT` 只有一个 `_DISPATCHER_HEADER` 成员，没有额外字段。\n\n##### 创建函数与初始状态\n\n用户态可以通过 `CreateEvent` 创建事件对象：\n\n```cpp\nHANDLE CreateEvent(\n    LPSECURITY_ATTRIBUTES lpEventAttributes, // 句柄是否可以被子进程继承；为 NULL 时不能继承\n    BOOL bManualReset,                       // 事件的重置方式\n    BOOL bInitialState,                      // 初始信号状态\n    LPCTSTR lpName                           // 事件对象名称\n);\n```\n\n这里需要关注 `bManualReset` 和 `bInitialState` 两个参数：\n1. `bManualReset` 决定事件类型：为 `TRUE` 时创建通知事件 `Type = 0`；为 `FALSE` 时创建同步事件 `Type = 1`。\n   ![2f82e8663a34625cc6ba0a56da588d04&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/631ee7a7460dbda75c9d4d4be2ecdaf39216de060347f7556d70bd6af116d13d.jpg)\n2. `bInitialState` 决定初始信号状态：为 `FALSE` 时，`SignalState = 0`；为 `TRUE` 时，`SignalState = 1`。下图展示初始状态分别为 `TRUE` 和 `FALSE` 时的线程执行情况：\n   ![ad3161ff8f2591370373427d9cbe3146&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/92b06c3d9e40f93ed283f6e7fb50c62814de93e304eed281cf0c041bcda68065.jpg)\n\n##### 同步事件与通知事件\n\n调用 `SetEvent` 后，两类事件的行为不同：\n\n1. **通知事件（手动重置事件）**：保持有信号状态，可以放行所有符合条件的等待线程，直到显式调用 `ResetEvent`。\n2. **同步事件（自动重置事件）**：通常只放行一个符合条件的等待线程，随后自动恢复为无信号状态。\n\n如下图所示，在 `SetEvnet` 函数使用后，通知事件和同步事件在使用时的表现：\n1. 使用通知类型事件，两个线程都会执行：\n   ![fb683f42eb23664ce7a2269c185e4a47&#95;MD5&#46;png](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/437ec3455ae1279f27d7b033154a6bdf843880238219161b90b4ec2107856834.png)\n2. 使用同步事件，效果差异非常明显：\n   ![3fb561e89a5954d051bd5f9482d61e6d&#95;MD5&#46;png](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/7809903403f19529439c309491b633a38931c29c9b61ce2cb5cb664f125ab35c.png)\n\n\n等待通知事件的**所有线程**继续向下执行，而等待同步事件的线程**仅有一个**继续向下执行。\n\n---\n\n当多个线程需要互斥访问一段代码时（比如访问同一个全局变量），可以使用同步事件实现对临界区的互斥访问：\n![801477403f4c5fd808807d6a4ac9cbb1&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/4a0ade1ac98c3e7e1695ab64ff2320537f3b7c66a5114317eeb37161521e36a0.jpg)\n\n控制执行顺序：同一时刻只有一个线程执行，待其处理完成后再唤醒下一个线程。\n\n\n#### 信号量\n\n信号量用于表示有限数量的可用许可，适合限制并发度、管理资源池，常用于解决生产者—消费者模型中的计数同步问题。\n\n等待线程在进入临界区之前，同样调用 `WaitForSingleObject` 或 `WaitForMultipleObjects` 消耗一个许可，结束时增加可用许可数量。\n\n![40a43a25887e8de65c819c00daa67ed5&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/ed2e571e624667e55c86bd37bb67c30fbb5996c2922c6d4b77aa6df7a61283ab.jpg)\n\n**信号量与同步事件的主要差异在于**，信号量通过计数表示可用许可数量，因此可以允许最多 N 个线程同时进入由 `WaitForXX` 和 `ReleaseSemaphore` 控制的代码区域——并发度大于 1。\n\n##### 内核结构：`_KSEMAPHORE`\n\n信号量由公共的 `_DISPATCHER_HEADER` 和计数上限 `Limit` 组成：\n\n```text\nkd> dt _KSEMAPHORE\nnt!_KSEMAPHORE\n   +0x000 Header           : _DISPATCHER_HEADER\n   +0x010 Limit            : Int4B       // 最大计数\n```\n\n其中：\n\n1. `Header.SignalState` 表示当前可用许可数量；\n2. `Limit` 表示计数上限；例如仓库最多存放 10 个资源，达到上限后就不能继续增加计数。\n\n##### 创建函数与初始计数\n\n用户态可以通过 `CreateSemaphore` 创建信号量：\n\n```cpp\nHANDLE CreateSemaphore(\n    LPSECURITY_ATTRIBUTES lpSemaphoreAttributes,\n    LONG lInitialCount,                          // 初始可用许可数量\n    LONG lMaximumCount,                          // 最大许可数量\n    LPCTSTR lpName\n);\n```\n\n`lInitialCount` 用于初始化 `Header.SignalState`，`lMaximumCount` 用于初始化 `Limit`。`lMaximumCount` 可以限制资源数量的上限。\n\n##### 计数模型与使用场景\n\n如下图所示，有 1 个生产者线程，每次生产 3 个资源，同时有 5 个消费者线程，需要保证不会有两个线程消费同一个资源。\n\n![d44d7552ad0320caeadc2e23a9e417ff&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/283328332ab878c80c15234c9dccb8131c0fe72dfa2563fe0faa5067e848d1a4.jpg)\n\n信号量可以把新生产的 3 个资源表示为 3 个可用许可，从而只允许 3 个消费者成功完成等待。如果改用事件对象，控制会更困难：\n\n1. 使用同步事件时，事件的 `SignalState` 只有 0 和 1，一次通常只能放行一个消费者，无法直接表示 3 个资源；\n2. 使用通知事件时，事件保持有信号状态，可能使 5 个消费者都被唤醒，但实际只有 3 个资源，从而产生无效唤醒和额外竞争。\n\n因此，信号量的核心特性是利用 `SignalState` 的计数语义，使能够成功等待的线程数量与可用资源数量相匹配。\n\n#### 互斥体\n\n**背景**：同步事件或最大计数为 1 的信号量可以在正确协议下模拟互斥，但它们不记录所有者，也不具备互斥体的递归获取和遗弃检测语义。\n\n**互斥体专门表达所有权互斥，而非数量上的互斥使用**，主要解决了两个问题：\n\n1. **资源遗弃**：线程获得互斥对象后异常退出，未能主动释放对象。普通事件或信号量协议可能使其他线程永久等待。如果 B 进程的 Y 线程还未来得及调用函数释放资源就异常退出，那么 X 线程可能永久等待，这就是资源遗弃问题：\n   ![8e678139dc8db1e1d70795e506bada60&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/e50272957d1fa8883ab148f12d7e5c3faddfea6c2340c9fe0d83efc48f261e84.jpg)\n2. **同线程重入**：线程尚未释放锁，又通过直接调用、回调或其他路径再次进入同一段代码。普通事件或信号量协议会使线程等待自己，从而发生死锁。图中的 A 和 Z 可以理解为同步事件或最大计数为 1 的信号量；它们本身不记录线程所有权：\n   ![e53adddf4c0a11dd19ae53889ca746aa&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/ce967f680e081caabf36fc10ab8e26c372a73be03455685e3531de51436cb444.jpg)\n> 事件、信号量和互斥体三者都对应内核对象，因此也可以用于跨进程的线程同步。\n##### 内核结构：`_KMUTANT`\n\n互斥体对应的内核结构如下：\n\n```text\nkd> dt _KMUTANT\nnt!_KMUTANT\n   +0x000 Header           : _DISPATCHER_HEADER\n   +0x010 MutantListEntry  : _LIST_ENTRY    // 链接到所属线程拥有的 mutant 链表\n   +0x018 OwnerThread      : Ptr32 _KTHREAD // 当前所有者线程\n   +0x01c Abandoned        : UChar          // 是否已被遗弃\n   +0x01d ApcDisable       : UChar          // 持有期间是否禁用内核 APC\n```\n\n这些字段分别支持不同机制：\n\n1. `OwnerThread` 与 `Header.SignalState`：记录所有权和递归获取层数；\n2. `MutantListEntry` 与 `Abandoned`：支持线程退出时的遗弃恢复；\n3. `ApcDisable`：控制持有互斥体期间是否允许执行 APC。\n\n##### 创建函数与初始化\n\n用户态可以通过 `CreateMutex` 创建互斥体：\n\n```cpp\nHANDLE CreateMutex(\n    LPSECURITY_ATTRIBUTES lpMutexAttributes,\n    BOOL bInitialOwner, // 当前线程是否在创建时立即拥有互斥体\n    LPCTSTR lpName      // 对象名称\n);\n```\n\n在当前实验版本的抽象流程中，初始化逻辑可以表示为：\n\n```cpp\nMUTANT.Header.Type = 2;\nMUTANT.Header.SignalState = bInitialOwner ? 0 : 1;\nMUTANT.OwnerThread = bInitialOwner ? 当前线程 : NULL;\nMUTANT.Abandoned = 0;\nMUTANT.ApcDisable = 0;\nif (bInitialOwner == TRUE)\n{\n    // 将当前互斥体挂入当前线程 KTHREAD 拥有的 mutant 链表上\n}\n```\n\n其中：\n\n1. 若 `bInitialOwner == FALSE`：则 `SignalState = 1`，表示互斥体空闲、有信号，任意线程都可以立即获取；\n2. 若 `bInitialOwner == TRUE`：则 `SignalState = 0`，表示当前线程从创建时就拥有互斥体，对其他线程而言是无信号状态。\n\n##### 递归获取机制\n\n当 `SignalState = 0` 时，其他线程无法成功等待，但 `OwnerThread` 所指向的线程仍可再次获取该互斥体。每次递归获取都会继续降低内部计数，直到达到内核允许的边界。\n\n为什么所属线程在互斥体无信号时仍然可以获取它？来看 `KeWaitForMultipleObjects` 的关键逻辑：\n\n![58d838d1740fa3af63990b9a7b9ca7de&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/8be8d26aae043de6db631e4f316b445bf5b5840e8c8dccdc7723bf7a1f1d8922.jpg)\n\n图中标记处，判断是否有信号**或者**当前线程是互斥体的所属线程，若满足条件会将 `SignalState` 减 1，并判断这是否是第一次获取；如果是第一次获取，还会设置所有者并插入相关链表。**核心逻辑**：当 `SignalState = 0` 时，别的线程调用`WaitForXXX`函数，不会有反应，但是它的归属线程调用会有反应，可以重复、连续调用 `0x8000000` 次（`MINLONG`）。因此，拥有互斥体的线程可以递归获取同一个互斥体，**从而避免线程因再次申请自己持有的锁而死锁**。\n\n**注意**：只有递归获取层数完全释放后，互斥体才真正恢复为空闲状态。\n\n##### 遗弃恢复机制\n\n互斥体通过 `MutantListEntry` 和 `Abandoned` 处理所有者线程异常退出的问题。\n\n![56765ca59f2117f8c25c40f9719ecc2a&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/0e488f841b23ac4ebd37c1a0ab57ec688d72e5aaf69d275ec83fda98749db5e0.jpg)\n\n在线程终止清理过程中，系统会调用内核函数 `MmUnloadSystemImage`：遍历该线程拥有的 mutant（“死亡线程” `0x10` 位置指向的链表），并将其按遗弃状态调用 `KeReleaseMutant` 释放互斥体（详情参看下文）：相关互斥体会被标记为 `Abandoned`，所有权 `OwnerThread` 被清除，恢复 `SignalState = 1` ，并从死亡线程拥有的 mutant 链表中移除该互斥体，然后唤醒等待线程——可以获得该对象并收到遗弃状态。\n> 正常调用 `KeReleaseMutant` 时，函数会逐步恢复 `SignalState`。\n\n\n> [!NOTE] 应用场景\n> 互斥体的异常恢复机制与内核对象生命周期管理有关：进程终止后，系统会将互斥体置为废弃状态并允许其他线程获取。如：[DLL 加载器锁](/notes/n-dd9c05084aa04886aaf28b6ee955464c/)\n\n##### APC 控制机制\n\n用户态互斥体和内核态互斥体的结构相同，仅名称和 `ApcDisable` 成员值不同：\n\n```text\n> 用户态 Win32 互斥体\n  + 内核对象类型：Mutant\n  + ApcDisable：0\n```\n\n```text\n> 内核态 Mutex\n  + 内核对象类型：Mutex\n  + ApcDisable：1\n```\n\n`ApcDisable` 决定线程持有互斥体的运行期间是否禁止执行 APC，主要用于降低内核代码中的重入和死锁风险。\n> 相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)\n\n相关代码逻辑如下图所示：\n\n![58d838d1740fa3af63990b9a7b9ca7de&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/8be8d26aae043de6db631e4f316b445bf5b5840e8c8dccdc7723bf7a1f1d8922.jpg)\n> 在 `KeWaitForSingleObject` 中，若互斥体首次被使用，除了设置 `OwnerThread`，还会根据 `ApcDisable` 修改 `_KTHREAD.KernelApcDisable`：当 `ApcDisable = 0` 时，该字段不变；当 `ApcDisable = 1` 时，`KernelApcDisable` 减 1，变为非 0 值，从而禁止所有 APC（不只是内核 APC）。当释放互斥体的时候再加回来 `ApcDisable` 即可恢复原来的 `_KTHREAD.KernelApcDisable`。\n\n##### 互斥体的核心特性\n\n与同步事件和最大计数为 1 的信号量相比，互斥体额外记录了线程所有权，因此具有以下核心特性：\n\n1. 同一所有者线程可以递归获取互斥体；\n2. 所有者线程异常退出后，系统可以恢复并标记被遗弃的互斥体；\n3. 内核态互斥体可以在持有期间抑制 APC 的执行，降低重入和死锁风险。\n\n### 其它可等待对象\n\n下面列出一些可以在 WinDbg 中查看的结构体：\n\n![77c8ec7b1bb5c0bc99eaf66f039cd337&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/b62182ae0c17582da12847f2c72fb4d1b8d365bdb72b5a954b7de621d770a719.jpg)\n这些**结构体的第一个成员都是 `_DISPATCHER_HEADER`**：\n\n![3fea6a59f6d5a6c42bd706e362f5c8de&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/aaaedd51a13af010a8b607290444ea390e659f4cba746fa9751f67d0c4964619.jpg)\n> 这表示它们都是可等待对象。\n\n还有一些结构体包含 `_DISPATCHER_HEADER`，但它不是第一个成员。例如，`_FILE_OBJECT` 中的 `_DISPATCHER_HEADER` 位于 `0x5C` 偏移处：\n\n![db1f83edd7ea85d8bc947702c74384cd&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/6d660e62733b517a2d0226f619a55dd60f69ca0c028c762c0c5aae2e1939a62f.jpg)\n\n包含或嵌入 `_DISPATCHER_HEADER` 的结构体，就表示包含一个可等待的子对象。\n\n如果 `_DISPATCHER_HEADER` 不是外层结构体的第一个成员，就不会直接把外层结构体的起始地址作为等待对象地址，而是：\n![b6bc01da604a6418503900154312a7ed&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/a8fdf5190f889333eb0545fb17119ad2fe623b4f4bda2bcf33a0f584f76824f9.jpg)\n\n## 等待块 `_KWAIT_BLOCK`\n\n线程等待资源时，需要将自身挂入该资源的等待链表。但并不是直接挂入 `KTHREAD`，而是通过等待块完成这一操作。\n\n等待块是 `_KWAIT_BLOCK` 结构体，用来**建立线程与可等待对象之间的联系**：\n![2064c1cfce18d9a339af722cc0917729&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/5ce09fb92f41484535dc44b48d8a2c526fe5d4b05c2cd07fa0d40bfd0bc252ff.jpg)\n```text\nnt!_KWAIT_BLOCK\n   +0x000 WaitListEntry    : _LIST_ENTRY         // 稍后了解\n   +0x008 Thread           : Ptr32 _KTHREAD      // 当前线程地址\n   +0x00c Object           : Ptr32 Void          // 等待对象的地址（当前实验中为_KEVENT）\n   +0x010 NextWaitBlock    : Ptr32 _KWAIT_BLOCK  // 下一个等待块的地址；同一线程关联的多个等待块通过该字段构成单向循环链表，若只有一个等待块，则该字段指向自身\n   +0x014 WaitKey          : Uint2B              // 等待块的索引，当前为第一个等待块，因此该值为0\n   +0x016 WaitType         : Uint2B              // 等待类型，若当前只要有一个等待对象符合条件就可以使得线程被唤醒，那么该值就是1；如果你等待多个对象必须全部符合条件才可以使得线程被唤醒，那么该值0\n```\n\n---\n\n### 等待块的两种链接关系\n\n**等待块同时存在于两个链表中**：`_KWAIT_BLOCK.NextWaitBlock` 链接同一线程本次等待涉及的多个等待块，`_KWAIT_BLOCK.WaitListEntry` 链接等待同一对象的多个等待块。\n\n\n> [!NOTE]\n> \n> 线程使用的多个等待块会串成一个循环单链表，由线程结构体中偏移 `0x5C` 的成员指向：\n> \n> ![b788b0c22191d97bdda1dd4f0c155523&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/fe8955dff973aab194a9a037d95c5dcca364a9d567844a9b62a097361adf5825.jpg)\n> \n\n下面通过不同等待场景观察这两种关系。\n\n### 不同等待场景下的等待块\n\n#### 一个线程等待一个对象\n\n先看一个线程等待一个对象时，等待块如何连接线程与对象。\n\n首先在 XP 中编译下面这段代码：\n\n```cpp\n#include <windows.h>\n#include <stdio.h>\nHANDLE hEvent[2];\nDWORD WINAPI ThreadProc(LPVOID lpParameter)\n{\n    ::WaitForSingleObject(hEvent[0], -1);\n\n    printf(\"ThreadProc函数执行...\\n\");\n    return 0;\n}\nint main(int argc, char* argv[])\n{\n    hEvent[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL);\n\n    ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc, NULL, 0, NULL);\n\n    getchar();\n    return 0;\n}\n```\n\n运行程序后，在 WinDbg 中断下，找到当前进程中处于等待状态的线程地址。一个线程等待一个对象的情况可以表示如下：\n\n![b8c1df64c19f96c7bd5a415a2b9176a7&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/60481de1ac4778693f0b999beab370a2e0ce4b4639e1bbc7079654b07778171b.jpg)\n\n#### 一个线程等待多个对象\n\n接着增加等待对象，观察同一线程的多个等待块如何通过 `NextWaitBlock` 连接，并分别挂入不同对象的等待链表。\n\n修改代码：添加两个可等待对象，并将 `WaitForSingleObject` 替换为 `WaitForMultipleObjects`。\n\n需要注意的是，`WaitForMultipleObjects` 比 `WaitForSingleObject` 多两个需要关注的参数：\n- 第一个参数 `nCount` 表示等待对象的数量；\n- 第二个参数 `bWaitAll` 表示是否要求所有等待对象都满足条件。该参数决定等待块 `WaitType` 成员的值：`bWaitAll` 为 `FALSE` 时，`WaitType` 为 1；否则为 0。\n\n```cpp\n#include <windows.h>\n#include <stdio.h>\nHANDLE hEvent[2];\nDWORD WINAPI ThreadProc(LPVOID lpParameter)\n{\n    // ::WaitForSingleObject(hEvent[0], -1);\n    ::WaitForMultipleObjects(2, hEvent, FALSE, -1);\n\n    printf(\"ThreadProc函数执行...\\n\");\n    return 0;\n}\nint main(int argc, char* argv[])\n{\n    hEvent[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL);\n    hEvent[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL);\n\n    ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc, NULL, 0, NULL);\n\n    getchar();\n    return 0;\n}\n```\n\n仍然按照前面的步骤找到处于等待状态的线程地址，再查看其等待块。此时可以看到两个等待块通过 `NextWaitBlock` 字段连接：\n\n\n![c76cf2b67222aee701d176abcb89ecd6&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/ff2fdadc124483c2fd15fa82138a247d4d6b1d3d92465511f69badceebd7ebfe.jpg)\n\n再查看第二个等待块，因为等待的是事件对象，所以 `Object` 成员指向 `_KEVENT` 结构体，将 `Object` 的地址代入 `_DISPATCHER_HEADER` 结构体进行查看：\n![7a4c004ef15a86b6b4069857b784d04f&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/712b028800fb68522cb20848535fbc8baeb07c38f836d30b94b0cf1b98f73349.jpg)\n\n可以看到，`_DISPATCHER_HEADER` 在偏移 `0x8` 处有一个 `WaitListHead` 成员。该成员指向等待该 `_KEVENT` 的所有等待块，这些等待块通过链表连接。\n> 多个等待块表示有多个线程正在等待该对象\n\n\n综上，一个线程等待多个对象的情况可以表示如下：\n\n![2fac29f4cb2839f9909de4b56a698717&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/8e221f6a020219887d51834385e09ceb7d5a8874e1603568f31b03d94721ac5b.jpg)\n#### 多个线程等待多个对象\n\n最后扩展到多个线程等待多个对象时的等待关系，观察对象等待链表如何组织来自不同线程的等待块，如下图所示：\n\n![988a86532e5df85d04bc2981a3647603&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/7b19e47d56c17650ccbeea6d9cc3548fb6ca3ebfae922c648303226cb97ff5ce.jpg)\n\n**核心逻辑**：\n1. 线程处于等待状态时，至少有一个等待块；`KThread+5C` 指向首个等待块。\n2. 一个等待块同时位于两个链表中：线程链表和等待对象链表。\n\n### `_KTHREAD` 中的预留等待块\n\n微软在设计线程结构体 `KTHREAD` 时，预留了一段空间作为该线程的等待块，即 `_KTHREAD` 中偏移 `0x70` 处的 `WaitBlock` 成员。**该成员提供 4 个等待块的空间**，大小为 `0x4` × `_KWAIT_BLOCK` 的大小。\n\n```text\nkd> dt _KTHREAD\nnt!_KTHREAD\n   +0x000 Header           : _DISPATCHER_HEADER\n   ...\n   +0x05c WaitBlockList    : Ptr32 _KWAIT_BLOCK\n   ...\n   +0x070 WaitBlock        : [4] _KWAIT_BLOCK\n```\n\n以“一个线程等待一个对象”的代码为例，可以查看该成员的使用情况，如下图所示：\n![86d111a863da34146f94a885fdb6068d&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/4a1277d35a1541ef922b043fb7ea1dc00201dfad34c86f2e05095eb6add505e4.jpg)\n4 个等待块空间中，第一个和第四个已经被挂入等待链表，**但代码只等待了一个对象**：第一个等待块对应正在等待的对象；第四个等待块是固定用途的——用于等待定时器对象。\n> 每个线程在 `KTHREAD` 中都有一个属于自己的定时器对象，相关内容参考：[Windows 定时器机制](/notes/n-48ef5d04ee454d78a7649c6a06ad0c08/)\n\n目前第四个等待块并未实际参与当前等待（`KTHREAD.WaitBlockList` 指向第一个等待块，单向循环链表也没有指向第四个等待块），这是因为调用 `WaitForSingleObject` 时将超时时间设置为 `-1`，表示无限等待，因此不需要使用定时器；如果将超时时间设置为正整数，定时器就会被启用。\n\n---\n\n微软只预留了 4 个等待块，其中一个通常保留给定时器。因此，当等待对象数量超过 3 时，需要提供**其它的等待块数组**；\n> 由哪一层提供取决于具体入口函数和 Windows 版本。\n\n当等待 4 个对象时，需要额外申请能存储四个等待块的空间（而不是一个）。如下图所示，当等待 4 个对象时，`KTHREAD+0x5C` 处指向的等待块地址并不是 `KTHREAD+0x70` 处的等待块，而是另一片连续内存空间：\n> **注意**：预留的前 3 个等待块未被使用。但是用于等待定时器的等待块仍然使用原来的空间。\n\n![bf19f2c21fcc1207958f9515d0720faa&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/b173e98b6cf0443a3e56fb2b5d2646eb2aea56f78ce9c5529fc82ff7ff4d6e94.jpg)\n## 等待函数分析\n\n无论可等待对象的类型如何，线程都通过 `WaitForSingleObject` 或 `WaitForMultipleObjects` 函数进入等待状态，**这两个函数是理解线程等待与唤醒机制的核心**。\n\n本节以 `WaitForMultipleObjects` 为例，分析线程等待与唤醒机制的本质。\n> `WaitForSingleObject` 是 `WaitForMultipleObjects` 的特例，因此以后者为例进行介绍。\n### 等待 API 的调用链\n\n`WaitForMultipleObjects` 用于同时等待多个对象，其函数格式如下：\n\n```cpp\nDWORD WaitForMultipleObjects(\n    DWORD        nCount,         // 等待对象数量\n    const HANDLE *lpHandles,     // 句柄数组\n    BOOL         bWaitAll,       // TRUE：等待全部对象；FALSE：等待任意一个对象\n    DWORD        dwMilliseconds  // 超时时间\n);\n```\n\n该函数最终会进入 `NtWaitForMultipleObjects`：\n\n```cpp\nNTSTATUS NtWaitForMultipleObjects(\n    [in] ULONG           Count,       // 等待对象数量\n    [in] PHANDLE         Handles,     // 句柄数组\n    [in] WAIT_TYPE       WaitType,    // WaitAll 或 WaitAny\n    [in] BOOLEAN         Alertable,   // 是否允许插入用户 APC 时唤醒线程从而打断等待\n    [in] PLARGE_INTEGER  Timeout      // 超时时间\n);\n```\n\n`NtWaitForMultipleObjects` 主要完成三件事：\n\n1. 遍历句柄数组，逐个调用 `ObReferenceObjectByHandle`；\n2. 将每个句柄转换为对应的调度器对象地址，并保存到对象指针数组中；\n3. 将对象地址数组传给 `KeWaitForMultipleObjects`，进入真正的多对象等待逻辑。\n\n其核心过程可简化为：\n\n```cpp\nfor (ULONG i = 0; i < Count; i++)\n{\n    ObReferenceObjectByHandle(\n        Handles[i],\n        SYNCHRONIZE,\n        NULL,\n        PreviousMode,\n        &Objects[i],\n        NULL\n    );\n}\n\nStatus = KeWaitForMultipleObjects(\n    Count,           // 等待对象的数量\n    Objects,         // 等待对象地址数组\n    WaitType,        // WaitAny：等待任意一个；WaitAll：等待全部\n    UserRequest,     // 等待原因，记录在线程的 WaitReason 中\n    PreviousMode,    // 等待模式，决定用户 APC 能否打断等待\n    Alertable,       // 是否为可警觉等待\n    Timeout,         // 超时时间；NULL 表示无限等待\n    WaitBlockArray   // 对象等待使用的 KWAIT_BLOCK 数组，不超过3个时传NULL即可\n);\n```\n\n因此，真正实现核心功能的是 **`KeWaitForMultipleObjects`** 内核函数。\n\n### `KeWaitForMultipleObjects` 的核心循环\n\n`KeWaitForMultipleObjects` 的核心逻辑位于一个循环中。下面通过伪代码说明它如何等待可等待对象：\n\n```cpp\nwhile(true)\n{\n    // 1. 判断对象等待条件是否满足：WaitAny 只需一个对象满足，WaitAll 要求全部对象满足\n    // 2. 若条件满足退出函数。若需要等待，则将等待块插入到所有等待对象的等待链表中\n    // 3. 切换线程，让出 CPU；\n    // 4. 唤醒恢复执行后：判断唤醒原因决定返回或继续循环\n}\n```\n\n这段伪代码的流程如下：\n1. 进入循环，根据当前等待模式（`WaitAny` 或非 `WaitAny`）判断等待对象是否有信号，即检查 `_DISPATCHER_HEADER.SignalState` 的值：\n\t- `WaitAny`：至少有一个对象可用；\n\t- 非 `WaitAny`：所有对象都可用。\n2. **若满足激活条件**：修改等待对象的 `_DISPATCHER_HEADER.SignalState`，然后退出函数。不同类型等待对象的修改方式不同，如下图以 `WaitAny` 分支为例说明等待对象可用时的余额扣减逻辑（在非 `WaitAny` 模式下，额度扣减逻辑相同）：\n\t1. 当等待对象的 `Type` 为 2（即互斥体）时，将 `SignalState` 减 1；\n\t2. 当等待对象的 `Type` 为 1（即同步事件）时，将 `SignalState` 设为 0（由于该值只有 0 和 1 两种可能，因此减 1 与置 0 等价）；\n\t3. 当等待对象的 `Type` 为 5（即信号量）时，将 `SignalState` 减 1；\n\t4. 当等待对象的 `Type` 为其它值时（比如通知事件、`EPROCESS`、`ETHREAD` 等），**不修改 `SignalState`**。\n\t   ![af4c5aba6e21bc1ef2ee8cf31120f122&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/9abc739882ae89d8a41e04726737500af0a5e22be526d1c6aa4fb74bfe9cbdf8.jpg)\n3. **不满足激活条件**：\n\t2. **进入等待**：将当前线程的等待块挂入所有等待对象的 `_DISPATCHER_HEADER.WaitListHead`。\n\t3. **让出 CPU**：进行线程切换，此时等待函数尚未执行完毕。（这一过程还涉及将线程挂入记录链表 `KiWaitListHead`。）\n\t4. **解除等待和恢复执行**：等待对象就绪、超时或 APC 等原因**可能使线程解除等待**。线程的唤醒条件由等待对象的 `SignalState` 和对象类型共同决定。不同类型的等待对象具有不同的唤醒条件，并通过相应函数实现。例如，`_KEVENT` 事件对象对应的唤醒函数是 `SetEvent`：由其他线程调用 `SetEvent` 函数，该函数会根据等待对象的 `WaitListHead` 找到相关等待块对应的线程，系统会移除该线程本次等待涉及的全部等待块，并将线程转为就绪状态。**线程转为就绪且获得 CPU 后**，线程从等待函数内部继续执行：判断本次等待的完成原因，例如：`STATUS_SUCCESS`、`STATUS_TIMEOUT`和 `STATUS_KERNEL_APC`（插入 APC 引起的唤醒，参考：[Windows APC 机制详解](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)），再决定退出函数还是继续循环。\n\t   \n\t5. 退出函数后，线程会将自身结构体 `0x5C` 处的内容清零，释放 `_KWAIT_BLOCK` 所占的内存，完成本次等待。\n\t   ![499bad99331a603de9a94a003544b58a&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/25813b32bf1b29b930b3127d304ceb2b8d73ae8a57d15a4d66e9aedf3e5dc0e9.jpg)\n\n\n**注意**：不满足激活条件时，无论等待模式是否为 `WaitAny`，都会将等待块插入所有等待对象的等待链表：\n1. 对于 `WaitAny`，这是因为当前没有任何对象可用，但任意一个对象就绪后线程即可继续执行；\n2. 对于非 `WaitAny`（即 `WaitAll`），例如同时等待 A、B、C 时，即使当前只有 A 有信号，三个对象仍都会登记等待块。这样可以避免在这次等待中先取得部分对象、再保持这些对象等待其余对象，消除了这种局部获取方式带来的“请求并保持”。\n\n\n> [!QUESTION] 为什么对 `SignalState` 的修改不是原子操作？\n> 实际上它是原子操作，使用的是一把通用性很强的锁——调度器数据库锁，这把锁专门用于调度线程、维护调度状态等。会在函数开头和结尾分别负责申请和释放该锁，因此在这里看不到相关逻辑。\n\n### APC 如何影响等待\n\n在 APC 章节中我们了解到，插入 APC 时：\n1. 插入用户 APC 会判断当前线程是否允许被唤醒（`Alertable = 1`）；\n2. 插入内核 APC 会直接唤醒线程。\n> 相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)\n\n唤醒时需要通过 `KiUnWaitThread` 传递唤醒原因。根据前面的分析，如果唤醒原因是 `STATUS_KERNEL_APC`，即内核 APC，线程继续执行循环，**仍会重新进入等待状态**；如果唤醒原因是 `STATUS_USER_APC`，即用户 APC，线程会从 0 环返回 3 环执行用户 APC，然后回到最初的 3 环位置，**此时本次等待已终止**。\n\n> [!QUESTION] 唤醒原因如何传递？\n> 通过 `KTHREAD.WaitStatus` 传递。`SwapContext` 函数会读取该成员，并将其作为返回值。参考：[Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)\n\n\n> [!NOTE] 为什么标志位 `Alertable` 仅限制用户 APC 插入时能否唤醒线程？\n> \n> 用户 APC 需要判断线程能否被唤醒，主要不是因为它的“级别更低”，而是因为它必须返回用户态执行。内核 APC 执行结束后仍会回到 `KeWaitForMultipleObjects`，重新检查条件并继续等待：\n> \n> ```text\n> STATUS_KERNEL_APC\n> → 执行内核 APC\n> → 返回等待函数\n> → 继续等待\n> ```\n> \n> 用户 APC 则必须先结束本次等待，使 `KeWaitForMultipleObjects` 返回 `STATUS_USER_APC`，再返回用户态执行用户 APC：\n> \n> ```text\n> STATUS_USER_APC\n> → 等待函数返回\n> → 返回用户态执行 APC\n> → 本次等待结束，不会自动恢复\n> ```\n> \n> 因此，限制只有 `WaitMode = UserMode` 且 `Alertable = TRUE` 时，用户 APC 才能打断等待；否则线程只能保持挂起状态。\n> \n> 相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)\n\n## 通知函数分析\n\n前面分析的是等待方如何检查条件、登记等待并让出 CPU。下面转到通知方：对象状态发生变化后，系统如何沿 `WaitListHead` 找到相关等待块，并判断线程的等待条件是否满足。\n\n不同的等待对象对应不同的通知函数。这些函数对等待对象 `SignalState` 的修改方式以及能够满足的等待数量各不相同。\n### 事件：`SetEvent` / `KeSetEvent`\n\n先看事件的唤醒函数 `SetEvent`。该函数对应的内核函数是 `KeSetEvent`，主要完成以下操作：\n![29e9ecd8ce6c1e78f6561d59dd164588&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/ce50eccfd28d4328c4a5807210c859b6b53617b58946891c89db7f3f18e3d98a.jpg)\n1. 将 `SignalState` 设为 1；\n2. 判断对象类型：\n\t1. 通知事件：**唤醒所有**等待该对象的线程；\n\t2. 同步事件：依次唤醒等待链表中的线程，直到遍历到链表末尾或遇到某个 `WaitAny` 线程。**注意传递的唤醒原因**：当线程的等待模式是 `WaitAny`（通过判断 `_KWAIT_BLOCK.WaitType` 是否为 1 得知），即线程只需等待任意一个对象就绪时，传递的唤醒原因是等待块的索引（表示第几个等待对象），且已经替 `WaitAny` 线程扣减了资源额度，所以该线程调度后直接退出等待函数（唤醒原因决定被唤醒线程继续循环还是退出函数）。\n\n如下图所示，验证了是否为 `WaitAny` 模式带来的差异：\n ![80ecf799e0cea0c5a861b80eba513c90&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/34bd34913cb75a0d5e81a9392dddb21b187aac008c04ff124f69ecc901398d55.jpg)\n\n### 信号量：`ReleaseSemaphore` / `KeReleaseSemaphore`\n\n释放信号量对象的函数是 `ReleaseSemaphore`，其语法如下：\n\n```cpp\nBOOL ReleaseSemaphore(\n  HANDLE hSemaphore,       // 信号量的句柄\n  LONG lReleaseCount,      // 增加的数量\n  LPLONG lpPreviousCount   // 输出增加前的数量\n);\n```\n\n该函数在 0 环对应 `KeReleaseSemaphore`。通过 WRK 分析可知，该函数会：\n![054143557a503917acd52af3e4eda964&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/570364548cb6f5cc1c41704be4690b742839cc3aa496f40788ad7151eb05fc2e.jpg)\n1. 首先**将原 `SignalState` 与 `lReleaseCount` 相加**，再将结果写回 `SignalState`；\n2. 然后根据 `SignalState` 原值是否为 0，以及等待对象的等待链表是否为空，决定是否调用 `KiWaitTest`：该函数会遍历等待对象的等待链表，依次唤醒线程，直到遍历到链表末尾，或已经唤醒了与新增资源数相同数量的 `WaitAny` 线程。**注意传递的唤醒原因**：对于 `WaitAny` 线程，唤醒原因是等待块的索引，且替 `WaitAny` 线程完成了资源额度扣减，所以该线程调度后直接退出等待函数（唤醒原因决定被唤醒线程继续循环还是退出函数）。\n\n**核心逻辑**：因为被唤醒的非 WaitAny 线程不一定会消耗资源：发现自己依然无法运行就没有消耗资源。但遇到一个 WaitAny 就能确保一定消耗一个资源。\n\n### 互斥体：`ReleaseMutex` / `KeReleaseMutant`\n\n释放互斥体除了需要恢复 `SignalState`，还涉及递归获取层数、`OwnerThread`、所属线程的互斥体链表：\n\n![f418e1136756f8de35b7677e5fa4afe1&#95;MD5&#46;jpg](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/2c5c3301edabcbd541350e5bde6707ceabbbe28f15d967d188f7c7dbbac1f5f6.jpg)\n\n1. 若调用传入了\"遗弃\"标志，则表示当前互斥体的持有者异常终止，需要恢复互斥体 `SignalState` 为 1，设置 `Abandoned`。\n2. 若未传入\"遗弃\"标志，且当前线程为互斥体的所属线程，则对 `SignalState` 加 1。**注意**：对于事件对象，任何线程均可调用 `SetEvent` 释放资源（即使可能是错的）。\n3. 此次释放后，若互斥体变为无主状态，则：从原来的线程互斥体链表中摘除、清除 `OwnerThread`，若有等待该互斥体的线程，同样调用 `KiWaitTest`函数（参看上文）。\n\n> 可以看到，只有递归获取层数完全释放后，互斥体才会真正恢复为可供其他线程获取的状态。\n\n---\n\n## 实践案例\n\n### 获取线程执行的返回值\n\n线程执行完毕会有一个返回值（`DWORD` 类型），但是创建线程的函数在创建完毕线程后就直接返回了。可以通过 `GetExitCodeThread` 函数获取线程结束后的返回值：\n\n```c\nHANDLE hThread;\nhThread = CreateThread(NULL, NULL, ThreadProc, NULL, 0, NULL);\nWaitForSingleObject(hThread, INFINITE);\n\nDWORD exitCode;\nGetExitCodeThread(hThread, &exitCode);\nprintf(\"Exit Code: %d \\n\", exitCode);\n```\n\n该函数要搭配着 `WaitForSingleObject` 等等待函数一起使用，不然获取到的值就不会是线程函数最终返回的值（如果未结束返回 `STILL_ACTIVE`）。\n> **核心逻辑**：线程执行完毕后，其内核对象并不会立刻被销毁，且会设置自己的信号状态，并将返回值存放到该内核对象中。参考：[Windows 句柄机制](/notes/n-399db2c150e54f6db70dc0058623ffb0/#h-44dc3ea7010840a16422)\n\n![9a19170d9b97f2be9b63d53f58f7dbb8&#95;MD5&#46;png](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/c0f9b21facf41ca14c4ca240193917e795ad85afa5e767634f264948e6b1efdf.png)\n\n### 防止程序多开\n\n`CreateMutex` 函数：如果命名的 `Mutex` 对象在函数调用前已经存在，函数返回现有对象的句柄，`GetLastError` 返回 `ERROR_ALREADY_EXISTS`。\n\n通过判断 `GetLastError()` 是否返回 `ERROR_ALREADY_EXISTS`，可以实现单实例运行：\n\n```cpp\nHANDLE cm = CreateMutex(NULL, TRUE, \"Unique_App_Identifier\");\nif (cm != NULL && GetLastError() == ERROR_ALREADY_EXISTS) {\n    printf(\"程序已在运行中。\\n\");\n    CloseHandle(cm);\n    return 0;\n}\n```\n\n![3011fa913ab9eb493c8e88d7f9f3f666&#95;MD5&#46;png](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/bfddbfa2995f820798f3de2eb7561a763f0a1df6c92c7c3c64c047df763743d9.png)\n![6109d7af0289d14ba367a00a634d0aea&#95;MD5&#46;png](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/media/ed0856d551e66cd9515dbf4644ccdcecdad3a3b2ec1dd292774ccb3eee96130d.png)\n\n\n## 总结\n\n事件、信号量和互斥体使用同一套等待框架，但它们对 `SignalState` 的解释、消耗方式和一次能够满足的等待数量不同。\n\n\n`SetEvent` 等函数使线程解除等待时，会清除该线程的所有等待块，而不仅仅是当前等待链表中的那个等待块。线程被重新调度后，会自行判断当前条件是否仍满足；如果不满足，就会再次将等待块挂入相应等待对象的等待链表中。\n> `KiUnwaitThread` 函数负责将当前线程从等待链表中摘除：通过将 `KTHREAD.WaitListEntry` 链表的 `Flink`、`Blink` 进行位置交换，从而实现从等待链表中摘除当前线程\n\n例如，线程同时等待 3 个对象时：\n\n```\nThread->WaitBlockList\n    ├── WaitBlock[0] → EventA.WaitListHead\n    ├── WaitBlock[1] → EventB.WaitListHead\n    └── WaitBlock[2] → Semaphore.WaitListHead\n```\n\n当 `EventB` 满足等待条件时，摘除的并不只是 `WaitBlock[1]`，而是该线程的全部等待块：\n\n```\nEventA.WaitListHead     ← 摘掉 WaitBlock[0]\nEventB.WaitListHead     ← 摘掉 WaitBlock[1]\nSemaphore.WaitListHead  ← 摘掉 WaitBlock[2]\n```\n",
+  "id": "eaedaf73-c12f-4b0a-9808-ad59b11f9e04",
+  "metadata": {
+    "tags": [
+      "os/windows/thread",
+      "reverse/windows",
+      "arch/x86",
+      "cs/concurrency"
+    ],
+    "title": "Windows 并发控制（2）：可等待对象、等待块与唤醒机制"
+  },
+  "resources": [
+    "0e488f841b23ac4ebd37c1a0ab57ec688d72e5aaf69d275ec83fda98749db5e0.jpg",
+    "25813b32bf1b29b930b3127d304ceb2b8d73ae8a57d15a4d66e9aedf3e5dc0e9.jpg",
+    "283328332ab878c80c15234c9dccb8131c0fe72dfa2563fe0faa5067e848d1a4.jpg",
+    "2c5c3301edabcbd541350e5bde6707ceabbbe28f15d967d188f7c7dbbac1f5f6.jpg",
+    "34bd34913cb75a0d5e81a9392dddb21b187aac008c04ff124f69ecc901398d55.jpg",
+    "3743388a550d17afab9f2efd2b8bc6c7a14d2da184af13a0c2447b692e19178f.jpg",
+    "437ec3455ae1279f27d7b033154a6bdf843880238219161b90b4ec2107856834.png",
+    "4a0ade1ac98c3e7e1695ab64ff2320537f3b7c66a5114317eeb37161521e36a0.jpg",
+    "4a1277d35a1541ef922b043fb7ea1dc00201dfad34c86f2e05095eb6add505e4.jpg",
+    "570364548cb6f5cc1c41704be4690b742839cc3aa496f40788ad7151eb05fc2e.jpg",
+    "5ce09fb92f41484535dc44b48d8a2c526fe5d4b05c2cd07fa0d40bfd0bc252ff.jpg",
+    "60481de1ac4778693f0b999beab370a2e0ce4b4639e1bbc7079654b07778171b.jpg",
+    "631ee7a7460dbda75c9d4d4be2ecdaf39216de060347f7556d70bd6af116d13d.jpg",
+    "6d660e62733b517a2d0226f619a55dd60f69ca0c028c762c0c5aae2e1939a62f.jpg",
+    "712b028800fb68522cb20848535fbc8baeb07c38f836d30b94b0cf1b98f73349.jpg",
+    "7809903403f19529439c309491b633a38931c29c9b61ce2cb5cb664f125ab35c.png",
+    "7b19e47d56c17650ccbeea6d9cc3548fb6ca3ebfae922c648303226cb97ff5ce.jpg",
+    "8be8d26aae043de6db631e4f316b445bf5b5840e8c8dccdc7723bf7a1f1d8922.jpg",
+    "8e221f6a020219887d51834385e09ceb7d5a8874e1603568f31b03d94721ac5b.jpg",
+    "92b06c3d9e40f93ed283f6e7fb50c62814de93e304eed281cf0c041bcda68065.jpg",
+    "9abc739882ae89d8a41e04726737500af0a5e22be526d1c6aa4fb74bfe9cbdf8.jpg",
+    "a8fdf5190f889333eb0545fb17119ad2fe623b4f4bda2bcf33a0f584f76824f9.jpg",
+    "aaaedd51a13af010a8b607290444ea390e659f4cba746fa9751f67d0c4964619.jpg",
+    "b173e98b6cf0443a3e56fb2b5d2646eb2aea56f78ce9c5529fc82ff7ff4d6e94.jpg",
+    "b62182ae0c17582da12847f2c72fb4d1b8d365bdb72b5a954b7de621d770a719.jpg",
+    "bfddbfa2995f820798f3de2eb7561a763f0a1df6c92c7c3c64c047df763743d9.png",
+    "c0f9b21facf41ca14c4ca240193917e795ad85afa5e767634f264948e6b1efdf.png",
+    "ce50eccfd28d4328c4a5807210c859b6b53617b58946891c89db7f3f18e3d98a.jpg",
+    "ce967f680e081caabf36fc10ab8e26c372a73be03455685e3531de51436cb444.jpg",
+    "e50272957d1fa8883ab148f12d7e5c3faddfea6c2340c9fe0d83efc48f261e84.jpg",
+    "ed0856d551e66cd9515dbf4644ccdcecdad3a3b2ec1dd292774ccb3eee96130d.png",
+    "ed2e571e624667e55c86bd37bb67c30fbb5996c2922c6d4b77aa6df7a61283ab.jpg",
+    "fe8955dff973aab194a9a037d95c5dcca364a9d567844a9b62a097361adf5825.jpg",
+    "ff2fdadc124483c2fd15fa82138a247d4d6b1d3d92465511f69badceebd7ebfe.jpg"
+  ],
+  "url": "/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/"
+}

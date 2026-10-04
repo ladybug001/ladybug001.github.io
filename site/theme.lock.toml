@@ -1,0 +1,8 @@
+schema_version = 1
+theme = 'stack'
+version = '4.0.3'
+commit = '3e123a30b79b5d52a3a8e88a9dd678fcfd28e418'
+archive_sha256 = '7b7bdaa0d5d6fe8da7972fc1eb86cc2dadf2952eb821b1be65380160aab34b4b'
+hugo = '0.167.0'
+hugo_windows_amd64_sha256 = 'b04cdf0ae9098fe093ea90e1bd778d21649d71f55914d267aa60aa80b59074e0'
+hugo_linux_amd64_sha256 = '0163f5c3deddac1f494a1629ddc40c65d18de9d5794facd98f7f96ac2c7d8957'

@@ -1,0 +1,53 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-2dc58c4a756daab5df9a",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-d7838bbeb9138fe7051b",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-9d4f976d6a42cc4213cb",
+      "kind": "heading",
+      "offset": 2018
+    },
+    {
+      "id": "h-9fed7a9dd2b7e93545a0",
+      "kind": "heading",
+      "offset": 2864
+    },
+    {
+      "id": "h-3c61606863f4cb548b4c",
+      "kind": "heading",
+      "offset": 2912
+    },
+    {
+      "id": "h-819336becdf4c1f826d5",
+      "kind": "heading",
+      "offset": 3438
+    },
+    {
+      "id": "h-12213aeb077e27aba091",
+      "kind": "heading",
+      "offset": 3763
+    }
+  ],
+  "body": "# TLS1.2 握手流程\n## 常用流程解析\n使用下图来演示 TLS1.2 的握手过程，图中的请求使用 RSA 算法来协商会话密钥，共进行了四次握手：![](/notes/n-40bfe154a9514003b8b98ef574574c2e/media/474a7a87f51c9399287720e3289606079b81404316fd7fe6e03a4be94fceda6d.jpeg)\n>图片中的数据包未配置 Wireshark TLS 解密，故有些握手流程未被识别出来：`Encrypted Handshake Message` 其实就是 `Finished` 请求。\n\n1. 客户端发送 `Client Hello`消息，跟服务器打招呼，其中主要携带：\n\t- 客户端的TLS版本号（Version）\n\t- 客户端支持的加密套件列表（Cipher Suites）\n\t- 客户端生成的随机数（Client Random）\n\t- SNI（Server Name Indication），Nginx根据 SNI 匹配证书。\n2. 服务器收到客户端的 `Client Hello` 消息后，\n\t1. 首先回复 `Server Hello` 消息，其中主要包括：\n\t\t- 服务器确认支持客户端的TLS版本（Version）\n\t\t- 服务器从客户端发来的加密套件列表中选出一个最合适的加密组合（Cipher Suite）、\n\t\t- 服务器生成的随机数（Server Random）\n\t2. 服务器为了证明身份，会给客户端发送数字证书，即 `Certificate` 消息（其中包含CA机构为服务器颁发的公钥、CA机构签名等信息）\n\t\t- 服务器的信息：例如证书拥有者（服务器）的域名等信息；\n\t\t- 服务器的公钥：CA机构为这个服务器颁发的公钥，也是在后续TLS第三次握手时客户端所使用的公钥；\n\t\t- CA机构的签名：CA机构对证书的签名，即先对证书的明文部分计算哈希值（SHA256）得到摘要后，再用CA机构本身的私钥对摘要进行加密（RSA），得到CA机构的签名。\n\t3. 最后，服务器发送 `Server Hello Done` 消息给客户端，这条消息中并没有其他有价值的信息，仅仅是为了通知客户端第二次握手中服务器的所有消息都已发送完毕，\n3. 客户端在收到服务器返回的 `Server Hello` 和 `Certificate` 消息后，[验证证书是否可信](/notes/n-b7dbfaffe07f5e839320f3db28bb722b/)，若可信，**则信任并使用服务器证书中的RSA公钥**，随后：\n\t1. 客户端生成TLS握手过程中的 第三个随机数：`PreMaster`，并**用服务器的公钥对其加密**（RSA非对称加密的作用就在于对第三个随机数`PreMaster`的加密，前面两个随机数都是公开的），通过 `Client Key Exchange` 消息发给服务器：\n\t2. 接着，客户端使用它所拥有的三个随机数 `Client Random` 、`Server Random`、`PreMaster` 去生成 会话密钥：`Master Secret`。客户端通过 `Change Cipher Spec` 请求**通知服务器\"我\"接下来的数据将使用对称加密**（在此之前的握手消息都是明文的，但只要出现了`Change Cipher Spec` ，**之后的握手消息就都是密文**，wireshark抓到的数据包也会是乱码——[Wireshark 解密 TLS 流量](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/)）。\n\t3. 最后，客户端将之前的握手信息做成摘要，使用`Master Secret` 会话密钥加密，通过 `Encrypted Handshake Message` 发送给服务端，供服务器验证生成的会话密钥是否正确。\n4. 服务器进行第四次握手\n\t1. 服务器在收到客户端的 `Client Key Exchange` 消息后，使用RSA私钥对其解密，得到客户端生成的随机数 `PreMaster`，至此服务器也拥有了与客户端相同的三个随机数：`Client Random`、`Server Random`、`PreMaster`，服务器使用这三个随机数计算出会话密钥，随后发送 `Change Cipher Spec`请求**通知客户端\"我\"接下来的数据也将使用对称加密**（同理，之前的握手消息也都是明文）。\n\t2. 服务器通过 `Encrypted Handshake Message` 请求，将之前握手过程中的数据生成摘要，使用会话密钥加密后发给客户端，供客户端验证会话密钥是否正确。至此TLS四次握手完毕。\n\n\n\n## 完整握手流程\n\n![](/notes/n-40bfe154a9514003b8b98ef574574c2e/media/d07c9e9996eee144dd2ffabae12171591bd92978f17304efbb975883d82a1a32.jpeg)\n\n完整的 TLS1.2 握手流程如上图所示，其中部分内容是可选的且在大多数情况下没有使用：\n- 次序3：`Certificate`（服务端 → 客户端）\n\t- **作用**：服务端发送自己的证书，供会话密钥协商和客户端认证服务端身份。\n\t- 仅在使用 `TLS_DH_anon_WITH_` （匿名密钥交换算法）时不发送该请求，此时没有任何证书，完全匿名，没有身份验证，非常不安全，容易受到中间人攻击，浏览器和主流 TLS 实现默认**禁用**这类套件。\n- 次序4：`Certificate Request`（服务端 → 客户端）\n\t- **作用**：服务器请求客户端发送证书。\n\t- 这是双向认证中的关键一步，表示服务端想要验证客户端身份。\n- 次序5：`Server Key Exchange`（服务端 → 客户端）\n\t- **作用**：传递密钥交换所需的参数，比如 `Ephemeral DH` 公钥（如果使用 `DHE/ECDHE`）。\n    - 注意：如果使用 `RSA key exchange` 算法，它可能不出现。\n- 次序7：`Certificate`（客户端 → 服务端）\n\t- **作用**：客户端响应服务器的 `Certificate Request`，发送自己的证书。\n    - 客户端通过证书表明身份，供服务端验证。\n- 次序9：`Certificate Verify`（客户端 → 服务端）\n\t- **作用**：客户端用自己的私钥对前面握手消息签名，证明自己拥有证书对应的私钥。\n    - 没有这个步骤，服务端即使拿到客户端证书也无法确认客户端是否真的“持有”该证书（即有无对应私钥）。\n\n## 会话恢复\n\n会话恢复依赖 `Session ID` 和 `Session Ticket`。\n\n## 总结\n\n![](/notes/n-40bfe154a9514003b8b98ef574574c2e/media/2bcc37ea093220579d6b279e3e70791092d9fdc9b3462443b6c0e0da0900cc71.jpg)\n1. **ClientHello**：客户端发送支持的TLS版本、加密算法、随机数（Random1）。\n2. **ServerHello**：服务端确认版本/算法，返回随机数（Random2）和数字证书。\n3. **密钥交换**：客户端验证证书，用公钥加密随机数（Random3）发送给服务端。\n4. **生成会话密钥**：双方用Random1+2+3生成对称加密会话密钥。\n5. **加密通信**：后续数据使用会话密钥加密传输。\n\n通过上述操作后，在理想情况下：\n- 因为攻击者没有受信任的数字证书，所以无法替换服务器端发来的数字证书，进而攻击者**无法假冒**服务端/客户端。\n- 因为服务端/客户端使用的对称加密密钥，是借助数字证书的公私钥进行传输的，所以攻击者也无法获取该对称加密密钥，进而**无法解密**双方的流量包。\n- 摘要算法的存在，导致攻击者也**无法修改**流量包的数据\n\n## 问题\n\n> [!NOTE] 攻击者同样与服务端建立TLS1.2连接，使用自己与服务端建立连接后的会话密钥能解密我们的数据吗？\n> 答：不能，因为随机数(random1、random2、random3)，所以不同的主机A、B在与服务端进行通信时使用的会话密钥并不相同。\n\n\n> [!NOTE] 为何不全都使用非对称加密？\n> 非对称加密太耗时。为此，在生成会话秘钥之前使用非对称加密来保证密钥传输的安全性，在生成会话秘钥之后则使用会话秘钥进行对称加密，既保证效率又保证安全。\n\n\n> [!NOTE] 为什么要用多个随机数？\n> 因为浏览器和服务器各自生成的随机数可能不随机，但是多个伪随机数能够更加接近真实的随机数。防止伪随机数被预测。\n\n\n## 相关链接\n- [TLS1.2 wireshark抓包分析](https://blog.csdn.net/ArtAndLife/article/details/114240424)\n",
+  "id": "40bfe154-a951-4003-b8b9-8ef574574c2e",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "TLS 1.2 握手流程"
+  },
+  "resources": [
+    "2bcc37ea093220579d6b279e3e70791092d9fdc9b3462443b6c0e0da0900cc71.jpg",
+    "474a7a87f51c9399287720e3289606079b81404316fd7fe6e03a4be94fceda6d.jpeg",
+    "d07c9e9996eee144dd2ffabae12171591bd92978f17304efbb975883d82a1a32.jpeg"
+  ],
+  "url": "/notes/n-40bfe154a9514003b8b98ef574574c2e/"
+}

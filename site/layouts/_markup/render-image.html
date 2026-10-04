@@ -1,0 +1,21 @@
+{{- /* Adapted from Stack 4.0.3 (GPL-3.0): resolve the publisher's absolute
+       public URL back to a leaf-bundle resource, without fetching remote images. */ -}}
+{{- $name := strings.TrimPrefix .Page.RelPermalink .Destination -}}
+{{- $resource := .Page.Resources.Get $name -}}
+{{- $image := dict "Resource" nil "Permalink" .Destination "Width" nil "Height" nil -}}
+{{- if $resource -}}
+    {{- $image = partial "helper/image" (dict "Resources" .Page.Resources "Image" $name "Context" .Page) -}}
+{{- end -}}
+{{- $svg := eq (lower (path.Ext $name)) ".svg" -}}
+{{- partial "helper/responsive-image" (dict
+    "Resource" $image.Resource
+    "Widths" nil
+    "Attributes" (dict
+        "src" $image.Permalink
+        "width" $image.Width
+        "height" $image.Height
+        "alt" .PlainText
+        "title" .Title
+        "loading" (cond $svg "eager" "lazy")
+    )
+) -}}

@@ -1,0 +1,46 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c3051f1f99cb791838bb",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-a3f6d23e5b93f3ec2eed",
+      "kind": "heading",
+      "offset": 286
+    },
+    {
+      "id": "h-cf2b429d9c8bf120e3df",
+      "kind": "heading",
+      "offset": 383
+    },
+    {
+      "id": "h-1fa6f7e41ea4d852a986",
+      "kind": "heading",
+      "offset": 973
+    },
+    {
+      "id": "h-e52a6d7aacdb0fbbfe5c",
+      "kind": "heading",
+      "offset": 1048
+    },
+    {
+      "id": "h-2a962d0d56f454c6367e",
+      "kind": "heading",
+      "offset": 1300
+    }
+  ],
+  "body": "# x86 保护模式分段机制 (MOC)\n\nx86 保护模式下的硬件分段机制，以 Windows XP 为实验平台，通过 WinDbg 双机调试验证。\n\n分段机制由 CPU 硬件提供，Windows 决定其具体使用方式。两者分别对应**CPU 硬件机制与操作系统设计选择**：\n\n- `GDT`、权限检查公式、特权级堆栈切换——这些是**CPU 硬件机制**。\n- 不使用 `LDT`、降级使用 `TSS`（一核一个而非一线程一个）、段选择子平坦铺满 4 GB、将 `FS`/`GS` 用作内核专属结构体指针——这些是**Windows 的设计选择**。\n\n## 模式基础\n\n- [x86 与 x64 运行模式](/notes/n-298cb43cc9a0408f8e9aaca03ad64049/) — 先区分实模式、保护模式、长模式与代码位数。\n\n## 阅读顺序\n\n1. [x86 段寄存器与描述符体系](/notes/n-9865620a6a12491a86ee4494a0e2a392/) — 段寄存器 96 位结构、GDT/LDT/IDT 三表、描述符位域与 G 位展开\n2. [x86 特权级与权限检查](/notes/n-f0d382af8f164447a38c6a93c89e21f6/) — CPL/RPL/DPL 三级校验公式、最小权限原则、持续监控\n3. [x86 控制转移与特权级切换](/notes/n-9610ebe0eb6f4028a1298ac85264eca7/) — JMP FAR、CALL FAR 压栈模型、调用门构造实验\n4. [x86 中断的分类与触发机制](/notes/n-870bed2e9d0049498ba9ef4e6251c5cc/) — 中断分类、8259A 控制器与硬件触发周期\n5. [x86 中断门与陷阱门](/notes/n-12e2ce5ea6a84311952dd4ac3d4978c2/) — 门描述符、IRET 压栈、与调用门对比\n6. [x86 硬件任务切换&#65306;TSS 与任务门](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/) — TSS 结构体、TR 寄存器、硬件任务切换实验、任务门与 NT 位\n\n## 实验环境\n\n- [Windows 双机调试环境配置](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/)\n\n## 相关笔记\n\n- [内存管理演进&#65306;从实模式到保护模式](/notes/n-eaa94a0f935f447e98140d5afb4ab959/) — 实模式与保护模式的演进背景\n- [x86 保护模式分页机制 &#40;MOC&#41;](/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/)\n- [x86 标志寄存器](/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/) — EFLAGS 各标志位说明\n\n## 综合实验与系统应用\n\n- [x86 裸机实验&#65306;实模式进入保护模式](/notes/n-b8281eab11a94cc19572b938dead1e60/) — 在掌握分段和分页后验证模式切换与描述符配置。\n- [Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/) — 对照硬件任务切换与 Windows 的软件上下文切换。\n- [x86&#47;x64 体系结构](/notes/n-d80046d2d0bb4ae49616fceabab1054a/) — 返回指令、运行模式与内存保护总览。\n",
+  "id": "591f04ba-9578-4267-982e-bc62f2b0c04d",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows",
+      "arch/x86"
+    ],
+    "title": "x86 保护模式分段机制 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-591f04ba95784267982ebc62f2b0c04d/"
+}

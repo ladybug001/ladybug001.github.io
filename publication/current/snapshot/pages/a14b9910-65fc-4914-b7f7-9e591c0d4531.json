@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-91141c26d8ed7bd9e7bc",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-6a8ed085ddbfd39ad1d3",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-d6d12693eb7d249d6f4e",
+      "kind": "heading",
+      "offset": 121
+    },
+    {
+      "id": "h-2982568d148174d9fdc2",
+      "kind": "heading",
+      "offset": 131
+    },
+    {
+      "id": "h-2d160a032ffb19c3b13e",
+      "kind": "heading",
+      "offset": 419
+    }
+  ],
+  "body": "# JavaScript 原型链\n## 前言\n\n前置知识：\n- [JavaScript 继承机制](/notes/n-7799fc0e94bd47d092292791e1a5ca69/)\n\n## 原型链(Prototype Chain) 机制\n\n### 查找规则\n\n当访问对象 `obj` 的属性 `prop` 时，JavaScript 引擎遵循以下查找顺序：\n1. **自身查找**：检查 `obj` 自身是否拥有 `prop`（`hasOwnProperty`）。\n2. **原型查找**：如果没有，通过 `obj.__proto__` 访问其原型对象，检查原型对象中是否有 `prop`。\n3. **链式递归**：如果原型对象中也没有，继续查找原型的原型。\n4. **终止条件**：直到查找到 `null`（即 `Object.prototype.__proto__`）。若仍未找到，返回 `undefined`。\n### 链式图解\n![](/notes/n-a14b991065fc4914b7f79e591c0d4531/media/b5f78cb99c8621c4539b4254e3e6a81a89da95685128aa7452bd54b3ab14aee3.jpg)\n\n**核心关系解析**（基于上图）：\n1. **实例与构造函数**：实例 `teacher` 的 `__proto__` 属性指向构造函数 `Teacher` 的 `prototype` 属性。\n2. **原型对象的本质**：`Person.prototype` 本身是一个普通对象。作为对象，它的 `__proto__` 指向 `Object.prototype`（所有普通对象的顶层原型）。\n3. **链的终点**：`Object.prototype` 也是一个对象，但它的 `__proto__` 指向 `null`，标志着原型链的结束。\n\n```javascript\nconst teacher = new Teacher('Buddy', 'White');\n\n// 查找 john.toString()\n// 1. john 自身有 toString 吗？ -> No\n// 2. john.__proto__ (Person.prototype) 有 toString 吗？ -> No\n// 3. john.__proto__.__proto__ (Object.prototype) 有 toString 吗？ -> Yes! 调用并执行\nconsole.log(teacher.toString());\n\n// 链的终点\nconsole.log(teacher.__proto__); // Teacher.prototype\nconsole.log(teacher.__proto__.__proto__); // Person.prototype\nconsole.log(teacher.__proto__.__proto__.__proto__); // Object.prototype\nconsole.log(teacher.__proto__.__proto__.__proto__.__proto__); // null\n```\n\n**公式**：\n```javascript\n对象.__proto__ === 构造函数.prototype\n```\n---\n",
+  "id": "a14b9910-65fc-4914-b7f7-9e591c0d4531",
+  "metadata": {
+    "tags": [
+      "lang/javascript"
+    ],
+    "title": "JavaScript 原型链"
+  },
+  "resources": [
+    "b5f78cb99c8621c4539b4254e3e6a81a89da95685128aa7452bd54b3ab14aee3.jpg"
+  ],
+  "url": "/notes/n-a14b991065fc4914b7f79e591c0d4531/"
+}

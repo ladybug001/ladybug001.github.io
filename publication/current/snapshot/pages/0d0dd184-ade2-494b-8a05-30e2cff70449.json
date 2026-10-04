@@ -1,0 +1,266 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-9f9faa7f76533d5fc7b4",
+      "kind": "heading",
+      "offset": 12
+    },
+    {
+      "id": "h-7089ec21283dfa63ad3d",
+      "kind": "heading",
+      "offset": 251
+    },
+    {
+      "id": "h-a870c6cce5f6f85c6db9",
+      "kind": "heading",
+      "offset": 359
+    },
+    {
+      "id": "h-4d48b7907101452142e7",
+      "kind": "heading",
+      "offset": 758
+    },
+    {
+      "id": "h-1791b6a6b1dc0db8e7cb",
+      "kind": "heading",
+      "offset": 770
+    },
+    {
+      "id": "h-9db9931f8ea3c94de7a1",
+      "kind": "heading",
+      "offset": 2990
+    },
+    {
+      "id": "h-983537db410ab78da309",
+      "kind": "heading",
+      "offset": 3675
+    },
+    {
+      "id": "h-632ab083591d2cdb1d15",
+      "kind": "heading",
+      "offset": 3932
+    },
+    {
+      "id": "h-0808e37513635171d441",
+      "kind": "heading",
+      "offset": 4325
+    },
+    {
+      "id": "h-2145fc25cbbefa692730",
+      "kind": "heading",
+      "offset": 4551
+    },
+    {
+      "id": "h-73e234885db0a0003876",
+      "kind": "heading",
+      "offset": 4613
+    },
+    {
+      "id": "h-d902ff38e36ab7589a0f",
+      "kind": "heading",
+      "offset": 5221
+    },
+    {
+      "id": "h-af558d21fc7150e635b8",
+      "kind": "heading",
+      "offset": 5611
+    },
+    {
+      "id": "h-f09cfc99d25972853d69",
+      "kind": "heading",
+      "offset": 5635
+    },
+    {
+      "id": "h-a76d99e09875b882a9f2",
+      "kind": "heading",
+      "offset": 6663
+    },
+    {
+      "id": "h-e41b4ecca655c43e2ae6",
+      "kind": "heading",
+      "offset": 7023
+    },
+    {
+      "id": "h-6d087560e1acbedc2fa0",
+      "kind": "heading",
+      "offset": 7764
+    },
+    {
+      "id": "h-1b434cc5dfd535a36515",
+      "kind": "heading",
+      "offset": 7825
+    },
+    {
+      "id": "h-cc5ff90cc430acfbf688",
+      "kind": "heading",
+      "offset": 8337
+    },
+    {
+      "id": "h-268baaf9234cb3dbec7e",
+      "kind": "heading",
+      "offset": 8797
+    },
+    {
+      "id": "h-a6bb7911ca536006e356",
+      "kind": "heading",
+      "offset": 9309
+    },
+    {
+      "id": "h-9176639430e322c00b53",
+      "kind": "heading",
+      "offset": 10574
+    },
+    {
+      "id": "h-1546a7d1ba74347f89b6",
+      "kind": "heading",
+      "offset": 10586
+    },
+    {
+      "id": "h-62476d083f238ef54065",
+      "kind": "heading",
+      "offset": 11770
+    },
+    {
+      "id": "h-40157976c4fa13357517",
+      "kind": "heading",
+      "offset": 12149
+    },
+    {
+      "id": "h-570e3ef73dc9404c89c5",
+      "kind": "heading",
+      "offset": 12169
+    },
+    {
+      "id": "h-fc28f369d06ab3574ce2",
+      "kind": "heading",
+      "offset": 12898
+    },
+    {
+      "id": "h-8bd0d3b6f73740e6d9c9",
+      "kind": "heading",
+      "offset": 13262
+    },
+    {
+      "id": "h-fbf8eb2cc596aea5befa",
+      "kind": "heading",
+      "offset": 13907
+    },
+    {
+      "id": "h-7168da33d1ee84d8a41a",
+      "kind": "heading",
+      "offset": 14220
+    },
+    {
+      "id": "h-32e0cdc3ed1edc7cdf67",
+      "kind": "heading",
+      "offset": 14988
+    },
+    {
+      "id": "h-30306cdb85f6b7eb2cf8",
+      "kind": "heading",
+      "offset": 15003
+    },
+    {
+      "id": "h-e64041415a416289edb2",
+      "kind": "heading",
+      "offset": 15700
+    },
+    {
+      "id": "h-a46d7968711261ac15d7",
+      "kind": "heading",
+      "offset": 16319
+    },
+    {
+      "id": "h-8276353d7353504f1df1",
+      "kind": "heading",
+      "offset": 17118
+    },
+    {
+      "id": "h-a02056515ba313f84d0d",
+      "kind": "heading",
+      "offset": 17142
+    },
+    {
+      "id": "h-c4f603e3e02208b10152",
+      "kind": "heading",
+      "offset": 17774
+    },
+    {
+      "id": "h-da93063545820d552d6d",
+      "kind": "heading",
+      "offset": 17791
+    },
+    {
+      "id": "h-5c53c9a53cd9b94b3a07",
+      "kind": "heading",
+      "offset": 18179
+    },
+    {
+      "id": "h-63eeb5cdd7408c2faf03",
+      "kind": "heading",
+      "offset": 18411
+    },
+    {
+      "id": "h-78c6f1d921d9bf48b2ff",
+      "kind": "heading",
+      "offset": 18746
+    },
+    {
+      "id": "h-1ed546ea8c2fe7a502b4",
+      "kind": "heading",
+      "offset": 19630
+    }
+  ],
+  "body": "# ATL 开发 COM\n\n相关内容：\n1. [COM 组件设计思想](/notes/n-23c88c136e7d414f98de5192becb8546/)\n2. [COM 组件开发基础](/notes/n-59332a7e0ef740048875e7c1d3bf71e5/)\n---\n\n**就不介绍手动开发 COM 组件了，传统方法太费事情，直接学习框架吧。**\n\n和手工开发 `COM` 相比，使用 `ATL` 可以把大量样板工作交给框架，开发时更容易把注意力放在业务逻辑上。\n\n## 1) 简介\n\n`ATL` 是 `Active Template Library` 的缩写，它是一套面向 `COM` 开发的 `C++` 模板库；核心目标是尽可能自动化 `COM` 开发中的样板工作。\n\n## 创建 ATL 工程\n\n创建 `ATL` 工程时，直接使用 `Visual Studio` 默认模板即可：\n\n![2fab0ced9d808120e6f040ec96b5ebd1&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/d320201e96ddbc2ef00c7d5ffb01c833de16f7b5a9d2f367d519a5fe0988e9eb.jpg)\n\n![0678ff6e05ba22e996effaf3bdff425e&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/8f893a51dec2c77ac2d0b251ff68c6cc12759f9257cf55cf6f8dbe9ee135a28c.jpg)\n\n### ATL 工程解析\n#### DLL 结构\n\n既然产物是 `DLL`，可以先查看 `dllmain` 相关文件：\n\n![efb6400f80fc12b7c198db9c87a18e2b&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/82210a478540e6af442c648d21ebc902dd2795e4a98ff451b72c976778db8376.jpg)\n\n通常会看到一个 `CATLProject1Module` 类型的全局变量 `_AtlModule`，而 `DllMain` 会被转发到 `_AtlModule.DllMain(...)`。\n\n---\n\n我们知道 `COM` 组件 `DLL` 会导出固定的几个函数，继续查它们的声明和定义，可以在 `ATLProject1.cpp` 中看到：\n\n![4b1f04f065b306364ebe3c3df1491417&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/9bdfcddd841107bc609ad546416eca9dbdf21068117b217bb2102232dccbe2c3.jpg)\n\n\n这些导出函数最终都会调用 `_AtlModule` 的对应成员函数，这是因为 `_AtlModule` 的类型封装了标准 `COM DLL` 所需的模块级行为。\n> `_AtlModule` 相当于 `ATL` 提供的模块对象，用来承接 `DLL` 级别的初始化、类工厂分发、注册与卸载相关逻辑。\n\n---\n\n`_AtlModule` 的类型 `CATLProject1Module` 定义如下：\n\n![5959f77e8d029f791d3e02e288af8c63&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/74f02cd75e5bab5c1a7acc8b9c9355912ecae8692cbac1a93c349559f34c37d5.jpg)\n\n可以看到它继承自类模板 `CAtlDllModuleT`。\n> 这个模板负责 `DLL` 级别的公共逻辑，如 `DllMain`、`DllGetClassObject`、`DllCanUnloadNow`、`DllRegisterServer` 与 `DllUnregisterServer`。\n\n同时还有两个宏：\n```cpp\nDECLARE_LIBID(LIBID_ATLProject1Lib)\nDECLARE_REGISTRY_APPID_RESOURCEID(IDR_ATLPROJECT1, \"{b9f1abd2-74dd-4881-a8b9-5ea78ea4cf6d}\")\n```\n\n展开后：\n\n```cpp\nstatic void InitLibId() throw() {\n\tATL::CAtlModule::m_libid = LIBID_ATLProject1Lib;\n}\n\n\nstatic LPCOLESTR GetAppId() throw() {\n\treturn L\"{b9f1abd2-74dd-4881-a8b9-5ea78ea4cf6d}\";\n} static const TCHAR* GetAppIdT() throw() {\n\treturn L\"{b9f1abd2-74dd-4881-a8b9-5ea78ea4cf6d}\";\n} static HRESULT __stdcall UpdateRegistryAppId(BOOL bRegister) throw() {\n\tATL::_ATL_REGMAP_ENTRY aMapEntries[] = { { L\"APPID\", GetAppId() },{ 0, 0 } }; return ATL::_pAtlModule->UpdateRegistryFromResource(IDR_ATLPROJECT1, bRegister, aMapEntries);\n}\n```\n可以看到：\n- `DECLARE_LIBID(...)` 创建一个函数，返回值是 COM 组件的 `LIBID`。\n- `DECLARE_REGISTRY_APPID_RESOURCEID(...)` 创建一个函数，该函数通过资源 ID 找到注册信息，然后写入注册表。\n\n\n项目里还有一个 `.def` 文件。它用于控制 `DLL` 导出符号，其内容如下：\n\n![f715de798ba2846b7c914ad639fb1e74&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/ec6b553504529ca41b868130a5c7d55e5a7ea78c85ed2dbf02e148ef45fd8004.jpg)\n\n> 参考：[Windows 静态库与 DLL 的创建及使用](/notes/n-5b32137e0689438baa994e02aa4ef67a/#h-abe3aed051b934efcff4)\n\n#### IDL 文件\n\n`.idl` 对应的是 `IDL`（`Interface Definition Language`，接口定义语言），对 `COM` 组件非常关键，它相当于组件的接口说明书，用来定义组件暴露哪些接口、方法、`IID`、`CLSID` 以及类型库信息。\n\n![c6e482fffec4c913e064e78c83a8ab88&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/93659e385a9ae2eb37f6442a28c877abbe76dee5a894159bbdff7d2847829f7a.jpg)\n\n\n\n我们可以看一下这个 `IDL` 文件（非实际项目的 `IDL` 文件），其具体含义见：\n\n![1ace006db1317d3373030f283fbf26ee&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/abe9ba5e2acaf46d1566f3559c34c80d79f091bac161f8d87f8a7f90c1beafd1.jpg)\n注意两种括号的作用： \n- `{}` 的作用：定义“结构体/接口/作用域”的主体\n- `[]` 的作用：描述“属性/注解/元信息”\n\n在上图中，可以看到有三个层级： \n```c\nlibrary = COM 组件（给脚本/工具用）\ncoclass = 类（CLSID）\ninterface = 接口（IID）\n```\n\n##### 构建产物\n\n在 `ATL` 工程里，它通常由 `MIDL`（Microsoft Interface Definition Language）编译器处理，并生成诸如 `.h` 文件、`.c` 文件、`.tlb` 文件等；\n> 创建 `ATL` 项目或修改 `IDL` 后，`IDE` 会自动触发相应编译步骤，因此这些接口声明和标识符会同步进入工程可用的头文件或类型库中。\n\n`TLB` 是类型库文件，用于描述 `COM` 类型信息，承载的是接口元数据，可被其它语言用于获取接口信息。\n\n\n---\n#### `.rgs` 文件\n\n![dc49b3f672f182d5949b8b1c3b175edb&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/1a1d5dfffed475eb977238e3aee22df64d6ac86e4050d875d0b6fefad067ea04.jpg)\n\n注册表脚本文件通常是 `.rgs` 文件，该文件被 `.rc` 文件引用，这表示其数据会存储在 PE 文件的资源目录表中。\n\n注册时，ATL 会通过这些资源 ID 读取对应的 `.rgs` 内容，然后写入注册表。\n> 在 [](/notes/n-0d0dd184ade2494b8a0530e2cff70449/#h-1791b6a6b1dc0db8e7cb) 章节中，可以看到通过资源 ID 使用此文件内容的代码。\n\n##### 使用逻辑\n\n```\n.rgs 注册脚本\n   ↓ 被 .rc 作为资源引用\n.rc 资源脚本\n   ↓ 由资源编译器编译\n.res 资源文件\n   ↓ 链接进 DLL / EXE\nPE 资源目录\n   ↓ 注册时被读取\nDllRegisterServer / 注册工具\n   ↓ 调用 ATL 注册逻辑\nATL 从资源中加载 .rgs 脚本\n   ↓ 展开替换项，例如 %MODULE%、%CLSID%\n写入注册表\n```\n---\n\n#### 获取 CLSID\n\n组件的 `CLSID` 通常可以在 `IDL`、对象映射宏、注册脚本或生成后的注册表项中找到；\n\n## 添加 COM 类\n\n1. VS 中右键创建好的 `ATL` 项目，选择 `Add -> Module -> ATL Simple Object`（这里注意 `ProgID` 这个字段）：\n\n    ![ad5181f7c58b60a5ce8dbce2aa528aa6&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/c056c122f4db9fa66cb179642def11b802b86b8c028770949c10965b0247db13.jpg)\n**疑问**：上图的 `ProgID` 是什么？\n> `ProgID` 是便于人类阅读和书写的字符串标识，可以通过它映射得到 `CLSID`，可读性更强，方便人类理解记忆。\n2. 完成后，`IDE` 通常会生成头文件（`.h`）、实现文件（`.cpp`），并在 `IDL` 文件中补充相应内容：\n    \n    ![d8481702ea95914d4198297c5aa933b0&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/4e66b04dfbdc24ed57fe5cd90a3a4208c93bc31d1cbad5a07ff1fb5c2af0b467.jpg)\n\n\n### 为 COM 接口添加成员函数\n\n为 `COM` 接口添加函数时，本质上是在修改接口定义。虽然可以直接编辑 `IDL` 文件，但 `IDE` 提供了更方便的入口：转到类视图，找到抽象接口（双击后跳转到 `IDL` 文件），右键后选择添加方法。完成后，`IDL` 文件中会增加对应的方法定义，接口派生类头文件中会加入声明，源文件中也会生成默认实现。这里的示例是让该函数执行后弹出一个 `Hello World` 窗口。\n\n![d32f89bb0747864c55eb85a74c4be623&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/047063f144ff6084d7ae3b6f42edf6422feb8a6d5454512a29ed65974a98be32.jpg)\n## ATL 对 IUnknown 与类工厂的封装\n\n### IUnknown 与类工厂的隐式实现\n\n创建完 COM 类后，按理来说 COM 类要实现 `IUnknown` 的三个成员函数 `AddRef`、`Release`、`QueryInterface`，但为什么找不到？以及为什么找不到类工厂的定义和实现？\n\n这要结合几个模板类和相关宏一起看，常见的关键角色包括 `CComObjectRootEx`、`CComCoClass` 和 `OBJECT_ENTRY_AUTO`、`BEGIN_COM_MAP` 、`END_COM_MAP`：\n![705b2ccd15d30e6a4f0fbde23b1119b2&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/69aea391c76e49e240c9e6784966365004e1e7d7311d27315c2f1313f3fd2aaa.jpg)\n\n> **疑问**： 上图中，类前面的 `ATL_NO_VTABLE` 是干什么的？\n> \n> 它通常展开为 `__declspec(novtable)`，作用是阻止编译器在该类的构造函数和析构函数里初始化自己的 `vtable` 指针。这样做的前提是：这个类本身只是不可直接实例化的基类，真正负责实例化的通常是 `CComObject`、`CComAggObject` 或 `CComPolyObject` 这样的外层包装类。\n> 相关参考：[C&#43;&#43; 构造函数与析构函数](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/)\n\n\n可以看到我们的 COM 类继承了三个模板类：\n```c\npublic CComObjectRootEx<CComSingleThreadModel>, // 与 IUnknown 的三个函数有关\n\npublic CComCoClass<CATLSimpleObject, &CLSID_ATLSimpleObject>, // 与工厂类有关\n\npublic IDispatchImpl<IATLSimpleObject, &IID_IATLSimpleObject, &LIBID_ATLProject1Lib, /*wMajor =*/ 1, /*wMinor =*/ 0>, // 与解释型语言使用 COM 组件有关\n```\n\n### `CComObjectRootEx` 模板类\n\n`CComObjectRootEx` 模板类，提供 `InternalAddRef`、`InternalRelease`、`InternalQueryInterface` 等函数\n\n对应 `AddRef`、`Release`、`QueryInterface` 所需的基础逻辑，后续实现它们时，会调用 `Internal*` 函数。\n\n![a453a1cbfff08196ae1802aebe248bcf&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/c30d3f1a53611fea7da93de1e6396549c7e3c51c4f0d936fd6e0311ae1998d60.jpg)\n### `CComCoClass` 模板类\n\n`CComCoClass` 模板类，通过它继承两个新的类类型 `_ClassFactoryCreatorClass` 和 `_CreatorClass`，这两个类都含有一个静态函数 `CreateInstance`，分别用于创建类工厂 `CComObject<CComClassFactory>` 和完整的 COM 对象 `CComObject<COMObj>`。\n![d80ea0d131af2043ba675ad6901030a5&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/834b80b968afd35bf3e50782119c00bdd3db6eeff6bd07c0921fe78cb1d1b831.jpg)\n\n注意，这里可以看到 `_ClassFactoryCreatorClass` 是写死的，不依赖传入的模板 T，后续会用到这个知识点。\n\n`CComObject<COMObj>` 实现/重写了虚函数 `AddRef`、`Release`、`QueryInterface`，内部是调用 `Internal*` 的逻辑。注意，重写虚函数会使所有基类中的 `AddRef`、`Release`、`QueryInterface` 函数虚表项都被覆盖掉，通过 `thunk` 函数到真实的 `Internal*` 函数中，`thunk` 函数的作用是调整 `this` 的指向。\n> 相关内容参考：[C&#43;&#43; 多重继承下的虚函数重写](/notes/n-280e5cee71ff44e39a7c81ac3dc78743/)\n### `IDispatchImpl` 模板类\n\n`IDispatchImpl` 模板类，后面再介绍，这里先跳过。\n\n### `OBJECT_ENTRY_AUTO` 宏\n\n`OBJECT_ENTRY_AUTO` 宏是会把类的创建入口和注册相关信息放进对象映射表，存储在 DLL 文件中的某处，供项目中其它地方使用。    \n\n`OBJECT_ENTRY_AUTO` 宏展开后如下图所示：\n![c6ad19bad881aaa20327242ee783245a&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/a3345eb21450d6aae15a42cf016b6feb77f38c85481b86ab2629bcdc5d1c28cd.jpg)\n> 这段代码就是 ATL 自动生成的“CLSID 到 C++ 类创建函数”的登记表（映射表）。没有它，ATL 的 `DllGetClassObject` 就不知道某 CLSID 对应创建哪个类。\n\n指明类工厂创建函数就可以了，为什么还要指明 COM 对象的创建函数？ \n> 我们知道，工厂类是写死的，所以必须通过登记表指明 COM 对象创建函数，才能创建 COM 对象。换句话说，工厂类要通过登记表找到 COM 对象创建函数并且调用。\n\n#### 登记表的作用逻辑\n\n```\n编译期：  \n每个 ATL COM 类生成一个 __objMap_xxx  \n  \n链接期：  \n__pobjMap_xxx 被放到 ATL$__m 段中  \n  \n运行时：  \nATL 扫描对象表  \n  \nDllGetClassObject(CLSID_ATLSimpleObject)  \n↓  \n找到 __objMap_CATLSimpleObject  \n↓  \n调用 _ClassFactoryCreatorClass::CreateInstance  \n↓  \n返回类工厂  \n  \n类工厂 CreateInstance(...)  \n↓  \n调用 _CreatorClass::CreateInstance  \n↓  \n创建 CATLSimpleObject\n```\n\n这也是为什么可以通过 `atl.DllGetClassObject` 统一 DLL 创建 COM 对象的原因，通过这种“全局变量”的方式实现解耦。\n### `BEGIN_COM_MAP` 和 `END_COM_MAP` 宏\n\n`BEGIN_COM_MAP` 和 `END_COM_MAP` 的作用：声明一张“接口映射表”成员变量以及 `_InternalQueryInterface` 函数（该函数内调用 `InternalQueryInterface`），用来支持 COM 的 `QueryInterface`。\n> 调用链：`QueryInterface`=>`_InternalQueryInterface`=>`InternalQueryInterface`\n\n我们知道 COM 对象是支持多态的，主要依靠虚函数表和动态类型转换。\n\n我们也知道，动态类型转换是通过 `QueryInterface` 函数实现的，那么该函数的原理是什么呢？\n\n就是通过接口映射表，知道自己能不能转换为目标子对象，以及转换为目标子对象需要 this 指针调整多少\n\n`BEGIN_COM_MAP/END_COM_MAP` 用来声明“这个 COM 类支持哪些接口，以及这些接口指针怎么从对象中取出来”，从而让 ATL 自动实现 `QueryInterface`。\n\n## MFC（Microsoft Foundation Classes）项目使用 COM 组件\n\n> **注意**，默认 `ATL` 工程在启用注册输出的配置下会在构建后尝试自动注册 `COM` 组件；如果失败，常见原因通常是注册阶段权限不足，而不是编译阶段本身出错。\n\n首先需要创建一个 `MFC` 项目，选择基于对话框 `Dialog` 的模板；\n\n双击对话框的确定按钮，添加消息处理函数。\n\n在写函数之前，要先在源文件头部引入 `.tlb` 类型库以获取接口信息：\n\n```cpp\n#import \"E:\\code\\ATLProject1\\ATLProject1.tlb\" no_namespace\n```\n\n\n![54e8747b15acbe5b6db9217f662419b7&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/9f143ad9ce08eac54dd2121572485daf44f15b5ebe2c2d6bf4e16835d18ca7e4.jpg)\n\n继续编辑函数，调用 `COM` 组件的逻辑：\n\n![9221a667b77ed9125ad1a731ae127dbd&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/92a0426aee126ed24f66b70b5714137bc1ad832a967245080b6b0477612e28ba.jpg)\n\n这个 `CreateInstance` 调用依赖 `#import` 生成的接口智能指针封装；它可以直接接受 `ProgID` 或 `CLSID` 字符串。\n\n```cpp\nspSN.CreateInstance(L\"myFirstCOM.1\");\n```\n\n等价于：\n\n```cpp\nCLSID clsid;\nCLSIDFromProgID(L\"myFirstCOM.1\", &clsid);\n\nIATLSimpleObject* p = nullptr;\nHRESULT hr = CoCreateInstance(\n    clsid,\n    nullptr,\n    CLSCTX_ALL,\n    __uuidof(IATLSimpleObject),\n    (void**)&p\n);\n\nspSN = p; // 智能指针接管\n```\n\n可以看到，这也是为什么它可以接受 `ProgID` 或 `CLSID` 字符串的原因——通过 `ProgID` 得到 `CLSID`。\n\n\n![60d092c173030d013919724ffcf3439f&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/06b80ad62ad65958ad3834ab065b85ad0e18f386ba651b0dffe0863b32a2a4d0.jpg)\n\n---\n\n\n## COM 类之成员变量\n\n### 组件添加属性\n\n\n这里是另外一个项目，我们要给 COM 类 `DB`，添加一个成员变量存储数据库的连接状态，要怎么做？\n\n经过前面的分析，我们知道 COM 组件的内存布局可能随更新而发生变化，所以不能让客户直接访问，而是要通过函数来设置和获取。\n\n\n在 ATL 框架及 VS 开发环境下，转到类视图下：\n\n![72201170674dd11afda1f80e0acb892c&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/5d283f3ee0753ec12fe7936e6e602db51ce94c7dc6b1b3ccc29ed8b65440e6f3.jpg)\n\n如上图所示，完成后，`IDL` 文件中的接口函数列表也会同步增加。同时 COM 类的头文件里多出相关的成员函数声明，实现文件中会出现默认实现代码，\n\n\n但是成员变量需要我们自己在类中声明，声明成员变量 `m_iState`：\n\n![5dece45848395bb01e96515bcc80b49f&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/3f46d5d85143205f2abba7751f4c3e9cc9c33ebe4d6bbf2d129d850dacf58382.jpg)\n\n接着我们去实现这两个方法即可：\n\n```cpp\nSTDMETHODIMP CDBConnect::get_State(LONG* pVal)\n{\n    // TODO:  在此添加实现代码\n    *pVal = m_iState;\n    return S_OK;\n}\n\nSTDMETHODIMP CDBConnect::put_State(LONG newVal)\n{\n    // TODO:  在此添加实现代码\n    m_iState = newVal;\n    return S_OK;\n}\n```\n\n如何初始化这个值呢？COM 组件也有构造函数和析构函数的概念，以此给予初始化和销毁时机，ATL 中分别是 `FinalConstruct` 和 `FinalRelease`。\n\n所以找到 COM 类的成员函数 `FinalConstruct`，并在该方法体中去初始化即可\n\n![e8cd9d6d8253d510ae22aad288f60887&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/663e67974959e2d97d003ee0a2c1ee0de61820dc08c66f15b81285a364bb154b.jpg)\n\n\n\n\n\n### 客户端使用属性\n\n在客户侧去使用这些属性十分简单，直接访问其对应的函数。\n\n**或者直接访问这个属性**。\n> 直接访问成员变量？如果 COM 组件内存布局更新了，岂不是会出错？\n>\n> **答**：`#import` 生成的智能指针封装会将属性访问语法（如 `obj->State`）自动转换为对 `get_State()` / `put_State()` 的函数调用，并非直接访问内存布局，因此不会出错。\n\n![ec1fc0d1b3f82f994111e4b5cc9f0614&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/b0052664d1f7b2d27b155a78cca07092c052cfe6f14d7304e57cad48d8339164.jpg)\n\n## COM 多态\n\n### 一个 COM 类实现多个接口\n\n我们之前写的 COM 组件，一个 COM 类只有一个接口，但是我们完全可以让一个 COM 类对应多个接口。\n> 类比 C++ 中继承多个抽象类时实现多态的原理，参考：[多重继承的内存布局](/notes/n-da561297c8704e938e5625a35698d9eb/#h-9e26f5506608303e048f)\n\n\n首先是修改 IDL 文件对 COM 类及接口的描述：\n1. 在 .idl 里新增第二个接口，比如 IOtherInterface。  \n2. 在同一个 coclass ATLSimpleObject 下面把它也列出来。  \n![59274a8cab5fa1a9d4eda93c3d33fe39&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/d7f644900803254ef37528a1ed3bc49aeac42a694a9d58895859a163363cf83c.jpg)\n\n其次，是修改项目的代码\n1. 在 CATLSimpleObject 上同时继承两个接口。  \n2. 在 BEGIN_COM_MAP 里把新接口也注册进去。\n3. 声明和创建新的函数\n![36cdb078071154ceca17de4f9d70cd6d&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/c2f3bca47238a9d8e738778119cc8633e2d86c4bcd3cb4a1d799eff8abb24c95.jpg)\n\n\n---\n#### 更新版本描述信息\n\n现在我们的 COM 组件更新了，新增了一个导出接口。如何让别人知道自己使用的是先前的 COM 组件还是更新后的？\n\n可以替换一下ProgID、Version，当前是1.0版本，可以变成2.0版本，ProgID的最后那个“.1”就表示版本号。直接替换 `ProgID.1` 为 `ProgID.2`.\n\n然后修改 IDL 和 RGS 文件中与版本相关的字段：\n![63599badefa9b39aec3018556ed06fc0&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/0cb122b3ac212b96881ddb83d3ae15e66905bcbad09ed673e33252dfa2785054.jpg)\n\n### 客户端使用多接口\n\n在客户侧去使用多接口也很简单，需要使用到 `QueryInterface` 方法，你需要传递两个参数，一个是接口的 `IID`，一个是接口指针的地址：\n> `QueryInterface` 是用来做动态类型转换的。\n![aed52ec7399d42990c6f2a2fd6771d3b&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/017a84ab4270dcf409eb84774413db83fcc8c3d52a3af3bfbbf09d352170992c.jpg)\n\n> 除了如上图使用的 `__uuidof()` 编译器运算符，还可以在 IDL 编译生成的 `.c` 和 `.h` 中将 `MIDL_DEFINE_GUID` 的宏定义以及对应接口的宏调用复制过来使用。\n\n\n\n```cpp\nhRes = m_pDB.QueryInterface(IID_IDBConnectChk, &m_pDBChk);\n```\n\n运行结果：\n![e899536531b88ad1ff0c4b983aaa5918&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/cb787e84dd49add8ecce4b8ba1f26f78c2a0e6846b1f1d8a3a1f8b8b771c6cfc.jpg)\n\n\n## 多 COM 类\n\n`COM` 既然可以为单个类提供多个接口，自然也可以在同一组件里提供多个 `COM` 类；在 `ATL` 中，这类操作与前面流程基本一致，这里不再赘述。\n![fd203743a322f5896a3c238e47f6bceb&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/039b91c73f6a11fd573df2eb607675227934160bfefd10beac27a0511fec03fe.jpg)\n> 新版的 VS 中，第一步改为：add=>module=>ATL simple object。\n\n---\n\n\n## 双接口思想\n\n`COM` 里的“双接口”通常指 `Dual Interface`，含义是额外暴露一个 `IDispatch` 接口给解释型语言使用，使同一个 COM 类/接口支持两种使用方式：\n1. 编译型语言可以直接通过 `vtable` 调用。\n2. 脚本/解释型语言可以通过 `IDispatch` 进行调用。\n\n双接口的虚函数表内容及继承关系如下图所示： \n![](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/ff6b3717e621369382c49a6e480fd0b47b42bb88740c7f9f48ff2513f8539cdf.jpg)\n![a23cf8f724f69ae19943dec0c9afa671&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/686ba9609edec66b98351dd44832cd0757ab1ae2d5d3e20a98f7370b4595afd8.jpg)\n> 虚函数表布局，可以参考：[C&#43;&#43; 继承与虚继承机制](/notes/n-da561297c8704e938e5625a35698d9eb/#h-74dfd84491a39c16f4fb)\n\n这样对于编译型语言可以使用 `Ixxx` 接口；解释型语言则使用 `IDispatch` 接口。\n\n\n> **注**\n> 如果不需要支持脚本语言，通常没必要强行设计为双接口，因为 `IDispatch` 只支持自动化兼容的参数类型，接口设计空间会受到限制。\n\n双接口同时兼顾了脚本语言的调用便利性，以及编译型语言在已知类型信息时的调用效率。\n\n### 创建支持双接口的 `COM` 组件\n\n#### 方法一：手动配置\n\n> 其实先前已经接触过自动化：在 `ATL` 中，通过 `IDispatchImpl` 模板类为指定接口补齐自动化相关实现，使该接口具备 `IDispatch` 分发能力。\n> ![](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/a130406eda771d75674f950de7d97a3266228748537a8f0a6d734a37e60ab86a.jpg)\n\n\n---\n创建自动化组件的逻辑如下：\n\n1. `IDL` 文件中\n    1. 通过 `[dual]` 属性描述接口是否为双接口类型。\n    2. 修改接口继承关系，明确其继承自 `IDispatch` 或 `IUnknown`。\n2. 头文件中\n    1. 确定是否使用 `IDispatchImpl` 模板类扩展原接口，添加自动化支持。\n    2. 修改派生类对外声明的支持接口，包括 `IDispatch`。（这里 `IDispatchImpl` 和 `IDispatchImpl2` 都继承自 `IDispatch`，所以还需要指定默认的 `IDispatch` 来自谁）\n\n![b2085be35c09476265bd953870ef0488&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/466ebe9ad2e9da601b43cfaa99ecd140f29dceaf8154981ddfb1c8f6e2df352d.jpg)\n\n#### 方法二：`IDE` 配置\n\n另一种方式，就是在使用 IDE 创建 COM 类时需要把接口类型选为“双重（`dual`）”：\n\n![ada5262d54899228d59e68065b01a8b9&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/377a67bbe977636654e3cea73943dee6925c0a706d44f2b86719bd187c559d8a.jpg)\n\n接着添加方法即可：\n\n![6860d30d0138cf6da5b322ac282f6f72&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/56c425fd2dfb982f6bd014a75e3045ae21c2613cecc4c3f54029dd7e25d30c81.jpg)\n\n\n实现好接口函数之后，编译即可：\n\n![02b09fede31915cbe2002e1d836fb94b&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/04e8c1a01b8a51d61f479cb2f4c78c38f76e8deb55c98eef5c52b6aa8e062212.jpg)\n\n\n### `JavaScript` 调用 `COM`\n\n接着尝试在 `JavaScript` 中调用这个 `COM` 组件，示例代码如下：\n\n```html\n<script type=\"text/javascript\">\n    var myCom = new ActiveXObject(\"DualDBConnect.Ado.1\"); // ProgID\n    function OpenTest() {\n        myCom.Open();\n    }\n</script>\n<input type=\"button\" value=\"Open\" onclick=\"OpenTest()\" />\n```\n\n这里的 `JavaScript` 实际上依赖 Windows 下 `Internet Explorer` 的 `ActiveX` 机制；现代浏览器通常不再支持 `ActiveXObject`。\n\n接着在 `Internet Explorer` 中打开这个 `HTML` 页面，并允许被阻止的内容，单击即可调用接口函数：\n\n![b9fb76b436f94c173b5ec11108ff6c91&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/863c770fdf089f69a6c335f7e990d5350d865aa159b3724415c0546daf8e87cf.jpg)\n\n![e13aa53cbb7482dbd3f414e8aab4c9b7&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/d92552a86fca708142080d5da8fc2243321dc0a75aefd5bc2c31733d17ebd904.jpg)\n\n---\n\n## ATL 智能类型\n\n### 智能变量：`CComVariant`\n\n之前我们了解过 `VARIANT` 类型。它的优点在于可以统一承载大多数 `Automation` 兼容的数据类型，但原始 `VARIANT` 的初始化、赋值与资源管理都比较繁琐。\n\n为了更方便地使用 `VARIANT`，`ATL`（`Active Template Library`）又在其上做了一层封装，提供了 `CComVariant`。它本质上仍然维护着 `VARIANT` 数据，因此多数场景下都可以直接用 `CComVariant` 代替原始 `VARIANT`。\n\n`CComVariant` 的具体定义可以自行查阅。这里不展开源码细节；从构造函数集合就能看出，它几乎覆盖了常见的 `Automation` 数据类型，因此初始化 `CComVariant` 对象时可以直接写成：\n\n```cpp\nCComVariant comVar(\"ABC\");\n```\n\n它还重载了常见类型的赋值运算符，因此也可以直接这样赋值：\n\n```cpp\ncomVar = \"XYZ\";\n```\n\n由于它内部维护的是 `VARIANT` 数据，我们也可以沿用 `VARIANT` 风格的初始化方式：\n\n```cpp\nCComVariant comVar(123, VT_I4);\n```\n\n其他使用方式也大体类似，这里不再展开。\n\n**核心观念**：变量的使用更像弱类型语言了，不需要太注意类型。 \n\n\n### 智能指针：`CComPtr` 与 `CComQIPtr`\n\n#### 10.2.1) 简介\n\n`C++` 在调用 `COM`（`Component Object Model`）接口指针时，危险点并不在“每次成员调用”本身，而在于复制、传递和释放接口指针时，必须严格维持 `AddRef()` 与 `Release()` 的平衡。一旦出错，就会导致对象无法正常释放，或者过早释放。\n\n`CComPtr`、`CComQIPtr` 是 `ATL` 为了解决 `COM` 引用计数管理问题提供的类模板。它们在使用方式上很像接口指针，因此通常也被直接称为智能指针。\n\n这两个模板类都继承自 `CComPtrBase`。两者区别在于：`CComQIPtr` 会在必要时自动执行 `QueryInterface()` 完成指针转换。\n> `CComPtrBase` 封装了 `CComPtr` 与 `CComQIPtr` 共用的大部分基础操作，从而实现代码复用。\n\n#### 对比\n\n智能指针与原始接口指针的比较如下：\n\n1. `CComPtr<COMObj> spCOMObj;` 创建的是一个智能指针对象；它内部维护一个 `COMObj*`。而 `COMObj* pCOMObj` 本身只是普通的接口指针。\n2. 二者在使用语法上很相似，很多时候都通过 `->` 访问接口成员。\n3. 智能指针的价值在于自动维护底层接口指针的引用计数；因此一般不应再手动对底层接口调用 `AddRef()` 或 `Release()`。\n\n#### 注意点\n\n智能指针使用时有几个常见注意点：\n\n1. 智能指针已经负责维护引用计数，因此通常**不需要也不应该**手动对底层接口调用 `AddRef()` 和 `Release()`。\n2. 如果要释放一个智能指针，直接赋 `nullptr`（旧代码中也常见 `NULL`），或者调用智能指针自身的 `Release()` 成员即可；不要手动对其内部原始指针执行 `Release()`。\n3. 当对智能指针取地址时（`&` 运算符），要确保该智能指针当前为空；因为 `&智能指针` 返回的是智能指针对象管理的原始指针的存储地址，是给别人往里面写新接口指针用的；如果里面已有旧指针，旧指针会被覆盖掉，智能指针来不及帮你 `Release`。\n\n\n\n#### 使用 CComPtr\n\n使用这些智能指针前，通常需要包含 `ATL` 相关头文件：\n\n```cpp\n#include <atlbase.h>\n#include <atlcomcli.h>\n```\n\n![48bb66012946e16abd89ab4a841e7b15&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/f1d7b0dcd8552648fef77f80293e8f7b3cf2e4f14199b8222d03d5ddfd2f2bb8.jpg)\n\n\n接着调用即可：\n\n```cpp\nHRESULT hRes;\nCComPtr<IUnknown> spUnk;\nCComPtr<IDualDBConnect> spDBConn;\nhRes = spUnk.CoCreateInstance(L\"DualDBConnect.Ado.1\"); // 创建 IUnknown\nif (FAILED(hRes))\n{\n    ::MessageBox(NULL, _T(\"Error\"), _T(\"Title\"), MB_OK);\n}\n\n// 注意这里和 CComQIPtr 指针的区别\nhRes = spUnk.QueryInterface(&spDBConn); //  查询 IDualDBConnect\n\nif (FAILED(hRes))\n{\n    ::MessageBox(NULL, _T(\"Error\"), _T(\"Title\"), MB_OK);\n}\nspDBConn->Open(); // 调用\n```\n\n![a8ddadca0f53397a6c771aa8586dd67f&#95;MD5&#46;jpg](/notes/n-0d0dd184ade2494b8a0530e2cff70449/media/a68a9f4ccf19e2de2db1f7b66745d00bb450db1c1ca6bd6b1c0ce05c97a61297.jpg)\n\n#### 使用 CComQIPtr\n\n我们也可以使用 `CComQIPtr`。这个智能指针可以在赋值时自动执行 `QueryInterface()`，因此不需要显式再调用一次：\n\n```cpp\nHRESULT hRes;\nCComPtr<IUnknown> spUnk;\nCComQIPtr<IDualDBConnect> spDBConn;\nhRes = spUnk.CoCreateInstance(L\"DualDBConnect.Ado.1\");\nif (FAILED(hRes))\n{\n    ::MessageBox(NULL, _T(\"Error\"), _T(\"Title\"), MB_OK);\n}\nspDBConn = spUnk; // 注意这里和 CComPtr 指针的区别\nif (!spDBConn)\n{\n    ::MessageBox(NULL, _T(\"Error\"), _T(\"Title\"), MB_OK);\n}\nspDBConn->Open();\n```\n\n需要注意，`CComQIPtr` 的价值主要在于按目标接口自动执行 `QueryInterface()`；因此通常只把真正需要查询的目标接口声明为 `CComQIPtr` 即可。\n\n---\n\n更进一步，你也可以在已有目标 `IID`（`Interface Identifier`）时显式写出模板参数，而不需要先得到 IUnknown 接口再转换：\n\n```cpp\n// MIDL_DEFINE_GUID(IID, IID_IDualDBConnect,0x8D7C23E2,0xEDE3,0x4E10,0x96,0x6F,0x2D,0x56,0x2C,0x93,0xD1,0xFA);\n// 将这个转为 IID 格式即可\nIID IID_IDualDBConnect = { 0x8D7C23E2, 0xEDE3, 0x4E10, { 0x96, 0x6F, 0x2D, 0x56, 0x2C, 0x93, 0xD1, 0xFA } };\n\nHRESULT hRes;\nCComQIPtr<IDualDBConnect, &IID_IDualDBConnect> spDBConn;\nhRes = spDBConn.CoCreateInstance(L\"DualDBConnect.Ado.1\");\nif (FAILED(hRes))\n{\n    ::MessageBox(NULL, _T(\"Error\"), _T(\"Title\"), MB_OK);\n}\nspDBConn->Open();\n```\n\n---\n",
+  "id": "0d0dd184-ade2-494b-8a05-30e2cff70449",
+  "metadata": {
+    "tags": [
+      "os/windows/com",
+      "lang/cpp"
+    ],
+    "title": "COM 组件开发框架 ATL"
+  },
+  "resources": [
+    "017a84ab4270dcf409eb84774413db83fcc8c3d52a3af3bfbbf09d352170992c.jpg",
+    "039b91c73f6a11fd573df2eb607675227934160bfefd10beac27a0511fec03fe.jpg",
+    "047063f144ff6084d7ae3b6f42edf6422feb8a6d5454512a29ed65974a98be32.jpg",
+    "04e8c1a01b8a51d61f479cb2f4c78c38f76e8deb55c98eef5c52b6aa8e062212.jpg",
+    "06b80ad62ad65958ad3834ab065b85ad0e18f386ba651b0dffe0863b32a2a4d0.jpg",
+    "0cb122b3ac212b96881ddb83d3ae15e66905bcbad09ed673e33252dfa2785054.jpg",
+    "1a1d5dfffed475eb977238e3aee22df64d6ac86e4050d875d0b6fefad067ea04.jpg",
+    "377a67bbe977636654e3cea73943dee6925c0a706d44f2b86719bd187c559d8a.jpg",
+    "3f46d5d85143205f2abba7751f4c3e9cc9c33ebe4d6bbf2d129d850dacf58382.jpg",
+    "466ebe9ad2e9da601b43cfaa99ecd140f29dceaf8154981ddfb1c8f6e2df352d.jpg",
+    "4e66b04dfbdc24ed57fe5cd90a3a4208c93bc31d1cbad5a07ff1fb5c2af0b467.jpg",
+    "56c425fd2dfb982f6bd014a75e3045ae21c2613cecc4c3f54029dd7e25d30c81.jpg",
+    "5d283f3ee0753ec12fe7936e6e602db51ce94c7dc6b1b3ccc29ed8b65440e6f3.jpg",
+    "663e67974959e2d97d003ee0a2c1ee0de61820dc08c66f15b81285a364bb154b.jpg",
+    "686ba9609edec66b98351dd44832cd0757ab1ae2d5d3e20a98f7370b4595afd8.jpg",
+    "69aea391c76e49e240c9e6784966365004e1e7d7311d27315c2f1313f3fd2aaa.jpg",
+    "74f02cd75e5bab5c1a7acc8b9c9355912ecae8692cbac1a93c349559f34c37d5.jpg",
+    "82210a478540e6af442c648d21ebc902dd2795e4a98ff451b72c976778db8376.jpg",
+    "834b80b968afd35bf3e50782119c00bdd3db6eeff6bd07c0921fe78cb1d1b831.jpg",
+    "863c770fdf089f69a6c335f7e990d5350d865aa159b3724415c0546daf8e87cf.jpg",
+    "8f893a51dec2c77ac2d0b251ff68c6cc12759f9257cf55cf6f8dbe9ee135a28c.jpg",
+    "92a0426aee126ed24f66b70b5714137bc1ad832a967245080b6b0477612e28ba.jpg",
+    "93659e385a9ae2eb37f6442a28c877abbe76dee5a894159bbdff7d2847829f7a.jpg",
+    "9bdfcddd841107bc609ad546416eca9dbdf21068117b217bb2102232dccbe2c3.jpg",
+    "9f143ad9ce08eac54dd2121572485daf44f15b5ebe2c2d6bf4e16835d18ca7e4.jpg",
+    "a130406eda771d75674f950de7d97a3266228748537a8f0a6d734a37e60ab86a.jpg",
+    "a3345eb21450d6aae15a42cf016b6feb77f38c85481b86ab2629bcdc5d1c28cd.jpg",
+    "a68a9f4ccf19e2de2db1f7b66745d00bb450db1c1ca6bd6b1c0ce05c97a61297.jpg",
+    "abe9ba5e2acaf46d1566f3559c34c80d79f091bac161f8d87f8a7f90c1beafd1.jpg",
+    "b0052664d1f7b2d27b155a78cca07092c052cfe6f14d7304e57cad48d8339164.jpg",
+    "c056c122f4db9fa66cb179642def11b802b86b8c028770949c10965b0247db13.jpg",
+    "c2f3bca47238a9d8e738778119cc8633e2d86c4bcd3cb4a1d799eff8abb24c95.jpg",
+    "c30d3f1a53611fea7da93de1e6396549c7e3c51c4f0d936fd6e0311ae1998d60.jpg",
+    "cb787e84dd49add8ecce4b8ba1f26f78c2a0e6846b1f1d8a3a1f8b8b771c6cfc.jpg",
+    "d320201e96ddbc2ef00c7d5ffb01c833de16f7b5a9d2f367d519a5fe0988e9eb.jpg",
+    "d7f644900803254ef37528a1ed3bc49aeac42a694a9d58895859a163363cf83c.jpg",
+    "d92552a86fca708142080d5da8fc2243321dc0a75aefd5bc2c31733d17ebd904.jpg",
+    "ec6b553504529ca41b868130a5c7d55e5a7ea78c85ed2dbf02e148ef45fd8004.jpg",
+    "f1d7b0dcd8552648fef77f80293e8f7b3cf2e4f14199b8222d03d5ddfd2f2bb8.jpg",
+    "ff6b3717e621369382c49a6e480fd0b47b42bb88740c7f9f48ff2513f8539cdf.jpg"
+  ],
+  "url": "/notes/n-0d0dd184ade2494b8a0530e2cff70449/"
+}

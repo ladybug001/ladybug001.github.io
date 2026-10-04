@@ -1,0 +1,39 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3905f2c5652556f47139",
+      "kind": "heading",
+      "offset": 25
+    },
+    {
+      "id": "h-ee83d3afbbdbe426182c",
+      "kind": "heading",
+      "offset": 145
+    },
+    {
+      "id": "h-030d0526f1d5f632258f",
+      "kind": "heading",
+      "offset": 713
+    },
+    {
+      "id": "h-c3b6418b4a1265a1bc70",
+      "kind": "heading",
+      "offset": 1408
+    }
+  ],
+  "body": "# C、C++ switch 与 if 的实现差异\n\n在 C/C++ 中，代码通常按语句顺序执行；如果要改变控制流，就需要使用分支语句和循环语句。这里重点讨论 `if...else` 与 `switch` 的底层差异，以及为什么 `switch` 在某些情况下会更高效。\n\n## If 语句\n\n最简单的分支语句就是 `if`，示例代码如下：\n\n```cpp\nint x = 3;\n\nif (x == 1) {\n    printf(\"A \\n\");\n} else if (x == 2) {\n    printf(\"B \\n\");\n} else if (x == 3) {\n    printf(\"C \\n\");\n} else if (x == 4) {\n    printf(\"D \\n\");\n} else {\n    printf(\"default \\n\");\n}\n```\n\n其反汇编代码为：\n\n![69ef4158702a31c30229db80b8bab918&#95;MD5&#46;png](/notes/n-0f9f4f6585294260a786e2b216bbe300/media/03fa661147670933551338ee7e0147898f8783d61f6bf79230bc03d334e35e2d.png)\n\n在这个示例里可以看出，`if...else` 被编译成若干 `cmp` 加条件跳转指令的组合。若存在多个 `else if`，则更像一条条件链，通常需要依次比较 `x == 1`、`x == 2`、`x == 3`，直到命中某个分支或落入 `else`。\n\n\n## Switch 语句\n\n`switch` 也是分支语句的一种，其语法如下：\n\n```cpp\nswitch (表达式) {\n    case 常量表达式1:\n        语句;\n        break;\n\n    case 常量表达式2:\n        语句;\n        break;\n\n    case 常量表达式3:\n        语句;\n        break;\n\n    // ...\n\n    default:\n        语句;\n        break;\n}\n```\n\n**需要注意如下几点：**\n\n1. `switch` 的控制表达式不能是浮点类型；常见场景下通常要求是整型、枚举类型，或可转换到相应整型/枚举类型的值。\n2. `case` 后的常量值不能重复。\n3. `case` 后的值必须是常量表达式。\n4. `break` 很重要；如果没有 `break`，控制流会继续向下执行后续分支，这种行为称为“贯穿（fallthrough）”。\n5. `default` 的位置在语法上没有强制要求，但控制流仍按代码顺序执行，因此前面的分支如果没有 `break`，就可能继续落入后续语句块。\n\n**`switch` 与 `if...else` 的区别：**\n\n1. `switch` 主要适合“同一个表达式与多个常量比较”的等值分派场景；`if...else` 更适合区间判断、复合条件和任意布尔表达式。\n2. `switch` 在 `case` 较多且取值密集时，编译器往往更容易把它优化为高效的分派结构；但这不是绝对规则。\n\n### Switch 语句为什么高效\n\n来看一个典型示例：\n\n```cpp\nint x = 3;\n\nswitch (x) {\n    case 1:\n        printf(\"A \\n\");\n        break;\n\n    case 2:\n        printf(\"B \\n\");\n        break;\n\n    case 3:\n        printf(\"C \\n\");\n        break;\n\n    case 4:\n        printf(\"D \\n\");\n        break;\n\n    default:\n        printf(\"default \\n\");\n        break;\n}\n```\n\n其反汇编代码为：\n\n![e8749f0c6ab5a1262ebfe744a8c06328&#95;MD5&#46;png](/notes/n-0f9f4f6585294260a786e2b216bbe300/media/35637cee159f1cb1be6da878721c0a74a09441ff191970c316cc018059765a85.png)\n\n编译器没有把这段 `switch` 直接翻译成一长串逐个比较，而是采用了**跳转表（jump table）** 思路：\n1. 先检查 `x` 是否落在有效 `case` 范围内，超出范围则跳到 `default`。\n2. 若在范围内，则把 `x` 映射为一个表索引。对 `case 1` 到 `case 4` 这种连续值，常见做法是先减去最小 `case` 值，再按表项大小计算偏移。\n3. 再从“分支地址表”中取出目标地址，执行一次间接 `jmp`，直接跳到对应分支。\n> 这就是 `switch` 在某些场景下更快的原因：它可以被优化成接近“查表 + 一次跳转”的形式，而不是像 `if...else` 那样逐条比较。\n\n如下图所示，可以观察到最终会跳转到目标分支：\n\n![2bd4b0f430c40e9d6130d9885ae04e77&#95;MD5&#46;png](/notes/n-0f9f4f6585294260a786e2b216bbe300/media/a0697b81f2a4d0a493f33dcf748cc3b876a46dde353baf1d00e90d1d1dcdb903.png)\n最终跳转到对应 `case 3` 的代码路径，因此打印出 `C`。\n\n---\n\n但**并不是所有 `switch` 都一定生成跳转表。** 编译器是否这样做，通常取决于以下因素：\n\n- `case` 分支数量是否足够多\n- `case` 值是否足够密集\n- 最大值与最小值之间的跨度是否过大\n- 编译器版本、目标平台与优化级别\n\n如果 `case` 很少，或者取值十分稀疏，那么编译器完全可能把 `switch` 编译成比较链，甚至是其他决策结构。\n\n跳转表又细分为“大表”和“小表”：\n- 大表：直接存储真实跳转地址的表（每个表项都是一个指针）。\n- 小表：不直接存地址，而是先存去往大表的索引（每个表项占用的内存更小），用来减少稀疏分布场景下的空间浪费。\n> 小表存在的意义是：当 `case` 取值跨度很大但真正分支很少时，如果只用大表，可能需要为大量不存在的值预留表项；引入小表后，通过小表得到相应的大表索引，再间接定位到大表中的真实目标地址或 `default` 分支，即 `Target_Address = 大表[ 小表[ Input - min ] ]`\n\n**最后**：在实际开发中，应优先考虑语义表达和可维护性，而不是机械地追求“`switch` 一定比 `if` 快”。\n\n",
+  "id": "0f9f4f65-8529-4260-a786-e2b216bbe300",
+  "metadata": {
+    "tags": [
+      "lang/c",
+      "lang/cpp"
+    ],
+    "title": "C、C++ switch 与 if 的实现差异"
+  },
+  "resources": [
+    "03fa661147670933551338ee7e0147898f8783d61f6bf79230bc03d334e35e2d.png",
+    "35637cee159f1cb1be6da878721c0a74a09441ff191970c316cc018059765a85.png",
+    "a0697b81f2a4d0a493f33dcf748cc3b876a46dde353baf1d00e90d1d1dcdb903.png"
+  ],
+  "url": "/notes/n-0f9f4f6585294260a786e2b216bbe300/"
+}

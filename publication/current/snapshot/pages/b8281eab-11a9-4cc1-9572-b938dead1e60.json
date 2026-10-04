@@ -1,0 +1,169 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-072d2d1aceb53a721902",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-9891fc0b4acf062269d8",
+      "kind": "heading",
+      "offset": 382
+    },
+    {
+      "id": "h-dde85387c19f13649c9a",
+      "kind": "heading",
+      "offset": 432
+    },
+    {
+      "id": "h-5d866a03afd2110a01a3",
+      "kind": "heading",
+      "offset": 1132
+    },
+    {
+      "id": "h-9c1db5d83cb6827cffc0",
+      "kind": "heading",
+      "offset": 2793
+    },
+    {
+      "id": "h-c7ef28feffb091062375",
+      "kind": "heading",
+      "offset": 3159
+    },
+    {
+      "id": "h-2122ef27fa0a98fde444",
+      "kind": "heading",
+      "offset": 3684
+    },
+    {
+      "id": "h-8ff7e6baabfcb7de00d1",
+      "kind": "heading",
+      "offset": 3926
+    },
+    {
+      "id": "h-66e93cc59c02679eb4ac",
+      "kind": "heading",
+      "offset": 4367
+    },
+    {
+      "id": "h-23fa240b594983c1d2e6",
+      "kind": "heading",
+      "offset": 4449
+    },
+    {
+      "id": "h-2fc5647944450e57e36b",
+      "kind": "heading",
+      "offset": 5670
+    },
+    {
+      "id": "h-b70425809a63cd543493",
+      "kind": "heading",
+      "offset": 6217
+    },
+    {
+      "id": "h-39baa6b52889054b5e88",
+      "kind": "heading",
+      "offset": 6355
+    },
+    {
+      "id": "h-cd317f010bb452a911ea",
+      "kind": "heading",
+      "offset": 7509
+    },
+    {
+      "id": "h-435dd19cf032368ac380",
+      "kind": "heading",
+      "offset": 7698
+    },
+    {
+      "id": "h-aca698557c66fb986ab3",
+      "kind": "heading",
+      "offset": 9262
+    },
+    {
+      "id": "h-2f6f42e1d8f1a57784c8",
+      "kind": "heading",
+      "offset": 9765
+    },
+    {
+      "id": "h-ea8369f5592e5a9982d5",
+      "kind": "heading",
+      "offset": 10458
+    },
+    {
+      "id": "h-85e937ecffe1e5443db4",
+      "kind": "heading",
+      "offset": 11297
+    },
+    {
+      "id": "h-c2793c8aa79ad476546b",
+      "kind": "heading",
+      "offset": 11515
+    },
+    {
+      "id": "h-503f33098b5d82a697aa",
+      "kind": "heading",
+      "offset": 11942
+    },
+    {
+      "id": "h-420913922b9421f329f3",
+      "kind": "heading",
+      "offset": 12465
+    },
+    {
+      "id": "h-7ca010e995f8697b6665",
+      "kind": "heading",
+      "offset": 14206
+    },
+    {
+      "id": "h-e65c98e847b18c50273a",
+      "kind": "heading",
+      "offset": 15434
+    },
+    {
+      "id": "h-88ec28ff1d1cafff3890",
+      "kind": "heading",
+      "offset": 15714
+    },
+    {
+      "id": "h-58d3116a09e4b7d4e8a5",
+      "kind": "heading",
+      "offset": 17832
+    },
+    {
+      "id": "h-2e72bd63011e9c11efe0",
+      "kind": "heading",
+      "offset": 18168
+    },
+    {
+      "id": "h-9c99705144b899b5e2b4",
+      "kind": "heading",
+      "offset": 18228
+    }
+  ],
+  "body": "# x86 裸机实验：实模式进入保护模式\n\n> **前置条件**：需要确保已了解 x86 架构下的分段、分页及其保护机制：[x86 保护模式分页机制 &#40;MOC&#41;](/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/)、[x86 保护模式分段机制 &#40;MOC&#41;](/notes/n-591f04ba95784267982ebc62f2b0c04d/)\n> \n> **参考资料**： https://blog.csdn.net/Zheng__Huang/article/details/122544253\n\n实验代码已上传至：[王俊博/BareMachineExperiment](https://gitee.com/ladybug001/bare-machine-experiment)\n## 前置知识\n\n本实验涉及计算机从通电到操作系统运行的完整引导过程，以及实模式的基础概念。\n\n### 实模式介绍\n\n给中央处理器（CPU）通电后，CPU 进入 16 位分段实模式。在该模式下，所有地址都是物理地址，地址由 20 位构成，因此实模式的寻址范围为 1 MB。\n\n**寻址机制**：16 位的实模式具有 20 位的寻址能力，是因为实模式下的寻址方式为 `selector << 4 + offset`，这与保护模式下使用段描述符的计算方式不同。\n\n在实模式下，段寄存器及其隐藏部分的更新逻辑如下：\n\n```text\nbase  = selector << 4\nlimit = 0xFFFF\nattr  = RW/data 或 execute/code\n```\n\n例如，当 `CS.visible = 0x1234` 时：\n\n```text\nCS.hidden.base  = 0x12340    ; selector << 4\nCS.hidden.limit = 0xFFFF     ; 固定值\nCS.hidden.attr  = 实模式属性\n```\n\n\n实模式下的内存布局如下图所示：\n![c7b091dbe5535b6890d1b4ab95529cc1&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/4c6b987b758f2f0cd564acb4d4ffac3092476b7a4548b7349df963d7d6b526a7.jpg)\n\n> 注意图中框出的几个内存区域。有些区域并非真正的 RAM，而是内存映射 I/O（MMIO），实际指向只读存储器（ROM）芯片或显卡等外设。\n\n### 计算机的启动流程\n\n这个过程涉及两个核心概念：\n\n- **基本输入输出系统（BIOS）**：固化在主板 ROM 上的程序，负责硬件初始化。\n- **主引导记录（MBR）**：磁盘第一个扇区中的数据，存储着引导代码和分区信息。\n\n> 更现代的替代方案是统一可扩展固件接口（UEFI），本实验仅讨论传统 BIOS 引导方式。\n> [计算机基础&#65306;硬盘分区与文件系统](/notes/n-d8e81bf2778444b7a78c241f0e880194/)\n\n\n计算机的整体启动流程如下图所示：\n\n![b82f4529924e62f8ac55fbe850eb1d8c&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/ee9b76da3213a12ca3955169a32d9e5afcf4305cb4fdb038bc088f89a0aae0a3.jpg)\n\n其中前两步（BIOS → `MBR`）与具体操作系统无关，可以进一步细分为：\n\n![20c9bc859446996bf9aef60ddda6661e&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/ebc5f44b98e2e356092d1cd5181df497de34ad28e821c48336506cf2ee899138.jpg)\n\n具体流程如下：\n\n1. **BIOS 阶段**：开机后，硬件电路将 `CS:IP` 初始化为 `0xF000:0xFFF0`，该地址正是 BIOS 入口跳转指令的位置。BIOS 的主要工作是扫描、检查并初始化各硬件，然后填写 `IVT`。\n2. **MBR 阶段**：BIOS 按照引导优先顺序找到某磁盘的第一个逻辑扇区（即柱面-磁头-扇区（CHS）表示法中的 0 磁头、0 磁道、1 扇区），若该扇区的最后两个字节是魔数 `0x55 0xAA`，则将该扇区的 512 字节内容加载至物理地址 `0x7c00` 处，然后跳转执行。这个扇区就是 `MBR`，它的任务是找到活动分区并加载其引导代码。\n    ![a72657fcbfcc8690dcd9d70e76e13de4&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/e3649a1efd277ec2b507cfc660b2c573224170d028c73ed008fef89ff679f489.jpg)\n\n> 第一个扇区中的代码逻辑完全可以自定义，`MBR` 只是早期厂商约定的统一启动方式。\n\n`MBR` 之后的流程与特定的操作系统相关，以 Windows 为例：\n\n1. **活动分区引导**：活动分区的第一个扇区（即分区引导记录 DBR）同样只有 512 字节。该引导代码仅包含对特定文件系统的最小读取能力，并非\"完整解析文件系统\"，目的是找到下一阶段的引导加载程序（Bootloader），如 XP 的 `NTLDR` 或 Win 7 的 `BOOTMGR`。\n2. **进入保护模式**：Bootloader 被加载到内存后开始执行，负责构建全局描述符表（`GDT`）、进入段保护模式。此后内存空间不再受 1 MB 限制。Bootloader 还会读取 BCD 启动配置（对应编辑命令 `bcdedit`），显示启动菜单，最终加载并执行选中的操作系统内核。\n3. **内核启动**：内核构造页表、开启页保护模式，至此进入完整的操作系统环境。该过程还涉及建立 `IDT` 等系统表。\n4. 随后操作系统加载驱动程序与服务，完成启动。\n\n整个引导过程中，执行代码的能力逐步增强：从 BIOS 的 512 字节实模式代码，到 Bootloader 的 32 位保护模式代码，再到内核的完整虚拟内存管理。\n\n## 准备实验环境\n\n本实验需要以下三个工具：\n\n- **Bochs（开源 x86 模拟器）**：可以模拟完整的 x86 硬件环境（CPU、内存、硬盘、显卡、BIOS 等），在其中运行裸机代码或操作系统，无需物理机。Bochs 能模拟实模式和保护模式，非常适合底层编程学习。\n- **NASM（Netwide Assembler，汇编编译器）**：将 `.asm` 汇编源文件编译为机器码（`.bin` 等）。安装后需配置环境变量以便在命令行中直接使用 `nasm` 命令。\n- **WinHex（十六进制编辑器）**：用于手动编辑软盘镜像的二进制数据。\n\n> Bochs 和 VMware 的区别：Bochs 是纯软件模拟（可以模拟任意型号的 CPU），VMware 是硬件虚拟化（只能运行本机 CPU 支持的系统）。\n\n### 实验介质：软盘镜像\n\n本实验选用软盘镜像（.img 文件）作为虚拟磁盘。软盘（1.44 MB）结构简单（单盘片、80 柱面、2 磁头、每磁道 18 扇区），无需处理复杂的分区和文件系统，非常适合用于裸机引导实验。\n\n尽管物理软盘早已过时，但在系统教学中仍被广泛用作虚拟引导盘。\n> 常见的\"保存\"图标即源自软盘外形：\n> ![](/notes/n-b8281eab11a94cc19572b938dead1e60/media/1dcb5a9a2a50369e786b98c2eb274baa804fd8360a2531638c8169da6ad2cb4b.jpg)\n\n**制作虚拟软盘镜像**：\n创建一个大小为 1.44 MB 的全空文件（严谨而言，容量为 1440 × 1024 = 1,474,560 字节）。可以使用 WinHex 新建并保存：\n\n![](/notes/n-b8281eab11a94cc19572b938dead1e60/media/c8aff2b78f79152a4f09e73bf7c93b1059d82bcb40588fc268cac16b807b6aba.jpg)\n\n创建完毕后，该镜像文件留作后续烧录使用。\n\n### 配置 Bochs\n\n新版本的 Bochs 不需要手动编辑配置文件，启动时会弹出 UI 配置界面，在其中指定软盘镜像路径即可：\n\n![834e7967b599a61177268f81b71c3926&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/3ab777baf9c1d5e60f834ab06ecfc9a6e3dc8c38eb558c3cdbb0a81c29f2db18.jpg)\n\n#### Bochs 开启调试\n\n以调试模式启动 Bochs 有两种方式：命令行添加参数 `bochs.exe -dbg`，或右键 Bochs 配置文件选择 `debugger`：\n\n![8f4695457f35ebb24d23a7be1534dcf3&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/4733554a201e3429e53e3748ccc36e58ad24e938d7e9927198c21195eb7a841c.jpg)\n\n常用调试命令：\n\n| 命令 | 功能 |\n|------|------|\n| `n` | 单步执行（step into） |\n| `p` | 单步步过（step over） |\n| `c` | 继续运行（continue） |\n| `b` | 设置断点（break） |\n| `xp` | 查看物理内存 |\n| `x` | 查看虚拟内存 |\n\n## PoC 验证：Hello World\n\n进行正式实验前，我们先编写一段极简的实模式代码输出 \"Hello World\"，将其写入软盘第一个扇区，并通过 Bochs 验证引导流程。\n\n#### 代码编写\n\n实模式下程序采用绝对装入方式，需在代码开头指明加载地址。BIOS 会将第一个扇区加载到 `0x7c00`，因此在 NASM 中声明：\n\n```nasm\norg 0x7c00\n```\n\n> 除了绝对装入，还有静态可重定位装入和动态运行时装入。即使是在虚拟地址空间中，也依然是这三种装入方式，只不过地址是虚拟地址而非物理地址。\n\nBIOS 跳转到我们的代码时，仅有 `CS` 被正确设置，其它段寄存器的值不确定，因此需要先用 `CS` 初始化它们：\n\n```nasm\nentry:\n    mov ax,cs\n    mov ds,ax\n    mov ss,ax ;栈从高地址向低地址增长，低地址有足够的空闲区域，所以无妨。\n```\n> `CS=0x0000`\n\n此时尚未加载任何驱动或系统调用，如何在屏幕上打印字符？BIOS 在初始化阶段已构建好 `IVT`，提供了基本的硬件操作服务，例如读磁盘（`int 0x13`）和显示字符（`int 0x10`）。\n\n> BIOS 如何知道怎么读磁盘和打印文本呢？ 我的理解：应该是硬件规范，即该物理插口对应的设备必须支持此类调用方式。\n\n通过 `int 0x10` 的 `0x0E` 功能号可以逐字符输出：\n\n```nasm\nmov bx,15   ;设置字体颜色和使用的缓冲区页\nmov ah,0xe  ;功能号：输出一个字符 并自动移动光标\nmov al,[si] ;要输出的字符\nint 0x10    ; 调用 BIOS 视频中断\n```\n\n> BIOS 中断执行后会修改 `EFLAGS` 寄存器，可通过进位标志位（`CF`）判断调用是否成功。\n\n将上述逻辑组合，逐字符遍历字符串直到遇到终止符 `0`，即可完成打印程序：\n\n```nasm\norg 0x7c00 ; 实模式下程序的装入是绝对装入，需指明加载后的内存位置。\n\nentry:\n    mov ax,cs\n    mov ds,ax\n    mov ss,ax   ;栈从高地址向低地址增长，所以无妨。\n    \n    mov si,data\nshowChar:\n    mov bx,15   ;设置字体颜色和使用的缓冲区页\n    mov ah,0xe  ;功能号：输出一个字符 并自动移动光标\n    mov al,[si] ;要输出的字符\n    \n    cmp al,0\n    jz final\n    \n    int 0x10    ; 调用 BIOS 视频中断\n    jc final    ;判定是否异常\n    \n    inc si\n    jmp showChar\n    \nfinal:\n    HLT         ; 让 CPU 暂停执行，直到中断打破状态。\n    jmp final\n\ndata:\n    db \"Hello World!\", 0\n```\n\n#### 编译与烧录\n\n使用 NASM 编译：`./nasm.exe PoC.asm`，生成二进制文件 `PoC`。\n\n> 注意，NASM 默认按 16 位模式编译。同一条机器码 `B8 22` 在 16 位下是 `mov ax,22`，在 32 位下则是 `mov eax,22`。\n\n然后用 WinHex 将编译产物写入软盘镜像的前 512 字节，并确保第 511~512 字节为引导扇区魔数 `55 AA`：\n\n![](/notes/n-b8281eab11a94cc19572b938dead1e60/media/c36edfbb4708762b806c1af4ea5be27f63811a254f8beb2e4eec2496ce68c912.jpg)\n\n启动 Bochs 运行验证，成功打印 \"Hello World!\"：\n\n![f193b4ff3d39b8410729e5582b92579e&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/709217ea8d747129c26053aae79fcbb8679bcfba7b315d59a141fa9fc9f0090a.jpg)\n\n## 核心实验：实模式 → 保护模式\n\n正式实验需要创建并烧录两个组件：\n\n- `MBR.asm`：写入软盘第 1 扇区，负责从第 2 扇区加载 Loader 并跳转执行。\n- `systemLoader.asm`：写入软盘第 2 扇区，负责构造 `GDT`、开启段保护模式。\n\n### 编写 MBR（引导加载）\n\n严格来说，我们编写的并非完整的 `MBR`（未涉及活动分区解析），而是一个 `fake_MBR`——固定从第 2 扇区加载 Loader 然后跳转。\n\n实模式下读取磁盘同样依赖 BIOS 中断 `int 0x13`。读盘操作需要设置三组参数：CHS 坐标、目标内存缓冲区、以及读取的扇区数：\n\n```nasm\n;; --- 1. 确立磁盘 CHS 坐标 ---\nmov dx, 0x0000      ; DH=0(0磁头), DL=0(A软驱) -> 高低字节组合赋值\nmov cx, 0x0002      ; CH=0(0柱面), CL=2(2扇区) -> 高低字节组合赋值\n\n;; --- 2. 确立内存目标缓冲区 ---\nmov bx, si          ; 数据将会被强行写入到 ES:SI 对应的物理内存中\n\n;; --- 3. 点火读盘 ---\nmov ax, 0x0201      ; AH=0x02(读盘功能), AL=0x01(只读1个扇区) -> 高低字节组合赋值\nint 0x13            ; 触发中断\n```\n\n完整的 `MBR.asm` 如下：\n\n```nasm\n; 实模式下程序的装入是绝对装入，需指明加载后的内存位置。\norg 0x7c00\n\n; 定义一个宏\nLOADER_ADDR equ 0x8000\n\nentry:\n    mov ax,cs\n    mov ds,ax\n    mov ss,ax           ;栈从高地址向低地址增长，所以无妨。\n\tmov es,ax \nreadDisk:\n\t;; --- 1. 确立磁盘 CHS 坐标 ---\n\tmov dx, 0x0000      ; DH=0(0磁头), DL=0(A软驱) -> 高低字节组合赋值\n\tmov cx, 0x0002      ; CH=0(0柱面), CL=2(2扇区) -> 高低字节组合赋值\n\t\n\t;; --- 2. 确立内存目标缓冲区 ---\n\tmov bx, LOADER_ADDR ; 数据将会被强行写入到 ES:LOADER_ADDR 对应的物理内存中\n\t\n\t;; --- 3. 点火读盘 ---\n\tmov ax, 0x0201      ; AH=0x02(读盘功能), AL=0x01(只读1个扇区) -> 高低字节组合赋值\n\tint 0x13            ; 触发中断\n\t\n\tjc final\n\tjmp 0x0000:LOADER_ADDR\n\nfinal:\n    HLT                 ; 让 CPU 暂停执行，直到中断打破状态。\n    jmp final\n```\n\n### 编写 Loader（段保护模式）\n\nLoader 是本实验的核心，任务流程为：构造 `GDT` → 开启 A20 地址线 → 置位 `CR0.PE` 进入保护模式 → 通过远跳转刷新 `CS` → 在 32 位模式下向显存写入字符。\n\n> 参考：[x86 段寄存器与描述符体系](/notes/n-9865620a6a12491a86ee4494a0e2a392/)\n\n#### 第一步：定义 GDT 描述符宏\n\n为了方便构造 `GDT` 表项，先定义一个 NASM 宏，将 Base（32位）、Limit（20位）、Attribute（12位）三个参数按段描述符的物理布局打包成 8 字节：\n\n![819b4a7cff337664b8fcc4320ce0a348&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/7a49390334ee2970166b280af034d9c9721108e76e0f45e878f72dc9322a6989.jpg)\n\n```nasm\n; ------------------------------------------------------------------------------\n; 核心宏定义：GDT_UTYPE_Descriptor\n; 参数说明: %1=段基地址(Base, 32位)  %2=段界限(Limit, 20位)  %3=段属性(Attribute, 12位)\n; ------------------------------------------------------------------------------\n%macro GDT_UTYPE_Descriptor 3\n    dw  %2 & 0xffff                             ; [第0~1字节] 截取 Limit 低 16 位\n    dw  %1 & 0xffff                             ; [第2~3字节] 截取 Base 低 16 位\n    db  (%1 >> 16) & 0xff                       ; [第4  字节] 截取 Base 第 16~23 位\n    dw  ((%2 >> 8) & 0x0f00) | (%3 & 0xf0ff)    ; [第5~6字节] 融合 Limit 高 4 位与 12 位属性\n    db  (%1 >> 24) & 0xff                       ; [第7  字节] 截取 Base 最高 8 位 (第 24~31 位)\n%endmacro\n\n; ------------------------------------------------------------------------------\n; GDT 属性与特征位常量配置\n; ------------------------------------------------------------------------------\nATTR_DB             equ 0x4000                  ; D/B 位 = 1: 声明这是一个 32 位段默认大小(代码段或数据段)\nATTR_G              equ 0x8000                  ; G   位 = 1: 声明段界限以 4KB 为基本粒度\n\nCODE_SEGMENT_32     equ 0x009A                  ; 经典内核态代码段属性 (可执行/可读, Ring 0)\nDATA_SEGMENT_32     equ 0x0092                  ; 经典内核态数据段属性 (可读/可写,   Ring 0)\n```\n\n上述宏和常量定义保存在 `struct.inc` 中，在 Loader 源文件开头通过 `%include \"struct.inc\"` 引入。\n\n#### 第二步：构造 GDT\n\n利用上述宏定义三个 `GDT` 表项——第一项必须为空描述符，第二项为代码段，第三项为数据段：\n\n```nasm\nGDT:\n\tGDT_UTYPE_Descriptor 0x00000000,0x00000,0x0000\n    GDT_UTYPE_Descriptor 0x00000000,0xfffff,CODE_SEGMENT_32 + ATTR_G + ATTR_DB\n    GDT_UTYPE_Descriptor 0x00000000,0xfffff,DATA_SEGMENT_32 + ATTR_G + ATTR_DB\n```\n\n> 💡 **GDT 第一项为何必须为空**：在 x86 架构中，索引值为 0 的选择子被定义为\"空选择子\"（Null Selector）。当段寄存器（除了 `CS` 和 `SS`）被加载空选择子时，处理器不会报错，但如果程序随后试图通过该段寄存器访问内存，处理器会立即触发通用保护异常（#GP, General Protection Exception）。这种设计旨在防止未初始化的段寄存器被意外使用，起到安全保护作用。\n\n#### 第三步：加载 GDTR\n\n`GDT` 构造完毕后，需要将其基地址和长度写入全局描述符表寄存器（`GDTR`）。先在内存中准备好 6 字节的 `GDT` 指针结构，然后使用 `lgdt` 指令加载：\n\n```nasm\nmov eax,GDT_LABEL\nmov dword [GDT_PTR+2],eax\nlgdt [GDT_PTR]\n\nGDT_PTR:\n    dw 23          ; 3个描述符共24字节，Limit = 24 - 1 = 23\n    dd 0           ; 预留 4 字节填入物理基地址\n```\n\n> **标签的值 = 标签在文件中的偏移 + ORG 的值**（`ORG` 默认为 0）。当计算结果超出当前操作数位宽时，高位会被直接截断。因此在实模式的 16 位环境下，若程序的实际加载地址超过 16 位可表示的范围，程序员必须自行维护段寄存器的内容，配合段基址:偏移的寻址方式来访问正确的物理地址。\n> \n> 另外，NASM 的 `ORG` 指令仅在 flat binary 格式（`-f bin`）下有效。当编译为 32 位目标文件（如 ELF、COFF）时，不能指定 `ORG`——因为 32 位保护模式下采用了**动态重定位机制**：模块在虚拟地址空间中的最终装载位置由链接器和加载器决定，而非由程序员硬编码。既然装载地址在编译期不可确定，`ORG` 自然失去了意义，NASM 因此禁止在目标文件格式中使用它（等价于 `ORG` = 0，所有地址均为相对偏移，由链接器在最终阶段填入重定位后的绝对地址）。\n\n#### 第四步：置位 CR0.PE 进入保护模式\n\n控制寄存器 `CR0` 的最低位（`PE` 位）决定处理器是否工作在保护模式。将 `PE` 置 1 即可开启保护模式：\n\n> 参考：[x86 系统控制寄存器](/notes/n-377c6374f9f54aea978942cfbee10af9/)\n\n```nasm\nmov eax,cr0\nor eax,0x1\nmov cr0,eax\n```\n\n**指令前缀细节**：上述代码在 16 位实模式下执行，却使用了 32 位寄存器 `eax`。实现方式是操作数大小前缀 `0x66` ——它可以反转当前模式下的默认操作数大小。例如 `B8 34 12` 在 16 位下是 `mov ax,0x1234`，在 32 位下是 `mov eax,0x1234`；加上 `66` 前缀后效果反转。\n> NASM 默认按 16 位模式编译，NASM 会根据 `[bits 16]` / `[bits 32]` 指令自动处理前缀的生成。\n> 汇编前缀的详细说明参考：[x86 指令结构与机器码编码](/notes/n-73c020bf8852497187fe07c7be4f453d/)\n\n\n> [!question] CPU 是如何决定将硬编码 `B8 34 12` 解析为 16 位还是 32 位指令的？\n> CPU 的指令译码器会检查当前 **代码段（CS）描述符中的 D/B 标志位**：\n> - 若 `D=0`，默认操作数为 16 位，直接解码为 `mov ax, 0x1234`。\n> - 若 `D=1`，默认操作数为 32 位，CPU 会认为当前指令未结束，继续向后读取 2 个字节以拼接成完整的 `mov eax, imm32`。\n> \n> ⚙️ **核心机制参考**：[x86 段寄存器与描述符体系](/notes/n-9865620a6a12491a86ee4494a0e2a392/#h-03068cb31745582d6fe2)\n\n#### 第五步：远跳转刷新 CS\n\n开启保护模式后，必须立即执行一条远跳转指令完成模式切换：\n\n```nasm\nJMP selector:offset\n```\n\n> **注意**：执行该指令时已处于段保护模式，`JMPF`、`CALLF` 和 `IRET` 需满足各自的特权级检查要求。\n\n> **核心逻辑**：根据指定的选择子将新的段描述符缓存加载到 `CS` 的隐藏部分，从而使 CPU 真正以 32 位模式开始执行代码。\n\n#### 第六步：开启 A20 地址线\n\n进入保护模式后，还需要开启 A20 地址线，否则第 21 位地址线始终为 0，会导致地址空间出现\"空洞\"。\n\n> 💡 **A20 地址线历史背景**：在 8086 时代，只有 20 根地址线（可寻址 1MB），当段地址加偏移超 1MB 时会自动发生物理地址\"回绕\"（Wrap-around）。到了 80286 及以后，地址线增加到 24 根或更多，为了向下兼容那些依赖\"回绕\"机制的老旧 8086 程序，IBM 设计了 A20 Gate，默认将第 21 根地址线（A20）接地关闭。若要在保护模式下访问 1MB 以上的连续内存，必须手动将其打开。（参考：Intel SDM Vol. 3A, Section 20.3）\n\n通过端口 `0x92` 开启 A20（这是一个 I/O 映射寄存器，对应系统控制器的硬件寄存器）：\n\n```nasm\nin al,0x92\nor al,2\nout 0x92,al\n```\n\n#### 第七步：在保护模式下打印字符\n\n进入 32 位保护模式后，BIOS 提供的 `int 0x10` 等中断服务不再可用——它们都是为 16 位实模式编写的。而且实模式使用的是 `IVT`，保护模式需要的是 `IDT`，由于尚未构造 `IDT`，因此必须先用 `cli` 指令屏蔽中断，否则任何外部中断都会导致异常。\n> **注意**：实模式下中断使用的是中断向量表（`IVT`），保护模式下使用的则是中断描述符表（`IDT`）。\n\n在缺少中断和驱动的情况下，打印字符的方式是**直接写显存**。VGA 文本模式的显存从物理地址 `0xB8000` 开始，每个字符占 2 字节（低字节为 ASCII 码，高字节为颜色属性）：\n\n> 实际上，BIOS 的打印中断服务例程内部也是这样操作显存的。\n\n```nasm\nmov edi, 0xB8000            ; 彩色文本模式显存绝对物理起点\n\nmov ah, 0x0F                ; 黑底白字属性\nmov al, 'P'\t\t\t\t\t; 这里以打印一个字符 'P' 为例\n\nmov [edi], ax               ; 砸入字符和颜色属性\n```\n\n#### 完整代码 (v1：仅段保护)\n\n```nasm\n%include \"struct.inc\"\norg 0x8000\n; 实模式下程序的装入是绝对装入，需指明加载后的内存位置。\n\n\n[bits 16]\nentry:\n    mov ax,cs\n    mov ds,ax\n    mov ss,ax       ;栈从高地址向低地址增长，所以无妨。\n    mov es,ax\n    mov gs,ax\n    \n    mov dword[GDT_PTR+2],GDT\n    lgdt [GDT_PTR]\n    \n    cli\n\n    in al,0x92\n\tor al,2\n\tout 0x92,al\n    \n    mov eax,cr0\n    or eax,0x1\n    mov cr0,eax\n    \n    \n    \n    jmp 0x08:segment32\n    \n\n[bits 32]\nsegment32:\n    mov ax,0x10\n    \n\t;mov ss,ax      ; SS 不需要改，之前的设置可以继续使用\n    \n    mov ds,ax\n    \n    mov edi, 0xB8000            ; 彩色文本模式显存绝对物理起点\n    \n    ;mov edi, 0xB8000 + (80 * 15 * 2)   ; 从第 15 行开始\n    \n    mov esi, string\n    \n    mov ah, 0x0F                ; 黑底白字属性\n    \nshowChar:\n    mov al, [esi]\t\t\t\t; 这里取出一个字符\n    \n    cmp al,0\n    jz final\n    \n    mov [edi], ax               ; 写入字符和颜色属性\n       \n    inc esi\n    add edi,2\n    \n    jmp showChar\n    \nfinal:\n    HLT                         ; 让 CPU 暂停执行，直到中断打破状态。\n    jmp final\n\nstring:\n    db \"Hello World!\"\n    \nGDT_PTR:\n    dw 23 ; 3*8-1\n    dd 0\nGDT:\n    GDT_UTYPE_Descriptor 0x00000000,0x00000,0x0000\n    GDT_UTYPE_Descriptor 0x00000000,0xfffff,CODE_SEGMENT_32 + ATTR_G + ATTR_DB\n    GDT_UTYPE_Descriptor 0x00000000,0xfffff,DATA_SEGMENT_32 + ATTR_G + ATTR_DB\n```\n\n> 💡 **SS 未重设的原因**：`SS` 隐藏部分的内容是在实模式中通过 `mov ss,ax` 设置的，内容为：`base=0x0`、`limit=0xffff`，属性和界限足以满足当前实验需要。\n\n运行效果——字符串打印在第一行，覆盖了 BIOS 原有的输出：\n\n![a16d51871bfb96f5783c43cd00d108b7&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/de4c6ebaa5f61de9008bad81852229ad21c34d44c208d2f5aa375e41a99415ae.jpg)\n\n调整显存写入起始地址后，可以将输出定位到指定行：\n\n![24302851874054c049e9fea58340ee7e&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/98fde0e827a9fb0cd5e5eb1b4d029c7c7e6393023a9e86fd29f877ae1b9c0793.jpg)\n\n### 扩展：进入分页模式\n\n在 v1 的基础上，v2 进一步开启了分页机制。为了实现从非分页到分页的平滑过渡，初始页表采用 1:1 恒等映射（虚拟地址 = 物理地址），这样开启分页后原有代码无需任何修改即可继续执行。\n\n页表项的格式如下——高 20 位为物理页帧号，低 12 位为属性：\n\n```text\n0x00000003  \n0x00001003  \n0x00002003  \n……\n```\n\n> 💡 **页表属性位解析**：十六进制的 `0x003` 展开为二进制是 `0000 0000 0011`。在 32 位分页机制下，最低两位分别代表 Present（`P` 位，位 0）和 Read/Write（`R/W` 位，位 1）。`P=1` 表示物理页在内存中存在，`R/W=1` 表示该页可读、可写；因此 `0x003` 表示该物理页目前有效且具有可读写权限。\n\n由于仅作验证，我们只创建用于管理前几 MB 物理内存的页表项。页目录表（`PDT`）和页表（`PTT`）必须以 4KB 对齐，否则 CPU 不会使用该表。可以使用 NASM 的 `align 4096` 指令确保对齐：\n\n```nasm\nmakePTT:\n    mov edi,PTT\n    mov eax,0x00000003\n    \nMKloop:\n    mov [edi],eax\n    add edi,0x4\n    add eax,0x1000\n    cmp eax,0x00168003 ; 结束\n    jz openPageMode\n    jmp MKloop\n    \nopenPageMode:\n    mov eax,PDT  \n    mov cr3,eax  \n\n    mov eax,cr0  \n    or eax,0x80000000  ;开启分页模式\n    mov cr0,eax\n    \n\nalign 4096\nPDT:\n    dd PTT+0x03\n    times 1023 dd 0\n    \nalign 4096\nPTT:\n    times 4096 db 0\n```\n\n为了验证分页机制是否真正生效，将虚拟页 `0xA000` 的映射修改为指向物理页 `0x9000`。如果分页生效，程序访问虚拟地址 `0xA000`（字符串 \"Hello World!\" 的声明位置）时，实际读取的将是物理地址 `0x9000` 处的内容（字符串 \"HHHHHHHHHHHH\"）：\n\n```nasm\nalign 4096  ;0x9000\ndb \"HHHHHHHHHHHH\",0x0\n\nalign 4096  ;0xA000\nstring:\n    db \"Hello World!\",0x0\n```\n\n> **注意**：`align 4096` 会用 `0x90` 填充剩余空间（NASM 默认行为）。\n\n#### v2 相比 v1 的核心变化\n\n- 新增 `makePTT` / `MKloop`：循环填充页表项，建立 1:1 物理映射\n- 新增 `openPageMode`：修改页表映射（虚拟页 `0xA000` → 物理页 `0x9000`），加载 `PDT` 到 `CR3`，置位 `CR0.PG` 开启分页\n- 远跳转目标从硬编码 `0x08` 改为符号常量 `CODE_SELECTOR`\n- 数据段选择子从硬编码 `0x10` 改为符号常量 `DATA_SELECTOR`\n- 新增 `PDT` / `PTT` 数据区（4KB 对齐）\n\n#### 完整代码 (v2 最终版：段保护+分页)\n\n```nasm\n%include \"struct.inc\"\norg 0x8000\n; 实模式下程序的装入是绝对装入，需指明加载后的内存位置。\n\n\n[bits 16]\nentry:\n    mov ax,cs\n    mov ds,ax\n    mov ss,ax       ;栈从高地址向低地址增长，所以无妨。\n    mov es,ax\n    mov gs,ax\n    \n    mov eax,GDT_PTR\n    mov dword[GDT_PTR+2],GDT\n    lgdt [GDT_PTR]\n    \n    cli\n\n    in al,0x92\n\tor al,2\n\tout 0x92,al\n    \n    mov eax,cr0\n    or eax,0x1\n    mov cr0,eax\n    \n    jmp CODE_SELECTOR:segment32\n    \n\n[bits 32]\nsegment32:\n\nmakePTT:\n    mov edi,PTT\n    mov eax,0x00000003\n    \nMKloop:\n    mov [edi],eax\n    add edi,0x4\n    add eax,0x1000\n    cmp eax,0x00168003\n    jz openPageMode\n    jmp MKloop\n    \nopenPageMode:\n    mov dword [PTT+0xA*4],0x9003 ; 将虚拟页 0xA000 映射到物理页 0x9000\n\n    mov eax,PDT  \n    mov cr3,eax  \n\n    mov eax,cr0  \n    or eax,0x80000000  \n    mov cr0,eax\n    \nprintStr:\n    ;mov ss, ; SS应该不需要改吧？还够用\n    mov ax,DATA_SELECTOR\n    \n    mov ds,ax\n    \n    ;mov edi, 0xB8000            ; 彩色文本模式显存绝对物理起点\n    \n    mov edi, 0xB8000 + (80 * 16 * 2)   ; 从第 15 行开始\n    \n    mov esi, string\n    \n    mov ah, 0x0F                ; 黑底白字属性\n    \nshowChar:\n    mov al, [esi]\t\t\t\t; 这里取出一个字符\n    \n    cmp al,0\n    jz final\n    \n    mov [edi], ax               ; 写入字符和颜色属性\n       \n    inc esi\n    add edi,2\n    \n    jmp showChar\n    \nfinal:\n    HLT                         ; 让 CPU 暂停执行，直到中断打破状态。\n    jmp final\n\nGDT_PTR:\n    dw 23 ; 3*8-1\n    dd 0\nGDT:\n    GDT_UTYPE_Descriptor 0x00000000,0x00000,0x0000\n    GDT_UTYPE_Descriptor 0x00000000,0xfffff,CODE_SEGMENT_32 + ATTR_G + ATTR_DB\n    GDT_UTYPE_Descriptor 0x00000000,0xfffff,DATA_SEGMENT_32 + ATTR_G + ATTR_DB\n\nCODE_SELECTOR equ 0x08\nDATA_SELECTOR equ 0x10\n\nalign 4096  ;0x9000\ndb \"HHHHHHHHHHHH\",0x0\n\nalign 4096  ;0xA000\nstring:\n    db \"Hello World!\",0x0\n   \n\nalign 4096  ;0xB000\nPDT:\n    dd PTT+0x03\n    times 1023 dd 0\n    \nalign 4096  ;0xC000\nPTT:\n    times 4096 db 0\n```\n> **注意！！** 使用该代码时，`MBR.asm` 中从磁盘读取的扇区数目要更改为 `0x1A` 及以上。\n\n运行效果——屏幕输出的是 \"HHHHHHHHHHHH\" 而非 \"Hello World!\"，证明分页映射生效：\n\n![4967f3d346dcf2450e1a7190b57135ac&#95;MD5&#46;jpg](/notes/n-b8281eab11a94cc19572b938dead1e60/media/36673a12555eb67d491fe036e95c066bba8e306c2b0ef1f7815550f7f86fd208.jpg)\n\n## 实验总结\n\n通过本裸机实验，我们完整地走过了从实模式到保护模式的四个核心阶段：\n\n1. **实模式 PoC**：借助 BIOS 中断 `int 0x10` 在实模式下成功打印字符，验证软盘启动流程。\n2. **MBR 引导加载**：编写 `MBR.asm` 部署到启动扇区，实现从第 2 扇区加载 Loader 并跳转执行的二级引导。\n3. **段保护模式（v1）**：开启 A20 地址线，构造并加载 `GDT`，通过置位 `CR0.PE` 并远跳转进入 32 位保护模式，实现显存直写。\n4. **分页模式（v2）**：构建 1:1 恒等映射的 `PDT`/`PTT`，通过置位 `CR0.PG` 开启分页，并利用修改页表映射验证虚拟地址向物理地址的转换。\n\n### 推荐阅读\n\n**推荐书籍**：\n\n1. 《Orange'S：一个操作系统的实现》\n2. 《30天自制操作系统》\n\n### Q&A\n\n**Q 1：如果 CPU 有多个核心会怎么办？**\n\n**A：** 开机时只有 0 号核心（`BSP`, Bootstrap Processor）被唤醒，负责执行 BIOS、MBR 和操作系统的初始化流程。其余核心（`AP`, Application Processor）保持休眠状态，需要由 `BSP` 通过发送处理器间中断（`IPI`）来逐个唤醒，并引导它们各自进入保护模式。`AP` 的 `GDT` 由 `BSP` 负责准备，而页表可以共用 `BSP` 已经构建好的同一份。\n> 注意：尽管多个核心可以共用页表，但某些数据结构（如 `GDTR`、`IDTR`、`TR` 等系统寄存器的值）是每个核心各自独立持有的副本，不存在\"共享\"关系。\n\n---\n\n**Q 2：刚开机时操作系统自身的页目录和页表是如何构建的？**\n\n**A：** 恒等映射。通过恒等映射可以平滑地从实模式切换到保护模式。\n\n---\n\n**Q 3：** 开启分页后，CPU 的所有内存访问都经过 MMU 进行线性地址→物理地址的转换，无法直接操作物理地址。**那么问题来了**：创建一个新进程时，操作系统需要为它构造独立的页表——但页表本身也是存放在物理内存中的数据结构，既然无法直接访问物理地址，操作系统要如何分配和填写这张新页表？\n\n**A：** 内核维护着哪些物理页可用。借助自映射机制，内核可以将自己的某个虚拟页挂接到特定的物理页上，进而实现对任意物理页的修改。因此，操作系统能够以此构造出任意进程要使用的页表。系统建立完恒等映射后，后续还会建立内核页表的自映射。\n> 参考：[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)\n\n**Q 4：创建/修改描述符需要高权限，操作系统是如何做到的？**\n\n**A：** 在仍处于实模式时预先构建好各项结构（如各种描述符表、门），然后再正式进入保护模式。\n",
+  "id": "b8281eab-11a9-4cc1-9572-b938dead1e60",
+  "metadata": {
+    "tags": [
+      "arch/x86"
+    ],
+    "title": "x86 裸机实验：实模式进入保护模式"
+  },
+  "resources": [
+    "1dcb5a9a2a50369e786b98c2eb274baa804fd8360a2531638c8169da6ad2cb4b.jpg",
+    "36673a12555eb67d491fe036e95c066bba8e306c2b0ef1f7815550f7f86fd208.jpg",
+    "3ab777baf9c1d5e60f834ab06ecfc9a6e3dc8c38eb558c3cdbb0a81c29f2db18.jpg",
+    "4733554a201e3429e53e3748ccc36e58ad24e938d7e9927198c21195eb7a841c.jpg",
+    "4c6b987b758f2f0cd564acb4d4ffac3092476b7a4548b7349df963d7d6b526a7.jpg",
+    "709217ea8d747129c26053aae79fcbb8679bcfba7b315d59a141fa9fc9f0090a.jpg",
+    "7a49390334ee2970166b280af034d9c9721108e76e0f45e878f72dc9322a6989.jpg",
+    "98fde0e827a9fb0cd5e5eb1b4d029c7c7e6393023a9e86fd29f877ae1b9c0793.jpg",
+    "c36edfbb4708762b806c1af4ea5be27f63811a254f8beb2e4eec2496ce68c912.jpg",
+    "c8aff2b78f79152a4f09e73bf7c93b1059d82bcb40588fc268cac16b807b6aba.jpg",
+    "de4c6ebaa5f61de9008bad81852229ad21c34d44c208d2f5aa375e41a99415ae.jpg",
+    "e3649a1efd277ec2b507cfc660b2c573224170d028c73ed008fef89ff679f489.jpg",
+    "ebc5f44b98e2e356092d1cd5181df497de34ad28e821c48336506cf2ee899138.jpg",
+    "ee9b76da3213a12ca3955169a32d9e5afcf4305cb4fdb038bc088f89a0aae0a3.jpg"
+  ],
+  "url": "/notes/n-b8281eab11a94cc19572b938dead1e60/"
+}

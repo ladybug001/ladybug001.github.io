@@ -1,0 +1,66 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-50fb5ce8275ff073667e",
+      "kind": "heading",
+      "offset": 31
+    },
+    {
+      "id": "h-e561858db86ec727f22c",
+      "kind": "heading",
+      "offset": 43
+    },
+    {
+      "id": "h-190074a578583654347e",
+      "kind": "heading",
+      "offset": 120
+    },
+    {
+      "id": "h-b7ea3044614d251a1dc0",
+      "kind": "heading",
+      "offset": 1229
+    },
+    {
+      "id": "h-5a7dac8ad206ff01cccc",
+      "kind": "heading",
+      "offset": 2064
+    },
+    {
+      "id": "h-c575746063aae4ab89cb",
+      "kind": "heading",
+      "offset": 2488
+    },
+    {
+      "id": "h-2f2289803d8e6058bb83",
+      "kind": "heading",
+      "offset": 2780
+    },
+    {
+      "id": "h-e92bf11e3b5ff6c0aa9e",
+      "kind": "heading",
+      "offset": 2974
+    },
+    {
+      "id": "h-f59d3ab62cf4bee19e26",
+      "kind": "heading",
+      "offset": 3254
+    },
+    {
+      "id": "h-937a9a08ea48a1827742",
+      "kind": "heading",
+      "offset": 3513
+    }
+  ],
+  "body": "\n# Android Java 加密与哈希算法实现及 Hook\n\n## Java 实现\n\n相关内容参考：[加密与哈希算法概论](/notes/n-27c4388534224f8ea487d50e0d6ee55f/)\n\n### AES 加解密\n\n```java\n// AES/CBC/PKCS5Padding 模式\n@Override\npublic String aesEncrypt(String key, String iv, String content) throws Exception {\n    // 用密钥字节构建 AES 密钥规格\n    SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), \"AES\");\n    // 指定算法/模式/填充，CBC 模式需要 IV\n    Cipher cipher = Cipher.getInstance(\"AES/CBC/PKCS5Padding\");\n    // 初始化向量（IV），CBC 模式必须提供，长度与块大小一致（16 字节）\n    IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes());\n    cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);\n    byte[] bytes = cipher.doFinal(content.getBytes());\n    // DEFAULT 会在输出中插入换行符，实际开发中常用 NO_WRAP\n    return Base64.encodeToString(bytes, Base64.DEFAULT);\n}\n\n@Override\npublic String aesDecrypt(String key, String iv, String content) throws Exception {\n    SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), \"AES\");\n    Cipher cipher = Cipher.getInstance(\"AES/CBC/PKCS5Padding\");\n    IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes());\n    cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);\n    byte[] bytes = cipher.doFinal(Base64.decode(content, Base64.DEFAULT));\n    return new String(bytes);\n}\n```\n\n### DES 加解密\n\n```java\n// DES/ECB/PKCS5Padding 模式，ECB 不需要 IV\n@Override\npublic String desEncrypt(String key, String content) throws Exception {\n    // DES 密钥长度必须为 8 字节\n    SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), \"DES\");\n    Cipher cipher = Cipher.getInstance(\"DES/ECB/PKCS5Padding\");\n    cipher.init(Cipher.ENCRYPT_MODE, keySpec);\n    byte[] bytes = cipher.doFinal(content.getBytes());\n    return Base64.encodeToString(bytes, Base64.DEFAULT);\n}\n\n@Override\npublic String desDecrypt(String key, String content) throws Exception {\n    SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), \"DES\");\n    Cipher cipher = Cipher.getInstance(\"DES/ECB/PKCS5Padding\");\n    cipher.init(Cipher.DECRYPT_MODE, keySpec);\n    byte[] bytes = cipher.doFinal(Base64.decode(content, Base64.DEFAULT));\n    return new String(bytes);\n}\n```\n\n### MD5 摘要\n\n```java\n@Override\npublic String getMD5(String content) throws Exception {\n    MessageDigest md = MessageDigest.getInstance(\"MD5\");\n    byte[] digest = md.digest(content.getBytes());\n    // 参数 1 表示正数（BigInteger 构造函数的 signum），避免负号前缀\n    // 注意：toString(16) 不会补前导零，若摘要首字节 < 0x10 则输出不足 32 位\n    // 更严谨的做法是用 String.format(\"%032x\", new BigInteger(1, digest))\n    return new BigInteger(1, digest).toString(16);\n}\n```\n\n### SHA-1 摘要\n\n```java\n@Override\npublic String getSHA1(String content) throws Exception {\n    MessageDigest md = MessageDigest.getInstance(\"SHA1\");\n    md.update(content.getBytes());\n    byte[] digest = md.digest();\n    // 同 MD5，存在前导零丢失的问题\n    return new BigInteger(1, digest).toString(16);\n}\n```\n\n## Hook\n\n在安卓逆向中，Hook 加密相关的 Java API 可以直接拿到明文、密钥、IV 和密文，是分析加密逻辑最高效的方式。\n\n相关内容参考：[Xposed 模块开发](/notes/n-9026c0305fcd4f06b979cc9328bc05a6/)。Ratel Hook 用法参考待恢复，原笔记名：03-Ratel Hook用法。\n\n### Hook 对称加密（`Cipher`）\n\nAES 和 DES 在加密和解密过程中都用到了：\n\n- `Cipher.getInstance(\"XX/XX/PKCS5Padding\");` — 获取算法/模式/填充信息\n- `cipher.init(mode, key, iv);` — 获取密钥和 IV\n- `cipher.doFinal(content.getBytes());` — 获取输入数据和输出结果\n\n使用框架 Hook `Cipher` 类中的 `getInstance`、`init` 和 `doFinal` 方法即可。\n\n### Hook 摘要算法（`MessageDigest`）\n\nMD5 和 SHA-1 在计算过程中都用到了：\n\n- `MessageDigest.getInstance(\"XX\")` — 获取算法名称\n- `md.update(content.getBytes());` — 获取输入数据\n- `md.digest();` 或 `md.digest(content.getBytes());` — 获取输入数据和摘要结果\n\nHook `MessageDigest` 类中的 `getInstance`、`digest` 和 `update` 方法即可。\n\n### 逆向实战技巧\n\n- **关注 `SecretKeySpec` 构造函数**：直接 Hook `javax.crypto.spec.SecretKeySpec.$init` 可以一次性捕获所有对称加密的密钥。\n- **关注 `IvParameterSpec` 构造函数**：Hook `javax.crypto.spec.IvParameterSpec.$init` 可以捕获所有 IV。\n- **注意编码方式**：实际应用中密钥和数据可能经过 Base64、HEX 或其他编码，Hook 拿到的是原始字节，需要结合上下文判断编码方式。\n\n可以使用**算法助手 app** 快速 hook 一些系统系统自带的加密函数。\n",
+  "id": "438f78d4-e255-4e5d-a12e-7b5b853ed404",
+  "metadata": {
+    "tags": [
+      "reverse/android",
+      "lang/java",
+      "cs/crypto"
+    ],
+    "title": "Android Java 加密与哈希算法实现及 Hook"
+  },
+  "resources": [],
+  "url": "/notes/n-438f78d4e2554e5da12e7b5b853ed404/"
+}

@@ -1,0 +1,45 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-9e312f0c6e87a3b0f985",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-c92af45a631159ff8c1c",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-a07bd4a5c693e7d9950f",
+      "kind": "heading",
+      "offset": 116
+    },
+    {
+      "id": "h-0cd4c424e3432710f38a",
+      "kind": "heading",
+      "offset": 718
+    },
+    {
+      "id": "h-1be568de2ec5e29e5636",
+      "kind": "heading",
+      "offset": 1526
+    },
+    {
+      "id": "h-93b462b660330dac0153",
+      "kind": "heading",
+      "offset": 2064
+    }
+  ],
+  "body": "# 主流语言虚拟机实现机制\n## 前置知识\n\n[编程语言&#65306;虚拟机与解释器的设计逻辑](/notes/n-39ae179fbe1a486892410bf946f9e63c/)\n\n## `Java` 虚拟机 (`JVM`)\n\n`Java` 字节码是 `Java` 虚拟机 (`JVM`) 的指令集，它是一种**中间代码**，介于 `Java` 源代码与机器码之间。`Java` 字节码具有**平台无关性**，这意味着它可以在任何支持 `JVM` 的平台上运行。\n\n当 `Java` 源代码被编译后，会被转换成字节码并存储在 `.class` 文件中。`JVM` 在运行时加载这些字节码文件，并按字节码指令执行。\n\n`Java` 语言兼具编译型与解释型特性：\n-   **编译阶段：** 通过 `Java` 编译器 (`javac`) 将源码编译成字节码文件。\n-   **运行阶段：** `JVM` 读取字节码指令，逐条翻译成目标机器语言执行，或通过 `JIT` 编译优化。\n\n```text\nJava 源码 (.java)\n\t↓ javac\nJava 字节码 (.class)\n\t↓ 多个 .class 文件通常打包为 .jar 文件\nJVM 加载 .class 或 .jar 文件，执行其中的字节码\n\t- JVM 可能直接解释执行；\n\t- 或使用 JIT (Just-In-Time) 编译器把部分字节码编译为机器码以提升性能。\n```\n\n《Java 虚拟机规范》规定了虚拟机要实现的规范，但没有要求具体实现方式，也就是说，在不同的虚拟机，具体的实现是不同的。\n\n\n### 安卓虚拟机 (`Dalvik` & `ART`)\n\n安卓虚拟机可以理解为是特殊处理过的 JVM，执行安卓程序的虚拟机主要有两个：\n\n- **Dalvik**：Google 专门为 Android 设计的虚拟机，有专属的文件执行格式 dex（Dalvik Executable）\n- **ART（Android Runtime）**：相当于 Dalvik 的升级版，本质与 Dalvik 无异\n\n> 由于 `ART` 已取代 `Dalvik`，重点是 `ART`。\n\n`.jar` 文件本质上是把多个 `.class` 文件打包到一个 ZIP 容器中，各个 `.class` 仍然保持自己原来的文件结构。\n> 参考：[JVM Class 文件格式解析](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/)\n\n与 `JVM` 类似，安卓虚拟机同样使用字节码——存储在 `.dex` 文件中，而 `.dex` 不是简单地把多个 `.class` 打包，而是重新解析其中的字节码、字符串、类型、字段、方法等信息，进行转换、去重和重新组织，最终生成一个全新的统一二进制文件。\n> 参考：[Android DEX 文件格式解析](/notes/n-4c20579667134e5a8dcb61db2edc1268/)\n\n```text\nJava 源码 (.java)\n\t↓ javac\nJava 字节码 (.class)\n\t↓ dx/d8（Android 构建工具）\nDEX 字节码 (.dex)\n\t↓ 放入 APK 包中\n运行时由 Android 虚拟机 (Dalvik/ART) 执行\n```\n\n> **提示：** 使用 `baksmali` 工具反编译 `.dex` 文件可以得到 `smali` 代码。`smali` 是 `DEX` 字节码的人类可读汇编表示，类似于“汇编语言”与“机器码”的关系。\n\n## `Python` 虚拟机\n\n本质上，`Python` 解释器是挂着解释器名称的虚拟机。\n> 参考：[编程语言&#65306;虚拟机与解释器的设计逻辑](/notes/n-39ae179fbe1a486892410bf946f9e63c/#h-c1b4eb4aff3b1098bc27)\n\n`Python` 代码的主流运行方式包括：\n\n1. 虚拟机模式\n\t- `CPython`（官方实现），**编译环节：** 源代码被解析并编译为字节码（`Bytecode`），通常缓存为 `.pyc` 文件（类似于 `Java` 的 `.class`）。\n\t- `PyPy`：集成了 **JIT (Just-In-Time)** 编译技术，运行时速度显著优于 `CPython`。\n2. AOT (Ahead-Of-Time) 编译模式\n\t- `Cython`：将 `Python` 代码编译为 `C` 代码，再编译为扩展模块。\n\t- `Nuitka`：将 `Python` 代码编译为 `C++` 代码，生成独立可执行文件。\n> `AOT` 指预先编译，即在程序运行前直接将高级语言转换为目标机器码。这种方式虽然运行效率高，但编译结果绑定在特定架构上，程序缺乏可移植性。\n\n## `JavaScript` 虚拟机\n\n`V8` 是 `Google` 开发的高性能 `JavaScript` 和 `WebAssembly` 引擎。\n\n-   **定位：** 通常被视为虚拟机，但**采用了激进的 JIT 策略**。\n-   **核心组件：**\n    -   **Ignition：** 字节码解释器，负责生成字节码并解释执行（减少内存占用，加快启动）。\n    -   **TurboFan：** 优化编译器，负责将热点代码编译为高度优化的本地机器码。\n-   **特点：** 不同于传统解释器，`V8` 尽可能多地将 `JS` 代码编译为本地代码执行以提升性能。\n",
+  "id": "567af759-1227-4b75-a32d-6eb63cbfdaa6",
+  "metadata": {
+    "tags": [
+      "lang",
+      "cs/runtime"
+    ],
+    "title": "编程语言：主流语言虚拟机实现机制"
+  },
+  "resources": [],
+  "url": "/notes/n-567af75912274b75a32d6eb63cbfdaa6/"
+}

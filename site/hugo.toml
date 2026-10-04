@@ -1,0 +1,89 @@
+# Local Stack preview only. Portable snapshots remain the only content input.
+baseURL = 'http://127.0.0.1:8085/'
+title = 'ladybug001'
+theme = 'stack'
+defaultContentLanguage = 'zh'
+locale = 'zh-cn'
+hasCJKLanguage = true
+enableGitInfo = false
+disableHugoGeneratorInject = true
+disableKinds = ['RSS', 'sitemap', 'robotsTXT']
+
+[pagination]
+pagerSize = 10
+
+[frontmatter]
+date = ['date']
+lastmod = ['lastmod']
+
+[taxonomies]
+tag = 'tags'
+category = 'categories'
+series = 'series'
+
+[params]
+mainSections = ['notes']
+
+[params.sidebar]
+avatar = 'img/avatar.jpg' # Local copy of the owner's public GitHub avatar.
+
+[params.comments]
+enabled = false
+
+[params.article]
+math = false # Server-side MathML hook; no remote KaTeX loader.
+toc = true
+headingAnchor = true
+readingTime = false
+
+[params.article.list]
+showTags = true
+
+[params.pageViews]
+enabled = true
+# Browser requests are allowed only on this public HTTPS host, never previews.
+host = 'ladybug001.github.io'
+
+[params.imageProcessing]
+autoOrient = false
+
+[params.imageProcessing.content]
+enabled = false # Preserve snapshot asset bytes during preview.
+
+[params.imageProcessing.thumbnail]
+enabled = false
+
+# Stock Stack demo widgets, without invented profile/about content.
+[params.widgets]
+homepage = [
+  { type = 'search' },
+  { type = 'categories', params = { limit = 10 } },
+  { type = 'tag-cloud', params = { limit = 0 } }, # Zero shows every published tag.
+]
+page = [{ type = 'toc' }]
+
+[[menu.main]]
+identifier = 'home'
+name = '首页'
+url = '/'
+weight = 1
+[menu.main.params]
+icon = 'home'
+
+[markup.goldmark.extensions]
+linkify = false
+[markup.goldmark.extensions.passthrough]
+enable = true
+[markup.goldmark.extensions.passthrough.delimiters]
+block = [['\[', '\]'], ['$$', '$$']]
+inline = [['\(', '\)'], ['$', '$']]
+[markup.goldmark.parser.attribute]
+block = true
+title = true
+[markup.goldmark.renderer]
+# Only prevalidated snapshot Markdown is accepted; authored HTML stays gated.
+unsafe = true
+[markup.highlight]
+noClasses = false
+codeFences = true
+lineNos = false # Short commands do not need a line-number column.

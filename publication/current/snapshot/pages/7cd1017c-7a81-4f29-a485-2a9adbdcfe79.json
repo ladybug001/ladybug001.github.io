@@ -1,0 +1,46 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-75faae47dd2af0a168b0",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-66f4aa5b8af73f238171",
+      "kind": "heading",
+      "offset": 61
+    },
+    {
+      "id": "h-620b4f3677dc208223eb",
+      "kind": "heading",
+      "offset": 240
+    },
+    {
+      "id": "h-917c68329f325dfa7999",
+      "kind": "heading",
+      "offset": 508
+    },
+    {
+      "id": "h-876ae787a1203ecf11d2",
+      "kind": "heading",
+      "offset": 595
+    },
+    {
+      "id": "h-4f5bee0face9d89b0086",
+      "kind": "heading",
+      "offset": 1008
+    }
+  ],
+  "body": "# 网络安全与加密 (MOC)\n\n> 聚焦加密、哈希、身份认证与安全通信；代理和抓包作为应用分支。\n\n## 算法与基本概念\n\n1. [加密与哈希算法概论](/notes/n-27c4388534224f8ea487d50e0d6ee55f/) — 区分编码、对称／非对称加密、混合加密与摘要。\n2. [HTTPS 基础概念](/notes/n-1a1344f9c46d453ba463f5909e17d74b/) — 理解 HTTP 与安全通道的关系。\n\n## TLS 与身份认证\n\n- [TLS 1&#46;2 握手流程](/notes/n-40bfe154a9514003b8b98ef574574c2e/) — 查阅消息交互、协商与密钥建立。\n- [TLS 1&#46;3 握手流程](/notes/n-2f4b0b459c394b46a9995f63ae0c0edb/) — 对照握手流程及相对 TLS 1.2 的变化。\n- [SSH 协议与身份认证](/notes/n-eb2493ad6d584117914b1757279ad1aa/) — 理解另一种安全通信协议与身份验证路径。\n\n## 证书与信任基础\n\n- [数字证书与 PKI 体系](/notes/n-b7dbfaffe07f5e839320f3db28bb722b/) — 证书、签名与信任链。\n\n## 开发与分析应用\n\n- Nginx 搭建 HTTPS 网站 — 将证书与安全通信知识用于部署。\n- [Wireshark 解密 TLS 流量](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/) — 观察满足解密条件时的协议与内容。\n- [流量抓包与代理原理 &#40;MOC&#41;](/notes/n-89074cb03d004c5f835aac39af5ef5bc/) — 区分代理接管、协议转发与明文获取。\n- [Android Java 加密与哈希算法实现及 Hook](/notes/n-438f78d4e2554e5da12e7b5b853ed404/) — 观察应用加密接口的输入、输出与运行过程。\n- [Android 签名校验与对抗](/notes/n-0c28501e5cc44cd7bd8e0d2cecbdb6fc/) — 对照 APK 完整性与签名者身份验证。\n\n## 相关入口\n\n- [计算机网络 &#40;MOC&#41;](/notes/n-20d43d2543664da29a65fb0636aab51e/) — 协议、连接与传输基础。\n- [Web 应用开发 &#40;MOC&#41;](/notes/n-7863feb52f9d4d06bb8b3d8589d7fc36/) — 登录认证与部署实践。\n",
+  "id": "7cd1017c-7a81-4f29-a485-2a9adbdcfe79",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "cs/network"
+    ],
+    "title": "网络安全与加密 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-7cd1017c7a814f29a4852a9adbdcfe79/"
+}

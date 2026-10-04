@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the checksum-pinned local test Hugo, not a Theme or deployment tool."""
+"""Install the shared checksum-pinned Hugo Extended, without global changes."""
 import sys
 sys.dont_write_bytecode = True
 

@@ -1,0 +1,145 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-8d1abfd669c18e9d075e",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-3249c19a995a5bb103ad",
+      "kind": "heading",
+      "offset": 198
+    },
+    {
+      "id": "h-ad6064f62037265d4678",
+      "kind": "heading",
+      "offset": 2986
+    },
+    {
+      "id": "h-41c8c2f1d48e1253bd28",
+      "kind": "heading",
+      "offset": 2996
+    },
+    {
+      "id": "h-c223dcb23102421bf9c5",
+      "kind": "heading",
+      "offset": 3008
+    },
+    {
+      "id": "h-fa73f2caaa3e1304b6fd",
+      "kind": "heading",
+      "offset": 3374
+    },
+    {
+      "id": "h-73cea6af900f70148bd0",
+      "kind": "heading",
+      "offset": 3856
+    },
+    {
+      "id": "h-abf4b17cc3c3bec25d70",
+      "kind": "heading",
+      "offset": 4787
+    },
+    {
+      "id": "h-9fbf617f7c9e7bd4a169",
+      "kind": "heading",
+      "offset": 6594
+    },
+    {
+      "id": "h-ccf960d940c02059c756",
+      "kind": "heading",
+      "offset": 7387
+    },
+    {
+      "id": "h-d2951fd8a96d5d0b6288",
+      "kind": "heading",
+      "offset": 8116
+    },
+    {
+      "id": "h-d2473400f2e4f9397cdd",
+      "kind": "heading",
+      "offset": 8174
+    },
+    {
+      "id": "h-a77b2db5bb284aa518b2",
+      "kind": "heading",
+      "offset": 8653
+    },
+    {
+      "id": "h-1c957fe11eef71dd011b",
+      "kind": "heading",
+      "offset": 9209
+    },
+    {
+      "id": "h-c583b0c5e1ef85b40ae3",
+      "kind": "heading",
+      "offset": 11132
+    },
+    {
+      "id": "h-8827c14cf24a4158cdf5",
+      "kind": "heading",
+      "offset": 11993
+    },
+    {
+      "id": "h-9a1444a808fc08c4d7b2",
+      "kind": "heading",
+      "offset": 12673
+    },
+    {
+      "id": "h-b3065da5f1905fa52abf",
+      "kind": "heading",
+      "offset": 13635
+    },
+    {
+      "id": "h-af6c451f7493ecc4f62a",
+      "kind": "heading",
+      "offset": 14511
+    },
+    {
+      "id": "h-394291a3c127f9ac521a",
+      "kind": "heading",
+      "offset": 14653
+    },
+    {
+      "id": "h-3c8c62bf4410df23481f",
+      "kind": "heading",
+      "offset": 16099
+    },
+    {
+      "id": "h-cf3fc05fcf63029cee02",
+      "kind": "heading",
+      "offset": 17110
+    },
+    {
+      "id": "h-022b62e3a4880bd83711",
+      "kind": "heading",
+      "offset": 18437
+    },
+    {
+      "id": "h-8c86d3d1061d9943354c",
+      "kind": "heading",
+      "offset": 19176
+    },
+    {
+      "id": "h-304ad97559d9334f1462",
+      "kind": "heading",
+      "offset": 21216
+    },
+    {
+      "id": "h-65b976d4da9d3f131025",
+      "kind": "heading",
+      "offset": 23195
+    }
+  ],
+  "body": "# 计算机图形渲染：OpenGL 编程基础\n\n**相关内容**：\n1. [Windows 窗口程序](/notes/n-5b50f7a485de48dcb0d1e1868933e003/)\n2. [计算机图形渲染&#65306;OpenGL 与 Direct3D 的区别](/notes/n-63ab4b15943a41e2a68a74c6dc678637/)\n\n## 纯原生 OpenGL 编程\n\n不使用 `glfw` 和 `glew` 等库，使用 OpenGL API 实现图形渲染的纯原生写法代码如下：\n```cpp\n#include <windows.h>    // Windows API\n#include <gl/GL.h>      // OpenGL API\n\n#pragma comment (lib, \"opengl32.lib\") // 自动链接 OpenGL 库\n\n// 窗口消息处理函数\nLRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)\n{\n\tswitch (msg)\n\t{\n\tcase WM_CLOSE:              // 用户点击关闭按钮\n\t\tDestroyWindow(hwnd);     // 销毁窗口\n\t\tbreak;\n\tcase WM_DESTROY:            // 窗口被销毁\n\t\tPostQuitMessage(0);      // 通知消息循环退出\n\t\tbreak;\n\tdefault:                    // 其他消息使用默认处理\n\t\treturn DefWindowProc(hwnd, msg, wParam, lParam);\n\t}\n\treturn 0;\n}\n\n// 创建原生 OpenGL 窗口\nHWND CreateOpenGLWindow(HINSTANCE hInstance, int width, int height)\n{\n\tWNDCLASS wc = { 0 };\n\twc.lpfnWndProc = WndProc;           // 消息处理函数\n\twc.hInstance = hInstance;           // 当前应用实例句柄\n\twc.lpszClassName = L\"OpenGLWindowClass\"; // 窗口类名\n\n\tRegisterClass(&wc);                  // 注册窗口类\n\n\t// 创建窗口\n\tHWND hwnd = CreateWindow(\n\t\tL\"OpenGLWindowClass\",             // 窗口类名\n\t\tL\"OpenGL Blue Window\",            // 窗口标题\n\t\tWS_OVERLAPPEDWINDOW,              // 窗口风格\n\t\tCW_USEDEFAULT, CW_USEDEFAULT,     // 默认位置\n\t\twidth, height,                    // 窗口大小\n\t\tNULL, NULL, hInstance, NULL);\n\n\treturn hwnd;                         // 返回窗口句柄\n}\n\n// 初始化 OpenGL 渲染上下文\nvoid InitOpenGL(HWND hwnd, HGLRC& hRC, HDC& hDC)\n{\n\t// 设置像素格式描述\n\tPIXELFORMATDESCRIPTOR pfd = {\n\t\tsizeof(PIXELFORMATDESCRIPTOR),\n\t\t1,\n\t\tPFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // 支持窗口、OpenGL、双缓冲\n\t\tPFD_TYPE_RGBA,        // RGBA 颜色模式\n\t\t32,                   // 颜色深度\n\t\t0,0,0,0,0,0,0,0,0,0,  // 保留位\n\t\t0,\n\t\t0,\n\t\t0,\n\t\t0,0,0,0,\n\t\t24,   // 深度缓冲\n\t\t8,    // 模板缓冲\n\t\t0,\n\t\tPFD_MAIN_PLANE,\n\t};\n\n\thDC = GetDC(hwnd);                // 获取设备上下文\n\tint pf = ChoosePixelFormat(hDC, &pfd); // 选择最匹配的像素格式\n\tSetPixelFormat(hDC, pf, &pfd);    // 设置设备上下文像素格式\n\n\thRC = wglCreateContext(hDC);      // 创建 OpenGL 渲染上下文\n\twglMakeCurrent(hDC, hRC);        // 设置为当前上下文\n}\n\n// Windows 应用程序入口函数\nint WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)\n{\n\tHWND hwnd = CreateOpenGLWindow(hInstance, 800, 600); // 创建窗口\n\tShowWindow(hwnd, nCmdShow);                           // 显示窗口\n\n\tHGLRC hRC;  // OpenGL 渲染上下文\n\tHDC hDC;    // 设备上下文\n\tInitOpenGL(hwnd, hRC, hDC);                            // 初始化 OpenGL\n\n\tMSG msg;\n\tbool running = true;\n\n\twhile (running)  // 主循环\n\t{\n\t\t// 处理 Windows 消息\n\t\twhile (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))\n\t\t{\n\t\t\tif (msg.message == WM_QUIT)\n\t\t\t\trunning = false; // 收到退出消息时结束循环\n\n\t\t\tTranslateMessage(&msg);  // 翻译消息\n\t\t\tDispatchMessage(&msg);   // 分发消息\n\t\t}\n\n\t\t// 清屏为深蓝色\n\t\tglClearColor(0.0f, 0.0f, 0.5f, 1.0f);\n\t\tglClear(GL_COLOR_BUFFER_BIT);\n\n\t\t// 交换前后缓冲区，显示图像\n\t\tSwapBuffers(hDC);\n\t}\n\n\t// 清理 OpenGL 资源\n\twglMakeCurrent(NULL, NULL);\n\twglDeleteContext(hRC);\n\tReleaseDC(hwnd, hDC);\n\n\treturn 0;\n}\n\n```\n\n## 库/框架封装的 OpenGL 编程\n\n### 环境配置\n#### 第三方库介绍\n为了在 C++ 中更方便的使用 OpenGL，我们通常需要借助一些库来处理窗口创建、上下文管理以及函数指针加载等事务。\n\n1.  **GLFW 库的作用**：\n    GLFW 是一个轻量级的、开源的、**跨平台**的多媒体库。它主要用于创建和管理窗口、处理输入（键盘、鼠标、手柄）以及管理 OpenGL 上下文。\n\n2.  **GLEW 库的作用**：\n    GLEW (The OpenGL Extension Wrangler Library) 的作用是帮助我们处理 OpenGL 的扩展和核心函数。由于 OpenGL 的函数指针在不同平台和显卡驱动上可能不同，GLEW 会在运行时查询并加载这些函数的地址，**让我们能够直接调用现代 OpenGL 的各种功能，而无需手动去获取每一个函数指针。**\n\n#### 安装和使用\n\n通常，你可以通过以下步骤来配置你的项目：\n\n1.  **下载库**：从官方网站下载 [GLFW](https://www.glfw.org/download.html) 和 [GLEW](https://glew.sourceforge.net/) 的预编译二进制文件或源代码。\n2.  **包含头文件**：在你的 C++ 代码中，首先包含 GLEW 的头文件，然后是 GLFW 的头文件。顺序很重要，因为 GLEW 需要在 GLFW 之前被包含。\n```cpp\n#include <GL/glew.h>\n#include <GLFW/glfw3.h>\n```\n3.  **链接库文件**：在你的项目设置中，配置链接器以链接 `glew32s.lib` (或 `glew32.lib` 用于动态链接), `glfw3.lib`, 和 `opengl32.lib`。\n4.  **添加动态链接库 (DLL)**：如果使用的是动态链接库，请确保 `glew32.dll` 和 `glfw3.dll` 位于你的可执行文件所在的目录。\n\n---\n#### 选择管线模式\n> 相关内容：[计算机图形渲染&#65306;渲染流程](/notes/n-a805da42d2ed5f25885453ab4186c6c1/#h-326a45e085facc96f28f)\n\nOpenGL 有两种管线模式，在初始化 GLFW 时，通过 `GLFW_OPENGL_PROFILE` 决定管线模式（也决定了哪些函数可用）：\n```cpp\n// 示例：请求一个 3.3 版本的核心模式上下文\nglfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);\nglfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);\nglfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 若不指定，默认使用GLFW_OPENGL_COMPAT_PROFILE 配置文件\n```\n1. `GLFW_OPENGL_CORE_PROFILE` (核心模式): \n\t- 现代 OpenGL 标准，**仅支持可编程管线，移除了所有旧的、已废弃的函数**（如 `glBegin`, `glVertex`），必须编写 Shader。\n\t- 特点：强制要求 VAO，**必须手动创建并绑定 VAO**，否则无法绘制。适合追求高性能的新项目。\n2. `GLFW_OPENGL_COMPAT_PROFILE` (兼容模式，也是默认模式): \n\t- 此模式保留了旧的 API，**既支持现代技术，也支持立即模式等旧功能。通常会提供一个默认 VAO（ ID 0）**，因此即使我们不自己创建 VAO，像 `glBegin` / `glEnd` 这样的旧调用也能工作。这对于运行旧代码或在学习过程中进行对比很有用。\n\t- 管线状态：**固定与可编程管线并存**。\n\t\t- 绑定 Shader 程序时 (`glUseProgram (id)`)：走可编程管线。\n\t\t- 解绑 Shader 程序时 (`glUseProgram (0)`)：自动回退到固定管线。在核心模式下该代码则是置空管线，此时再去渲染，会黑屏/报错。\n\n### 旧方式 (立即模式)\n\n**问题**：我们有了一个空白窗口，第一步是如何让 GPU 画一个最简单的图形，比如三角形？\n\n在很久以前的 OpenGL 版本中，提供了一种非常直观的方式，就像用笔画画一样，CPU 一条一条地告诉 GPU 要画的顶点坐标。这种方式已被废弃，只在**兼容模式 (Compatibility Profile)** 下可用。\n\n**为什么现在不用了？** 这种方式效率极低。每画一帧，CPU 都要和 GPU 进行大量的、琐碎的通信。现代 GPU 被设计为大规模并行处理器，我们应该做的是将数据一次性批量发送给它，让它去高效地工作。\n\n下面的代码展示了如何在一个 GLFW 窗口中使用立即模式绘制一个三角形。请注意，要使其工作，必须在创建窗口前请求一个**兼容模式**的 OpenGL 上下文。\n\n```cpp\n#include <GLFW/glfw3.h>\n\nint main(void)\n{\n    GLFWwindow* window;\n\n    /* Initialize the library */\n    if (!glfwInit())\n        return -1;\n\n    /* \n     * 要使用立即模式，需要请求一个兼容配置文件。\n     * 如果使用核心配置文件 (Core Profile)，glBegin/glEnd 会导致错误。\n     * glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE); \n     */\n\n    /* Create a windowed mode window and its OpenGL context */\n    window = glfwCreateWindow(640, 480, \"Immediate Mode Triangle\", NULL, NULL);\n    if (!window)\n    {\n        glfwTerminate();\n        return -1;\n    }\n\n    /* Make the window's context current */\n    glfwMakeContextCurrent(window);\n\n    /* Loop until the user closes the window */\n    while (!glfwWindowShouldClose(window))\n    {\n        /* Render here */\n        glClear(GL_COLOR_BUFFER_BIT);\n\n        /* 使用立即模式绘制一个三角形 */\n        // 这种方式已被废弃，在现代 OpenGL (Core Profile) 中无法使用\n        glBegin(GL_TRIANGLES);\n        glColor3f(1.0f, 0.0f, 0.0f); // 设置颜色为红色\n        glVertex2f(-0.5f, -0.5f);    // 第1个顶点\n        glColor3f(0.0f, 1.0f, 0.0f); // 设置颜色为绿色\n        glVertex2f( 0.0f,  0.5f);    // 第2个顶点\n        glColor3f(0.0f, 0.0f, 1.0f); // 设置颜色为蓝色\n        glVertex2f( 0.5f, -0.5f);    // 第3个顶点\n        glEnd();                     // 结束绘画\n\n        /* Swap front and back buffers */\n        glfwSwapBuffers(window);\n\n        /* Poll for and process events */\n        glfwPollEvents();\n    }\n\n    glfwTerminate();\n    return 0;\n}\n```\n> 因为不使用现代 OpenGL 函数，所以可以不使用 GLEW 头文件。\n\n### 现代方式\n\n> 相关学习代码已上传至[OpenGL Study: 记录对OpenGL的学习过程](https://gitee.com/ladybug001/open-gl-study)\n\n---\n\n现代 OpenGL 采用可编程管线，其核心渲染流程如下，实现了 CPU 与 GPU 的高效分工：\n\n1.  **数据准备 (CPU)**: 在 CPU 端定义好顶点坐标、颜色、纹理坐标等数据。\n2.  **数据上传 (初始化阶段)**:\n    -   创建 **VBO** (顶点缓冲对象) 和 **IBO** (索引缓冲对象)，将顶点和索引数据从 CPU 内存一次性拷贝到 GPU 显存。\n    -   创建并配置 **VAO** (顶点数组对象)，它像一个“快捷方式”，记录了 VBO、IBO 以及顶点数据布局的完整状态。\n3.  **指令准备 (初始化阶段)**:\n    -   编写 **GLSL 着色器**代码（顶点着色器、片段着色器等）。\n    -   在 C++ 程序中加载、编译、链接这些代码，生成一个**着色器程序 (Shader Program)**。\n4.  **循环渲染 (Render Loop)**:\n    -   清空屏幕。\n    -   **绑定 VAO** (一键恢复所有顶点数据状态)。\n    -   **绑定着色器程序** (`glUseProgram`)。\n    -   **更新 Uniforms** (如动态改变颜色、传递变换矩阵)。\n    -   **发起绘制调用** (`glDrawElements` 或 `glDrawArrays`)。\n    -   交换前后缓冲区，将画面显示在屏幕上。\n\n这个流程将 CPU 的准备工作和 GPU 的繁重渲染工作清晰地分离开，是高性能图形渲染的基础。\n\n#### 顶点缓冲对象 (VBO)\n\n**目标**：将大量顶点数据一次性、批量地发送给 GPU。\n\n**VBO (Vertex Buffer Object)** 是在 GPU 显存 (VRAM) 上预先开辟的一块内存。我们可以把成千上万个顶点数据从 CPU 内存一次性地复制到这块显存中。这样，在渲染时，GPU 就可以直接从自己的高速显存中读取数据，极大地减少了 CPU 与 GPU 之间的通信开销。\n\n**实践**:\n```cpp\n// 1. 在 CPU 端定义顶点数据\nfloat positions[] = {\n    -0.5f, -0.5f, // 顶点 0\n     0.5f, -0.5f, // 顶点 1\n     0.5f,  0.5f, // 顶点 2\n    -0.5f,  0.5f  // 顶点 3\n};\n\n// 2. 创建一个 VBO 对象\nunsigned int vbo;\nglGenBuffers(1, &vbo);\n\n// 3. 将 VBO 绑定为当前操作对象\nglBindBuffer(GL_ARRAY_BUFFER, vbo);\n\n// 4. 将 CPU 上的数据复制到 GPU 上的 VBO 中\nglBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);\n```\n- `GL_ARRAY_BUFFER` 表示这个缓冲区用于存储顶点属性数据。\n- `GL_STATIC_DRAW` 是一个性能提示，告诉 GPU 这个数据不常变动，可以进行优化。\n\n> 这只是将数据传入到 GPU 中，还需要我们告诉 GPU 如何去使用这份数据\n#### 顶点布局与着色器程序\n\n**目标**：告诉 GPU 如何解析 VBO 中的原始字节，以及如何处理它们。\n\n##### A) 顶点属性指针\n\n数据到达 GPU 后，它只是一堆无意义的字节。我们需要一份“数据说明书”来告诉 GPU 如何解读它。`glVertexAttribPointer` 就是这份说明书。\n\n**实践**:\n```cpp\n// 告诉 OpenGL 如何解析当前绑定的 VBO 中的数据\nglVertexAttribPointer(\n    0,                  // 第 0 号顶点属性\n    2,                  // 每个顶点属性包含 2 个分量 (x, y)\n    GL_FLOAT,           // 数据类型为浮点数\n    GL_FALSE,           // 不需要归一化\n    sizeof(float) * 2,  // 步长：两个连续顶点属性之间的字节数\n    (const void*)0      // 偏移量：属性在缓冲区中的起始位置\n);\n\n// 启用第 0 号顶点属性通道\nglEnableVertexAttribArray(0);\n```\n\n##### B) 着色器 (Shaders)\n\n**着色器**是在 GPU 上运行的小程序，使用 **GLSL (OpenGL Shading Language)** 编写。它们赋予了我们直接控制渲染管线的能力。\n\n最基础的两个着色器是：\n1. **顶点着色器 (Vertex Shader)**: 对**每个顶点**执行一次，负责计算其在屏幕上的最终位置 (`gl_Position`)。\n```glsl\n#version 330 core\nlayout(location = 0) in vec4 position; // 第 0 号顶点属性\n\nvoid main() {\n    gl_Position = position; // 输出顶点位置到光栅化阶段\n}\n```\n2. **片段着色器 (Fragment Shader)**: 对光栅化后生成的**每个像素（片段）** 执行一次，负责计算其最终颜色。\n```glsl\n#version 330 core\nlayout(location = 0) out vec4 FragColor;\n\nvoid main() {\n    FragColor = vec4(1.0, 1.0, 0.0, 1.0); // 输出黄色\n}\n```\n\n##### C) 着色器程序 (Shader Program)\n在 C++ 中，需要将 GLSL 代码编译、链接成 **着色器程序**，通过 `glUseProgram()` 激活它。\n\n编译和链接着色器程序，**完整示例**：\n\n```cpp\n// 1. 定义 GLSL 源码字符串\nconst char* vertexShaderSource = \"#version 330 core\\n\"\n    \"layout (location = 0) in vec3 aPos;\\n\"\n    \"void main() { gl_Position = vec4(aPos, 1.0); }\\0\";\n\nconst char* fragmentShaderSource = \"#version 330 core\\n\"\n    \"out vec4 FragColor;\\n\"\n    \"void main() { FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f); }\\0\";\n\n// 2. 编译顶点着色器\nunsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);\nglShaderSource(vertexShader, 1, &vertexShaderSource, NULL);\nglCompileShader(vertexShader);\n\n// 检查编译错误\nint success;\nchar infoLog[512];\nglGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);\nif (!success) {\n    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);\n    std::cout << \"ERROR::SHADER::VERTEX::COMPILATION_FAILED\\n\" << infoLog << std::endl;\n}\n\n// 3. 编译片段着色器\nunsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);\nglShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);\nglCompileShader(fragmentShader);\n\n// 检查编译错误\nglGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);\nif (!success) {\n    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);\n    std::cout << \"ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\\n\" << infoLog << std::endl;\n}\n\n// 4. 链接着色器程序\nunsigned int shaderProgram = glCreateProgram();\nglAttachShader(shaderProgram, vertexShader);\nglAttachShader(shaderProgram, fragmentShader);\nglLinkProgram(shaderProgram);\n\n// 检查链接错误\nglGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);\nif (!success) {\n    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);\n    std::cout << \"ERROR::SHADER::PROGRAM::LINKING_FAILED\\n\" << infoLog << std::endl;\n}\n\n// 5. 链接成功后删除着色器对象（已被程序引用，仍然存在于 GPU）\nglDeleteShader(vertexShader);\nglDeleteShader(fragmentShader);\n\n// --- 在渲染循环中使用 ---\n// glUseProgram(shaderProgram);\n\n// --- 程序结束前清理 ---\n// glDeleteProgram(shaderProgram);\n\n```\n\n#### 索引缓冲对象 (IBO / EBO)\n\n**目标**：通过复用顶点节省显存，在绘制复杂图形时提高效率。\n\n在绘制由两个三角形组成的正方形时，如果不用索引缓冲，我们需要 6 个顶点。然而，正方形只有 4 个物理角点，其中有 2 个顶点是重复使用的。\n\n**IBO (Index Buffer Object)**，也叫 **EBO (Element Buffer Object)**，用于解决这个问题。我们只存储 4 个独一无二的顶点，然后通过索引列表告诉 GPU 如何组合这些顶点构成图形。\n\n**实践**:\n```cpp\n// 1. 定义 4 个独一无二的顶点 (已在 VBO 中)\nfloat positions[] = {\n    -0.5f, -0.5f, // 左下\n     0.5f, -0.5f, // 右下\n     0.5f,  0.5f, // 右上\n    -0.5f,  0.5f  // 左上\n};\n\n// 2. 定义索引列表，按顺序组成两个三角形\nunsigned int indices[] = {\n    0, 1, 2, // 第一个三角形\n    2, 3, 0  // 第二个三角形\n};\n\n// 3. 创建并填充 IBO / EBO\nunsigned int ibo;\nglGenBuffers(1, &ibo);\nglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);\nglBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);\n\n// 4. 绘制时使用 glDrawElements\n// 它会根据 IBO 中的索引去 VBO 中提取顶点\nglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);\n```\n对于复杂的 3D 模型，这种方法可以显著节省显存和带宽，同时减少重复顶点的管理。\n\n#### Uniform 变量\n\n**目标**：在运行时从 CPU 动态地向 GPU 着色器传递数据，实现灵活控制颜色、时间、变换矩阵等全局信息。\n\n**概念**：  \n- **Uniform** 是一种从 CPU 发送数据到 GPU 着色器的机制。  \n- 它的值在一次绘制调用中对所有顶点/片段都是统一的，因此适合传递全局参数。  \n\n**实践**:\n1.  **在 GLSL 中声明**:\n```glsl\nuniform vec4 u_Color; // 声明一个 uniform\n```\n2.  **在 C++ 中更新**:\n```cpp\n// 1）获取 uniform 位置（初始化阶段完成，不要放在渲染循环里）\nint location = glGetUniformLocation(shaderProgram, \"u_Color\");\n\n// 2）在渲染循环中动态更新 uniform 值\nfloat r = sin(glfwGetTime()) * 0.5f + 0.5f; // 红色通道随时间变化\nglUniform4f(location, r, 0.5f, 0.2f, 1.0f);\n\n// 3）然后绘制图形\nglDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);\n```\n\n- Uniform 的值在 GPU 内部是只读的，每个绘制调用都可以使用相同的 uniform。\n- 使用 uniform 可以让图形动态响应时间、用户输入或其他变量，从而实现动画和交互效果。\n\n#### 顶点数组对象 (VAO)\n\n1. **目标**：理解 VAO 的作用——**把与顶点输入相关的 GPU 状态集中保存**，从而减少重复设置，提高渲染效率。\n\n2. **为什么需要 VAO？**\n在绘制时，我们通常要做这些事：\n- 绑定 VBO / IBO\n- 设置顶点属性指针 `glVertexAttribPointer`\n- 启用顶点属性 `glEnableVertexAttribArray`\n如果场景中有多个物体，这些设置会被**重复执行** → 繁琐 & 容易出错。\n\n**VAO 解决的问题：**\n> 把上述所有“顶点输入配置”打包保存，当我们切换物体时，只需要 `glBindVertexArray` 即可恢复配置。\n\n> **VAO 并不存储顶点数据本身**，它只存储状态配置。VBO 和 IBO 才真正存储数据。\n\n**实践**:\n```cpp\n// --- 初始化时 ---\n// 1. 创建并绑定 VAO\nunsigned int vao;\nglGenVertexArrays(1, &vao);\nglBindVertexArray(vao);\n\n// 2. 在 VAO 激活的状态下，进行所有 VBO, IBO 的绑定和顶点布局的设置\nbindBuffer(GL_ARRAY_BUFFER, vbo);\nglBufferData(...);\nglVertexAttribPointer(...);\nglEnableVertexAttribArray(...);\nbindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);\nglBufferData(...);\n\n// 3. 解绑 VAO，所有状态已被记录在 vao 中\nglBindVertexArray(0);\n\n// --- 渲染循环中 ---\n// 想要画这个物体时，只需一行代码即可恢复所有状态！\nglBindVertexArray(vao);\nglDrawElements(...);\n```\nVAO 极大地简化了多物体的渲染流程，只需绑定不同的 VAO，就能在不同物体的渲染状态之间快速切换。\n\n\n> [!NOTE] 为什么代码没有创建 vao，程序也可正常运行？\n> 运行在兼容模式下，有默认 vao。\n\n\n---\n\n#### 错误处理\n\n**目标**：在开发过程中及时发现并定位 OpenGL 错误。\n\nOpenGL 函数出错时，通常不会让程序崩溃，而是会内部设置一个错误标志。如果我们不主动检查，就很难发现问题。一个非常专业且实用的技巧是封装一个错误检查宏。\n\n**实践**:\n```cpp\n// --- 辅助函数和宏 ---\n// 清空所有之前的错误标志\nvoid GLClearError() {\n    while (glGetError() != GL_NO_ERROR);\n}\n\n// 检查最近一次 OpenGL 调用是否产生错误\nbool GLLogCall(const char* function, const char* file, int line) {\n    while (GLenum error = glGetError()) {\n        std::cout << \"[OpenGL Error] (\" << error << \"): \" \n                  << function << \" \" << file << \":\" << line << std::endl;\n        return false;\n    }\n    return true;\n}\n\n// 封装宏：先清空错误，执行函数，再检查错误\n#define GLCall(x) \\\n    GLClearError(); \\\n    x; \\\n    ASSERT(GLLogCall(#x, __FILE__, __LINE__))\n\n// 使用宏来包装所有 OpenGL 调用\nGLCall(glBindVertexArray(vao));\nGLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));\n```\n这提供了一种系统性的、自动化的错误检查机制，一旦任何 OpenGL 调用出错，程序会立即中断并报告详细信息，极大地提升了调试效率。\n\n#### 纹理 (Texture)\n**目标**：将一张 2D 图片贴到 3D 模型表面，赋予其更丰富的细节和真实感。\n\n纹理处理的核心流程是将一张外部图片文件（如 `.png`）转换为 GPU 能够高效读取的格式，并在着色器中根据模型的 UV 坐标从这张图片上**采样颜色**。\n\n##### A) 纹理的创建与加载\n这是一个多步骤的过程，通常在初始化阶段完成：\n1.  **加载图像数据 (CPU)**:\n    -   使用 [stb/stb_image.h](https://github.com/nothings/stb/blob/master/stb_image.h)等库从文件中读取图像的像素数据到 CPU 内存。\n    -   **关键点**：OpenGL 的纹理坐标系原点 `(0,0)` 在左下角，而大多数图像格式的原点在左上角。因此，通常需要调用 `stbi_set_flip_vertically_on_load(1)` 来垂直翻转图像，以确保贴图方向正确（通过调整 UV 坐标次序，可以实现同样的效果）。\n2.  **创建纹理对象 (GPU)**:\n    -   调用 `glGenTextures(1, &textureID)` 在 GPU 中创建一个空的纹理对象，并返回其 ID。这个 ID 是未来操作该纹理的唯一句柄。\n3.  **绑定纹理**:\n    -   调用 `glBindTexture(GL_TEXTURE_2D, textureID)` 将新创建的纹理对象“激活”或“绑定”到 `GL_TEXTURE_2D` 这个目标上。后续所有针对 `GL_TEXTURE_2D` 的操作都将作用于这个绑定的纹理对象。\n4.  **设置纹理参数**:\n    -   通过 `glTexParameteri` 配置纹理的**环绕 (Wrapping)** 和**过滤 (Filtering)** 方式。\n    -   **环绕**: 定义当纹理坐标超出 `[0, 1]` 范围时如何处理。\n      ```cpp\n      // `GL_REPEAT` 会平铺纹理，`GL_CLAMP_TO_EDGE` 则会拉伸边缘像素\n      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);\n      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);\n      ```\n    -   **过滤**: 定义当纹理被放大或缩小时如何计算像素颜色。\n      ```cpp\n      //`GL_LINEAR`（线性过滤）会混合邻近像素，使图像更平滑；`GL_NEAREST`（邻近过滤）则会选择最近的像素，效果更锐利，有像素感。\n      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);\n      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);\n      ```\n5.  **上传纹理数据**:\n    -   调用 `glTexImage2D`，将第一步中加载到 CPU 内存的图像数据正式上传到当前绑定的 GPU 纹理对象中。至此，纹理数据就真正进入了显存。\n      ```cpp\n      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);\n      ```\n\n##### B) 纹理单元与多纹理绑定\n**目标**：在单个着色器中使用多张纹理（如基础贴图 + 法线贴图）。\n- GPU 提供多个**纹理单元 (Texture Unit / Slot)**，每个单元绑定一张纹理。\n- OpenGL 至少保证 16 个纹理单元：`GL_TEXTURE0` ~ `GL_TEXTURE15`。\n\n> 现代 GPU 提供了多个**纹理单元 (Texture Unit)**，也常被称为**纹理插槽 (Texture Slot)**。它们就像是 GPU 上的多个“卡槽”，每个卡槽可以插入一张纹理。\n\n\n-   **工作流程**:\n    1.  **激活纹理单元**: \n       ```cpp\n       glActiveTexture(GL_TEXTURE0 + n);\n       ```\n    2.  **绑定纹理到单元**: \n       ```cpp\n       glBindTexture(GL_TEXTURE_2D, textureID);\n       ```\n    3.  **告知着色器对哪个单元进行采样**: \n       ```cpp\n       glUniform1i(samplerLocation, n);\n       ```\n\n**实践示例**:\n```cpp\n// --- 绑定两个不同的纹理到不同的单元 ---\n\n// 绑定 textureA 到 0 号单元\nglActiveTexture(GL_TEXTURE0);\nglBindTexture(GL_TEXTURE_2D, textureA_ID);\n\n// 绑定 textureB 到 1 号单元\nglActiveTexture(GL_TEXTURE1);\nglBindTexture(GL_TEXTURE_2D, textureB_ID);\n\n// --- 在着色器中 ---\n// 告诉采样器 myTextureSamplerA 从 0 号单元采样\nglUniform1i(locationA, 0);\n// 告诉采样器 myTextureSamplerB 从 1 号单元采样\nglUniform1i(locationB, 1);\n```\n> 默认情况下，`GL_TEXTURE0` 是激活的，所以如果只使用一个纹理，可以不调用 `glActiveTexture`。\n\n##### C) 顶点数据与着色器采样\n-   **纹理坐标 (UV)**: 为了将纹理正确地贴在模型上，模型的每个顶点都需要一个额外的属性：纹理坐标。这个 2D 坐标 `(u, v)` 定义了该顶点对应于纹理图像上的哪个点。\n-   **着色器采样**:\n    -   **顶点着色器**: 接收顶点的 UV 坐标，并将其传递给片段着色器。\n    -   **片段着色器**: 接收经过插值的 UV 坐标，并使用 `texture(sampler, uv)` 函数，根据这个坐标在 `sampler` 指定的纹理上查找颜色，最终将这个颜色输出。\n\n---\n\n```cpp\n\n// 顶点着色器源代码\nconst char* vertexShaderSrc = R\"(\n// 指定 GLSL 版本为 330 core\n#version 330 core\n\n// 输入变量：顶点位置，location = 0 对应 C++ 里绑定的第 0 号属性\nlayout(location = 0) in vec4 position;\nlayout(location = 1) in vec2 texCoord; // 同理\n\n// 输出到片段着色器\nout vec2 TexCoord; \n\nvoid main() {\n    // 将顶点位置传给内置变量 gl_Position，用于后续光栅化\n\tgl_Position = position;\n\n    // 传递纹理坐标到片段着色器\n    TexCoord = texCoord; \n}\n)\";\n\n// 片段着色器源代码\nconst char* fragmentShaderSrc = R\"(\n// 指定 GLSL 版本为 330 core\n#version 330 core\n\n// 来自顶点着色器的纹理坐标\nin vec2 TexCoord;\n\n// 输出变量：最终片元颜色，location = 0\nlayout(location = 0) out vec4 FragColor;\n\n// 采样器 本质是一个 uniform 变量，用于从纹理中采样颜色\nuniform sampler2D uTexture;  \n\nvoid main()\n{\n    FragColor = texture(uTexture, TexCoord); // 根据纹理坐标采样颜色\n}\n)\";\n// ... (着色器编译链接过程同上) ...\n\n// --- 在渲染循环中使用 ---\n// glUseProgram(shaderProgram);\n// glActiveTexture(GL_TEXTURE0); // 激活 0 号纹理单元\n// glBindTexture(GL_TEXTURE_2D, textureID); // 绑定纹理\n// glUniform1i(glGetUniformLocation(shaderProgram, \"u_Texture\"), 0); // 将 uniform 采样器指向 0 号纹理单元\n\n// ... (绘制调用) ...\n```\n\n> 如果目标纹理有透明度，则需要启动混合模式。\n\n#### 混合模式\n\n深度测试和混合的区别：\n\n|          | **深度测试 (Depth Test)** | **混合 (Blending)** |\n| -------- | --------------------- | ----------------- |\n| **作用阶段** | 片段着色器之后、写入帧缓冲之前       | 深度测试之后、写入帧缓冲时     |\n| **控制目标** | “是否绘制”这个像素            | “怎么混合”这个像素与已有颜色   |\n| **判断依据** | 片段的深度值（z 值）           | 片段的颜色值（RGBA）      |\n\n---\n\n 混合（Blending）用于将正在绘制的像素颜色（**源颜色 Source**）与帧缓冲中已有的颜色（**目标颜色 Destination**）叠加，常用于实现**透明、半透明**等。\n\n**启用与配置混合**\n\n```cpp\n// 启用混合\nglEnable(GL_BLEND);\n\n// 设置混合函数，指定混合因子的计算方式，这是最常见的配置，用于实现标准透明效果\nglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);\n```\n\n标准透明混合公式：`C_result = C_source * A_source + C_destination * (1 - A_source)`\n\n> 这模拟了光线穿过一个半透明物体的效果：部分光线被物体（源）的颜色所吸收和反射，剩余的光线则穿过物体，显示出其后面的颜色（目标）。\n\n如果未启用混合，则后渲染的颜色会覆盖先渲染的颜色。\n\n#### 数学库 Glm & MVP矩阵\n\n在图形渲染中，**MVP（Model-View-Projection）矩阵**用于将模型坐标逐步转换成屏幕坐标，是图形学的核心概念。\n> 相关数学知识在[计算机图形渲染&#65306;坐标变换与 MVP 矩阵](/notes/n-8147e4ef0bdc4e69a769e855f66bad49/)中有总结。\n\n**1. GLM 库简介**\n\n**GLM (OpenGL Mathematics)** 是专为 OpenGL 设计的、仅有头文件的 C++ 数学库，向量和矩阵的结构与 GLSL 中的一致，便于 CPU-GPU 数据一致性。\n\n- **包含头文件**: \n  ```cpp\n  #include <glm/glm.hpp>                     // 基本向量/矩阵类型\n  #include <glm/gtc/matrix_transform.hpp>    // 常用变换函数 (translate/rotate/perspective)\n  ```\n\n- **创建矩阵示例**: \n  ```c++\n  glm::mat4 model = glm::mat4(1.0f);\n  ```\n\n- **创建变换矩阵**: \n  ```c++\n  #include <glm/glm.hpp>\n  #include <glm/gtc/matrix_transform.hpp>\n  \n  // 单位矩阵（无变换）\n  glm::mat4 model = glm::mat4(1.0f);\n  \n  // 平移：移动物体\n  model = glm::translate(model, glm::vec3(2.0f, 0.0f, -3.0f));  \n  \n  // 旋转：绕 Y 轴旋转 45°\n  model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f)); \n  \n  // 缩放：放大 1.5 倍\n  model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));\n  ```\n\n- **创建MVP矩阵**\n  ```c++\n  // 设置 p 矩阵\n  glm::mat4 projection_matrix{ glm::ortho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0) }; \n  \n  // 设置 v 矩阵\n  glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.3f);\n  //glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); // 正常\n  glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f); // 颠倒\n  glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);\n  glm::mat4 view_matrix = glm::lookAt(\n      cameraPos,\n      cameraPos + cameraFront, // 看向前方\n      cameraUp\n  );\n  // 设置 m 矩阵\n  glm::mat4 model_matrix{ glm::translate(glm::mat4(1.0),glm::vec3(0.0,0.0,0)) };\n  \n  // MVP矩阵\n  glm::mat4 MVP{ projection_matrix * view_matrix * model_matrix };\n  ```\n\n**2. OpenGL 矩阵存储格式**\n\nOpenGL **使用列主序**（Column-Major Order）存储矩阵。GLM 同样默认列主序 → **矩阵可以直接传给 OpenGL，无需转置**。\n\n传递 uniform 示例：\n\n```c++\nglUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));\n```\n\n> 第 3 个参数必须 `GL_FALSE` —— 表示矩阵已经是列主序，无需转置。\n\n最终的顶点位置是通过将顶点坐标与 MVP 矩阵相乘得到的。行/列主序，会影响矩阵是左乘还是右乘，对OpenGL而言：\n\n`gl_Position = Projection * View * Model * vertex_position;`\n\n这个变换将顶点从模型空间，依次转换到世界空间、观察空间、裁剪空间，得到归一化设备坐标（NDC），最后由 OpenGL 处理后得到屏幕坐标。\n\n\n#### ImGUI & 调试\n\n**什么是 ImGUI？**\n\n**ImGui (Immediate Mode GUI)** 是一个轻量级的 C++ 图形界面库，特点是**立即模式**绘制方式。与传统“保留式 UI”（Qt / WPF）不同，ImGui 的 UI **每帧由代码动态生成**。\n\n> **使用场景**：调试工具、引擎编辑器、实时参数调节、性能监控等。\n\n**为什么需要它？**\n\n| 特点     | 说明                                  |\n| -------- | ------------------------------------- |\n| 快速集成 | 几行代码即可接入 OpenGL 项目          |\n| 轻量高效 | 几乎不会影响性能                      |\n| 实时 UI  | UI 与渲染循环同步，适合调试调参       |\n| 简单灵活 | 不需要复杂 UI 结构、无需 XML/布局文件 |\n\n**如何在 OpenGL 项目中配置使用**\n\n集成 ImGUI 到一个基于 GLFW 和 OpenGL 的项目中通常遵循以下步骤：\n1.  **初始化**: 必须在创建 OpenGL 上下文之后，初始化 ImGUI。\n    ```cpp\n    // 创建上下文\n    ImGui::CreateContext();\n    ImGuiIO& io = ImGui::GetIO(); (void)io;\n    \n    // 设置风格\n    ImGui::StyleColorsDark();\n    \n    // 初始化平台和渲染绑定\n    ImGui_ImplGlfw_InitForOpenGL(window, true);\n    ImGui_ImplOpenGL3_Init(\"#version 330\");\n    \n    ```\n    \n2.  **在主循环中**: \n    - 在渲染每一帧的开始，通知 ImGUI 开始一个新的帧。\n    - 调用 ImGUI 的函数来创建窗口和控件。\n    - 在应用程序的主渲染之后，调用 ImGUI 的渲染函数来绘制 UI。\n    \n    ```cpp\n    while (!glfwWindowShouldClose(window))\n    {\n        glfwPollEvents(); // 处理输入\n    \n        // ---- ImGui 每帧开始 ----\n        ImGui_ImplOpenGL3_NewFrame();\n        ImGui_ImplGlfw_NewFrame();\n        ImGui::NewFrame();\n    \n        // ---- 创建 UI ----\n        ImGui::Begin(\"Hello, world!\");\n    \n        ImGui::SliderFloat3(\"Model A Position\", &modelA_xyz.x, -220.0f, 220.0f);\n        ImGui::SliderFloat3(\"Model B Position\", &modelB_xyz.x, -220.0f, 220.0f);\n        ImGui::ColorEdit3(\"Clear Color\", (float*)&clear_color);\n    \n        ImGui::Text(\"FPS: %.1f\", io.Framerate);\n    \n        ImGui::End();\n        // ---- UI 绘制结束 ----\n    \n        // 渲染 3D 场景……\n        \n        // ---- 渲染 ImGui ----\n        ImGui::Render();\n        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());\n    \n        glfwSwapBuffers(window);\n    }\n    \n    ```\n    \n3.  **清理**:\n    - 在程序退出前，释放 ImGUI 相关的资源。\n    ```cpp\n    ImGui_ImplOpenGL3_Shutdown();\n    ImGui_ImplGlfw_Shutdown();\n    ImGui::DestroyContext();\n    ```\n\n#### 批量渲染对象&动态缓冲区\n\n**为什么要批量渲染？**\n传统做法：每渲染一个物体都调用一次 `drawcall`\n 例如：渲染 1000 个对象 = 1000 次 `glDrawElements()`\n\n> **Draw Call = CPU 向 GPU 发命令的过程**\n> 每次 Draw Call 都有 CPU/GPU 同步开销 → 场景越复杂越慢\n\n**批量渲染思想**\n 将所有物体的：\n- 顶点数据 → 合并到一个大 VBO\n- 索引数据 → 合并到一个大 IBO\n- 统一一次调用 `glDrawElements`\n\n>类比：以前寄 1000 个包裹 → 现在打成一个大包一起寄\n\n**动态缓冲区**\n静态批处理：物体不变\n动态批处理：物体每帧在动 / 添加 / 删除\n\n**创建动态缓冲区**\n```cpp\n// `glBufferData(target, size, data, usage);`\nglBufferData(GL_ARRAY_BUFFER, bufferSize, nullptr, GL_DYNAMIC_DRAW);\n```\n在创建缓冲区时（`glBufferData`），我们可以向 GPU 提供一个“使用提示” (usage hint)，告诉 GPU 我们打算如何使用这块内存。这能帮助 GPU 驱动将内存放在最优的位置（例如，放在 CPU 和 GPU 都能快速访问的区域）。\n\n| `usage` 参数值    | 意义           | 场景               |\n| ----------------- | -------------- | ------------------ |\n| `GL_STATIC_DRAW`  | 写一次，多次读 | 静态地图、环境     |\n| `GL_DYNAMIC_DRAW` | 频繁写频繁读   | 动态物体、UI、粒子 |\n| `GL_STREAM_DRAW`  | 写一次只用几帧 | 临时效果           |\n\n**更新动态缓冲区中的数据**\n```c++\nglBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, data);\n```\n\n\n> 在批量渲染图像时，一个常见的问题是：不同对象可能使用不同纹理\n>\n> 解决：`textureID` + 多纹理绑定\n>\n> 1. 在每个顶点的数据结构中，增加一个属性，如 `textureID`。\n> 2. 将所有可能用到的纹理，一次性绑定到不同的**纹理单元**（Texture Unit）。\n> 3. 在顶点着色器中，将顶点的 `textureID` 传递给片元着色器。\n> 4. 在片元着色器中，根据传递过来的 `textureID`，从对应的纹理采样器数组中选择正确的纹理进行采样。\n>\n> 超过最大纹理数量？则多次drawCall (但仍远比每物体drawCall一次强)\n",
+  "id": "e2b65e14-b46e-43cb-bb86-d003e9157ccb",
+  "metadata": {
+    "tags": [
+      "cs/graphics",
+      "lang/cpp"
+    ],
+    "title": "计算机图形渲染：OpenGL 编程基础"
+  },
+  "resources": [],
+  "url": "/notes/n-e2b65e14b46e43cbbb86d003e9157ccb/"
+}

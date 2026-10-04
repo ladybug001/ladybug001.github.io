@@ -1,0 +1,34 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7db98ba836baddabdb85",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-417db77800c5c3484da3",
+      "kind": "heading",
+      "offset": 166
+    },
+    {
+      "id": "h-6de6f114615954393469",
+      "kind": "heading",
+      "offset": 680
+    }
+  ],
+  "body": "# VLAN 标签的添加与剥离机制\n\nTag/Untag报文的处理原则，在交换机的内部，为了快速高效的处理，报文都是带tag转发的。其实这点很好理解，因为交换机上很可能会配置多个VLAN，那不同VLAN流量区分只有依靠tag标签，交换机如何处理流量既与tag有关也与接口类型有关，下面从报文进出交换机两个方向来介绍。\n\n## 报文入\n- **报文进入交换机**:  在入方向上，交换机的根本任务就是决定该报文是否允许进入该接口，根据入报文的tag/untag的属性以及接口属性，细分为如下情况:  \n\t1. 报文为untag：允许报文进入该接口，并打上PVID的VLAN tag，与接口属性无关。  \n\t2. 报文为tag：\n\t\t1. Access接口: PVID和报文中tag标明的VLAN一致，接收并处理报文，否则丢弃\n\t\t   ![](/notes/n-fd046cc1da614ca1a4579e9e0d14afcc/media/1e7f848eac8e0d5ded16495b8a18640b118e3a8174b996a9155fdd271c12e3f7.png)\n\t\t2. Trunk/Hybrid接口:如果接口允许tag中标明的VLAN通过，则接收并处理报文， 否则丢弃报文。\n\t\t   ![](/notes/n-fd046cc1da614ca1a4579e9e0d14afcc/media/77a36b3c62c3486d21a41ac45df6a86cb65a3f29ec9ea2d4a6c250bb3f32e4c5.png)\n## 报文出\n- **报文出交换机**：在出方向上，交换机已经完成对报文的转发，其根本任务就是在转发出接口时，是否携带tag转发出去，根据出接口属性，细分为如下情况:  \n\t1. Access接口:将标签剥掉，不带tag转发。\n\t   ![](/notes/n-fd046cc1da614ca1a4579e9e0d14afcc/media/4a2dfa33060d0e44873adfae937f26e838141a13ed86bb00c2b41750faa88e01.png)\n\t2. Trunk接口: 报文所在VLAN和PVID相同，则报文不带tag，否则带tag。\n\t   ![](/notes/n-fd046cc1da614ca1a4579e9e0d14afcc/media/a996a6fbe50d724aaa0b2519844216dee1413ca42e7addacc29634901b22aae2.png)\n\t3. Hybrid接口:报文所在VLAN配置为tag，则报文带tag，否则不带tag",
+  "id": "fd046cc1-da61-4ca1-a457-9e9e0d14afcc",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "VLAN 标签的添加与剥离机制"
+  },
+  "resources": [
+    "1e7f848eac8e0d5ded16495b8a18640b118e3a8174b996a9155fdd271c12e3f7.png",
+    "4a2dfa33060d0e44873adfae937f26e838141a13ed86bb00c2b41750faa88e01.png",
+    "77a36b3c62c3486d21a41ac45df6a86cb65a3f29ec9ea2d4a6c250bb3f32e4c5.png",
+    "a996a6fbe50d724aaa0b2519844216dee1413ca42e7addacc29634901b22aae2.png"
+  ],
+  "url": "/notes/n-fd046cc1da614ca1a4579e9e0d14afcc/"
+}

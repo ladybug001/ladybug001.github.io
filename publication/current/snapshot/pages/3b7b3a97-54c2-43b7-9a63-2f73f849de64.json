@@ -1,0 +1,45 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-260bf0a2b5a593f22c3b",
+      "kind": "heading",
+      "offset": 7
+    },
+    {
+      "id": "h-090ba5ba3022f92ecac1",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-184273c48125fb8da9bc",
+      "kind": "heading",
+      "offset": 86
+    },
+    {
+      "id": "h-bc4453f2910508f4cfc7",
+      "kind": "heading",
+      "offset": 115
+    },
+    {
+      "id": "h-05ab0359651e4de546ec",
+      "kind": "heading",
+      "offset": 1244
+    },
+    {
+      "id": "h-2002a843c5a2fbe5f604",
+      "kind": "heading",
+      "offset": 1795
+    }
+  ],
+  "body": "# 协程的原理\n\n## 定义与核心思想\n\n**协程**是一种**用户态的轻量级线程**，由程序显式控制调度。其核心能力是**在执行过程中挂起并恢复**。\n\n## 协程的分类\n\n根据栈的管理方式，协程主要分为两类：\n### 有栈协程\n\n- **特点：** **每个协程拥有独立的调用栈**。切换时需保存 `CPU` 寄存器状态到其私有栈空间，逻辑类似线程切换。\n- **优点：** 对现有代码侵入性小，开发体验接近多线程，可以不使用 `async`/`await` 关键字。\n- **缺点：** 内存占用较高（需预分配栈空间），切换开销相对较大。\n- **代表语言：** `Go` (`Goroutine`), `Lua`, `C++` (使用 `Boost.Coroutine2`)。\n\n**`C++` 示例代码 (基于 `Boost`)：**\n```cpp\n#include <boost/coroutine2/all.hpp> \n#include <iostream>\n\nvoid task1(boost::coroutines2::coroutine<void>::push_type& yield) {\n\tstd::cout << \"Task 1 started\\n\";\n\tyield();  // 切换上下文，回到\"调用\"该协程的地方\n\tstd::cout << \"Task 1 resumed\\n\";\n}\n\nvoid task2(boost::coroutines2::coroutine<void>::push_type& yield) {\n\tstd::cout << \"Task 2 started\\n\";\n\tyield();  // 切换上下文，回到\"调用\"该协程的地方\n\tstd::cout << \"Task 2 resumed\\n\";\n}\n\nint main() {\n\tboost::coroutines2::coroutine<void>::pull_type source1(task1);\n\tboost::coroutines2::coroutine<void>::pull_type source2(task2);\n\n\t// 显式的调度循环\n\twhile (!source1.done() || !source2.done()) {\n\t\tif (!source1.done()) source1();  // 恢复 task1\n\t\tif (!source2.done()) source2();  // 恢复 task2\n\t}\n\n\tstd::cout << \"All tasks completed\\n\";\n\treturn 0;\n}\n```\n\n> **深刻理解：** 有栈协程切换本质是 **CPU 寄存器上下文切换**，类似于在调试器中手动修改 `EIP` 指针使其跳转执行。它比无栈协程更“自由”，**不强依赖事件循环和回调机制。**\n\n### 无栈协程\n\n> 无栈协程的原理与实现，极其接近迭代器，详情参考：[编程语言&#65306;迭代器的原理](/notes/n-1120995a4e7743639fe022c5319e2db8/)\n\n- **特点：** 协程无独立调用栈，状态通常保存在堆上。编译器将其重写为**状态机**，本质是**闭包对象**或**状态类**。必须在当前函数层级显式挂起。\n- **优点：** 极其轻量，内存占用极低。\n- **缺点：** 强依赖 `async`/`await` 关键字，具有**传染性**（`async`/`await` 污染），调用链上的所有函数均需标记。\n- **代表语言：** `Python` (`asyncio`), `JavaScript`, `C++20`, `C#`, `Rust`.\n\n\n**局限性：** 无栈协程无法像有栈协程那样自由切换，其执行流**强依赖于底层事件循环与异步回调机制的驱动**，详情可参考：\n1. [Python 协程机制](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/)\n2. [JavaScript 协程机制](/notes/n-5573d8d0bf224186ae2c02ecc04a7a60/)\n\n---\n\n## 总结对比\n\n| 特性        | 有栈协程 (`Go`, `Lua`)    | 无栈协程 (`JS`, `Python`, `C++20`) |\n| :-------- | :-------------------- | :----------------------------- |\n| **内存开销**  | 高 (预分配栈空间, e.g. 2KB+) | 极低 (仅状态机对象)                    |\n| **调用深度**  | 可在嵌套调用深处挂起            | 仅能在当前异步函数挂起                    |\n| **调度方式**  | 不强依赖事件循环和回调机制         | 强依赖事件循环和回调机制                   |\n| **编译器实现** | 相对简单                  | 复杂 (需重写 `AST`)                 |\n",
+  "id": "3b7b3a97-54c2-43b7-9a63-2f73f849de64",
+  "metadata": {
+    "tags": [
+      "lang",
+      "cs/concurrency"
+    ],
+    "title": "编程语言：协程的原理"
+  },
+  "resources": [],
+  "url": "/notes/n-3b7b3a9754c243b79a632f73f849de64/"
+}

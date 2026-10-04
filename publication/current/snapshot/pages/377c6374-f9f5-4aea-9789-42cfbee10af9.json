@@ -1,0 +1,82 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-5e5c5708967ebe05a5b6",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-545988ecac3bf19e8abd",
+      "kind": "heading",
+      "offset": 352
+    },
+    {
+      "id": "h-bc82ea42fa0dcecb7885",
+      "kind": "heading",
+      "offset": 715
+    },
+    {
+      "id": "h-ddc77532178af01dce4c",
+      "kind": "heading",
+      "offset": 954
+    },
+    {
+      "id": "h-0e53ed68b009c33aa4ed",
+      "kind": "heading",
+      "offset": 1118
+    },
+    {
+      "id": "h-96403efd64cbb26b0239",
+      "kind": "heading",
+      "offset": 1527
+    },
+    {
+      "id": "h-ab1856945f2ac70ea921",
+      "kind": "heading",
+      "offset": 2165
+    },
+    {
+      "id": "h-f0da1a063eb6b55aa065",
+      "kind": "heading",
+      "offset": 2569
+    },
+    {
+      "id": "h-b6924a14bf34796bc392",
+      "kind": "heading",
+      "offset": 3352
+    },
+    {
+      "id": "h-e0e84ad67513ca9db42a",
+      "kind": "heading",
+      "offset": 3612
+    },
+    {
+      "id": "h-a91c1ccb8d39a085def1",
+      "kind": "heading",
+      "offset": 3802
+    },
+    {
+      "id": "h-c6d13945537d37f11089",
+      "kind": "heading",
+      "offset": 4183
+    }
+  ],
+  "body": "# x86 系统控制寄存器\n\n> [!ABSTRACT] 前置知识\n> 阅读本笔记前，建议掌握：[x86 10&#45;10&#45;12 分页机制](/notes/n-12692fae35ce406db9d1af54f066bdd0/)、[x86 PAE 分页机制](/notes/n-0f53280a204b4365ac0c265d025d4bc0/)（理解分页模式的演进）、[x86 缺页异常与 Windows 缺页处理](/notes/n-85c26c688a7d414f97a72dd67c15f9bb/)（掌握缺页异常的硬件触发逻辑）。\n\n在 x86 处理器架构中，系统控制寄存器在控制 CPU 操作模式、硬件页表映射转译以及安全保护策略中起着核心主导作用。\n\n---\n\n## 控制寄存器概述\n\nx86 架构中设计有 5 个控制寄存器（`CR0` ~ `CR4`），用于决定 CPU 的工作模式与全局转译规则。\n\n- **`CR0`**：包含控制处理器工作状态、保护模式启用、分页开关以及特权级写保护的全局控制位。\n- **`CR1`**：保留寄存器，未被 x86 硬件使用。\n- **`CR2`**：缺页异常线性地址寄存器。发生缺页异常（Page Fault）时，硬件自动向其写入引起异常的线性虚拟地址。\n- **`CR3`**：页表目录物理基址寄存器（PDBR），在 10-10-12 模式下指向 PDT 物理页，在 PAE 模式下指向 PDPT 物理表。\n- **`CR4`**：控制高级处理器特性扩展的开关，例如启用 PAE（三级分页）、大页扩展（PSE）等。\n\n---\n\n## CR0 寄存器结构与关键控制位\n\n`CR0` 寄存器内部标志位直接控制了处理器的核心硬件状态：\n\n![image2022&#45;7&#45;22&#95;15&#45;24&#45;29&#46;png](/notes/n-377c6374f9f54aea978942cfbee10af9/media/40b6233bd7b3779f71f1eb9f9584e3c500df710702420b39397d5cb385acf25e.png)\n\n#### PE（Protection Enable，启用保护）\n\n**第 0 位**：保护模式启用开关。\n\n* 当 `PE = 1` 时，处理器启用段级保护模式（Protected Mode）；置 0 则运行在实模式下。**注意：此标志仅开启段级保护，并不开启分页转译**。若要完整运行现代多任务系统，必须同时开启 `PE` 和 `PG` 标志。\n\n#### PG（Paging，分页启用）\n\n**第 31 位**：分页机制硬件开关。\n\n* 当 `PG = 1` 时，CPU 硬件开启分页转译。**硬件限制：在开启 `PG` 之前或与之同时，必须开启 `PE`**。\n* **CPU 寻址模式转换组合表**：\n\t* `PG = 0, PE = 0`：实模式（开机引导初始状态，寻址 1 MB 段偏移）。\n\t* `PG = 0, PE = 1`：开启保护模式，但禁用分页机制。\n\t* `PG = 1, PE = 0`：非法标志组合（硬件级报错异常）。\n\t* `PG = 1, PE = 1`：开启保护模式并启用分页转译（现代操作系统的标准运行状态）。\n\n> [!NOTE] 模式转换的物理触发\n> 在操作系统启动与初始化流程中，`PE` 和 `PG` 位的转换通常**仅执行一次**，用于将 CPU 从最初引导的实模式惊险跳跃到高度隔离的保护模式。\n\n#### WP（Write Protect，特权级写保护）\n\n**第 16 位**：特权写保护控制开关（80486 以上 CPU 支持）。\n\n* 当 `WP = 1` 时，CPU 硬件将禁止特权级 0（Ring 0）的内核程序向被标记为“用户只读（U/S = 1, R/W = 0）”的物理页面执行写入操作。\n* 当 `WP = 0` 时，Ring 0 程序将拥有无限制的超级写入权，可以随意读写任意合法的虚拟只读物理页面。\n\n> [!IMPORTANT] 内核驱动开发的 WP 写保护绕过技巧\n> 在内核驱动开发中，若我们需要向其他只读物理页写入数据（例如进行 SSDT 挂钩或修改内核只读代码 Patch），**必须将 WP 标志位清零（置为 0）**以临时禁用特权写保护；在写入完毕后，必须重新将 `WP` 置为 1 恢复写保护，以确保系统稳定性。\n> \n> **内核绕过写保护的标准 C 语言实现**：\n> ```c\n> // 1. 临时禁用写保护 (将 CR0 的 Bit 16 屏蔽清零)\n> __writecr0(__readcr0() & ~0x10000); \n> \n> // 2. 写入只读页面数据...\n> *(volatile ULONG*)TargetAddress = NewValue;\n> \n> // 3. 重新启用写保护 (将 CR0 的 Bit 16 重新置 1)\n> __writecr0(__readcr0() | 0x10000);\n> ```\n\n---\n\n## CR2 寄存器与缺页转译桥接\n\n`CR2` 寄存器用于暂存硬件错误地址：\n\n![image2022&#45;7&#45;22&#95;15&#45;31&#45;58&#46;png](/notes/n-377c6374f9f54aea978942cfbee10af9/media/1d9b2a615920eb8e1e32c24d6624c054144020253a244009fd309ebe4f07cf62.png)\n\n当 CPU 执行指令访问无效页面（Present = 0）或因越权读写触发缺页异常（Page Fault，`0xE` 号异常中断）时，CPU 的内存管理单元（MMU）会**自动将引发该异常的虚拟线性地址写入 CR2 寄存器**。\n随后，内核在异常处理函数中读取 `CR2` 寄存器的值，即可精准定位引发缺页冲突的来源，以便执行页面换入或向非法访问进程抛出访问违规错误。\n\n---\n\n## CR3 寄存器与页表基址\n\n`CR3` 寄存器是 CPU 寻找当前活动进程页表根节点的唯一硬件入口，因此被称为页目录基址寄存器（PDBR）。\n\n![Pasted image 20230928201818&#46;png](/notes/n-377c6374f9f54aea978942cfbee10af9/media/d749db6913bb6e137700fea5eb9a900cff3b8f644c3db7559ef9d8cfeaaec8aa.png)\n\n除了承载物理基址外，`CR3` 还包含了控制顶级转译缓存的控制位：\n\n![Pasted image 20230928201839&#46;png](/notes/n-377c6374f9f54aea978942cfbee10af9/media/0d8edceeebc2f189bdef3e6ca3fa81f206c699e780947e8eb81762f03826476b.png)\n\n- **`PWT` (Page-level Write-Through，页级写透模式)**：\n  Bit 3：写透缓存控制。当 `PWT = 1` 时，往顶级页目录表物理内存的写入操作将强制同步写入物理总线，实现内存与高速缓存（L1/L2/L3 Cache）的强同步。\n- **`PCD` (Page-level Cache Disable，页级缓存禁用)**：\n  Bit 4：缓存禁用控制。当 `PCD = 1` 时，对当前顶级物理页目录的读写操作将完全禁用高速缓存，直接透传物理总线。*（应用场景：因为页表页面频繁变化且通常已被转译缓冲区 TLB 缓存，禁用普通数据高速缓存有利于防止缓存污染并提升一致性）*\n> `CR3` 寄存器可以看做是一个页表项，它的属性位影响着其指向的物理页的特性。\n\n---\n## CR4 寄存器与分页模式扩展\n\n`CR4` 寄存器负责管理高级处理器架构特性，决定了硬件 MMU 的转译架构：\n\n![image2022&#45;7&#45;22&#95;15&#45;40&#45;57&#46;png](/notes/n-377c6374f9f54aea978942cfbee10af9/media/bb7c11713c5ddcb3eca7808c7ee624d021c36ef98335a6451abe91a2846994c2.png)\n\n#### PAE（Physical Address Extension，物理地址扩展）\n\n**Bit 5**：三级分页模式启用控制。\n\n  * `PAE = 1`：启用三级分页（PAE 模式），页目录项与页表项扩展至 8 字节，物理寻址空间拓宽到 36 位（64 GB）。\n  * `PAE = 0`：传统二级分页（`10-10-12` 模式），使用 4 字节页表表项，最大寻址 4 GB。\n\n\n#### PSE（Page Size Extension，页大小扩展）\n\n**Bit 4**：大页支持总控制开关。\n\n* 只有当 `PSE = 1` 时，页目录项（PDE）中的 `PS`（Page Size）位才会生效。此时，如果 `PDE.PS = 1`，则代表跳过二级常规页表转译阶段，直接指向一个大物理页面。在 `10-10-12` 模式下支持 4 MB 大页，在 PAE 模式下支持 2 MB 大页。\n\n控制寄存器与分页架构的直接控制逻辑如下图所示：\n\n![image2022&#45;7&#45;22&#95;15&#45;43&#45;41&#46;png](/notes/n-377c6374f9f54aea978942cfbee10af9/media/1bc942d9214f5a3f76dd389d0f46d472f11d2f26dbe99f16884e056e93e08b92.png)\n\n---\n\n# 相关笔记\n\n- [x86 10&#45;10&#45;12 分页机制](/notes/n-12692fae35ce406db9d1af54f066bdd0/) — CR3 物理基址在二级分页下的寻址应用\n- [x86 PAE 分页机制](/notes/n-0f53280a204b4365ac0c265d025d4bc0/) — CR4.PAE 控制标志开启下的三级页表结构与大页配置\n- [x86 缺页异常与 Windows 缺页处理](/notes/n-85c26c688a7d414f97a72dd67c15f9bb/) — 详细讲解了 CR2 寄存器与 CPU 0xE 号缺页异常中断处理的级联逻辑\n- [x86 TLB 与 Cache 机制](/notes/n-a00926a3652e489ab79048c7e29efd4b/) — 深入分析了修改 CR3 会导致 TLB 局部或全量刷新缓存的硬件现象\n- [x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/) — 自引用地址计算公式与空间缩放原理的严密推导证明\n",
+  "id": "377c6374-f9f5-4aea-9789-42cfbee10af9",
+  "metadata": {
+    "tags": [
+      "arch/x86",
+      "os/windows"
+    ],
+    "title": "x86 系统控制寄存器"
+  },
+  "resources": [
+    "0d8edceeebc2f189bdef3e6ca3fa81f206c699e780947e8eb81762f03826476b.png",
+    "1bc942d9214f5a3f76dd389d0f46d472f11d2f26dbe99f16884e056e93e08b92.png",
+    "1d9b2a615920eb8e1e32c24d6624c054144020253a244009fd309ebe4f07cf62.png",
+    "40b6233bd7b3779f71f1eb9f9584e3c500df710702420b39397d5cb385acf25e.png",
+    "bb7c11713c5ddcb3eca7808c7ee624d021c36ef98335a6451abe91a2846994c2.png",
+    "d749db6913bb6e137700fea5eb9a900cff3b8f644c3db7559ef9d8cfeaaec8aa.png"
+  ],
+  "url": "/notes/n-377c6374f9f54aea978942cfbee10af9/"
+}

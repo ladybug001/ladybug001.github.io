@@ -1,0 +1,40 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3da788bcd5d428c655dc",
+      "kind": "heading",
+      "offset": 7
+    },
+    {
+      "id": "h-3a76eaf6c1b2c622763b",
+      "kind": "heading",
+      "offset": 346
+    },
+    {
+      "id": "h-3365192896c87b8a6bf6",
+      "kind": "heading",
+      "offset": 2759
+    },
+    {
+      "id": "h-861dc21359b96776f6b7",
+      "kind": "heading",
+      "offset": 4231
+    },
+    {
+      "id": "h-59901368cfa61a8c5793",
+      "kind": "heading",
+      "offset": 4814
+    }
+  ],
+  "body": "# 常用系统库\n\n类似于 Windows 应用程序依赖系统 DLL，Android APK 在运行时同样依赖系统的 SO 共享库。即便 APK 本身并未显式调用任何 Native（SO）函数，ART（Android Runtime）运行时的底层逻辑与系统 API 调用也离不开这些系统库的支撑。\n\n**系统库路径演变**\n\n- **Android 9 及以下**：`/system/lib64/xxxx.so`\n- **Android 10 及以上**：`/apex/com.android.runtime/lib64/xxxx.so`（因引入 APEX 模块化机制，运行时库被剥离至独立模块路径）\n> `lib64` 对应 64 位，`lib` 对应 32 位。\n\n## Libart.so\n\n在 Android 5.0（Lollipop）及更高版本中，`libart.so` 是 ART 虚拟机的核心组件，作为负责解析与执行 DEX 字节码、管理运行期对象与调度的虚拟机载体，`libart.so` 内部导出了大量核心运行时函数：\n\n| 函数名称                                                       | 描述                                                                                                             |\n| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |\n| `RegisterNatives`                                          | 主要用于将 Java 类中的 native 方法与其对应的本地（C/C++）实现绑定起来。                                                                  |\n| `GetStringUTFChars`                                        | 用于将 Java 层的字符串（jstring）转换为以 UTF-8 编码的 C 风格的字符串（const char*）                                                    |\n| `NewStringUTF`                                             | 用于将一个以 UTF-8 编码的 C 风格字符串转换成一个 Java 层的字符串（jstring）                                                              |\n| `FindClass`                                                | 用于在 native 代码中查找 Java 类，并返回相应的 `jclass` 句柄。它在 JNI 和 Java 代码交互时至关重要，常用于动态加载 Java 类。                             |\n| `GetMethodID`                                              | 用于在 native 代码中查找 Java 类的实例方法（非静态方法），并返回该方法的 `jmethodID` 句柄。这个句柄可用于后续的 JNI 方法调用。                                |\n| `GetStaticMethodID`                                        | 用于在 native 代码中查找 Java 类的 **静态方法**，并返回该方法的 `jmethodID` 句柄。该句柄可用于后续的 JNI 方法调用。                                   |\n| `GetFieldID`                                               | 用于在 native 代码中查找 Java 类的 **实例字段（非静态字段）**，并返回该字段的 `jfieldID` 句柄。该句柄可用于后续的 JNI 操作，如获取或修改字段的值。                    |\n| `GetStaticFieldID`                                         | 用于在 native 代码中查找 Java 类的 **静态字段**（即 `static` 关键字修饰的字段），并返回该字段的 `jfieldID` 句柄。这个句柄可用于后续的 JNI 操作，例如获取或修改该静态字段的值。 |\n| `Call<type>Method`、`Call<type>MethodA`、`Call<type>MethodV` | 用于调用 **Java 实例方法**（非静态方法）。它们三者的区别主要在于参数的传递方式。                                                                  |\n\n在 Android 逆向分析中，Hook `libart.so` 具备极高的工程价值：\n\n- **监控 JNI 动态绑定与调用**：通过拦截 `RegisterNatives` 相关符号，可以实现监视动态注册 JNI 函数或监视调用 JNI 函数等目的。\n- **跟踪关键方法执行**：例如 Hook 核心调度函数（如 `art::ArtMethod::Invoke`），不仅能无缝监控 Java 反射调用（`Method.invoke`），还能捕获 Native 层逆向调用 Java 方法的完整上下文。\n\nHook 该文件函数的相关项目：[frida_hook_libart](https://github.com/lasting-yang/frida_hook_libart)\n\n## Libc.so\n\nJava 内置的如文件操作等 API 在 Android 上最终都会调用底层的系统调用，而这些系统调用通常由 Android 的系统库实现。\n> 类比 Windows 下 Python 调用最终走向系统 DLL。\n\n`libc.so` 用于提供基本的系统调用和功能，如文件操作、字符串处理、内存分配等，最基础的库之一。\n\n| 类别 | 函数名称 | 参数 | 描述 |\n| --- | --- | --- | --- |\n| 字符串类操作 | `strcpy` | `char *dest, const char *src` | 将字符串 src 复制到 dest |\n| | `strcat` | `char *dest, const char *src` | 将字符串 src 连接到 dest 的末尾 |\n| | `strlen` | `const char *str` | 返回 str 的长度 |\n| | `strcmp` | `const char *str1, const char *str2` | 比较两个字符串 |\n| 文件类操作 | `fopen` | `const char *filename, const char *mode` | 打开文件 |\n| | `fread` | `void *ptr, size_t size, size_t count, FILE *stream` | 从文件读取数据 |\n| | `fwrite` | `const void *ptr, size_t size, size_t count, FILE *stream` | 写入数据到文件 |\n| | `fclose` | `FILE *stream` | 关闭文件 |\n| 网络 IO 类操作 | `socket` | `int domain, int type, int protocol` | 创建网络套接字 |\n| | `connect` | `int sockfd, const struct sockaddr *addr, socklen_t addrlen` | 连接套接字 |\n| | `recv` | `int sockfd, void *buf, size_t len, int flags` | 从套接字接收数据 |\n| | `send` | `int sockfd, const void *buf, size_t len, int flags` | 通过套接字发送数据 |\n| 线程类操作 | `pthread_create` | `pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg` | 创建线程 |\n| 进程控制操作 | `kill` | `pid_t pid, int sig` | 向指定进程发送信号 |\n| 系统属性查询操作 | `__system_property_get` | `const char *name, char *value` | 从 Android 系统属性服务中读取指定属性的值 |\n| | `uname` | `struct utsname *buf` | 获取当前系统的名称、版本和其他相关信息 |\n| | `sysconf` | `int name` | 获取运行时系统的配置信息，如 CPU 数量、页大小 |\n\n## Libdl.so\n\n**`libdl.so`** 是 Android 动态链接的核心接口库，提供 `dlopen`、`dlsym`、`dlclose` 等 API，用于在运行时动态地加载和使用共享库，对应 Windows 中的 `LoadLibrary` / `GetProcAddress` 机制。\n\n| 类别      | 函数名称     | 参数                                 | 描述            |\n| ------- | -------- | ---------------------------------- | ------------- |\n| 动态链接库操作 | `dlopen` | `const char *filename, int flag`   | 打开动态链接库文件     |\n|         | `dlsym`  | `void *handle, const char *symbol` | 从动态链接库中获取符号地址 |\n`libdl.so` 本质为轻量接口存根（Stub），真实加载与符号绑定逻辑最终由底层 **Linker**（`linker` / `linker64`）执行。\n\nHook 该文件中的函数，可以知道加载了哪些 SO、被获取的函数名称及其地址。\n\n## Linker.so\n\n在 Android 系统中，负责 ELF 可执行文件与共享库（SO）的加载、重定位及符号解析的核心组件是 Linker\n> 32 位为 `linker`，64 位为 `linker64`，高版本位于 `/apex/com.android.runtime/bin/`。\n\n前文提到 `libdl.so` 本身只是接口存根，其实际的 `dlopen`、`dlsym` 等逻辑最终均由 Linker 在底层承接并实现。\n\n通过 hook `call_constructors` 函数，可以监控 SO 文件初始化函数的调用情况（如被调用初始化函数所在的 SO 文件等）。相关文章：[frida hook init_array自吐新解](https://bbs.kanxue.com/thread-280135.htm)\n> 相关原理参考：[SO 加载与初始化流程](/notes/n-569d0c18845340eea0b3eda45fe9828e/)",
+  "id": "c9854103-b1aa-4ade-b714-e7e0b2559172",
+  "metadata": {
+    "tags": [
+      "os/android",
+      "reverse/android"
+    ],
+    "title": "Android 常用系统库"
+  },
+  "resources": [],
+  "url": "/notes/n-c9854103b1aa4adeb714e7e0b2559172/"
+}

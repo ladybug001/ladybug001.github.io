@@ -1,0 +1,71 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3228770eb3a9699abace",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-f36cf70e8c6f3d751ea4",
+      "kind": "heading",
+      "offset": 105
+    },
+    {
+      "id": "h-1f124bdf22c4f082415d",
+      "kind": "heading",
+      "offset": 419
+    },
+    {
+      "id": "h-63b943d344873429c572",
+      "kind": "heading",
+      "offset": 459
+    },
+    {
+      "id": "h-199c3339b70078b205fe",
+      "kind": "heading",
+      "offset": 1577
+    },
+    {
+      "id": "h-1238dc5ba2e897e0b859",
+      "kind": "heading",
+      "offset": 2367
+    },
+    {
+      "id": "h-e2c4deab9abf7cdc0fa0",
+      "kind": "heading",
+      "offset": 3318
+    },
+    {
+      "id": "h-0c1ca1dab302a9244fa2",
+      "kind": "heading",
+      "offset": 5049
+    },
+    {
+      "id": "h-18218aa3f82b6487d6ed",
+      "kind": "heading",
+      "offset": 5065
+    },
+    {
+      "id": "h-bda113563e0a273c9155",
+      "kind": "heading",
+      "offset": 5163
+    }
+  ],
+  "body": "# Windows 用户态虚拟内存管理\n\n\n前置知识：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)\n\n## 用户态虚拟内存的两种区域类型\n\n从用户态视角看，虚拟内存区域分为 **`Private`（私有内存）** 和 **`Mapped`（映射内存）** 两大类：\n\n1. **`Private` 内存**：通过 `VirtualAlloc` / `VirtualAllocEx` 直接申请，由当前进程独占物理页。\n2. **`Mapped` 内存**：通过 `CreateFileMapping` 创建映射并映射视图，物理页可能与其他进程共享。\n\n> 本篇主要介绍虚拟内存管理（且是用户态虚拟内存），物理页的空间管理参考：[Windows 物理页管理](/notes/n-202a7ab45afc4e0191060e0c6fd24133/)。\n\n### 私有内存\n#### API：`VirtualAlloc` 与 `VirtualFree`\n\n私有内存通过 `VirtualAlloc` / `VirtualAllocEx` 函数申请。两者底层实现没有区别，但后者可以在**其他进程**中申请内存。\n\n`VirtualAlloc` 函数的语法格式如下：\n```c\nLPVOID VirtualAlloc(\n    LPVOID lpAddress,        // 想要申请的起始虚拟地址，若传入 NULL，由系统分配合适的未占用虚拟地址。\n    SIZE_T dwSize,           // 想要申请的内存空间大小（字节），4k的整数倍。\n    DWORD flAllocationType,  // 分配类型（MEM_RESERVE / MEM_COMMIT）\n    DWORD flProtect          // 保护属性（如 PAGE_READWRITE、PAGE_READONLY）\n);\n```\n关键参数 `flAllocationType`：内存分配类型，包含两种常用标志：\n   - **`MEM_RESERVE`**：仅在 VAD 树中保留指定的虚拟地址范围，不分配物理存储，也不承担提交记账（Commit Charge）。\n   - **`MEM_COMMIT`**：真正分配提交记账，确保首次访问触发缺页异常时能获取到零初始化的物理页。\n\n如下代码表示申请 2 个物理页，占用线性地址并分配物理内存，该内存可读写：\n```c\nLPVOID pm = VirtualAlloc(NULL, 0x1000 * 2, MEM_COMMIT, PAGE_READWRITE);\n```\n\n---\n\n释放内存使用 `VirtualFree` 函数，其语法格式如下：\n```c\nBOOL VirtualFree(\n    LPVOID lpAddress,  // address of region 内存区域的地址\n    SIZE_T dwSize,     // size of region 内存大小\n    DWORD dwFreeType   // operation type 释放类型\n);\n```\n\n释放类型有两种：\n- `MEM_DECOMMIT`：释放物理内存，但线性地址保留（回到 `RESERVE` 状态）。\n- `MEM_RELEASE`：释放物理内存并释放线性地址。使用此类型时 `dwSize` 必须为 `0`。\n\n释放物理内存和线性地址的代码：\n```c\nVirtualFree(pm, 0, MEM_RELEASE);\n```\n\n#### 状态：`MEM_RESERVE` 与 `MEM_COMMIT`\n\n我们在使用 `VirtualAlloc` / `VirtualFree` 时，可以指定 `MEM_RESERVE` 和 `MEM_COMMIT` 两种状态标志。\n\n- **`MEM_RESERVE`（预留）**\n\t- **含义**：仅仅是在进程的虚拟地址空间中\"预订\"了一段地址，但**没有分配任何物理存储**（物理页或页面文件空间）。\n\t- **特点**：这段地址不能再被其他分配操作使用。尝试访问这块内存会引发访问冲突（Access Violation），因为没有物理页与之对应。\n\n- **`MEM_COMMIT`（提交）**\n\t- **含义**：为一段（通常是已经预留的）虚拟地址**分配了实际的物理存储**（物理页或页面文件空间）。\n\t- **特点**：这是真正可以被程序读写的内存。当程序首次访问一个 `COMMIT` 状态的页时，如果该页还不在物理内存中，会触发一个\"缺页异常\"（Page Fault），由内存管理器将其从页面文件加载到物理内存中。\n\n\n对于处于 `COMMIT` 状态的虚拟页，VAD 节点还会记录其**内存保护属性**，这些属性决定了程序能如何访问这些内存。主要属性包括：\n\n- **读（Read）**：允许读取该内存区域。\n- **写（Write）**：允许写入该内存区域。\n- **执行（Execute）**：允许将该内存区域的内容作为代码执行。\n\n这些属性的组合（如 `PAGE_READWRITE`、`PAGE_EXECUTE_READ` 等）提供了精细的内存访问控制，是实现内存安全的重要机制。\n\n> **注意**：页表项中的属性才是 CPU 真正执行权限检查时所依据的，VAD 节点的属性是在为预留虚拟地址分配建立物理页映射时会参考的。\n\n---\n\n#### WinDbg 实验：观察 `VirtualAlloc` 前后的 VAD\n\n**测试代码示例**：\n\n```c\n#include <windows.h>\n#include <stdio.h>\n\nLPVOID lpAddress;\n\nint main(void)\n{\n    printf(\"Start ...\\n\");\n    getchar();\n\n    printf(\"VirtualAlloc ...\\n\");\n    // 保留并提交 2 个页面 (8 KB) 的私有内存，权限为可读可写\n    lpAddress = VirtualAlloc(NULL, 0x1000 * 2, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);\n    printf(\"lpAddress: %p \\n\", lpAddress);\n\n    getchar();\n    return 0;\n}\n```\n\n在 WinDbg 中观察 `VirtualAlloc` 执行前后 VAD 树的变化：\n\n1. 分配前的 VAD 状态：\n\n   ![e590ba19e700966560fd5b0b77de89c5&#95;MD5&#46;jpg](/notes/n-b6dc38c9e8914672b696ce8442aaaf5c/media/4a3006f056f82fc4a6c0d26a07943bc5bee2e7c78a03c7e9740f6ce423dd17aa.jpg)\n\n2. 执行 `VirtualAlloc` 后的 VAD 状态：\n\n   ![5bbe3b03fc584abffbb408d590ef6f6a&#95;MD5&#46;jpg](/notes/n-b6dc38c9e8914672b696ce8442aaaf5c/media/a2cf7f983becb39ad94716ae30c2b4ed726b397b998b4a1798d21d75d27ff26d.jpg)\n\n可以看出，系统在低 2 GB 空闲线性地址中分配了一块大小为 `0x2000`（`0x390000` - `0x391000`）的内存，并为其构建对应的 `_MMVAD` 结构体节点插入到了进程的 VAD 树中。\n\n#### 堆与栈建立在私有内存之上\n\n`malloc` 或者 `new` 申请内存，它们申请的是什么内存呢？实际上它们是**从已经申请好的内存中再进行子分配**，属于\"假申请\"，通过它们申请的内存称为**堆内存**；函数中的局部变量使用的是**栈内存**。\n\n无论堆内存还是栈内存，都是操作系统在启动程序时通过 `VirtualAlloc` 函数预先申请好的。\n\n> 堆、栈的本质就是私有内存，即通过 `VirtualAlloc` 函数申请的虚拟地址空间。\n\n```c\nint main(int argc, char* argv[])\n{\n    int x = 0x12345678; // 栈内存\n    int* y = (int*)malloc(sizeof(int) * 128); // 堆内存\n    return 0;\n}\n```\n\n**堆（Heap）与栈（Stack）的实现本质**：\n\n- **堆（Heap）**：堆管理器（Heap Manager）通过底层调用 `VirtualAlloc` 预先向操作系统申请一大段私有虚拟内存。当程序调用 `HeapAlloc`（或 `malloc`/`new`）时，堆管理器仅在此前已预分配的堆内存块中切分出一小块细粒度内存返回。这样可大幅避免频繁发起系统级调用的开销。\n- **栈（Stack）**：栈同样是由系统预先调用 `VirtualAlloc` 保留并提交的一块连续虚拟内存。局部变量的分配无需经过 API 机制，直接通过移动栈指针（如 `esp`/`rsp`）即可使用。\n\n**验证实验**：\n\n```c\n#include <windows.h>\n#include <stdio.h>\n#include <stdlib.h>\n\nint a = 0x4321; // 全局变量\n\nint main(void)\n{\n    getchar();\n\n    int x = 0x12345678;                       // 局部变量（栈）\n    int* y = (int*)malloc(sizeof(int) * 128);  // 动态分配（堆）\n\n    printf(\"Global: %p \\n\", (void*)&a);\n    printf(\"Stack: %p \\n\", (void*)&x);\n    printf(\"Heap: %p \\n\", (void*)y);\n\n    getchar();\n    free(y);\n    return 0;\n}\n```\n\n1. 程序暂停在第一个 `getchar()` 时查看 VAD 树：\n\n   ![411cb60d42f45bdb672e8f3e4092050a&#95;MD5&#46;jpg](/notes/n-b6dc38c9e8914672b696ce8442aaaf5c/media/5020d9bab06dcc698e5d91dabc00c2f7fbbc4375a23c71497bd895e3a959b281.jpg)\n\n2. 继续执行到第二个 `getchar()` 时查看 VAD 树：\n\n   ![335c59cd3519dddd01dec9789383b087&#95;MD5&#46;jpg](/notes/n-b6dc38c9e8914672b696ce8442aaaf5c/media/6a63c120b8ce8debd4268eaeee7f1995f20ba48decffa24919fefcea902d8dda.jpg)\n\n实验表明：全局变量、局部变量（栈）以及 `malloc` 分配的堆内存地址，全部落在当前进程已被分配的 VAD 线性地址区间中。其中全局变量在编译阶段即打包在 PE 文件中，因此其映射地址位于 `Mapped` 类型的映像文件映射区间中。\n\n> **核心结论**：`VirtualAlloc` / `VirtualAllocEx` 是 Win32 用户态保留或提交私有虚拟地址区域的底座 API；堆管理器与栈区域均构建在这些大块私有内存区间之上。\n\n---\n\n### 映射内存\n\n#### 后备存储与共享特性\n`Mapped` 类型的内存区域可能由磁盘数据文件、PE 镜像文件或系统页面文件（Pagefile）作为后备存储，并且支持多进程共享物理页。\n\n#### WinDbg 观察：VAD 中的映射区域\n\n在调试过程中，进程 VAD 树中常能观察到多块 `Mapped` 类型的地址区间：\n\n![3b77920bb9749f81583914a5c38552cf&#95;MD5&#46;jpg](/notes/n-b6dc38c9e8914672b696ce8442aaaf5c/media/2197ee49ed8b7239953bae0eb1393f3947668a43d194166b846d2b2f1494c763.jpg)\n\n在下图所示的进程 VAD 树节点中，带有具体磁盘路径的区域为文件后备映射；而无普通文件名、标注有 `Pagefile section, shared commit` 的区域则是由页面文件后备的共享 Section：\n\n![11beaa45ce1cf0ff922aa0c4f2fb933e&#95;MD5&#46;jpg](/notes/n-b6dc38c9e8914672b696ce8442aaaf5c/media/4e026520d14eac0774d905ebea3ce56f0230858f9a46e814b8fda1ae33055953.jpg)\n\n关于内存映射文件、映射视图及写时拷贝（COW）机制的详细讲解与跨进程通信实验，请参阅：[Windows 内存映射文件](/notes/n-a5ced7cc81224d9196b3d65053f02293/)\n",
+  "id": "b6dc38c9-e891-4672-b696-ce8442aaaf5c",
+  "metadata": {
+    "tags": [
+      "os/windows/mm"
+    ],
+    "title": "Windows 用户态虚拟内存管理"
+  },
+  "resources": [
+    "2197ee49ed8b7239953bae0eb1393f3947668a43d194166b846d2b2f1494c763.jpg",
+    "4a3006f056f82fc4a6c0d26a07943bc5bee2e7c78a03c7e9740f6ce423dd17aa.jpg",
+    "4e026520d14eac0774d905ebea3ce56f0230858f9a46e814b8fda1ae33055953.jpg",
+    "5020d9bab06dcc698e5d91dabc00c2f7fbbc4375a23c71497bd895e3a959b281.jpg",
+    "6a63c120b8ce8debd4268eaeee7f1995f20ba48decffa24919fefcea902d8dda.jpg",
+    "a2cf7f983becb39ad94716ae30c2b4ed726b397b998b4a1798d21d75d27ff26d.jpg"
+  ],
+  "url": "/notes/n-b6dc38c9e8914672b696ce8442aaaf5c/"
+}

@@ -1,0 +1,59 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-9ab4e85188a6011b2424",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-09ffeb7b8dbbaba5b9b7",
+      "kind": "heading",
+      "offset": 125
+    },
+    {
+      "id": "h-479f22d38270c5de45b1",
+      "kind": "heading",
+      "offset": 134
+    },
+    {
+      "id": "h-4388301d7a09e97f82e6",
+      "kind": "heading",
+      "offset": 335
+    },
+    {
+      "id": "h-e8e6383cd0763fed143c",
+      "kind": "heading",
+      "offset": 953
+    },
+    {
+      "id": "h-12349368218a5c2760ee",
+      "kind": "heading",
+      "offset": 967
+    },
+    {
+      "id": "h-caa4bb5a49a1e65ec9aa",
+      "kind": "heading",
+      "offset": 1773
+    },
+    {
+      "id": "h-57c5ab2a8d38aacd1a6b",
+      "kind": "heading",
+      "offset": 1921
+    },
+    {
+      "id": "h-3a9108eb36ce4337536d",
+      "kind": "heading",
+      "offset": 2442
+    }
+  ],
+  "body": "# JavaScript 生成器、迭代器与可迭代对象\n\n**类比参考**： [Python 迭代器&#12289;可迭代对象与生成器](/notes/n-3462eb49b6c5415bb3e086109d28cb04/)\n\n## 迭代器与可迭代对象\n\n### 迭代器\n\n迭代器是一个对象，它定义了一个 `next()` 方法，该方法返回一个包含以下两个属性的对象：\n- `value`: 迭代序列中的下一个值。\n- `done`: 布尔值，如果为 `true`，表示迭代结束。\n\n迭代器的原理是通过闭包/类实现的，参考：[编程语言&#65306;迭代器的原理](/notes/n-1120995a4e7743639fe022c5319e2db8/)\n### 可迭代对象\n\n可迭代对象是具有 `Symbol.iterator` 属性的对象。该属性是一个函数，调用时返回一个**迭代器**。\n> 原生可迭代对象包括：`Array`, `String`, `Map`, `Set` 等。\n\n**自定义可迭代对象示例**：\n\n```javascript\nlet range = {\n  from: 1,\n  to: 5\n};\n\n// 1. 实现可迭代协议\nrange[Symbol.iterator] = function() {\n  // 返回一个迭代器对象\n  return {\n    current: this.from,\n    last: this.to,\n\n    // 2. 实现迭代器协议\n    next() {\n      if (this.current <= this.last) {\n        return { done: false, value: this.current++ };\n      } else {\n        return { done: true };\n      }\n    }\n  };\n};\n\n// 只有实现了 Symbol.iterator 的对象才能被 for..of 遍历\nfor (let num of range) {\n  console.log(num); // 1, 2, 3, 4, 5\n}\n```\n\n---\n\n## 2) 生成器\n\n### 2.1) 生成器\n\n> JS 中没有生成器表达式，我们重点介绍生成器函数。\n\n生成器是一种特殊的迭代器，可以暂停执行并在稍后恢复。**目的是简化程序员创建迭代器的步骤**。\n\n**3.1 定义生成器函数**\n```javascript\nfunction* myGenerator() {\n    console.log(\"Start fetching...\");\n\n    // yield 出去一个 Promise，执行器会等待它 resolve\n    const data1 = yield fetchData(\"https://api.example.com/data1\");\n    console.log(\"Received:\", data1);\n\n    const data2 = yield fetchData(\"https://api.example.com/data2\");\n    console.log(\"Received:\", data2);\n\n    return \"All done!\";\n}\n```\n\n**3.2 使用封装函数 (var_1172)**\n```javascript\n// 将生成器函数封装成返回 Promise 的函数\n// 注意：var_1172 在此作为自动执行器 (Auto-Executor)\nconst asyncFunc = var_1172(myGenerator);\n\n// 调用封装后的函数\nasyncFunc()\n    .then(result => {\n        console.log(\"Generator finished:\", result);\n    })\n    .catch(err => {\n        console.error(\"Generator error:\", err);\n    });\n```\n\n\n#### 核心特性\n- **语法**: 使用 `function*` 定义。\n- **暂停与恢复**: 使用 `yield` 关键字暂停函数执行并返回一个值。\n- **返回值**: 调用生成器函数不会立即执行代码，而是返回一个 **Generator 对象**（它同时是迭代器和可迭代对象）。\n\n#### 基础示例\n\n```javascript\nfunction* numberGenerator(x) {\n    console.log('开始执行');\n    yield x + 1;  // 暂停，返回 x + 1\n    console.log('恢复执行');\n    yield x + 2;  // 暂停，返回 x + 2\n    console.log('即将结束');\n    return x + 3; // 结束，返回 x + 3 (done: true)\n}\n\nlet gen = numberGenerator(5);\n\n// 调用生成器函数时，代码并未执行\nconsole.log(gen.next()); \n// 输出: \"开始执行\" -> { value: 6, done: false }\n\nconsole.log(gen.next()); \n// 输出: \"恢复执行\" -> { value: 7, done: false }\n\nconsole.log(gen.next()); \n// 输出: \"即将结束\" -> { value: 8, done: true }\n```\n\n#### 生成器组合 (`yield*`)\n\n`yield*` 允许一个生成器将执行权“委托”给另一个生成器或可迭代对象。\n\n```javascript\nfunction* subGenerator(x) {\n    yield x + 1;\n    yield x + 2;\n}\n\nfunction* mainGenerator(x) {\n    yield \"Start\";\n    // 委托给子生成器\n    yield* subGenerator(x); \n    yield \"End\";\n}\n\nfor (let val of mainGenerator(10)) {\n    console.log(val);\n}\n// 输出: \"Start\", 11, 12, \"End\"\n```\n\n\n",
+  "id": "a26ebbdf-a111-4aa1-b4f9-4c90100be921",
+  "metadata": {
+    "tags": [
+      "lang/javascript"
+    ],
+    "title": "JavaScript 迭代器、可迭代对象与生成器"
+  },
+  "resources": [],
+  "url": "/notes/n-a26ebbdfa1114aa1b4f94c90100be921/"
+}

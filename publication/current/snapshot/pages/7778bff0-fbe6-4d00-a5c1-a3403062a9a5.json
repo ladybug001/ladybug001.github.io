@@ -1,0 +1,37 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-a37261f1b3f29cc12905",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-c72ec263d8be2a3c6811",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-79479c56309b74310448",
+      "kind": "heading",
+      "offset": 298
+    },
+    {
+      "id": "h-89cef71fe9725ca77300",
+      "kind": "heading",
+      "offset": 955
+    }
+  ],
+  "body": "# 利用远程线程注入 DLL\n\n## 前言\n\n远程创建线程原本设计是用于调用目标进程空间内已存在的函数。如果想要实现通过远程线程调用且执行自定义的代码（函数），目前主流有两种方式：\n- `DLL` 注入\n- `Shellcode` 注入，参考：[Shellcode 编写原则](/notes/n-d2bf87ca9bf649a08c1db21f534e3290/)\n> 本文的重点是 `DLL` 注入方式。\n\n远程线程 `DLL` 注入的底层核心思路是跨进程（向目标进程）创建远程线程，**并将新创建的远程线程函数的入口地址指向系统级别的 `LoadLibrary` 函数**。\n## 可行性分析\n\n那么为什么可以直接将 `LoadLibrary` 当作线程入口函数呢？这是因为在 32 位（`x86`）环境下，系统对目标线程函数的要求是：接收且仅接收一个 4 字节宽度的参数，同时需要返回一个 4 字节的状态码，且调用约定必须为 `WINAPI`（即 `__stdcall`）。\n\n![02e184b36436ef4b3e440d2bc82365d7&#95;MD5&#46;png](/notes/n-7778bff0fbe64d00a5c1a3403062a9a5/media/e90eaf18b5896463fa403a4880bbaceb4e1cc1f7ec07e94da1d39fd8bca226a5.png)\n\n我们再来看一下 `LoadLibrary` 函数的语法声明格式：\n```c\nHMODULE LoadLibrary(  \n    LPCTSTR lpFileName // file name of module 模块文件的路径指针\n);\n```\n\n跟进底层源码关于 `HMODULE` 和 `LPCTSTR` 这两个宏的定义，会发现它们在 32 位下本质上都是 4 字节宽度的数据结构。\n\n这就意味着 `LoadLibrary` 函数的入参大小、返回值大小以及 `WINAPI` 调用约定，正好完全满足系统 `CreateRemoteThread` 对线程启动子过程（`ThreadProc`）的严格验证条件（不仅参数可以成功传入且执行结束能平滑维护调用栈平衡）。\n\n## 实施步骤\n\n具体实现步骤如下图所示：\n\n![115e2611cd409f825c8a5ed5a61ff442&#95;MD5&#46;png](/notes/n-7778bff0fbe64d00a5c1a3403062a9a5/media/9454dc47af851c27cd6885dbef6867d3f9bfef2ad4ed33f102e65a93b57f6e41.png)\n> 在编写待注入目标空间的 `DLL` 文件时，要在 `DLL` 的入口函数处，捕获 `DLL` 附加到进程的动作消息并创建具体业务线程。\n\n",
+  "id": "7778bff0-fbe6-4d00-a5c1-a3403062a9a5",
+  "metadata": {
+    "tags": [
+      "reverse/windows"
+    ],
+    "title": "利用远程线程注入 DLL"
+  },
+  "resources": [
+    "9454dc47af851c27cd6885dbef6867d3f9bfef2ad4ed33f102e65a93b57f6e41.png",
+    "e90eaf18b5896463fa403a4880bbaceb4e1cc1f7ec07e94da1d39fd8bca226a5.png"
+  ],
+  "url": "/notes/n-7778bff0fbe64d00a5c1a3403062a9a5/"
+}

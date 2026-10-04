@@ -1,0 +1,50 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-58f18c88cac056177175",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-926fbbab7be24d5889d0",
+      "kind": "heading",
+      "offset": 28
+    },
+    {
+      "id": "h-30397b140e298914b87f",
+      "kind": "heading",
+      "offset": 54
+    },
+    {
+      "id": "h-02e545dc7c893e0f53c9",
+      "kind": "heading",
+      "offset": 71
+    },
+    {
+      "id": "h-70c32988e06ee9de6f4d",
+      "kind": "heading",
+      "offset": 712
+    },
+    {
+      "id": "h-b657b871b2a9b9df2b27",
+      "kind": "heading",
+      "offset": 874
+    },
+    {
+      "id": "h-44d9dc847649beae135a",
+      "kind": "heading",
+      "offset": 1464
+    }
+  ],
+  "body": "# Python asyncio 异步机制\n\n## 前言\n\n参考：异步编程的本质与实现机制\n\n## 核心组件\n### 1 Event Loop\n\nEvent Loop（事件循环）是一个核心组件，通常实现为无限循环，维护着**就绪队列**和**等待队列**。\n\n*   **就绪队列**：存放立即可以执行的 `Handle`。\n*   **等待队列**：存放计划在未来某个时间点执行的 `Handle`（如 `call_later`）。\n\n**使用示例**：\n\n```python\nimport asyncio\nloop = asyncio.new_event_loop()\nasyncio.set_event_loop(loop)\n\n# 放入就绪队列\nloop.call_soon(lambda: print(\"Hello at call_soon\"))\n\n# 放入等待队列，1秒后由 loop 转移到就绪队列\nloop.call_later(1, lambda: print(\"Hello at call_later\"))\n\n# 定时任务\nloop.call_at(loop.time() + 1, lambda: print(\"Hello at call_at\"))\n\n# 2秒后停止 Loop\nloop.call_later(2, loop.stop)\n\nloop.run_forever()\nloop.close()\n```\n\nEvent Loop 也需要被告知何时应该停止，如：\n```python\nloop.call_later(1, lambda: loop.stop())\n```\n\n### 2 Handle\n\nEvent Loop 的队列中的元素统一为 **Handle** 对象。当我们调用 `call_soon` 等函数时，传入的回调函数和参数会被封装成一个 Handle 对象。Handle 包含了函数引用、参数列表以及上下文信息（`context`），是 Event Loop 调度的基本单位。\n\n### 3 Future\n\n`Future` 对象与 Event Loop 高度绑定，代表一个“未来会有结果”的对象。它内部维护了一个**回调函数列表**。\n\n**工作机制**：\n当调用 `future.set_result(value)` 时，它会将回调列表中的所有函数（通过 `call_soon`）加入到 Event Loop 的就绪队列中，并将 Future 状态标记为 Finished。\n\n**借助 Future 高效使用 Event Loop**：\n\n```python\nimport asyncio\nloop = asyncio.new_event_loop()\n\nfuture = loop.create_future()\nfuture.add_done_callback(lambda x: print(\"任务完成回调1\", x))\nfuture.add_done_callback(lambda x: print(\"任务完成回调2\", x))\n\n# 该回调用于停止 Loop\nfuture.add_done_callback(lambda x: loop.stop())\n\n\n# 1秒后设置结果，触发回调\nloop.call_later(1, lambda: future.set_result(\"Success\"))\n\nloop.run_forever()\n```\n\n\n## 总结\n1.  **Event Loop**：无限循环，不断从队列取出 `Handle` 并执行。\n2.  **Future**：代表未来的结果，是 Event Loop 和 Task 之间的桥梁。",
+  "id": "5344b73e-8c54-4f2d-b3fe-00dedd9c607e",
+  "metadata": {
+    "tags": [
+      "lang/python",
+      "cs/concurrency"
+    ],
+    "title": "Python asyncio 异步机制"
+  },
+  "resources": [],
+  "url": "/notes/n-5344b73e8c544f2db3fe00dedd9c607e/"
+}

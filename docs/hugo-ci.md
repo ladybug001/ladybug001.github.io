@@ -1,34 +1,39 @@
 # Build-only Hugo CI
 
-This repository is a migration pipeline, not a deployed Hugo site. No theme,
-navigation, home page or visual layout has been chosen. Its existing minimal
-HTML harness is only a content/link test.
+The build-only workflow remains an independent converter test. A separate
+`hugo-pages.yml` deploys approved `publication/current/` on main pushes or manual
+dispatch, after pinned Stack/Hugo builds and strict HTML validation.
+Stack was selected on 2026-10-04; see
+[preview instructions](hugo-stack.md). The existing minimal HTML harness remains
+an independent content/link test, not the selected site's renderer.
 
 ## Tracked sources and safety
 
 The Git root uses a fail-closed allowlist. It tracks pipeline code, tests,
 dependency/toolchain locks, this document, one build-only workflow, and a
 synthetic snapshot. Quartz has been retired; its files and old Pages workflow
-have been removed from the active tree to a private local recovery archive.
+have been removed. Its obsolete local recovery archive was also deleted during cleanup.
 Local reports and machine-specific operating documents,
 private identity state, real generated snapshots and build output are ignored.
 
 The repository gate verifies the **tracked Git index**, not every file on the
 local disk. It refuses paths outside the reviewed allowlist. `.gitignore` is
 not a substitute for this check: an explicitly force-added file must still fail.
-The current allowlist admits only the generated synthetic fixture; a real note
-snapshot requires a separate reviewed change and content/privacy approval.
+The reviewed allowlist also admits exact site source files and the generated
+public hand-off. Snapshot/presentation hashes and exact inventories are validated;
+private state, reports, Vault paths and local output remain excluded.
 
 ## Reproducible validation
 
-`pipeline/toolchain.toml` pins Python 3.14.4, publisher 0.6.0 and standard Hugo
+`pipeline/toolchain.toml` pins Python 3.14.4, publisher 0.6.0 and Hugo Extended
 0.167.0. `pipeline/requirements.lock` pins all four Python distributions and
-accepted wheel hashes. There is no theme, Node dependency or global install.
+accepted wheel hashes. Tests share Stack's Extended Hugo executable; no Node
+dependency or global installation is needed.
 
 Hugo archives use platform-specific pinned SHA-256 values from the upstream
 release checksums. The installer verifies the archive before reading only the
 regular Hugo binary; it never extracts arbitrary archive paths. It installs
-under project `.local/tools/hugo/`, refuses a conflicting existing binary and
+under project `.local/tools/hugo-extended/`, refuses a conflicting existing binary and
 checks the executable's reported version. Download/cache bytes are bounded.
 
 The Actions workflow uses exact reviewed commit SHA pins, read-only contents

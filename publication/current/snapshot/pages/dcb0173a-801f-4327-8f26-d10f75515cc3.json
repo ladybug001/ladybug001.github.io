@@ -1,0 +1,44 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-e18baa534ee6b72be46d",
+      "kind": "heading",
+      "offset": 8
+    },
+    {
+      "id": "h-135ff898a6031b98ec75",
+      "kind": "heading",
+      "offset": 101
+    },
+    {
+      "id": "h-835f8d91113c983cdbdc",
+      "kind": "heading",
+      "offset": 277
+    },
+    {
+      "id": "h-ac46aef5b6693908b064",
+      "kind": "heading",
+      "offset": 408
+    },
+    {
+      "id": "h-4472f247a3499b81405d",
+      "kind": "heading",
+      "offset": 1718
+    },
+    {
+      "id": "h-12e8b3e377ad02b18eaa",
+      "kind": "heading",
+      "offset": 3020
+    }
+  ],
+  "body": "# STL 算法\n\n上级：[C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/)\n\n## STL 算法简介\n\n`STL` 提供了大量可用于不同容器的通用算法，常见头文件主要有：\n\n1. `<algorithm>`：比较、查找、遍历、复制、修改、反转、排序、合并等。\n2. `<numeric>`：数值累积、相邻差、部分和等。\n3. `<functional>`：函数对象、比较器等。\n\n本节主要聚焦 `<algorithm>`。\n\n## STL 常见算法分类\n\n`STL` 常见算法大体可分为三类：\n\n1. 非可变序列算法\n2. 可变序列算法\n3. 排序算法\n\n完整版算法列表可参考：\n\n```text\nhttp://en.cppreference.com/w/cpp/algorithm\n```\n\n## 非可变序列算法\n\n非可变序列算法不会直接修改容器内容，例如查找、统计、搜索类算法。\n\n常见函数如下：\n\n1. `find`\n2. `find_if`\n3. `count`\n4. `count_if`\n5. `search`\n6. `search_n`\n\n示例代码如下：\n\n```cpp\nvoid findFunc(vector<int> v) {\n    vector<int>::iterator itA = find(v.begin(), v.end(), 5);\n    if (itA != v.end()) {\n        cout << \"Find 5\" << endl;\n    } else {\n        cout << \"UnFind 5\" << endl;\n    }\n}\n\nbool divByFive(int x) {\n    return x % 5 ? 0 : 1;\n}\n\nvoid findIfFunc(vector<int> v) {\n    vector<int>::iterator itA = find_if(v.begin(), v.end(), divByFive);\n    if (itA != v.end()) {\n        cout << \"Find divByFive: \" << *itA << endl;\n    }\n}\n\nvoid countFunc(vector<int> v) {\n    int num = count(v.begin(), v.end(), 5);\n    cout << \"Count(5): \" << num << endl;\n}\n\nvoid countIfFunc(vector<int> v) {\n    int num = count_if(v.begin(), v.end(), divByFive);\n    cout << \"Count(%5): \" << num << endl;\n}\n\nvoid searchFunc(vector<int> v) {\n    int tmpArray[] = {5, 4};\n    vector<int> v2(tmpArray, tmpArray + 2);\n    vector<int>::iterator itA = search(v.begin(), v.end(), v2.begin(), v2.end());\n    if (itA != v.end()) {\n        cout << \"Search: \" << *itA << endl;\n    }\n}\n\nvoid searchNFunc(vector<int> v) {\n    vector<int>::iterator itA = search_n(v.begin(), v.end(), 3, 2);\n    if (itA != v.end()) {\n        cout << \"Search: 3 x \" << *itA << endl;\n    }\n}\n```\n\n## 可变序列算法\n\n可变序列算法会修改容器内容或向目标区间写入数据。\n\n常见函数如下：\n\n1. `copy`\n2. `transform`\n3. `replace`\n4. `replace_if`\n5. `remove`\n6. `remove_if`\n\n需要注意：\n\n- `copy()` 和 `transform()` 的目标区间必须有足够空间，或者配合插入迭代器使用。\n- `remove()` / `remove_if()` **不会真正缩小容器大小**，而是把“保留元素”前移并返回新的逻辑结尾；若想真正删除，应结合容器的 `erase()` 使用，即经典 `erase-remove idiom`。\n\n示例代码如下：\n\n```cpp\nvoid myPrintFunc(int p) {\n    cout << p << \" \";\n}\n\nvoid copyFunc(vector<int> v) {\n    list<int> l(10, 1);\n    copy(v.begin(), v.end(), l.begin());\n    for_each(l.begin(), l.end(), myPrintFunc);\n}\n\nint square(int p) {\n    return p * p;\n}\n\nvoid transformFunc(vector<int> v) {\n    list<int> l(10, 1);\n    transform(v.begin(), v.end(), l.begin(), square);\n    for_each(l.begin(), l.end(), myPrintFunc);\n}\n\nvoid replaceFunc(vector<int> v) {\n    replace(v.begin(), v.end(), 1, 100);\n    for_each(v.begin(), v.end(), myPrintFunc);\n}\n\nbool odd(int p) {\n    return p % 2;\n}\n\nvoid replaceIfFunc(vector<int> v) {\n    replace_if(v.begin(), v.end(), odd, 100);\n    for_each(v.begin(), v.end(), myPrintFunc);\n}\n\nvoid removeFunc(vector<int> v) {\n    v.erase(remove(v.begin(), v.end(), 1), v.end());\n    for_each(v.begin(), v.end(), myPrintFunc);\n}\n\nvoid removeIfFunc(vector<int> v) {\n    v.erase(remove_if(v.begin(), v.end(), odd), v.end());\n    for_each(v.begin(), v.end(), myPrintFunc);\n}\n```\n\n## 排序算法\n\n排序算法用于对指定容器排序或维护堆结构。\n\n常见函数如下：\n\n1. `sort`：排序\n2. `make_heap`：把一段顺序存储区间，调整成“按堆规则组织的完全二叉树的顺序表示\n3. `sort_heap`：反着来\n\n示例代码如下：\n\n```cpp\nvoid myPrintFunc(int p) {\n    cout << p << \" \";\n}\n\nvoid sortFunc(vector<int> v) {\n    sort(v.begin(), v.end());\n    for_each(v.begin(), v.end(), myPrintFunc);\n}\n\nvoid makeHeapFunc(vector<int> v) {\n    make_heap(v.begin(), v.end());\n    for_each(v.begin(), v.end(), myPrintFunc);\n}\n\nvoid sortHeapFunc(vector<int> v) {\n    make_heap(v.begin(), v.end());\n    for_each(v.begin(), v.end(), myPrintFunc);\n    cout << endl;\n    sort_heap(v.begin(), v.end());\n    for_each(v.begin(), v.end(), myPrintFunc);\n}\n```\n",
+  "id": "dcb0173a-801f-4327-8f26-d10f75515cc3",
+  "metadata": {
+    "tags": [
+      "lang/cpp/stl"
+    ],
+    "title": "C++ STL 算法"
+  },
+  "resources": [],
+  "url": "/notes/n-dcb0173a801f43278f26d10f75515cc3/"
+}

@@ -1,0 +1,92 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-bb994b37da667e43a405",
+      "kind": "heading",
+      "offset": 28
+    },
+    {
+      "id": "h-60088337f21336513acf",
+      "kind": "heading",
+      "offset": 43
+    },
+    {
+      "id": "h-1f20805b33fd8dcfc928",
+      "kind": "heading",
+      "offset": 311
+    },
+    {
+      "id": "h-672fc5ade1b5922ab864",
+      "kind": "heading",
+      "offset": 486
+    },
+    {
+      "id": "h-62a546b4846606080041",
+      "kind": "heading",
+      "offset": 1320
+    },
+    {
+      "id": "h-989d0bb018c815cf1882",
+      "kind": "heading",
+      "offset": 2883
+    },
+    {
+      "id": "h-aca81fd6d127a3862260",
+      "kind": "heading",
+      "offset": 2968
+    },
+    {
+      "id": "h-8c1111ef9f3f4ff73802",
+      "kind": "heading",
+      "offset": 4761
+    },
+    {
+      "id": "h-b3f82ecbc2e6ac6b3900",
+      "kind": "heading",
+      "offset": 7757
+    },
+    {
+      "id": "h-28e95c3e5b9c4444f293",
+      "kind": "heading",
+      "offset": 9846
+    },
+    {
+      "id": "h-189671654481bca08587",
+      "kind": "heading",
+      "offset": 11316
+    },
+    {
+      "id": "h-7a48c8962f7038855c25",
+      "kind": "heading",
+      "offset": 11390
+    },
+    {
+      "id": "h-745ef9a0fedb851906c7",
+      "kind": "heading",
+      "offset": 11581
+    }
+  ],
+  "body": "# 计算机网络：WinPcap 与 Npcap 抓包开发\n\n## WinPcap 简介\n\n`WinPcap`（Windows Packet Capture）是 `Windows` 平台上的数据包捕获库，目标是为 `Win32` 应用程序提供访问链路层数据包的能力。它提供用户态 API，并依赖底层驱动完成抓包、过滤和发包等操作。\n\n需要注意：`WinPcap` 已属于历史项目。现代 `Windows` 环境中更常用的是 `Npcap`；`Npcap` 支持 `WinPcap` API 兼容模式，可以让大量旧代码继续使用 `pcap.h`、`wpcap.lib`、`wpcap.dll` 这一套接口。\n\n### 常用功能\n\n`WinPcap` / `Npcap` 常用功能如下：\n\n1. 捕获原始数据包，包括发往本机的数据包，以及经过当前网卡的链路层帧。\n2. 在数据包交给应用程序前，根据用户指定的 `BPF`（Berkeley Packet Filter）规则过滤数据包。\n3. 将原始数据包通过网络接口发送出去。\n4. 收集并统计网络流量信息。\n\n## 下载与配置\n\n`WinPcap` 不是 `Windows` 系统自带组件，而是外部项目提供的抓包运行库和开发包。原文使用的历史开发包地址是：\n\n```text\nhttps://www.winpcap.org/archive/4.0.1-WpdPack.zip\n```\n\n如果基于 `VC6` 使用，需要选择 `>= 4.0.1` 的开发包版本。现代环境建议优先安装 `Npcap`，并在需要兼容旧 `WinPcap` 程序时启用 `WinPcap API-compatible Mode`。\n\n下载后的开发包中，核心是 `Lib` 和 `Include` 两个目录：\n\n![753191bec3b0039ee82099b2f84dc543&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/a0c72ce1d9a7b72356b8258f5275b5790e19a17864ad5a7c2b4f439331be34bc.jpg)\n\n在 `VC6` 中打开 `Tools -> Options`，把 `Lib` 和 `Include` 路径加入工程配置：\n\n![16e0ba6df4b25a3e68222a97e097c0b7&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/d20acc0efbc3e2ef28503dbe8e09d70e2669bd8c99d0ba9a4322c0e07f24e5e8.jpg)\n\n然后在项目中包含所需头文件和库文件：\n\n```cpp\n#include <WINSOCK2.H>\n#include <pcap.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n#pragma comment(lib, \"wpcap.lib\")\n```\n\n## 遍历适配器\n\n如果要抓网络包，首先要知道要处理的是哪个适配器。这里的“适配器”可以是物理网卡，也可以是虚拟网卡。`WinPcap` / `Npcap` 通过驱动和用户态库封装了底层访问能力，应用程序不需要直接操作硬件或内核对象。\n\n遍历适配器使用 `pcap_findalldevs()`，其原型如下：\n\n```cpp\nint pcap_findalldevs(\n    pcap_if_t** alldevsp, // 输出参数，返回适配器链表头指针\n    char* errbuf          // 输出参数，失败时保存错误信息\n);\n```\n\n调用成功返回 `0`，失败返回 `-1`。返回的 `pcap_if_t` 是链表结构；每个适配器节点通过 `next` 指向下一个适配器，`addresses` 成员本身也是地址链表：\n\n![2e53234390fbdde5c69633735903629d&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/8227ba605593e82884b9256210a0b190230b0a90e6aedf4c7c8078c0903489f7.jpg)\n\n可以根据该结构遍历适配器及其地址信息：\n\n```cpp\n#include <WINSOCK2.H>\n#include <pcap.h>\n#include <stdio.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n#pragma comment(lib, \"wpcap.lib\")\n\nint main(int argc, char* argv[])\n{\n    pcap_if_t* alldevsp = NULL;\n    char errbuf[PCAP_ERRBUF_SIZE] = {0};\n\n    int iRet = pcap_findalldevs(&alldevsp, errbuf);\n    if (iRet != 0) {\n        printf(\"pcap_findalldevs error: %s\\n\", errbuf);\n        return 1;\n    }\n\n    for (pcap_if_t* dev = alldevsp; dev != NULL; dev = dev->next) {\n        printf(\"Name: %s\\nDesc: %s\\n\", dev->name, dev->description ? dev->description : \"\");\n\n        for (pcap_addr_t* addr = dev->addresses; addr != NULL; addr = addr->next) {\n            if (addr->addr != NULL && addr->addr->sa_family == AF_INET) {\n                sockaddr_in* ipaddr = (sockaddr_in*)addr->addr;\n                printf(\"IP: %s\\n\", inet_ntoa(ipaddr->sin_addr));\n            }\n        }\n\n        printf(\"===================================\\n\\n\");\n    }\n\n    pcap_freealldevs(alldevsp);\n    return 0;\n}\n```\n\n## 捕获原始数据包\n\n原始数据包是指适配器接收到的原始网络数据。也就是 `MAC` 帧，帧类型可以通过 `pcap_datalink()` 判断，不一定是有线以太网帧。\n\n### 捕获流程\n\n获取适配器上的数据包，典型步骤如下：\n\n1. 使用 `pcap_findalldevs()` 遍历适配器，找到需要捕获的适配器。\n2. 使用 `pcap_open()` 打开指定适配器。\n3. 使用 `pcap_loop()` 或 `pcap_dispatch()` 开始捕获数据包。\n4. 编写回调函数处理数据。\n5. 使用 `pcap_close()` 关闭捕获句柄。\n6. 使用 `pcap_freealldevs()` 释放适配器链表。\n\n`pcap_open()` 原型如下：\n\n```cpp\npcap_t* pcap_open(\n    const char* source,          // 要打开的适配器名或源字符串\n    int snaplen,                 // 每个包最多保留的字节数\n    int flags,                   // 捕获标志，如 PCAP_OPENFLAG_PROMISCUOUS\n    int read_timeout,            // 读取超时时间，单位为毫秒\n    struct pcap_rmtauth* auth,   // 远程捕获认证信息；本地捕获可为 NULL\n    char* errbuf                 // 错误信息缓冲区\n);\n```\n\n这里有几个关键点：\n\n1. `snaplen` 表示每个包最多交给应用程序多少字节，不是某种协议的最大长度。常见写法是 `65535`，表示尽量捕获完整数据包。\n2. `flags` 若要启用混杂模式（无论是否发给本机，只要经过该网卡就捕获），应使用 `PCAP_OPENFLAG_PROMISCUOUS`，不要只写裸值 `1`。\n3. `read_timeout` 是毫秒级超时时间，示例可写 `1000`；它不是指针参数，不应写成 `NULL` 来表达“不管它”。\n4. 使用 `pcap_open()` 前通常需要在包含 `pcap.h` 前定义 `HAVE_REMOTE`，以暴露扩展 API 声明。\n\n`pcap_loop()` 原型如下：\n\n```cpp\nint pcap_loop(\n    pcap_t* p,               // pcap_open() 返回的捕获句柄\n    int cnt,                 // 要处理的数据包数量；0 或 -1 通常表示持续捕获\n    pcap_handler callback,   // 回调函数\n    u_char* user             // 用户自定义参数\n);\n```\n\n回调函数原型如下：\n\n```cpp\ntypedef void (*pcap_handler)(\n    u_char* user,\n    const struct pcap_pkthdr* pkt_header,\n    const u_char* pkt_data\n);\n```\n\n回调参数含义如下：\n\n```cpp\nvoid pcap_handler(\n    u_char* user,                         // 用户自定义参数\n    const struct pcap_pkthdr* pkt_header, // 捕获驱动附加的数据包元信息，不是协议头\n    const u_char* pkt_data                // 指向捕获到的数据，包含链路层/网络层等协议头\n);\n```\n\n`pcap_pkthdr` 结构体如下：\n\n```cpp\nstruct pcap_pkthdr {\n    struct timeval ts;  // 捕获时间戳\n    bpf_u_int32 caplen; // 实际捕获并交给应用的字节数\n    bpf_u_int32 len;    // 原始包在线路上的长度\n};\n```\n\n`caplen` 和 `len` 不一定相等。常见原因是 `snaplen` 小于原始包长度，导致只截取了前 `caplen` 字节；这不一定表示“数据丢失”，而是抓包截断策略的结果。\n\n\n\n### 捕获并打印数据\n\n在实际编写代码之前，需要在包含 `pcap.h` 之前定义 `HAVE_REMOTE`：\n\n```cpp\n#define HAVE_REMOTE\n#include <WINSOCK2.H>\n#include <pcap.h>\n#include <stdio.h>\n#include <time.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n#pragma comment(lib, \"wpcap.lib\")\n```\n\n这是因为示例使用了 `pcap_open()`。从 `pcap.h` 中可以看到，该函数声明受相关宏控制：\n\n![8194c1276370f27494a79179dd468ecf&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/b3dc344cf30cdd369dd6eaa79b4e64e618a5ad64d9d8ee22dd078c75c96aff21.jpg)\n\n下面按流程编写代码：\n\n```cpp\n#define HAVE_REMOTE\n#include <WINSOCK2.H>\n#include <pcap.h>\n#include <stdio.h>\n#include <time.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n#pragma comment(lib, \"wpcap.lib\")\n\nvoid Mypcap_handler(u_char* user, const struct pcap_pkthdr* pkt_header, const u_char* pkt_data);\n\nint main(int argc, char* argv[])\n{\n    pcap_if_t* alldevsp = NULL;\n    char errbuf[PCAP_ERRBUF_SIZE] = {0};\n\n    int iRet = pcap_findalldevs(&alldevsp, errbuf);\n    if (iRet != 0) {\n        printf(\"pcap_findalldevs error: %s\\n\", errbuf);\n        return 1;\n    }\n\n    for (pcap_if_t* dev = alldevsp; dev != NULL; dev = dev->next) {\n        printf(\"Name: %s\\nDesc: %s\\n================\\n\\n\",\n               dev->name,\n               dev->description ? dev->description : \"\");\n    }\n\n    pcap_t* pcap = pcap_open(\n        \"\\\\Device\\\\NPF_{C7C05FAA-6043-4EB3-9059-329655AC6FB0}\",\n        65535,\n        PCAP_OPENFLAG_PROMISCUOUS,\n        1000,\n        NULL,\n        errbuf\n    );\n\n    if (pcap == NULL) {\n        printf(\"pcap_open error: %s\\n\", errbuf);\n        pcap_freealldevs(alldevsp);\n        return 1;\n    }\n\n    pcap_freealldevs(alldevsp);\n\n    pcap_loop(pcap, 0, Mypcap_handler, NULL);\n    pcap_close(pcap);\n    return 0;\n}\n\nvoid Mypcap_handler(u_char* user, const struct pcap_pkthdr* pkt_header, const u_char* pkt_data)\n{\n    struct tm* ltime;\n    char timestr[16] = {0};\n    time_t local_tv_sec = pkt_header->ts.tv_sec;\n\n    ltime = localtime(&local_tv_sec);\n    strftime(timestr, sizeof(timestr), \"%H:%M:%S\", ltime);\n    printf(\"Time: %s, Caplen: %u, Len: %u\\n\", timestr, pkt_header->caplen, pkt_header->len);\n\n    if (pkt_header->caplen < 14) {\n        return;\n    }\n\n    u_char dstMac[6] = {0};\n    for (int i = 0; i < 6; i++) {\n        dstMac[i] = *(pkt_data + i);\n    }\n    printf(\"Dst Mac: %02x:%02x:%02x:%02x:%02x:%02x\\n\",\n           dstMac[0], dstMac[1], dstMac[2], dstMac[3], dstMac[4], dstMac[5]);\n\n    u_char srcMac[6] = {0};\n    for (int i = 0; i < 6; i++) {\n        srcMac[i] = *(pkt_data + i + 6);\n    }\n    printf(\"Src Mac: %02x:%02x:%02x:%02x:%02x:%02x\\n\",\n           srcMac[0], srcMac[1], srcMac[2], srcMac[3], srcMac[4], srcMac[5]);\n\n    printf(\"\\nData:\\n------------------------\\n\");\n    for (bpf_u_int32 i = 0; i < pkt_header->caplen; i++) {\n        printf(\"%02x\", pkt_data[i]);\n    }\n    printf(\"\\n------------------------\\n\");\n}\n```\n\n示例输出如下：\n\n![76c2482afe4bea92cb4d0a46de84929b&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/61114e05b5b2ba93681a59b620d36de39a0e03b6ce2054b3c1ce7a26edc809a6.jpg)\n\n\n\n\n\n\n## IPv4 解析代码\n\n首先需要判断 `MAC` 帧的载荷使用的上层协议是不是 `IPv4`。\n\n![a7488d50c337f12f86967436385d7fd4&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/9932174b88336bcf6f38d4ee5a0c569e03d611ce10dd751377cb40b369cac9a6.jpg)\n\n如上图所示，通过以太网头最后 `2` 字节的 `EtherType`，可以判断后续负载是否为 `IPv4`。\n\n\n实际编写代码时，如果确认链路层类型是以太网，则从 `pkt_data + 14` 开始解析 `IPv4` 首部：\n\n```cpp\nstatic void PrintIPv4Info(const u_char* pkt_data, bpf_u_int32 caplen)\n{\n    if (caplen < 14 + 20) {\n        return;\n    }\n\n    u_short etherType = ntohs(*(const u_short*)(pkt_data + 12));\n    if (etherType != 0x0800) {\n        if (etherType == 0x0806) {\n            printf(\"Type: ARP\\n\");\n        }\n        return;\n    }\n\n    printf(\"Type: IPv4\\n\");\n    printf(\"\\n================IP================\\n\");\n\n    const u_char* ip = pkt_data + 14;\n    u_char versionAndHeaderLen = ip[0];\n    u_char version = versionAndHeaderLen >> 4;\n    u_char headerLen = versionAndHeaderLen & 0x0F;\n    u_char realHeaderLen = headerLen * 4;\n\n    if (version != 4 || headerLen < 5 || caplen < 14 + realHeaderLen) {\n        return;\n    }\n\n    printf(\"Version: IPv4\\n\");\n    printf(\"HeaderLen: %u(%u Byte)\\n\", headerLen, realHeaderLen);\n\n    u_short totalLen = ntohs(*(const u_short*)(ip + 2));\n    printf(\"AllLen: %u Byte\\n\", totalLen);\n\n    u_char protocol = ip[9];\n    switch (protocol) {\n    case 1:\n        printf(\"Protocol: ICMP\\n\");\n        break;\n    case 2:\n        printf(\"Protocol: IGMP\\n\");\n        break;\n    case 6:\n        printf(\"Protocol: TCP\\n\");\n        break;\n    case 17:\n        printf(\"Protocol: UDP\\n\");\n        break;\n    case 89:\n        printf(\"Protocol: OSPF\\n\");\n        break;\n    default:\n        printf(\"Protocol: %u\\n\", protocol);\n        break;\n    }\n\n    printf(\"Src IP: %u.%u.%u.%u\\n\", ip[12], ip[13], ip[14], ip[15]);\n    printf(\"Dst IP: %u.%u.%u.%u\\n\", ip[16], ip[17], ip[18], ip[19]);\n    printf(\"================IP================\\n\\n\");\n}\n```\n\n\n\n示例输出如下：\n\n![5072bffc5937c062ef873897ca0b8920&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/3e3c544a60c69fa49730605bb9123be789724aa36c4e5685b0a3671daf699f3f.jpg)\n\n## TCP 解析代码\n\n同理，需要先判断 IP 报文携带的负载使用的上层协议是不是 `TCP`。\n\n![](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/295ffb983e0c65a30d7b85b954d68a09327c1ad60bafdb61bf51467635d33192.jpg)\n如上图所示，展示了 IP 报文的结构，其中 `8位协议` 字段指明了负载使用的什么上层协议。\n\n\n下面示例沿用前面的以太网和 `IPv4` 解析思路，只展示 `TCP` 关键字段解析：\n\n```cpp\nstatic void PrintTcpInfo(const u_char* pkt_data, bpf_u_int32 caplen)\n{\n    if (caplen < 14 + 20) {\n        return;\n    }\n\n    u_short etherType = ntohs(*(const u_short*)(pkt_data + 12));\n    if (etherType != 0x0800) {\n        return;\n    }\n\n    const u_char* ip = pkt_data + 14;\n    u_char version = ip[0] >> 4;\n    u_char ipHeaderLen = (ip[0] & 0x0F) * 4;\n    if (version != 4 || ipHeaderLen < 20 || caplen < 14 + ipHeaderLen + 20) {\n        return;\n    }\n\n    u_char protocol = ip[9];\n    if (protocol != 6) {\n        return;\n    }\n\n    const u_char* tcp = pkt_data + 14 + ipHeaderLen;\n    u_short srcPort = ntohs(*(const u_short*)(tcp + 0));\n    u_short dstPort = ntohs(*(const u_short*)(tcp + 2));\n    u_char tcpHeaderLen = ((tcp[12] >> 4) & 0x0F) * 4;\n\n    printf(\"================TCP================\\n\");\n    printf(\"Src Port: %u\\n\", srcPort);\n    printf(\"Dst Port: %u\\n\", dstPort);\n    printf(\"Offset: %u(%u Byte)\\n\", tcpHeaderLen / 4, tcpHeaderLen);\n    printf(\"================TCP================\\n\");\n}\n```\n\n示例输出如下：\n\n![31c9efdbe78a2a21bb24ea211629d1c0&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/d0fb0168f3ff9eb58a0b8ced4bf8afbb079456909a4b85c2f5058336df7fc2cc.jpg)\n\n## 统计实时网速\n\n我们常见的 `360`、`QQ` 管家等工具会用悬浮窗口实时显示当前上下行网速。这里可以通过前面的抓包知识实现一个简化版本。\n\n### 网速定义\n\n一段时间内下载或捕获的数据大小除以持续时长，就是近似网速：\n\n```text\nspeed = len / time\n```\n\n其中，数据大小可以累加 `pcap_pkthdr.caplen`，时间可以使用 `pcap_pkthdr.ts`。严格区分上行/下行时，还需要根据网卡方向、源/目的地址、本机地址等信息进一步分类；当前示例只是统计捕获到的总流量。\n\n### 实际代码编写\n\n```cpp\nvoid Mypcap_handler(u_char* user, const struct pcap_pkthdr* pkt_header, const u_char* pkt_data)\n{\n    // 这里使用 static 避免每次回调重复初始化。\n    static timeval tBegin = {0};\n    static DWORD dataLen = 0;\n\n    timeval tEnd = pkt_header->ts;\n    if (tBegin.tv_sec == 0 && tBegin.tv_usec == 0) {\n        tBegin = tEnd;\n    }\n\n    dataLen += pkt_header->caplen;\n\n    double elapsed =\n        (double)(tEnd.tv_sec - tBegin.tv_sec) +\n        (double)(tEnd.tv_usec - tBegin.tv_usec) / 1000000.0;\n\n    if (elapsed >= 1.0) {\n        double speed = dataLen / elapsed;\n        printf(\"Speed: %.2f KB/s\\n\", speed / 1024.0);\n\n        tBegin = tEnd;\n        dataLen = 0;\n    }\n}\n```\n\n示例输出如下：\n\n![b72a0106fe0dc10b9010b214648e1ff1&#95;MD5&#46;jpg](/notes/n-b99260f2126f4979aadf32ad74c757d4/media/811d7ab7ed28ef23c214fc2e3a3adaf1c106eb2aab7cf27724da309cc2978f07.jpg)\n",
+  "id": "b99260f2-126f-4979-aadf-32ad74c757d4",
+  "metadata": {
+    "tags": [
+      "cs/network",
+      "lang/cpp",
+      "os/windows"
+    ],
+    "title": "计算机网络：WinPcap 与 Npcap 抓包开发"
+  },
+  "resources": [
+    "295ffb983e0c65a30d7b85b954d68a09327c1ad60bafdb61bf51467635d33192.jpg",
+    "3e3c544a60c69fa49730605bb9123be789724aa36c4e5685b0a3671daf699f3f.jpg",
+    "61114e05b5b2ba93681a59b620d36de39a0e03b6ce2054b3c1ce7a26edc809a6.jpg",
+    "811d7ab7ed28ef23c214fc2e3a3adaf1c106eb2aab7cf27724da309cc2978f07.jpg",
+    "8227ba605593e82884b9256210a0b190230b0a90e6aedf4c7c8078c0903489f7.jpg",
+    "9932174b88336bcf6f38d4ee5a0c569e03d611ce10dd751377cb40b369cac9a6.jpg",
+    "a0c72ce1d9a7b72356b8258f5275b5790e19a17864ad5a7c2b4f439331be34bc.jpg",
+    "b3dc344cf30cdd369dd6eaa79b4e64e618a5ad64d9d8ee22dd078c75c96aff21.jpg",
+    "d0fb0168f3ff9eb58a0b8ced4bf8afbb079456909a4b85c2f5058336df7fc2cc.jpg",
+    "d20acc0efbc3e2ef28503dbe8e09d70e2669bd8c99d0ba9a4322c0e07f24e5e8.jpg"
+  ],
+  "url": "/notes/n-b99260f2126f4979aadf32ad74c757d4/"
+}

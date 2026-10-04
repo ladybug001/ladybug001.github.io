@@ -1,0 +1,86 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-fee7f1a1679cba0d1ad8",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-0801e39293e7762b0cb8",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-8e12d33a0afe91673c8a",
+      "kind": "heading",
+      "offset": 900
+    },
+    {
+      "id": "h-b2888242803273aa212a",
+      "kind": "heading",
+      "offset": 950
+    },
+    {
+      "id": "h-fb1b38035f09cc7f4ef4",
+      "kind": "heading",
+      "offset": 1114
+    },
+    {
+      "id": "h-b130d022c4fdb7774f9a",
+      "kind": "heading",
+      "offset": 1471
+    },
+    {
+      "id": "h-100e715aadcfdebe9529",
+      "kind": "heading",
+      "offset": 1593
+    },
+    {
+      "id": "h-52aebcbf2b4d044a9d48",
+      "kind": "heading",
+      "offset": 1867
+    },
+    {
+      "id": "h-2190281303e750e199d4",
+      "kind": "heading",
+      "offset": 3756
+    },
+    {
+      "id": "h-d31684fbe1400f47cfd8",
+      "kind": "heading",
+      "offset": 3777
+    },
+    {
+      "id": "h-c56bf2eb99324ae9ab69",
+      "kind": "heading",
+      "offset": 4246
+    },
+    {
+      "id": "h-d96b3e9ebc1df29aa959",
+      "kind": "heading",
+      "offset": 4576
+    },
+    {
+      "id": "h-9abd7f45315de5562747",
+      "kind": "heading",
+      "offset": 4905
+    }
+  ],
+  "body": "\n# 代理协议抓包验证实验\n\n## 前情提要\n\n在使用 Charles 下载手机证书时，遇到 Charles 无限重复接收请求的问题：\n\n- **操作**：通过浏览器访问 `http://<Charles IP>:8888` 下载证书（其实是个乌龙，Charles 原意并不是让通过 IP:PORT 的方式下载证书）\n- **现象**：Charles 无限循环接收同一请求\n- **原因**：开启了透明代理（浏览器/用户无感知地被 Charles 接管流量），浏览器将访问 Charles 自身的请求也通过代理发送，Charles 收到后又作为代理请求转发给自己，导致递归转发\n- **收获**：以此为契机，本着\"知其然，更要知其所以然\"的态度，决定通过抓包实证的方式，系统学习 HTTP 代理、SOCKS5 代理、VPN 三种流量转发机制的实现逻辑\n\n下面以 Python `requests` 库为例，展示一个最简单的**直连 HTTP 请求**，作为后续与代理请求对比的**基线（baseline）**：\n\n```python\nimport requests\n\nresponse = requests.get(\"http://example.com\")\nprint(response.status_code)\n```\n\n直连时发送的 HTTP 请求头内容为：\n```\nGET / HTTP/1.1\nHost: example.com\nUser-Agent: python-requests/2.32.3\nAccept-Encoding: gzip, deflate, br, zstd\nAccept: */*\nConnection: keep-alive\n```\n\n> 注意请求行是**相对路径** `GET /`。当使用 HTTP 代理时，客户端会自动将其改写为**绝对 URI** `GET http://example.com/`，这是区分直连与代理请求的关键特征之一。\n>\n> \"纸上得来终觉浅，绝知此事要躬行\"，下面来分析流量转发常见的几种方式。\n\n---\n\n## 实验工具与环境准备\n\n本文用实践来验证，当使用代理时，被代理的请求以怎样的形式发送给了代理服务器。\n\n### 工具清单\n\n1. Windows10 虚拟机（运行 Charles 代理服务器）\n2. WireShark（在宿主机捕获流量）\n3. Charles（代理服务器）\n4. Pycharm（编写并运行测试代码）\n5. Nc（Netcat，用于手动测试 TCP 连接）\n6. Curl（命令行 HTTP 请求工具）\n\n### 实验中遇到的问题\n\n1. **Ping 不通 / 无法建立连接** → 检查防火墙是否放行对应端口。\n2. **抓取哪个网卡的流量？** → 取决于虚拟机使用的网络模式（桥接 / NAT / 仅主机），详见 [VMware 三种网络模式](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/)。\n3. **WireShark 无法捕获 `localhost` 环回流量** → 捕获环回接口（Loopback）可以抓到环回流量，但此时又捕获不到网络流量。解决方案：分别使用两个捕获实例，或将代理部署在虚拟机中通过网络访问。\n4. **`example.com` 的 IP 地址动态变化** → 做实验时需留意当前 IP 是否发生变化，及时调整 Wireshark 的过滤语句。\n\n### 常用命令\n\n1. `nslookup example.com` — 查询域名解析结果\n2. `ipconfig /release` — 释放 DHCP 地址\n3. `ipconfig /renew` — 重新获取 DHCP 地址\n\n### 未解决的疑问\n\n1. ❓ Charles 不支持 IPv6？\n2. ✅ Wireshark 为什么抓到双份相同的流量？→ 原因：桥接模式下物理网卡重复捕获，详见 [环回地址与回环接口](/notes/n-f277c621fe2a434697d2b90851b20de2/) 和 [VMware 三种网络模式](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/#h-6beef289cef88936ca65)\n3. ❓ 如何用 Nginx 配置使 HTTP 和 HTTPS 服务绑定到不同 IP 地址？\n\n### 环境配置步骤\n\n1. 启动 Windows 虚拟机\n   ![](/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/media/a7aefdfb688aabb8a1d54c93aca3c20371861914412f77f2e359fe5f2a3e6598.jpeg)\n\n2. 查看虚拟机启用的网络模式（这决定 Wireshark 要捕获哪个网卡的流量，[VMware 三种网络模式](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/)）\n   ![](/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/media/522c0dd66b7cb4a60c2d8088b5e5fd5ac2d71454a5abf146101e5e76c4006798.jpeg)\n\n3. 在虚拟机安装并启动 Charles 软件，端口 8888 使用 HTTP 代理协议，8889 使用 SOCKS 代理协议。\n   ![](/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/media/a65cd22113f9e281a0ecd7d6d0eb528d95735dc2bd0448767437b2338f7945ed.jpeg)\n\n4. 在宿主机启动 Wireshark，选择捕获真实物理网卡的流量。\n   ![](/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/media/b768483085e8de04fd0ff517b3744cafff70df52a8399a63ed855621f55d8d68.jpeg)\n\n5. 查看虚拟机的 IP 地址：`172.20.10.6`。\n   ![](/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/media/b43f8bc047a2f8b5c1577ac387b761437aa7b8edb046f397420b532e916c13b2.jpeg)\n\n6. 获取域名 `example.com` 的真实 IP 地址。DNS 解析可能返回 IPv6（AAAA 记录），但该域名下绑定有多个 IPv4 地址。经实际测试，Charles 转发请求到目标服务器时使用的 IP 地址是 `23.215.0.136`。\n   ![](/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/media/1681fd25787070f1c241cdae085778c20a755e06497698dee3dcaf7ba1e41bc3.jpeg)\n\n7. 在 Wireshark 中设置过滤条件，仅捕获目标服务器、虚拟机和宿主机三者之间的流量：\n\n   ```\n   (ip.src == 172.20.10.5 && ip.dst == 172.20.10.6)\n   || (ip.src == 172.20.10.6 && ip.dst == 172.20.10.5)\n   || (ip.src == 23.215.0.136 && ip.dst == 172.20.10.6)\n   || (ip.src == 172.20.10.6 && ip.dst == 23.215.0.136)\n   ```\n\n   > 因桥接模式下物理网卡会捕获重复数据包，还需追加过滤条件：\n   > `!tcp.analysis.duplicate_ack && !tcp.analysis.retransmission`\n   > 原因详见 [VMware 三种网络模式](/notes/n-5bd1a648aaaf423eaedfb637e53be10a/#h-6beef289cef88936ca65)\n\n**实验网络环境汇总**：\n\n| 角色 | IP 地址 | 备注 |\n|------|---------|------|\n| 宿主机（客户端） | `172.20.10.5` | 运行 Python 测试代码和 Wireshark |\n| 虚拟机（代理服务器） | `172.20.10.6` | 运行 Charles（HTTP:8888 / SOCKS:8889） |\n| 目标服务器 | 多个，会动态变化 | 实验时需通过 `nslookup` 确认当前 IP |\n\n> 至此公共部分的配置已经完成。\n\n---\n\n## 验证实现逻辑\n\n### 1. HTTP(S) 代理协议\n\n详细验证过程：[HTTP&#40;S&#41; 代理协议](/notes/n-ff55129e8a7b4cc3b65ef611de063b7e/)\n\n**核心发现**：\n\n- **代理 HTTP 请求**：客户端将请求行 URI 从相对路径（`GET /`）改写为绝对 URI（`GET http://example.com/`），代理解析绝对 URI 得知目标地址后转发请求。Wireshark 中可看到明文的绝对 URI 请求。\n- **代理 HTTPS 请求（CONNECT 隧道）**：客户端先发 `CONNECT example.com:443` 建立 TCP 隧道，再在隧道内与目标服务器进行 TLS 握手。代理只做字节流透传，不解析加密内容。\n- **MITM 模式**：Charles 开启 SSL 代理后，分别与客户端和目标服务器各进行一次独立的 TLS 握手（双重握手）。Wireshark 中可观察到转发前后 TLS 协商数据包长度不同——因为两端使用了不同的证书和密钥。\n\n### 2. SOCKS5 代理协议\n\n详细验证过程：[SOCKS5 代理协议](/notes/n-f6c6ef20c9704570bd3078f37f192b81/)\n\n**核心发现**：\n\n- SOCKS5 工作在会话层，不关心应用层协议类型，支持代理 TCP 和 UDP 流量。\n- 握手阶段通过 4 个 TCP 报文完成认证方法协商和代理命令请求（认证方法选择 + 代理命令，各一对请求/响应）。\n- SOCKS5 的 `CONNECT` 请求可直接携带域名（ATYP=0x03），由代理端执行 DNS 解析（Remote DNS），避免客户端本地 DNS 泄露。\n- SOCKS5 本身不会对载荷进行加密、修改或解析，仅作为\"字节流中继\"搬运数据。\n\n### 3. VPN 转发流量原理\n\n详细验证过程：[TUN 模式代理机制](/notes/n-3907ea4714f246dfa9107612d4cb61be/)\n\n**核心发现**：\n\n- VPN 通过**创建虚拟网卡**（如 TUN 接口）并**修改系统路由表**来捕获流量——将目标流量的下一跳指向虚拟网卡，使原本发往互联网的 IP 包被重定向至用户态 VPN 应用程序。\n- 实验验证：开启 V2Ray/Clash TUN 模式后，`ipconfig` 可观察到新增虚拟网卡，`route print` 可观察到路由表被修改。\n- VPN 应用程序通过用户态网络协议栈（如 tun2socks）解析捕获的 IP 包，转为对应代理协议后发送给远端服务器。\n\n---\n\n## 结论与对比\n\n| 特性                 | HTTP(S) 代理                      | SOCKS5 代理                   | VPN（TUN 模式）          |\n| ------------------ | ------------------------------- | --------------------------- | -------------------- |\n| **工作层级**           | 应用层（HTTP 协议）                    | 会话层（传输层之上）                  | 网络层（IP 层）            |\n| **支持协议**           | 仅 HTTP/HTTPS                    | TCP + UDP                   | 所有 IP 协议             |\n| **流量捕获方式**         | 客户端主动配置代理                       | 客户端主动配置代理                   | 虚拟网卡 + 路由表劫持         |\n| **DNS 解析**         | 客户端或代理端均可                       | 支持 Remote DNS（`socks5h://`） | 通常由远端解析              |\n| **客户端感知**          | 感知（需配置代理）                       | 感知（需配置代理）                   | 通常无感知（系统级）           |\n| **对载荷的处理**         | HTTP 代理会解析 HTTP 语义；CONNECT 隧道透传 | 不解析、不修改（字节流透传）               | 不解析、不修改（隧道封装）        |\n| **典型工具**           | Charles, Burp Suite             | Shadowsocks, V2Ray          | WireGuard, Clash TUN |\n| **Wireshark 抓包特征** | 可见绝对 URI / CONNECT 请求           | 可见 SOCKS5 握手报文              | 可见隧道封装的 IP 包         |\n",
+  "id": "7d14fa31-4094-4ea1-88d8-d0f8a4a8f46c",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "代理协议抓包验证实验"
+  },
+  "resources": [
+    "1681fd25787070f1c241cdae085778c20a755e06497698dee3dcaf7ba1e41bc3.jpeg",
+    "522c0dd66b7cb4a60c2d8088b5e5fd5ac2d71454a5abf146101e5e76c4006798.jpeg",
+    "a65cd22113f9e281a0ecd7d6d0eb528d95735dc2bd0448767437b2338f7945ed.jpeg",
+    "a7aefdfb688aabb8a1d54c93aca3c20371861914412f77f2e359fe5f2a3e6598.jpeg",
+    "b43f8bc047a2f8b5c1577ac387b761437aa7b8edb046f397420b532e916c13b2.jpeg",
+    "b768483085e8de04fd0ff517b3744cafff70df52a8399a63ed855621f55d8d68.jpeg"
+  ],
+  "url": "/notes/n-7d14fa3140944ea188d8d0f8a4a8f46c/"
+}

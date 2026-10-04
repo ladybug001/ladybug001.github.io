@@ -1,0 +1,42 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-bd0d4a8c5b1156a4d96f",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-a631d502c0cd3438f92b",
+      "kind": "heading",
+      "offset": 1356
+    },
+    {
+      "id": "h-abfb892782e5c394c983",
+      "kind": "heading",
+      "offset": 1597
+    },
+    {
+      "id": "h-6833e4b9335ec9f04b38",
+      "kind": "heading",
+      "offset": 1959
+    },
+    {
+      "id": "h-71b48602ece54d66de59",
+      "kind": "heading",
+      "offset": 2144
+    }
+  ],
+  "body": "\n# Windows 驱动隐藏原理与历史实验\n\n\n`DriverSection` 是驱动对象 `DRIVER_OBJECT` 里的一个成员，类型是 `PVOID`，实际上指向的是结构体 `_LDR_DATA_TABLE_ENTRY`。\n> 相关内容参考：[驱动对象](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/#h-19937c0b26b15639130d)\n\n在 WinDbg 中使用 `dt _LDR_DATA_TABLE_ENTRY 0x823245b0(结构体地址)` 查看结构：\n```\nntdll!_LDR_DATA_TABLE_ENTRY\n   +0x000 InLoadOrderLinks : _LIST_ENTRY [ 0x8055c1c0 - 0x81f4c5c0 ] // 驱动链表的前一项和后一项\n   +0x008 InMemoryOrderLinks : _LIST_ENTRY [ 0xffffffff - 0xffffffff ]\n   +0x010 InInitializationOrderLinks : _LIST_ENTRY [ 0x630069 - 0x0 ]\n   +0x018 DllBase          : 0xf8948000 Void // 驱动的开始地址\n   +0x01c EntryPoint       : 0xf894c000 Void  // 驱动的初始化函数\n   +0x020 SizeOfImage      : 0x6000 // 驱动对象的大小\n   +0x024 FullDllName      : _UNICODE_STRING \"\\??\\C:\\Documents and Settings\\Administrator\\桌面\\MyDriver1_HelloWorld.sys\" // 驱动对象所在的全路径\n   +0x02c BaseDllName      : _UNICODE_STRING \"MyDriver1_HelloWorld.sys\" // 驱动名称\n   +0x034 Flags            : 0x9104000\n   +0x038 LoadCount        : 1  // \n   +0x03a TlsIndex         : 0x49\n   +0x03c HashLinks        : _LIST_ENTRY [ 0xffffffff - 0x63c9 ]\n   +0x03c SectionPointer   : 0xffffffff Void\n   +0x040 CheckSum         : 0x63c9  // 驱动对象的校验和\n   +0x044 TimeDateStamp    : 0xfffffffe\n   +0x044 LoadedImports    : 0xfffffffe Void\n   +0x048 EntryPointActivationContext : (null) \n   +0x04c PatchInformation : 0x0079004d Void\n```\n\n## 断链隐藏\n\n`_LDR_DATA_TABLE_ENTRY` 结构体的成员 `InLoadOrderLinks` 指向一个链表——`PsLoadedModuleList`，该链表是内核内部的全局变量，用来记录已加载模块，成员 `InLoadOrderLinks` 就是指向这个链表，**可以通过断链实现隐藏我们自己驱动对象的目的**。\n> **还有一个链表用于记录设备对象**，断链可以隐藏掉设备对象。设备对象不是内核与三环通信的绝对必要条件，也可以不创建设备对象实现通信。\n\n## 抹除特征\n\n同时为了防止被特征码扫描到我们的驱动对象，对驱动对象的一些固定值进行抹除：\n> 相关内容参考：[驱动对象](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/#h-19937c0b26b15639130d)\n1. `DriverSize = 0;`\n2. `DriverSection = NULL;`\n3. `DriverName = NULL;`，这个最好不要抹掉，因为是一块内存，会导致内存泄露的\n4. `DriverExtension = NULL;`\n5. `DriverStart = NULL;`\n6. `DriverInit = NULL;`\n7. `FastIoDispatch = NULL;`\n8. `DriverStartIo = NULL;`\n\n## 代码示例\n\n编写代码，在 32 位 Windows 中（Win7 和 XP）实现驱动隐藏，让 PChunter 找不到我们的驱动。\n> 64 位系统的驱动隐藏：[驱动简单隐藏_miprocessloaderentry-CSDN博客](https://blog.csdn.net/qq_41490873/article/details/108231795)\n\n### 原始实现代码\n\n32 位代码如下：\n\n```c\n#include <ntddk.h>\n\ntypedef struct _LDR_DATA_TABLE_ENTRY {\n    LIST_ENTRY InLoadOrderLinks;\n    LIST_ENTRY InMemoryOrderLinks;\n    LIST_ENTRY InInitializationOrderLinks;\n    PVOID DllBase;\n    PVOID EntryPoint;\n    ULONG SizeOfImage;\n    UNICODE_STRING FullDllName;\n    UNICODE_STRING BaseDllName;\n    ULONG Flags;\n    USHORT LoadCount;\n    USHORT TlsIndex;\n    union {\n        LIST_ENTRY HashLinks;\n        struct {\n            PVOID SectionPointer;\n            ULONG CheckSum;\n        };\n    };\n    union {\n        struct {\n            ULONG TimeDateStamp;\n        };\n        struct {\n            PVOID LoadedImports;\n        };\n    };\n    struct _ACTIVATION_CONTEXT* EntryPointActivationContext;\n    PVOID PatchInformation;\n} LDR_DATA_TABLE_ENTRY, *PLDR_DATA_TABLE_ENTRY;\n\nHANDLE g_hThread = NULL;\n\nVOID DriverUnload(PDRIVER_OBJECT pDriver)\n{\n    UNREFERENCED_PARAMETER(pDriver);\n    KdPrint((\"Driver Unloaded\\n\"));\n}\n\nVOID ThreadRun(PVOID StartContext)\n{\n    KdPrint((\"Thread started\\n\"));\n\n    // 延迟 3 秒 (30 * 100,000 * 100ns = 3,000,000,000ns = 3s)\n    LARGE_INTEGER times;\n    times.QuadPart = -30 * 1000 * 1000; \n    KeDelayExecutionThread(KernelMode, FALSE, &times);\n\n    PDRIVER_OBJECT pDriver = (PDRIVER_OBJECT)StartContext;\n    if (pDriver != NULL)\n    {\n        // 擦除驱动对象特征（注意：这会导致后续无法通过常规方式正常卸载）\n        pDriver->DriverSize = 0;\n        pDriver->DriverSection = NULL;\n        pDriver->DriverExtension = NULL;\n        pDriver->DriverStart = NULL;\n        pDriver->DriverInit = NULL;\n        pDriver->FastIoDispatch = NULL;\n        pDriver->DriverStartIo = NULL;\n    }\n\n    if (g_hThread != NULL)\n    {\n        ZwClose(g_hThread);\n        g_hThread = NULL;\n    }\n    \n    KdPrint((\"Thread finished\\n\"));\n}\n\nNTSTATUS DriverEntry(PDRIVER_OBJECT pDriver, PUNICODE_STRING pReg)\n{\n    UNREFERENCED_PARAMETER(pReg);\n    KdPrint((\"Driver Loaded\\n\"));\n\n    pDriver->DriverUnload = DriverUnload;\n\n    // 1. 修复断链逻辑：原代码断链逻辑错误，未真正移出双向链表\n    PLDR_DATA_TABLE_ENTRY pLdrEntry = (PLDR_DATA_TABLE_ENTRY)pDriver->DriverSection;\n    if (pLdrEntry != NULL)\n    {\n        // 双向链表标准脱链操作\n        pLdrEntry->InLoadOrderLinks.Flink->Blink = pLdrEntry->InLoadOrderLinks.Blink;\n        pLdrEntry->InLoadOrderLinks.Blink->Flink = pLdrEntry->InLoadOrderLinks.Flink;\n        \n        // 避免指向无效地址，将其指向自身\n        pLdrEntry->InLoadOrderLinks.Flink = &pLdrEntry->InLoadOrderLinks;\n        pLdrEntry->InLoadOrderLinks.Blink = &pLdrEntry->InLoadOrderLinks;\n    }\n\n    // 2. 创建系统线程\n    NTSTATUS status = PsCreateSystemThread(\n        &g_hThread, \n        GENERIC_ALL, \n        NULL, \n        NULL, \n        NULL, \n        ThreadRun, \n        pDriver\n    );\n\n    if (!NT_SUCCESS(status))\n    {\n        KdPrint((\"Failed to create thread: 0x%X\\n\", status));\n        return status;\n    }\n\n    return STATUS_SUCCESS;\n}\n```\n",
+  "id": "f350a698-c7d4-4c3b-84e4-d17e43548e40",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows/bypass",
+      "arch/x86",
+      "lang/c"
+    ],
+    "title": "Windows 驱动隐藏原理与历史实验"
+  },
+  "resources": [],
+  "url": "/notes/n-f350a698c7d44c3b84e4d17e43548e40/"
+}

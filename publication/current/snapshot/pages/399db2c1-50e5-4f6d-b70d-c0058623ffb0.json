@@ -1,0 +1,186 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-4f9442d013333c9663b7",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-788d74adfa4ab3cd02b5",
+      "kind": "heading",
+      "offset": 217
+    },
+    {
+      "id": "h-dc18c610a070fac30420",
+      "kind": "heading",
+      "offset": 301
+    },
+    {
+      "id": "h-ce7ae36715683c1899ec",
+      "kind": "heading",
+      "offset": 650
+    },
+    {
+      "id": "h-0cffd808c0800c9fed87",
+      "kind": "heading",
+      "offset": 1803
+    },
+    {
+      "id": "h-44dc3ea7010840a16422",
+      "kind": "heading",
+      "offset": 2235
+    },
+    {
+      "id": "h-0c8570e823de29230b17",
+      "kind": "heading",
+      "offset": 2657
+    },
+    {
+      "id": "h-2775dedc636d188c1bce",
+      "kind": "heading",
+      "offset": 2797
+    },
+    {
+      "id": "h-55c141f5a9d0cf4a0462",
+      "kind": "heading",
+      "offset": 4060
+    },
+    {
+      "id": "h-9eaf66f8cbc7969f9410",
+      "kind": "heading",
+      "offset": 4565
+    },
+    {
+      "id": "h-4c29524476362744017c",
+      "kind": "heading",
+      "offset": 5109
+    },
+    {
+      "id": "h-517fca6e91c9b714c8c4",
+      "kind": "heading",
+      "offset": 5122
+    },
+    {
+      "id": "h-a952e13e62112c3b5aaf",
+      "kind": "heading",
+      "offset": 5501
+    },
+    {
+      "id": "h-b96427f2c536566d0f78",
+      "kind": "heading",
+      "offset": 6501
+    },
+    {
+      "id": "h-a84c5ecff454599f85e0",
+      "kind": "heading",
+      "offset": 7121
+    },
+    {
+      "id": "h-6584f6ab720502409c0b",
+      "kind": "heading",
+      "offset": 9020
+    },
+    {
+      "id": "h-a4b671d3ae0f33d3b33c",
+      "kind": "heading",
+      "offset": 10728
+    },
+    {
+      "id": "h-0dd465c82fed84e24da2",
+      "kind": "heading",
+      "offset": 10742
+    },
+    {
+      "id": "h-d08a4ac66152a087f9b9",
+      "kind": "heading",
+      "offset": 11923
+    },
+    {
+      "id": "h-2ffdce4265358c19a49d",
+      "kind": "heading",
+      "offset": 13181
+    },
+    {
+      "id": "h-9c49a3f7af4e51b4d023",
+      "kind": "heading",
+      "offset": 13469
+    },
+    {
+      "id": "h-615dc5db563bc5175752",
+      "kind": "heading",
+      "offset": 13870
+    },
+    {
+      "id": "h-b255e496adbbc2da39ec",
+      "kind": "heading",
+      "offset": 13890
+    },
+    {
+      "id": "h-9f7743dcc2044e13186a",
+      "kind": "heading",
+      "offset": 14209
+    },
+    {
+      "id": "h-fd8eb0f9806f17f87b58",
+      "kind": "heading",
+      "offset": 15903
+    },
+    {
+      "id": "h-cc15a4cae3be477665ba",
+      "kind": "heading",
+      "offset": 16065
+    },
+    {
+      "id": "h-896c26589a7caf3eeb2f",
+      "kind": "heading",
+      "offset": 16106
+    },
+    {
+      "id": "h-bf52110e6cbb0b68b661",
+      "kind": "heading",
+      "offset": 16232
+    },
+    {
+      "id": "h-800324a1da5e48e05bc5",
+      "kind": "heading",
+      "offset": 16477
+    }
+  ],
+  "body": "# Windows 句柄机制\n\n> [!abstract] 核心结论\n> `_HANDLE_TABLE` 是一种通用的表结构。每进程对象句柄表、`PspCidTable` 和内核句柄表是用途不同的具体实例；句柄值、PID 和 TID 是查找键，`_HANDLE_TABLE_ENTRY` 才是查找后命中的表项。阅读句柄表时必须分别判断：正在分析哪张表、查找键如何编码、表项采用什么语义、表项最终关联对象头还是对象体。\n\n## 内核对象\n\n什么是内核对象参考：[Windows 内核对象](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/)\n\n### 如何管理内核对象\n\n此时产生了一个问题：**应用层代码如何定位并管理这些内核结构体？**\n\n最直白的思路是直接返回结构体的内核内存地址给应用层：\n\n![5c91da5ec0d73b001a1275312d0ad2b9&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/4650a08c7f3c85a56dfe12497b87c6060da0bb35e21cf5f360720e3e01aa5766.png)\n\n但这存在严重的安全与稳定性隐患：**如果应用层代码出现越界或指针使用不当，修改了内核结构体的关键数据，将直接导致系统蓝屏崩溃**（在应用层访问错误地址只会导致程序报错退出，而在内核层则会引起系统级崩溃）。\n\n## 进程句柄表\n\n为了避免这种情况，微软决定将内核结构体的真实地址对应用层屏蔽，导致应用层无法直接获取并操作这些数据结构，为了实现管理功能，**句柄表（Handle Table）** 应运而生。\n\n进程创建或打开一个由对象管理器维护的内核对象时，系统会在该进程的对象句柄表中分配一个表项。我们在**应用层得到的句柄是用于定位这个表项的查找值**，表项中才记录对象引用、访问权限和句柄属性等信息。\n\n当一个进程创建或者打开一个内核对象时，将获得一个句柄，如：\n\n```c\nHANDLE g_hMutex = ::CreateMutex(NULL,FALSE,\"XYZ\");\nHANDLE g_hMutex = ::OpenMutex(MUTEX_ALL_ACCESS,FALSE,\"XYZ\");\nHANDLE g_hEvent = ::CreateEvent(NULL,TRUE,FALSE,NULL);\nHANDLE g_hThread = ::CreateThread(NULL,0,Proc,NULL,0,NULL);\n```\n\n通过句柄可以访问对应的内核对象：\n\n![994b95fedcea0eabd59f2bbce84f0d10&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/44b7c704e9df7d79a284d1d8741ba996636a4bc5393fc51b1ea1f05f15fc12cb.jpg)\n\n\n有了句柄，将应用层空间和内核层空间安全隔离，3 环程序无须接触内核地址，只需把句柄传给 API；内核负责查表、检查权限并完成对对象的操作，程序便能安全地间接访问和操作内核结构体：\n\n![91cd90b348e76eaca7394508d192f264&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/888b238b1ab90a47708f9e59eaff1edeea6c193056c3e521c006846786d080af.png)\n**我们得到的句柄值（Handle），实际上只是当前进程私有句柄表中的一个索引项。**\n\n**注意**：每一个进程都会有属于自己独立的句柄表。另外还有\n1. 全局句柄表，PID、TID 就相当于全局句柄表中的索引。\n2. 窗口句柄属于 USER 子系统，由另一套按会话维护的句柄机制管理。\n3. 内核中还维护着 `ObpKernelHandleTable` 所指向的内核句柄表，主要供内核组件和驱动程序保存只在内核模式下使用的句柄。\n> 这些内容后续了解。\n\n## 多进程共享内核对象\n\n如下图所示：\n- 进程 A 通过 `CreateProcess` 函数创建了一个内核对象。\n- 进程 B 通过 `OpenProcess` 函数打开了 A 已经创建好的内核对象。\n- 此时，进程 A 通过它自己句柄表中的句柄值（索引）来操作该内核对象。\n- 进程 B 则通过它自己句柄表中另一个句柄值（索引）来操作**同一个**内核对象。\n\n> **结论**：句柄表是各进程私有的，不同进程即便拥有相同的句柄值，指向的也可能是毫不相干的对象；反之，不同的句柄值可能指向系统中的同一个内核对象。\n\n![ef2e1a9bfd5ad06029480d9168e91e4e&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/387016d9298bc2029529e717924b56eb85fea11c933fdfde57516e521b3044e3.png)\n\n### 内核对象的销毁\n\n内核对象内部维护着一个**引用计数器（Reference Count）**，用于记录有几个表项正在指向它，如上图所示，当前值为 2（因为 A 和 B 两个进程的句柄表都指向它）。\n\n此前我们提到了 `CloseHandle` 函数，它用于关闭句柄，实质是**释放句柄表中的表项**，并且减少内核对象的引用计数，这并不代表执行该函数后，对应的内核对象就会**彻底消失**。\n\n如果我们在进程 A 中调用 `CloseHandle`，内核对象并不会被销毁，因为进程 B 仍持有它的句柄。当进程 B 也调用了 `CloseHandle`，导致该内核对象的引用计数减至 0 时，此时该内核对象就会被系统彻底释放销毁。\n\n> 针对**线程和进程对象**，它们会持有自己的引用计数，这导致要销毁 `EPROCESS` 或 `ETHREAD` 结构体，必须同时满足：**引用计数归零** 且 **该线程/进程自身业务已经执行完毕**。\n\n## 句柄的继承\n\n除了跨进程调用 `OpenProcess` 等函数去共享内核对象外，Windows 还提供了一种 **“父子继承”** 的方式实现对象共享。要想完成句柄的跨代传递，必须满足两件事：这把句柄“可以”被继承，以及父进程“允许”它被继承。\n\n### 句柄是否“可以”被继承（定义时）\n\n每一个进程的句柄表有两列核心数据，分别是：**指向内核结构体的地址**、以及**句柄是否可以被继承的标志位**（而**句柄值**作为索引，并不算入数据列）。\n假设父进程（进程 A）创建了 4 个内核对象：\n\n![b1e38b230fe342a619207497f4d797ec&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/a53147370bd5e63400c49899384b0d3c8af72306cd428fea4cffaee14e4aec2d.png)\n\n在调用很多内核对象创建 API 的参数列表中，往往都会包含一个 `LPSECURITY_ATTRIBUTES` 参数包的指针（**通常具有安全属性参数的函数就是内核对象创建函数**）。\n\n![0a353b1a2a36ee62c8197d1b2294f53f&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/a6c4ddab9fb52298f306e3bd5ccaddc58e2d55704e1a4973d91e0c52e5f4d494.png)\n\n跟进查看 `SECURITY_ATTRIBUTES` 结构体的内容：\n\n![178b07fe81baf41c7a3230ef6d4ea2d2&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/dc12a97f203fce57dc44159d6142166ef639ab1f3cdfc391508deef50c641fba.png)\n\n该结构体包含三个成员：\n- `nLength`：结构体长度（Windows 经典的基础验证机制）。\n- `lpSecurityDescriptor`：安全描述符。一般留空 `NULL` 即可。**本质上是描述谁创建了该对象，谁拥有此对象的访问和使用权限**。\n- `bInheritHandle`：**是否可被继承标志**。这是我们关注的重点。\n\n这个成员的值直接决定了父进程通过该 API 拿到的这枚句柄，是否**可以**被将来创建的子进程所继承。\n\n如下图，在使用 `CreateProcess` 准备相关参数时，我们可以将安全结构体中的 `bInheritHandle` 设为 `TRUE`，这就赋予了此进程和主线程句柄“可继承能力”：\n\n![ddc6607efbdca9e6a234a137d52f3ebd&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/aceabba1ff13c1a834a2c415e77a9cfb07ce372af09780b3b2f4de8961c71f27.png)\n\n### 句柄是否“允许”被继承（传递时）\n\n拥有了“可被继承能力”仅仅只是第一步，它只代表它能够被复刻。要想在创建子进程时真正将具此权限的句柄传递过去，还需要在创建操作开启继承传输。\n\n![b191686d00a59b3d93f360b4653d7683&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/6c906aa705ef2cd967830a641b80fc6a24f7737beb33ad9a13d9d8d011ed584b.png)\n\n依然以 `CreateProcess` 函数为例，函数参数列表中存在另外一个专门负责控制继承传输开关的布尔变量——`BOOL bInheritHandles`：\n\n![06045b101d24f5ee1d5042c3ea2d496e&#95;MD5&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/399ad3cbae7cef29be27d2abbee504048b990f8454ca2b3d60f831df97c87b1b.png)\n### 类比&总结\n\n这套“对象继承”与“通道开启传输”的控制权限机制，好似 C++ 中的类及其继承体系原理：\n```cpp\nclass Base {\npublic:\n    // 这里类似于设置了对象可被继承\nprivate:\n    // ...\n};\n\nclass Derived : public Base {\n    // 类似于允许通道传输 public 继承\n};\n```\n\n- `Base` 类自身的 `public` 和 `private` 修饰符，决定了成员属性本身的可见与流通度（对应即：安全属性结构体设置其对象的“可继承标志”）。\n- `Derived` 在继承关系中采用的 `public` 继承声明（对应即：创建子进程时的 `bInheritHandles` 开关打开），才真正决定了在跨代传递时是否激活这批具备继承属性的流通成员。\n\n\n**小结：** 只有在创建内核对象时通过安全属性结构体赋予它可继承属性（针对对象层面配置），并且在调用 `CreateProcess` 创建子进程时，将传入的 `bInheritHandles` 传参显式设置为 `TRUE`（针对传输通道开启），子进程才能够成功将父进程句柄表里所有带“可继承”标签的表项悉数复制过去。\n\n## 句柄表的分类\n\n### 进程对象句柄表\n\n每个进程对象都有一张由 `EPROCESS.ObjectTable` 指向的对象句柄表，用来记录该进程创建或打开的对象管理器句柄。句柄表本身位于内核地址空间，并不存放在进程的用户地址空间中。\n\n> 相关内容参考：[Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)\n\n![dd58b4c7726c3b3ec6a60138a0b170f1&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/5d9eb3769945c94835ac4bfb66052fc7eb3326150fef255341c840f32258fcdd.jpg)\n\n#### `_HANDLE_TABLE` 结构\n\n该成员指向的是 `_HANDLE_TABLE` 结构体：\n\n> [!NOTE] 版本范围\n> 下列结构偏移、表项大小和地址计算均以截图对应的旧版 32 位 Windows 为准。\n\n```text\nntdll!_HANDLE_TABLE\n   +0x000 TableCode        : Uint4B  // 保存根表地址以及表的间接层级\n   +0x004 QuotaProcess     : Ptr32 _EPROCESS  // 该句柄表的配额记账进程\n   +0x008 UniqueProcessId  : Ptr32 Void    // 与该句柄表关联的进程ID\n   +0x00c HandleTableLock  : [4] _EX_PUSH_LOCK   // 锁\n   +0x01c HandleTableList  : _LIST_ENTRY     // 用于串联句柄表的双向链表节点\n   +0x024 HandleContentionEvent : _EX_PUSH_LOCK\n   +0x028 DebugInfo        : Ptr32 _HANDLE_TRACE_DEBUG_INFO  // 可选的句柄跟踪调试信息\n   +0x02c ExtraInfoPages   : Int4B\n   +0x030 FirstFree        : Uint4B\n   +0x034 LastFree         : Uint4B\n   +0x038 NextHandleNeedingPool : Uint4B\n   +0x03c HandleCount      : Int4B // 正在使用的句柄表项的数目\n   +0x040 Flags            : Uint4B  // 涉及不到\n   +0x040 StrictFIFO       : Pos 0, 1 Bit  // 涉及不到\n```\n\n> 进程的对象句柄表可以通过 `HandleTableList` 链入系统维护的句柄表链表。`UniqueProcessId` 记录与该表关联的进程，`QuotaProcess` 则用于该表的配额记账。\n\n第一个成员 `TableCode` 保存查找表项所需的根表地址和间接层级。\n\n#### `TableCode` 与多级表\n\n`TableCode` 是句柄表信息中最关键的字段。该字段的**低 2 位记录表的间接层级**，清除低 2 位后得到**根表的首地址**：\n\n![Pasted image 20231202203525&#46;png](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/88c6d8007473e3711951d74de9c0e695b2adb38476cd28aa5bc0a662c6b0b8f2.png)\n\n以 `TableCode = 0xe1218000` 为例：低 2 位为 0，表示根表本身就是保存句柄表项的叶表，因此查找过程中不需要再经过目录表。\n\n在本文旧版 32 位布局中，叶表的一页可以容纳 512 个 8 字节表项，目录表的一页可以容纳 1024 个 4 字节指针。因此，低 2 位为 0、1、2 时，理论寻址容量依次为 512、1024\\*512、1024\\*1024\\*512 个表项；实际可用范围还受该版本最大句柄值等实现限制。\n\n> 叶表中每个句柄表项大小为 8 字节，目录层中的每一项大小为 4 字节。\n\n> [!NOTE] 句柄值为什么通常都是 4 的倍数？\n> 在本文所用版本中，句柄值的低 2 位作为标签位，查表时会先清除，再把其余部分换算成表项编号。句柄表的间接层级单独记录在 `TableCode` 的低 2 位中。\n\n#### 查找进程对象句柄表\n\n我们可以在虚拟机中打开一个计算器，然后循环 10 次调用 `OpenProcess` 打开计算器进程。这样会得到 10 个进程句柄，并在当前进程的句柄表中形成 10 个都指向计算器进程对象的表项，实验可以通过如下代码进行：\n\n```cpp\n#include <windows.h>\n#include <stdio.h>\n\nint main(int argc, char* argv[])\n{\n    DWORD pid;\n    HANDLE hProcess;\n\n    HWND hwnd = FindWindow(NULL, \"计算器\");\n    GetWindowThreadProcessId(hwnd, &pid);\n\n    for (int i = 0; i < 10; i++)\n    {\n        hProcess = OpenProcess(PROCESS_ALL_ACCESS, TRUE, pid);\n        printf(\"句柄：%x\\n\", hProcess);\n    }\n\n    getchar();\n    return 0;\n}\n```\n\n![cfaf11a6872ba8f5ddabd68bf3cea60d&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/431ead59b8a9ba27de33e3560a1f59f916f1ece9b574dd6ffc041d7a07da3bbe.jpg)\n\n接着我们在 Windbg 中使用 `!process 0 0` 来找到 `Test.exe` 的进程结构体地址，如下图所示地址为 `890dd778`：\n\n![f03ad8d8db47150628b581f147c673e4&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/7a3a96298d5a2d3202f1ce9a127260feca753c326a143ce5a61455c86b0b4d8f.jpg)\n\n接着使用 `dt _EPROCESS 890dd778` 指令以结构体形式展示这块内存，找到成员 `ObjectTable`：\n\n![58c5a40e187ef7b2cf82589bbb410ff6&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/0ff00e0e0abf9d79ce80c379f1dd3311a6eb06f7661bc20ab697d324f40546c0.jpg)\n\n得到 `_HANDLE_TABLE` 结构体地址 `0xe10c7368`；\n\n跟进 `ObjectTable`，读取其中的 `TableCode`，清除低 2 位后得到叶表的首地址 `0xe26fa000`：\n\n![dae19e649a86e6fb6a371f66d5fb0df2&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/05e7371b877d28d724314aa680e233398f14c8f3e67a3b021695e06e4d08a62a.jpg)\n\n本例的 `TableCode` 低 2 位为 0，根表就是叶表。该版本用句柄值除以 4 得到表项编号，每个表项为 8 字节，因此可以使用这个公式：**叶表地址 + 句柄 / 4 \\* 8**。多级句柄表还需要先通过目录层找到该编号所在的叶表。\n\n因此，我们取一个句柄 `7ac`，使用 `dq 0xe26fa000 + 0x7ac / 4 * 8` 找到它对应的表项。如下图所示，连续 10 个表项的对象引用部分相同：它们对应前面 10 次 `OpenProcess` 返回的 10 个句柄，并共同指向同一个计算器进程对象。\n\n![f0e45f94c8c0abe2f6eaac0beb016467&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/bae1b0d610333e5fe15e5c9e28f3f37b4ad20e53a98ba621e795cba7cfa682dd.jpg)\n\n#### `_HANDLE_TABLE_ENTRY` 结构\n\n在本文对应的旧版 32 位布局中，句柄表项的数据宽度为 8 字节，其结构为 `_HANDLE_TABLE_ENTRY`，如下所示：\n\n```c\ntypedef struct _HANDLE_TABLE_ENTRY {\n union {\n\t PVOID Object; // 指向句柄所代表的对象\n\t ULONG ObAttributes; // 最低三位有特别含义，参见\n\t // OBJ_HANDLE_ATTRIBUTES 宏定义\n\t PHANDLE_TABLE_ENTRY_INFO InfoTable; // 各个句柄表页面的第一个表项\n\t // 使用此成员指向一张表\n\t ULONG_PTR Value;\n };\n union {\n\t union {\n\t\t ACCESS_MASK GrantedAccess; // 访问掩码;  或者说是句柄权限,与句柄拥有的权限相关\n\t\t struct { // 当 NtGlobalFlag 中包含\n\t\t\t// FLG_KERNEL_STACK_TRACE_DB 标记时使用\n\t\t\t USHORT GrantedAccessIndex;\n\t\t\t USHORT CreatorBackTraceIndex;\n\t\t\t };\n\t\t };\n\t\t LONG NextFreeTableEntry; // 存储下一个空闲句柄索引\n\t };\n} HANDLE_TABLE_ENTRY, *PHANDLE_TABLE_ENTRY;\n```\n\n`dq` 将 8 字节表项从高位到低位显示为 `[1]`～`[4]`。在 x86 小端序中，`[1]`、`[2]` 是 `GrantedAccess`，`[3]`、`[4]` 是 `Object`：\n\n![3ec1682e3d415398460ad996e87f60b3&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/e707fe26cd6d0620a24b6a45d57f97458f9fd1bf3b7913fbfee53e3a33d49262.jpg)\n\n**第一部分**：是 `GrantedAccess` 的高 16 位。比如通过下面的代码设置“防止关闭”属性：\n\n```cpp\nSetHandleInformation(Handle, HANDLE_FLAG_PROTECT_FROM_CLOSE, HANDLE_FLAG_PROTECT_FROM_CLOSE);\n```\n\n`HANDLE_FLAG_PROTECT_FROM_CLOSE` 的值为 `0x02`，内核会将其转换为 `0x02000000`，然后 `[1]` 从 `0x0000` 变为 `0x0200`。\n\n**第二部分**：是 `GrantedAccess` 的低 16 位，与 `[1]` 合起来记录句柄最终获得的权限。比如 `OpenProcess` 的第一个参数表示申请的权限，访问检查通过后，实际授予的权限记录在这里。\n\n**第三部分和第四部分**：第 3 位到第 31 位存放的是该内核对象的地址（但是这个地址指向的是 `_OBJECT_HEADER` 结构，相关内容参考：[&#95;OBJECT&#95;HEADER](/notes/n-ef7c2f3e19284cc58b66741ae0d5c461/#h-30ba5c7f63dac498f5ca)）。低三位：\n**第 0 位**表示调用者是否允许关闭该句柄默认值为 1，**第 1 位**表示该句柄是否可继承（是否可以将句柄项拷贝到其他句柄表中），**第 2 位**表示关闭该对象时是否产生一个审计事件默认值为 0，\n\n> 内核结构体使用的对齐值导致内核对象地址的低 `X` 位都是 0，所以我们可以利用这些位。参考：[C&#12289;C&#43;&#43; 结构体内存对齐](/notes/n-f660ebcdb8294e4db7c059b22d42bf7d/)\n\n### `PspCidTable`\n\n#### 作用与表项语义\n\nWindows 内核中可以存在多张作用于全系统或整个会话的 `_HANDLE_TABLE` 实例。`PspCidTable` 是其中一张具体的表指向某 `_HANDLE_TABLE`，由进程和线程子系统用来维护客户端 ID 到进程、线程对象的映射。\n\n每个进程有 PID，每个线程有 TID；`PspCidTable` 把 PID 或 TID 作为查找键，命中的表项再关联到相应的 `EPROCESS` 或 `ETHREAD` 对象。\n\n内核内部变量 `PspCidTable` 属于未公开的实现细节，调试符号可以显示这个名字，但驱动程序不能把它当作稳定的导出接口使用。\n\n![](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/009f90ed119828b3330761d9e8e241608d775e42d38b2b11bfec72e00a6691bd.png)\n\n内核中我们可以通过如下函数根据 PID、CID 来获得进程、线程的内核对象地址，它们的原理就是查询全局句柄表 `PsdCidTable`：\n\n```text\nPsLookupProcessThreadByCid\nPsLookupProcessByProcessId\nPsLookupThreadByThreadId\n```\n\n> [!NOTE] 通过这些函数的硬编码获取 `PspCidTable` 变量的地址\n> 下列 `+26` 来自某个旧版 32 位内核文件的具体指令布局，只适用于完全相同的系统版本和二进制文件。换到其他版本时，需要根据对应符号或目标函数的实际反汇编重新定位。\n> ```c\n> PspCidTable = **(PVOID**)\n> ((ULONG)PsLookupProcessByProcessId + 26);\n> ```\n\n和进程对象句柄表一样，`PspCidTable` 也通过 `TableCode` 保存根表地址和间接层级。这个字段反映的是查表结构；低 2 位为 0 时使用单层叶表，低 2 位为 1 或 2 时还要经过相应数量的目录层。\n\n> `TableCode` 取值只说明当时这张表采用的层级，层级会随着表的扩展而变化。\n\n![ac808c6078d0ffce2553dc63ef91e2e8&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/2291a3420e022a7efc86e1b30d4d16aa7f96ebf1baf230560c0274ec9d591320.jpg)\n\n在本文对应的旧版 32 位布局中，`PspCidTable` 的叶表项大小同样为 8 字节。\n\n#### 查找进程、线程对象\n\n我们可以通过 Windbg 实现在全局句柄表中查找某进程的内核对象，首先在 Windows 上打开一个计算器，在任务管理器中找到它的 PID：\n\n![f403d812ba224df0f2d7dc169fd167b9&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/071e1e03b34135a8793f14f6a8095c1bf684278058749cd512a39c2916681330.jpg)\n\n我们接着在 Windbg 中获取 `PspCidTable` 变量的值，然后然后使用结构体形式展示全局句柄表，找到它的 `TableCode` 成员：\n\n![0c3b74d9252c68d98376db6a76f1cd69&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/d2ff22f9ebea96bb9b74e32efddeb066f100596e0d44e3dd36125e9529606d5c.jpg)\n\n> 低 2 位为 1，表示根表是一张目录表，目录项再指向保存实际表项的叶表。\n\n在这种两层布局中，先将 PID `>> 2` 得到表项编号 376。编号 376 落在第一个 512 项的叶表范围内，因此先从根目录取得第一张叶表的地址，再在该叶表内按编号计算表项位置。\n\n> PID 和 TID 值按 4 对齐——原因和句柄相似，右移 2 位后可作为表项编号参与查找。\n\n清除 `TableCode` 的低 2 位可以得到根目录表地址。跟进对应目录项得到叶表地址后，再根据表项编号计算进程对象所在的表项：\n\n![6b76c7bd3eab389046a6aa2ad3029eb1&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/208e9bad25224e3e27380a40bbcec9984707a70b94ab76fd7601b610c68fdd2f.jpg)\n\n**注意**：在本文对应的旧版实现中，`PspCidTable` 表项直接关联 `EPROCESS` 或 `ETHREAD` 对象体。清除低 3 位后即可得到对象体地址。进程对象句柄表中的对象引用则指向 `_OBJECT_HEADER`。下图通过 `ImageFileName` 确认该对象为计算器进程：\n\n![c802bb5973678ffa079c15684df8d1ab&#95;MD5&#46;jpg](/notes/n-399db2c150e54f6db70dc0058623ffb0/media/e6e9a8e28cbc90039b6f04f4d3f721be5faf4f8a10940a39e25d020fd707fbea.jpg)\n\n#### 与进程对象句柄表对比\n\n| 对比项 | 局部句柄表 | `PspCidTable` |\n| --- | --- | --- |\n| 数量 | 每个进程一张 | 系统共用一张 |\n| 保存内容 | 该进程打开的各种内核对象句柄，如进程、线程、文件、事件和互斥体 | 进程、线程对象，用 PID、TID 查找对应的 `EPROCESS`、`ETHREAD` |\n| 表项指向（本文旧版） | `_OBJECT_HEADER` | 对象体 `EPROCESS` 或 `ETHREAD` |\n| 组织方式 | 通过 `HandleTableList` 串成双向链表 | 独立存在 |\n\n### 内核句柄表\n\n驱动的代码可能运行在任意进程的线程上下文中；创建句柄时该句柄就可能被加入当前用户进程的句柄表，从而面临被用户关闭、随进程退出而失效，或者切换进程上下文后同一数值指向其他对象等问题。\n\n内核句柄表就是为了解决这个问题的，内核句柄表用于保存只供内核组件和驱动程序使用的对象句柄，使这些句柄不依赖当前用户进程的私有句柄表。\n\n`ObpKernelHandleTable` 是内核内部变量，指向保存内核句柄的 `_HANDLE_TABLE` 实例，它与 System 进程的 `ObjectTable` 指向同一张表；\n\n> WRK 源码可以证明这一点，在 XP 和 Win10 中都是如此，相关参考：[win10 1909 解析内核句柄表----ObpKernelHandleTable](https://www.freesion.com/article/1639943816/)\n\n## 句柄类型与操作\n\n#### 普通句柄、伪句柄与内核句柄\n\n**句柄值应按语义区分**：\n\n| 句柄值或类别 | 含义 |\n| --- | --- |\n| `(HANDLE)-1` | 当前进程的伪句柄 |\n| `(HANDLE)-2` | 当前线程的伪句柄 |\n| 一个为 4 倍数的正数（普通对象句柄） | 在所属进程的上下文中使用，用于查找该进程对象句柄表中的表项 |\n| 负数（内核句柄） | 使用内核句柄编码并从内核句柄表查找，只能由内核模式调用者使用。它的绝对值对应 System 进程中的句柄表项。 |\n\n> 伪句柄是 API 约定的特殊常量，没有与之对应的句柄表项。\n\n普通对象句柄与内核句柄由对象管理器按调用模式和句柄编码选择相应的表进行查找；\n\n#### 创建和关闭内核句柄\n\n下面这个 PoC 演示内核中使用内核句柄表：创建一个**内核句柄**，操作对象，然后关闭句柄。\n\n```c\n#include <ntifs.h>\n\nVOID DriverUnload(PDRIVER_OBJECT DriverObject)\n{\n    UNREFERENCED_PARAMETER(DriverObject);\n}\n\nNTSTATUS DriverEntry(\n    PDRIVER_OBJECT DriverObject,\n    PUNICODE_STRING RegistryPath\n)\n{\n    NTSTATUS status;\n    HANDLE hFile = NULL;\n    IO_STATUS_BLOCK ioStatus = { 0 };\n    OBJECT_ATTRIBUTES oa;\n    UNICODE_STRING fileName;\n\n    UNREFERENCED_PARAMETER(RegistryPath);\n\n    DriverObject->DriverUnload = DriverUnload;\n\n    // 内核使用 NT 路径，而不是普通的 C:\\test.txt\n    RtlInitUnicodeString(\n        &fileName,\n        L\"\\\\??\\\\C:\\\\test.txt\"\n    );\n\n    InitializeObjectAttributes(\n        &oa,\n        &fileName,\n        OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,\n        NULL,\n        NULL\n    );\n\n    status = ZwCreateFile(\n        &hFile,\n        GENERIC_READ,\n        &oa,\n        &ioStatus,\n        NULL,\n        FILE_ATTRIBUTE_NORMAL,\n        FILE_SHARE_READ,\n        FILE_OPEN,\n        FILE_SYNCHRONOUS_IO_NONALERT,\n        NULL,\n        0\n    );\n\n    if (!NT_SUCCESS(status)) {\n        KdPrint((\"ZwCreateFile failed: 0x%08X\\n\", status));\n        return status;\n    }\n\n    KdPrint((\"Kernel file handle: %p\\n\", hFile));\n\n    ZwClose(hFile);\n    return STATUS_SUCCESS;\n}\n```\n\n核心就是：\n\n```c\nInitializeObjectAttributes(\n    &oa,\n    &fileName,                            // 对象名称\n    OBJ_CASE_INSENSITIVE                  // 名称不区分大小写\n        | OBJ_KERNEL_HANDLE,              // 创建内核句柄\n    NULL,                                 // 根目录句柄\n    NULL                                  // 安全描述符\n);\n```\n\n设置 `OBJ_KERNEL_HANDLE` 后，返回的句柄会按**内核句柄**处理，不依赖当前用户进程的私有句柄表，用户模式也不能正常使用该句柄，也不会因为该用户进程退出而失效。\n\n用完仍需：\n\n```c\nZwClose(hEvent);\n```\n\n#### 句柄复制\n\n**句柄复制的本质**：系统会在目标进程的句柄表中创建一个新的表项，让新表项与原句柄共同引用同一个内核对象，再把属于目标进程上下文的新句柄值返回给调用者。对象本身没有被重新创建；新句柄的访问权限和继承属性由 `DuplicateHandle` 的参数决定。\n\n> 句柄复制与继承不是同一个概念。\n\n## 反调试与句柄保护\n\n#reverse/windows/bypass\n### 通过句柄关系检测调试器\n\n通过枚举对象句柄，可以检查其他进程是否持有指向本进程对象的句柄，以此发现调试器或其他监控程序留下的访问关系。这个方法检测的是“谁打开了本进程对象”，加载模块、附加调试器等状态还需要结合其他信号判断。\n\n### `PspCidTable` 与隐藏进程\n\n除此之外，在特定旧版系统中还可以遍历 `PspCidTable`，根据其中的 CID 映射观察当时存在的进程和线程对象。该表是未公开的内部结构，遍历时还要处理并发修改和对象引用。\n\n> 断链隐藏进程方式主要影响依赖活动进程链表的枚举；只要对应的 CID 映射仍存在，通过 `PsLookupProcessByProcessId` 等路径仍可能找到该进程。而且直接删除 `PspCidTable` 表项会破坏进程对象的查找、引用和生命周期管理，很容易导致系统蓝屏。\n\n### 句柄访问保护\n\n**防守**：在三环使用 API 获取、使用句柄的时候，到了内核都会调用这个函数：`ExpLookupHandleTableEntry` 获得对应的内核对象地址，可以通过 HOOK 该函数保护我们的进程。\n\n若目标是限制其他进程获得敏感句柄，驱动可以使用 `ObRegisterCallbacks` 在进程或线程句柄创建、复制时检查并削减访问权限。\n> 参考：Windows 驱动综合项目实践\n\n\n**进攻**：对于检测我们是否获取它句柄的进程，我们可以通过驱动获得它内核对象的地址——将该内核对象通过句柄的形式放入到 `ObpKernelHandleTable` 内核句柄表中，然后与我们的 3 环程序通信操作该句柄，用此方式来绕过它的句柄检测。\n\n\n",
+  "id": "399db2c1-50e5-4f6d-b70d-c0058623ffb0",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "reverse/windows/bypass"
+    ],
+    "title": "Windows 句柄机制"
+  },
+  "resources": [
+    "009f90ed119828b3330761d9e8e241608d775e42d38b2b11bfec72e00a6691bd.png",
+    "05e7371b877d28d724314aa680e233398f14c8f3e67a3b021695e06e4d08a62a.jpg",
+    "071e1e03b34135a8793f14f6a8095c1bf684278058749cd512a39c2916681330.jpg",
+    "0ff00e0e0abf9d79ce80c379f1dd3311a6eb06f7661bc20ab697d324f40546c0.jpg",
+    "208e9bad25224e3e27380a40bbcec9984707a70b94ab76fd7601b610c68fdd2f.jpg",
+    "2291a3420e022a7efc86e1b30d4d16aa7f96ebf1baf230560c0274ec9d591320.jpg",
+    "387016d9298bc2029529e717924b56eb85fea11c933fdfde57516e521b3044e3.png",
+    "399ad3cbae7cef29be27d2abbee504048b990f8454ca2b3d60f831df97c87b1b.png",
+    "431ead59b8a9ba27de33e3560a1f59f916f1ece9b574dd6ffc041d7a07da3bbe.jpg",
+    "44b7c704e9df7d79a284d1d8741ba996636a4bc5393fc51b1ea1f05f15fc12cb.jpg",
+    "4650a08c7f3c85a56dfe12497b87c6060da0bb35e21cf5f360720e3e01aa5766.png",
+    "5d9eb3769945c94835ac4bfb66052fc7eb3326150fef255341c840f32258fcdd.jpg",
+    "6c906aa705ef2cd967830a641b80fc6a24f7737beb33ad9a13d9d8d011ed584b.png",
+    "7a3a96298d5a2d3202f1ce9a127260feca753c326a143ce5a61455c86b0b4d8f.jpg",
+    "888b238b1ab90a47708f9e59eaff1edeea6c193056c3e521c006846786d080af.png",
+    "88c6d8007473e3711951d74de9c0e695b2adb38476cd28aa5bc0a662c6b0b8f2.png",
+    "a53147370bd5e63400c49899384b0d3c8af72306cd428fea4cffaee14e4aec2d.png",
+    "a6c4ddab9fb52298f306e3bd5ccaddc58e2d55704e1a4973d91e0c52e5f4d494.png",
+    "aceabba1ff13c1a834a2c415e77a9cfb07ce372af09780b3b2f4de8961c71f27.png",
+    "bae1b0d610333e5fe15e5c9e28f3f37b4ad20e53a98ba621e795cba7cfa682dd.jpg",
+    "d2ff22f9ebea96bb9b74e32efddeb066f100596e0d44e3dd36125e9529606d5c.jpg",
+    "dc12a97f203fce57dc44159d6142166ef639ab1f3cdfc391508deef50c641fba.png",
+    "e6e9a8e28cbc90039b6f04f4d3f721be5faf4f8a10940a39e25d020fd707fbea.jpg",
+    "e707fe26cd6d0620a24b6a45d57f97458f9fd1bf3b7913fbfee53e3a33d49262.jpg"
+  ],
+  "url": "/notes/n-399db2c150e54f6db70dc0058623ffb0/"
+}

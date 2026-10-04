@@ -1,0 +1,65 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-2b808e1076d7b0d670d5",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-8584f1df950fb4defefe",
+      "kind": "heading",
+      "offset": 148
+    },
+    {
+      "id": "h-7313cfe54de8711905de",
+      "kind": "heading",
+      "offset": 839
+    },
+    {
+      "id": "h-8ad66dad3912e561166f",
+      "kind": "heading",
+      "offset": 1993
+    },
+    {
+      "id": "h-f99badc8208ddbd6a088",
+      "kind": "heading",
+      "offset": 3501
+    },
+    {
+      "id": "h-5c60c843a78924b5921a",
+      "kind": "heading",
+      "offset": 4517
+    },
+    {
+      "id": "h-aaee227a10ee4d841d62",
+      "kind": "heading",
+      "offset": 5532
+    }
+  ],
+  "body": "# Windows DLL 隐藏\n\n之前我们了解了直接注入一个 `DLL` 到进程中，但这样实际上很难存活，因为程序可以轻松通过 API 来枚举当前加载的所有 `DLL` 模块。因此我们需要使用**模块隐藏**技术来隐藏注入的 `DLL` 模块，使其不被常规检测手段发现。\n\n## 模块隐藏之断链\n\nAPI 是通过什么将模块查询出来的？实际上，相关 API 都是从以下两个关键结构体（**位于 Ring3 应用层**）中查询出来的：\n\n- `TEB`（Thread Environment Block，线程环境块）：存放线程的相关信息，每一个线程都有自己的 `TEB`。通过 `FS:[0]` 即可定位到当前线程的 `TEB`。\n- `PEB`（Process Environment Block，进程环境块）：存放进程的相关信息，每个进程都有自己的 `PEB`。通过 `FS:[0x30]` 即可定位到当前进程的 `PEB`。\n\n如下图所示（只介绍与本章节相关的信息）：\n\n- `TEB` 的第一个成员是一个结构体（`NT_TIB`），包含了当前线程栈的栈底和栈界限。`TEB` 偏移 `0x20` 处是 `CLIENT_ID` 结构体，包含当前线程所在进程的 PID 和当前线程自己的 TID。\n- `PEB` 偏移 `0x0C` 处是 `PEB_LDR_DATA` 结构体，其内部包含**三条模块链表**（按加载顺序、内存顺序、初始化顺序）。API 函数枚举模块时，本质上就是遍历这些链表。\n\n![8c39e47b9fd11ddc7064ae4ff1f7f200&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/6910cacc17bb2f251bbbbcc63018623ea4669841e7bcd4a83ccdc62708e6d263.png)\n\n### 手动定位 TEB 与 PEB\n\n我们可以随便找一个 `EXE` 拖进 DTDebug，查看 `FS` 寄存器（目前只需知道 `TEB` 的地址存储在 `FS` 寄存器中即可，具体细节在中级课程中）：\n\n![63c0ecd54a1932b9f7079b81f4df84e0&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/18477577768cb64773cc74b3deed0c8b49cbe8e926a00ccabec824841bb6b456.png)\n\n在左下角使用 `dd 7FFDF000` 命令查看 `TEB` 结构体内容：\n\n![f2002771650de46561227b0eca0e1174&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/3ebb1f8f65413352706d932f6eaca648dfd9b6ec2b69936bb207c70a1c4f1b3a.png)\n\n`FS` 寄存器中存储的就是当前正在运行的线程的 `TEB` 结构体地址。\n\n`PEB` 结构体同理，只需要找到 `FS` 寄存器中存储地址的 `0x30` 偏移然后跟进即可：\n\n![15cd3efa17852ff54c43763bf92a5ab2&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/31d03dda388d6239c4db17a016831b3c1fbc990dbba4690f49737a3c95eb79c6.png)\n\n![61f3522c851d17fbe383fcc97377e6db&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/585c87b71aadb1538f6a39c3aca279ae7da3e38370775ff691e441bec8056de1.png)\n\n![841b2bf91c397b474ca5a537f60c9991&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/3900987c4e389ef879725b5947344c154aaeacfbd8d32e0e270b6aae9dcf13d3.png)\n\n我们已经了解到 API 函数枚举模块就是遍历 `PEB` 中的链表，因此要想隐藏模块，就需要在**查询时将目标节点从链表中摘除（断链）**。\n\n### 断链实现代码\n\n通过断链的方式实现隐藏模块的函数：\n```c\nvoid HideModule(char* szModuleName) {\n    // 获取模块的句柄\n    HMODULE hMod = GetModuleHandle(szModuleName);\n    PLIST_ENTRY Head, Cur;\n    PPEB_LDR_DATA ldr;\n    PLDR_MODULE ldmod;\n\n    __asm {\n        mov eax, fs:[0x30]  // 取 PEB 结构体\n        mov ecx, [eax + 0x0c]  // 取 PEB 偏移 0x0C 处的 PEB_LDR_DATA 结构体\n        mov ldr, ecx  // 将 ecx 赋值给 ldr\n    }\n\n    // 获取正在加载的模块列表头\n    Head = &(ldr->InLoadOrderModuleList);\n    Cur = Head->Flink;\n\n    do {\n        // 宏 CONTAINING_RECORD 根据结构体中某成员的地址推算出该结构体整体的地址\n        ldmod = CONTAINING_RECORD(Cur, LDR_MODULE, InLoadOrderModuleList);\n\n        // 循环遍历，如果基地址一致则表示找到对应模块，就进行断链\n        if (hMod == ldmod->BaseAddress) {\n            // 断链原理：将前后节点直接相连，跳过当前节点\n            ldmod->InLoadOrderModuleList.Blink->Flink = ldmod->InLoadOrderModuleList.Flink;\n            ldmod->InLoadOrderModuleList.Flink->Blink = ldmod->InLoadOrderModuleList.Blink;\n            ldmod->InInitializationOrderModuleList.Blink->Flink = ldmod->InInitializationOrderModuleList.Flink;\n            ldmod->InInitializationOrderModuleList.Flink->Blink = ldmod->InInitializationOrderModuleList.Blink;\n            ldmod->InMemoryOrderModuleList.Blink->Flink = ldmod->InMemoryOrderModuleList.Flink;\n            ldmod->InMemoryOrderModuleList.Flink->Blink = ldmod->InMemoryOrderModuleList.Blink;\n        }\n\n        Cur = Cur->Flink;\n    } while (Head != Cur);\n}\n```\n\n> 断链的本质就是双向链表的节点摘除操作：将目标节点的前驱的 `Flink` 指向目标的后继，将目标的后继的 `Blink` 指向目标的前驱。由于 `PEB_LDR_DATA` 中有三条链表，因此需要对三条链表都执行断链。\n\n### 断链效果验证\n\n调用隐藏 `kernel32.dll` 模块，然后用 DTDebug 查看：\n```c\nint main(int argc, char* argv[]) {\n    getchar();\n    HideModule(\"kernel32.dll\");\n    getchar();\n    return 0;\n}\n```\n\n编译后直接打开（不通过 `VC++ 6.0` 启动）`Test.exe`，然后使用 DTDebug 的 Attach 功能附加到进程：\n\n![bb0d2589ac7c79ad466ef6ae040a3499&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/2168f1913132a5b47003f96544e78fc98a7e9eff74a6dce10adf9d69023686e0.png)\n\n![9ecb695fe64b06782a756303c573f485&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/df89357c5d7bbe8d8e46049f75bb471a5c5655f96094f971197c6ef7b43f8d95.png)\n\n![f03105a6aaef4894987f25ef13f40ea9&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/ea88ac7709882dea50d98957f7bd0ae924d1ee1972c65d295dac2d0b22b64cc2.png)\n\n此刻我们可以看见 `kernel32.dll` 模块，但当我们按回车执行 `HideModule` 后，再查看模块列表，`kernel32.dll` 已经消失了：\n\n![1c1028e27e39f08aa34cf3c8bd78f515&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/d5b1e58c7dd786b93d67c8c35b61321b9560bf6db722efe6d76d0aa630285e54.png)\n\n## 模块隐藏之 PE 指纹擦除\n\n断链只能对抗通过 `PEB` 链表枚举模块的检测手段。更高级的检测方式是扫描进程的虚拟内存空间，通过 **PE 指纹**（即 `MZ` / `PE` 头特征码）来识别已加载的模块。\n\n以 `ntdll.dll` 模块为例：\n\n![1c1028e27e39f08aa34cf3c8bd78f515&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/d5b1e58c7dd786b93d67c8c35b61321b9560bf6db722efe6d76d0aa630285e54.png)\n\n其基地址为 `0x7C920000`，在 DTDebug 中使用命令 `db 7C920000` 即可看到该模块的内存内容：\n\n![f549b40e11693655dbac73adf71f2c83&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/4829c0daf8e6b914f57b95a4cf24be5dd4e04bf107296433216fbea26f931925.png)\n\nPE 指纹的识别流程如下：\n1. 模块基地址处的前两个字节为 `4D 5A`（即 ASCII 的 `MZ`），这是 DOS 头标识。\n2. 从 DOS 头偏移 `0x3C`（即第 `0x3C` 字节处，在此例中值为 `0xE0`），得到 PE 头的偏移量。\n3. 基地址 `0x7C920000` + `0xE0` = `0x7C9200E0`，该地址处的两个字节为 `50 45`（即 ASCII 的 `PE`），这是 PE 头标识。\n\n![1f251882c40503261afd3459804758fa&#95;MD5&#46;png](/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/media/4491a220cc926ba60786e17c45ed6a26a27af10974b5ad079422a3bf2fee0378.png)\n\n如果满足上述特征匹配，则该内存区域被认定为一个 PE 模块。因此，要对抗 PE 指纹扫描，可以将模块基地址处的 `MZ` 和 `PE` 标识字节清零或覆写，使扫描器无法识别。\n\n## 模块隐藏之 VAD 树\n\nVAD 树的概念，参考：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)\n\n通过 VAD 实现模块隐藏，主要有以下方式：\n1. 将区间临近的两个 VAD 节点合并为一个。\n2. 找到想要隐藏的内存在 VAD 二叉树中的节点，直接将该节点从二叉树中\"抹去\"（让上一个节点的 `EndingVpn` 指向下个节点的 `EndingVpn`，类似于摘链隐藏），就可以达到内核级别的隐藏效果。\n\n> [!WARNING] 稳定性风险\n> 在 C/C++ 中申请和释放虚拟内存（`VirtualAlloc` / `VirtualFree`）时，系统都会更新该进程的 VAD 树（`new` / `delete` 也有可能导致 VAD 树更新）。因此，篡改 VAD 树来隐藏内存区域的行为可能**破坏系统稳定性**，导致不可预期的崩溃。\n> **例如**：节点断链后，系统会认为这片虚拟空间是空闲的， 下次就可能分配给别人使用，导致数据被覆盖。\n",
+  "id": "4200cc20-6c8d-4b9a-a63d-cd0f5107a5f4",
+  "metadata": {
+    "tags": [
+      "reverse/windows/bypass",
+      "os/windows",
+      "reverse/android/bypass"
+    ],
+    "title": "Windows DLL 隐藏",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "18477577768cb64773cc74b3deed0c8b49cbe8e926a00ccabec824841bb6b456.png",
+    "2168f1913132a5b47003f96544e78fc98a7e9eff74a6dce10adf9d69023686e0.png",
+    "31d03dda388d6239c4db17a016831b3c1fbc990dbba4690f49737a3c95eb79c6.png",
+    "3900987c4e389ef879725b5947344c154aaeacfbd8d32e0e270b6aae9dcf13d3.png",
+    "3ebb1f8f65413352706d932f6eaca648dfd9b6ec2b69936bb207c70a1c4f1b3a.png",
+    "4491a220cc926ba60786e17c45ed6a26a27af10974b5ad079422a3bf2fee0378.png",
+    "4829c0daf8e6b914f57b95a4cf24be5dd4e04bf107296433216fbea26f931925.png",
+    "585c87b71aadb1538f6a39c3aca279ae7da3e38370775ff691e441bec8056de1.png",
+    "6910cacc17bb2f251bbbbcc63018623ea4669841e7bcd4a83ccdc62708e6d263.png",
+    "d5b1e58c7dd786b93d67c8c35b61321b9560bf6db722efe6d76d0aa630285e54.png",
+    "df89357c5d7bbe8d8e46049f75bb471a5c5655f96094f971197c6ef7b43f8d95.png",
+    "ea88ac7709882dea50d98957f7bd0ae924d1ee1972c65d295dac2d0b22b64cc2.png"
+  ],
+  "url": "/notes/n-4200cc206c8d4b9aa63dcd0f5107a5f4/"
+}

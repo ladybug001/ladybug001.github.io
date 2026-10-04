@@ -1,0 +1,167 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-a1740b71fc253191c12e",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-e739f5b24738faa5c46f",
+      "kind": "heading",
+      "offset": 80
+    },
+    {
+      "id": "h-91568ee3e64c0ea6a4f5",
+      "kind": "heading",
+      "offset": 491
+    },
+    {
+      "id": "h-dd8a98e6806195ebf0fd",
+      "kind": "heading",
+      "offset": 516
+    },
+    {
+      "id": "h-32971d9c408fe6503c7e",
+      "kind": "heading",
+      "offset": 1027
+    },
+    {
+      "id": "h-e14cfe30f5339871c394",
+      "kind": "heading",
+      "offset": 1417
+    },
+    {
+      "id": "h-9022f5994c4902cbca06",
+      "kind": "heading",
+      "offset": 1434
+    },
+    {
+      "id": "h-ac0d1297c961de1b60e5",
+      "kind": "heading",
+      "offset": 2703
+    },
+    {
+      "id": "h-fd2b7f545f561b4d3a59",
+      "kind": "heading",
+      "offset": 5087
+    },
+    {
+      "id": "h-13d50da8b1458c94c73f",
+      "kind": "heading",
+      "offset": 5189
+    },
+    {
+      "id": "h-94da439a172b5d3f718c",
+      "kind": "heading",
+      "offset": 5787
+    },
+    {
+      "id": "h-3b32b11311c7bcb494de",
+      "kind": "heading",
+      "offset": 6644
+    },
+    {
+      "id": "h-c6ac7ff8b25fcc111255",
+      "kind": "heading",
+      "offset": 7506
+    },
+    {
+      "id": "h-5adc2fd1bcc9d560db99",
+      "kind": "heading",
+      "offset": 7879
+    },
+    {
+      "id": "h-c1326b6f3051353f6b81",
+      "kind": "heading",
+      "offset": 7960
+    },
+    {
+      "id": "h-a59449e90d10ae01ff16",
+      "kind": "heading",
+      "offset": 8234
+    },
+    {
+      "id": "h-c58c01e0af065e2c8adc",
+      "kind": "heading",
+      "offset": 8482
+    },
+    {
+      "id": "h-e5880f91f302c76cf5b3",
+      "kind": "heading",
+      "offset": 9560
+    },
+    {
+      "id": "h-24d2a87a646687ccd09d",
+      "kind": "heading",
+      "offset": 12284
+    },
+    {
+      "id": "h-3c00224eb8ce9acb0bd7",
+      "kind": "heading",
+      "offset": 14916
+    },
+    {
+      "id": "h-a10373353c511c4bb77a",
+      "kind": "heading",
+      "offset": 15028
+    },
+    {
+      "id": "e-3770cee99e6322a851c2-b-9xp9lk",
+      "kind": "quote-block",
+      "offset": 15582,
+      "prefix": "> "
+    },
+    {
+      "id": "h-991b206d39c9f367fe1a",
+      "kind": "heading",
+      "offset": 16408
+    },
+    {
+      "id": "h-994352e2a6ed7886fb45",
+      "kind": "heading",
+      "offset": 17084
+    },
+    {
+      "id": "h-cbfd57b8f610b30680a6",
+      "kind": "heading",
+      "offset": 18181
+    }
+  ],
+  "body": "\n# Windows 调试关系与调试事件机制\n\n对于一些未公开的信息，可以参考 `ReactOS` 和 WRK 来帮助我们对代码进行分析。\n\n## 整体工作模型\n\nWindows 用户态调试的主线是：\n\n1. 调试器创建调试对象，并与被调试进程建立调试关系（将调试对象放入其某个成员中）。\n2. 被调试进程发生需要通知调试器的行为时，内核构造调试消息并放入调试对象的事件链表。\n3. 调试器通过 `WaitForDebugEvent` 取出事件并进行处理。\n4. 调试器调用 `ContinueDebugEvent` 告知内核处理结果，被调试线程随后恢复执行。\n\n调试器与被调试程序通过位于内核中的调试对象进行通信：\n\n![432749a421d55994268ec8c1a85e8465&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/a1f80ffd475fce0f1981bc9f452e1dc163eeb35fdbe85e98f0ed13335bc582ac.jpg)\n\n## 调试关系的建立\n\n### `_DEBUG_OBJECT` 结构体\n\n理解整个调试的第一步是先弄清调试器和被调试进程如何通过同一个调试对象建立联系，这个通信载体就是 `_DEBUG_OBJECT`，以下为 `_DEBUG_OBJECT` 结构体的组成：\n\n```c\ntypedef struct _DEBUG_OBJECT {\n    KEVENT EventsPresent; // 用于指示有调试事件发生的事件对象\n    FAST_MUTEX Mutex;     // 用于同步的互斥对象\n    LIST_ENTRY EventList; // 保存调试事件的链表\n    ULONG Flags;          // 标志位，调试消息是否已读取\n} DEBUG_OBJECT, *PDEBUG_OBJECT;\n```\n\n成员 `Mutex` 是一个互斥体，用于实现互斥操作 `EventList` 链表：当调试器从 `EventList` 链表中提取调试事件时，同时 `DbgkpSendApiMessage` 函数向 `EventList` 链表写入数据时也会被正确地互斥。\n\n**`Flags` 参数用于标识该事件是否已被调试器读取。**\n\n### 调试器与被调试程序\n\n上述结构说明了调试对象能够保存和同步事件，但还没有说明通信双方如何获得并关联这个对象。\n\n根据被调试进程所处的状态，调试关系可以通过以下两种入口建立：\n\n1. 以调试标志，调用 **`CreateProcess` 函数运行一个程序**。\n2. **通过 `DebugActiveProcess` 函数附加一个正在运行的进程**。\n\n第一种调试方式本质上创建完进程后，还是通过第二种实现的（相关内容参考：[Windows 进程创建&#65288;01&#65289;&#65306;用户态创建流程](/notes/n-a563a14132aa4c968d5f20c4000cb850/#h-a53f0c34023b99fcf205)），因此我们**只需要分析 `DebugActiveProcess` 函数即可**。\n\n### `DebugActiveProcess` 执行流程\n\n#### 关联调试对象与调试器\n\n我们通过 `IDA` 来分析 `DebugActiveProcess` 函数的执行流程，首先，我们进入 `kernel32.dll` 中的 `DebugActiveProcess` 函数，在函数的最前面，我们可以注意到一个值得关注的函数，名为 **`DbgUiConnectToDbg`**。\n\n当我们进入这个函数后，我们发现它调用了另一个位于 `ntdll.dll` 模块中的同名函数，。\n\n![fe07d47e1e6ca5b1264e7c1ebeef180f&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/41359469c980ae4540c468a3551be33c8bd5144936ea75c0c57ca7a5a63fee61.jpg)\n\n当我们继续跟进就会发现 `ntdll.dll` 模块中的 `DbgUiConnectToDbg` 函数，我们可以看见它先获取 `FS:[0x18]`，也就是 `_TEB.NtTib.Self`，其实就是 `_TEB` 的地址本身，然后通过它来获取 `FS:[0xF24]`，即 `_TEB.DbgSSReserved[1]` 成员的地址，用它作为参数给到了 `_ZwCreateDebugObject` 函数，执行结果在 `EAX` 中：\n![675916cec1677a6f5fec64aa6217be36&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/4aa80cbad32e9735b0f653dc5dbbca36d1c07cb979a0c4e996a79045c3269b4f.jpg)\n\n`_ZwCreateDebugObject` 函数直接通过系统调用号执行对应的 0 环函数来创建调试对象 `_DEBUG_OBJECT`：\n![bfba1ca5add270c5e510489993d52dcd&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/50f8b6d3bb31e4779eca87046b4361638903161e68c9b349441a87e8d0a3bc8b.jpg)\n\n该函数不会返回调试对象在 0 环的地址，而是句柄并存储在 3 环 `_TEB.DbgSSReserved[1]` 中，这个句柄用于在 3 环中引用和操作调试对象——**目前调试器与调试对象已经关联起来了**。\n\n---\n\n`DbgSsReserved` 成员专门给调试器使用的，它是一个指针数组，其含义如下所示：\n\n```TEB\n└─ DbgSsReserved[2]\n   ├─ [0] → 用户态调试辅助数据\n   └─ [1] → 当前调试线程使用的 Debug Object 句柄\n```\n\n#### 关联调试对象与被调试进程\n\n如下图所示，在 `DbgUiConnectToDbg` 调用结束后，会比较返回结果，如果调试对象创建成功就进行跳转。\n\n![7ba43e0b9f19b458660253d8141e5436&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/085adec3359a4f9ea614d57f474889ec97e39b4c2231f73d17c11ed29b6dcb5b.jpg)\n\n跟进成功跳转，我们可以看见首先通过 `_ProcessIdToHandle` 函数，根据进程 ID 获取被调试进程的句柄（返回结果 `EAX` 给到 `ESI`），其次将被调试进程句柄作为参数带入到 `_DbgUiDebugActiveProcess` 函数。\n\n![166bfbce1cb8196c2d8e3f239ac30935&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/b9019b2563ad1f3e960125ce8a9b6c3172eefa64b976ded9727b3e93d43614c2.jpg)\n\n`_DbgUiDebugActiveProcess` 函数位于 `ntdll.dll` 模块中，在该函数内先获取当前线程的 `_TEB`，然后获取 `_TEB` 的 `0xF24` 偏移位成员——即 `_TEB.DbgSSReserved[1]`，将其与被调试进程句柄一并作为参数带入到 `_NtDebugActiveProcess` 函数，而这个函数仍然是一个系统调用，最终进入 0 环：\n![e1110b394cbeee06d11220eb2a71c26d&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/f6cf91b31dafe5458f4cd019df4fdca5ba80510b32b383a40dff3cad733dfcbd.jpg)\n\n---\n\n如下图所示，我们查看 WRK 源码，找到该函数 `_NtDebugActiveProcess`，可以看见开头调用 `_ObReferenceObjectByHandle` 函数获取被调试进程在内核中的对象地址：\n\n![0a1553e82879de381755d9967226a19d&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/ee4c888c5f20d76a077aaea01a036930c7b5caf45bfd929c3b83e2309d485a2d.jpg)\n\n往下获取当前进程对象地址与被调试进程对象地址进行对比，即判断是否存在自己调试自己的情况；以及判断被调试进程是否是初始系统进程；\n\n![d97d456a7cfcd1f08f10ad263324c0d7&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/03eee7ef0b55e1313e01b14e10d29e31043f9494cc1b8c1a7ca25366cd143015.jpg)\n\n> 这两种情况都是被禁止的，如果出现则函数退出。\n\n然后又通过调试对象的句柄来获取调试对象在内核中的地址：\n\n![30805f76e3bacd30d35ae4433d8bee2a&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/ad2c85e03b03ac84668504cb622fe0aab631ca93494664cde1eecf5211e550bf.jpg)\n\n然后将调试对象的地址和被调试进程的 `_EPROCESS` 结构体地址作为参数，依次调用：\n1. `DbgkpPostFakeProcessCreateMessages` 函数，在调试对象的消息链表里面，插入一些假消息，这些假消息用于告知调试器当前进程的运行状态（比如登记当前有多少个线程，每个线程的情况等）。这里下文会详解。\n2. `_DbgkpSetProcessDebugObject`，正式将目标进程的调试端口设置为当前的调试对象，并且告知调试器可以开始处理消息链表里面的消息了。\n![f522367ce6471203e853b48cb68db9b6&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/a35b06cdce8c260d05e819623ce69fc404f930f538f1b43d9fa710d171e5b2c7.jpg)\n\n如下图所示，`_DbgkpSetProcessDebugObject` 内部判断被调试进程是否已经属于被调试状态，如果是则退出函数，如果不是则**将调试对象放进被调试进程结构体的 `DebugPort` 成员当中**：\n\n![ce33b5cefa5befc781c423dce1264515&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/1dbc44f20cc47fd820e2a5c87741d8ece6d60bf7f296397feb4c7a4671219499.jpg)\n\n**至此就将被调试进程与调试器成功关联起来**。\n\n## 调试事件的生命周期\n\n调试关系建立后，调试对象只是提供了可用的通信通道；调试器仍然需要知道目标进程发生了什么。\n\n接下来的问题便是：目标进程中的行为如何被构造成调试事件，并沿着这个通道送到调试器。\n\n### 内核侧调试消息\n\n建立调试关系后，被调试进程的 `DebugPort` 已经指向 `_DEBUG_OBJECT`。此时，通信内容由调试对象的 `EventList` 承载：**该成员是一个链表，其中存储的是从被调试进程发送过来的各种类型的调试事件**。\n\n```c\ntypedef struct _DEBUG_OBJECT {\n    KEVENT EventsPresent; // 用于指示有调试事件发生的事件对象\n    FAST_MUTEX Mutex;     // 用于同步的互斥对象\n    LIST_ENTRY EventList; // 保存调试事件的链表\n    ULONG Flags;          // 标志位，调试消息是否已读取\n} DEBUG_OBJECT, *PDEBUG_OBJECT;\n```\n\n![55debe510cde00af4473daaca3f406c4&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/ad323bd4d12e49d8562adc7241c7b9aaee72030921e5b4d8110b3c7ebb788a4b.jpg)\n\n调试对象的消息队列和窗口程序的消息队列，十分相似——也是一个死循环不停处理消息。\n#### 内核态 `DEBUG_EVENT` 结构\n\n`EventList` 链表中的表项是 `DEBUG_EVENT` 结构体，如下所示：\n\n```c\n// 注意：不是 Win32 API 中的 DEBUG_EVENT\ntypedef struct _DEBUG_EVENT {\n    LIST_ENTRY EventList;        // 挂入 DEBUG_OBJECT.EventList\n    KEVENT ContinueEvent;        // 等待 ContinueDebugEvent\n    CLIENT_ID ClientId;          // PID/TID\n    PEPROCESS Process;           // 事件所属进程\n    PETHREAD Thread;             // 事件所属线程\n    NTSTATUS Status;             // 内核调试事件处理状态\n    ULONG Flags;                 // 事件状态/清理标志\n    PETHREAD BackoutThread;      // Attach 失败时回滚 Fake Event\n    DBGKM_APIMSG ApiMsg;         // 实际调试消息\n} DEBUG_EVENT, *PDEBUG_EVENT;\n```\n\n注意表项中的 `ContinueEvent` 成员用于实现被调试进程等待调试器处理调试事件，例如：当被调试线程触发断点陷入内核时，它在把消息塞入队列后，会立刻对自己生成的这单项事件内部的 `ContinueEvent` 发起等待，直到调试器处理完毕。\n> 相关内容参考：[Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/)\n\n\n---\n#### 产生调试事件的行为\n\n并不是所有进程行为都会产生调试消息。内核使用 `DBGKM_APINUMBER` 来标识不同类型的调试消息，其中真正的消息类型共有 **8 种（0～7）**；`DbgKmMaxApiNumber` 只是枚举上界，并不代表一种调试消息。\n\n```c\ntypedef enum _DBGKM_APINUMBER\n{\n    DbgKmExceptionApi = 0,     // 异常\n    DbgKmCreateThreadApi = 1,  // 创建线程\n    DbgKmCreateProcessApi = 2, // 创建进程\n    DbgKmExitThreadApi = 3,    // 线程退出\n    DbgKmExitProcessApi = 4,   // 进程退出\n    DbgKmLoadDllApi = 5,       // 加载映像\n    DbgKmUnloadDllApi = 6,     // 卸载映像\n    DbgKmErrorReportApi = 7,   // 将未处理异常转交给错误报告机制\n    DbgKmMaxApiNumber = 8,     // 枚举上界，不是实际消息类型\n} DBGKM_APINUMBER;\n```\n\n其中前 **7 种（0～6）** 属于正常的调试对象消息；`DbgKmErrorReportApi` 比较特殊，它用于异常未被调试器处理后，将异常转交给 Windows Error Reporting，并不属于通常意义上通过 `DebugObject` 发送给用户调试器的调试事件。\n\n\n接下来解释这些行为在何时被发现、又如何转换成消息。\n\n> 其中，异常消息可能由断点或单步执行触发，具体触发机制参见：[Windows 断点与单步执行机制](/notes/n-16a0bec58f144135a48b03e4ac71452a/)。本篇接下来关注这些行为被识别之后，内核如何构造并传递对应的调试消息。\n\n#### 通知函数\n\n在 Windows 系统中提供了一些以 `Dbgk` 开头的函数，用于在对应内核行为发生时**生成调试通知消息**，并填充相应的消息结构，**我们称之为调试事件通知函数**。\n\n如下图所示，**这些事件通知函数被放在事件的必经之路上**：黑色字体的函数就是每个事件 API 最终都会经过的地方，紫色字体的函数用于构造调试通知消息，红色字体的函数用于发送（写入）调试消息。\n\n![4c736f8a78b9fe9ff09a9c5984f9c9ff&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/c806c34c41ab02b555178ea1623da72b1ddf548a3b03c2fea8be189c15e8b9b0.jpg)\n\n### 调试事件的构造流程\n\n我们要想知道通知函数如何生成相应的调试消息，就需要跟进它的代码逻辑。这里以创建进程、线程，以及退出线程、进程为例进行分析。\n\n#### 创建进程、线程事件通知\n\n创建进程的本质就是创建线程，其中第一次创建线程时即为创建进程，意思也就是说“进程创建事件”的含义是“第一个线程被创建了”。\n\n因此，创建进程的时候会调用线程创建函数，该函数会生成调试事件：判断当前是不是第一个线程，是则生成进程创建通知，否则生成线程创建通知。\n\n> 相关内容参考：[Windows 线程创建&#65288;01&#65289;&#65306;线程创建主流程](/notes/n-928a46ce58c649e289fbf643a9baabe5/#h-9f11f6d19b2127d4626d)\n\n#### 退出线程、进程事件通知\n\n和“创建第一个线程表示创建进程”类似，当退出的是最后一个线程时即为退出进程。因此，`PspExitThread` 函数会判断当前退出的线程是不是最后一个：\n\n1. 如果是则调用函数 `_DbgkExitProcess`，表示进程退出。\n2. 否则调用函数 `_DbgkExitThread`，表示线程退出。\n> \"创建进程、线程\"事件是在同一个通知函数中完成逻辑分流，但**这里是根据退出线程/进程选择对应的通知函数**。\n\n### `DbgkpSendApiMessage`：消息入队与通知\n\n进程的各种行为会调用相应的通知函数，但这些函数最终调用的都是 `DbgkpSendApiMessage` ：将已创建的调试事件发送到调试对象的事件链表中。\n\n该函数有两个参数：\n\n1. 参数 `ApiMsg`：消息结构。有一个成员是联合体，能被解释为 7 种消息结构——对应前面提到的调试事件分类。\n2. 参数 `SuspendProcess`：挂起进程标志。用于指示是否挂起除当前执行函数的线程之外的其他所有线程：有些调试事件需要挂起其他线程，比如针对 `int3` 断点的事件；而有些调试事件则不需要挂起线程，比如模块加载事件。\n\n在 `DbgkpSendApiMessage` 内发现它调用了 `_DbgkpQueueMessage` 函数：\n\n![3419bb2bffe80f8c196f7fb67b869268&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/70352a94de18bade919167496182498528b809f6ac16289d141fcee7a5b18004.jpg)\n\n我们跟进 `_DbgkpQueueMessage` 函数发现：\n\n![57f68adb8d6a78d46f8c51e15c684f14&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/2e08cb3136eafca81c9d4528846b5693775523ea5a2efeca9feb81d9e4799e9b.jpg)\n\n1. 该函数从当前进程的 `_EPROCESS` 结构体中获取调试对象（调试对象不为空）。\n2. 然后从调试对象中取出 `EventList` 成员的首地址，并将此次的调试事件插入到 `EventList` 中。\n3. 将调试事件添加到链表后，**修改成员 `_DEBUG_OBJECT.EventsPresent` 的状态**：调试器会判断这个状态，当状态改变时才从 `EventList` 链表中提取并处理调试事件。\n\n**思考**：`DbgkpSendApiMessage` 函数是各类调试事件通知最终汇合的统一发送入口。如果在这个函数中设置了钩子，调试器将无法正常进行调试操作。\n\n---\n\n接下来需要把观察视角从事件生产者切换到事件消费者：调试器如何等待这次通知、识别具体事件，并在处理后恢复目标线程。\n\n### 调试事件的等待、处理与恢复\n\n如下代码所示，**我们创建了一个简易调试器**，该调试器：\n\n1. 首先创建一个调试进程：`CreateProcess` 函数第 6 个参数表示创建进程的标志，用于指定创建进程的行为和属性，这里的值为 `DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS`，**表示创建一个调试进程，并限制只有当前调试器可以附加到该进程进行调试，确保调试过程的独占性和安全性**。\n2. 接着进入一个调试循环：在循环中，等待调试事件的发生，如异常、线程创建、进程创建等，然后根据具体的调试事件类型进行相应的处理。处理完事件后，告诉被调试程序继续执行。\n\n```c\n#include \"windows.h\"\n#include \"stdio.h\"\n\nint main()\n{\n    // 定义调试进程路径\n    const char* dbgProcessName = \"C:\\\\notepad.exe\";\n    \n    // 创建调试进程\n    STARTUPINFO startupInfo = {0};\n    PROCESS_INFORMATION processInfo = {0};\n    GetStartupInfo(&startupInfo);\n    \n    BOOL createProcessSuccess = CreateProcess(\n        dbgProcessName, NULL, NULL, NULL, TRUE,\n        DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS,\n        NULL, NULL, &startupInfo, &processInfo\n    );\n    \n    if (!createProcessSuccess)\n    {\n        printf(\"CreateProcess error: %d\\n\", GetLastError());\n        getchar();\n        return 0;\n    }\n\n    // 调试循环\n    while (TRUE)\n    {\n        // 等待调试事件\n        DEBUG_EVENT debugEvent = {0};\n        BOOL waitForDebugEventSuccess = WaitForDebugEvent(&debugEvent, INFINITE);\n        if (!waitForDebugEventSuccess)\n        {\n            printf(\"WaitForDebugEvent error: %d\\n\", GetLastError());\n            return 0;\n        }\n\n        // 处理调试事件\n        switch (debugEvent.dwDebugEventCode)\n        {\n            case EXCEPTION_DEBUG_EVENT:\n                printf(\"发生异常调试事件\\n\");\n                break;\n\n            case CREATE_THREAD_DEBUG_EVENT:\n                printf(\"创建线程调试事件\\n\");\n                break;\n\n            case CREATE_PROCESS_DEBUG_EVENT:\n                printf(\"创建进程调试事件\\n\");\n                break;\n\n            case EXIT_THREAD_DEBUG_EVENT:\n                printf(\"退出线程调试事件\\n\");\n                break;\n\n            case EXIT_PROCESS_DEBUG_EVENT:\n                printf(\"退出进程调试事件\\n\");\n                break;\n\n            case LOAD_DLL_DEBUG_EVENT:\n                printf(\"加载DLL调试事件\\n\");\n                break;\n\n            case UNLOAD_DLL_DEBUG_EVENT:\n                printf(\"卸载DLL调试事件\\n\");\n                break;\n\n            default:\n                break;\n        }\n\n        // 告知处理结果：已解决恢复执行；未解决寻找其它方式\n        ContinueDebugEvent(debugEvent.dwProcessId, debugEvent.dwThreadId, DBG_CONTINUE);\n    }\n\n    return 0;\n}\n```\n\n`ContinueDebugEvent` 第三个参数有两种取值：\n\n1. `DBG_CONTINUE`：表示调试器已处理该异常。\n2. `DBG_EXCEPTION_NOT_HANDLED`：表示调试器没有处理该异常。\n\n> 所有**非异常类**的调试事件，`ContinueDebugEvent` 的第三个参数（`dwContinueStatus`）传入什么值**毫无区别，内核根本不在乎**。对于异常类调试事件，两种取值的含义参考：[Windows x86 异常的产生与分发流程](/notes/n-fc98c7868417430fa36063afb251fb17/)\n\n\n运行效果如下图所示：\n![d1b5015bef65169a6eb09c8e44715aac&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/137d77da58970f90077f55d472bbc6dd7bff50963881cba967b8ef540c94170e.jpg)\n\n#### 用户态 `DEBUG_EVENT` 结构\n\n上面的调试循环说明了事件如何被等待和继续，但调试器必须依据 `WaitForDebugEvent` 返回的 `DEBUG_EVENT` 结构体对不同的事件采取不同的操作。\n\n在调试循环中，`WaitForDebugEvent` 从调试消息链表取得事件，并以 `DEBUG_EVENT` 结构体返回，其定义如下：\n> 用户态使用的 `DEBUG_EVENT` 结构体是 `WaitForDebugEvent` 函数对内核 `DEBUG_EVENT` 结构体整理后的结果。\n\n```c\ntypedef struct _DEBUG_EVENT {\n    DWORD dwDebugEventCode; // 调试事件类型\n    DWORD dwProcessId;      // 触发调试事件的进程ID\n    DWORD dwThreadId;       // 触发调试事件的线程ID\n    union {                 // 联合体\n        EXCEPTION_DEBUG_INFO Exception;\n        CREATE_THREAD_DEBUG_INFO CreateThread;\n        CREATE_PROCESS_DEBUG_INFO CreateProcessInfo;\n        EXIT_THREAD_DEBUG_INFO ExitThread;\n        EXIT_PROCESS_DEBUG_INFO ExitProcess;\n        LOAD_DLL_DEBUG_INFO LoadDll;\n        UNLOAD_DLL_DEBUG_INFO UnloadDll;\n        OUTPUT_DEBUG_STRING_INFO DebugString;\n        RIP_INFO RipInfo;\n    } u;\n} DEBUG_EVENT, *LPDEBUG_EVENT;\n```\n\n前 3 个成员很好理解，最后一个成员是一个联合体，一共有 9 种含义——对应 9 种调试事件，通过 `dwDebugEventCode` 决定如何解释联合体。\n\n9 种调试事件对应的结构体分别如下（简单了解即可）：\n\n```c\n// 异常类型信息\ntypedef struct _EXCEPTION_DEBUG_INFO {\n    EXCEPTION_RECORD ExceptionRecord;\n    DWORD dwFirstChance;\n} EXCEPTION_DEBUG_INFO, *LPEXCEPTION_DEBUG_INFO;\n\n// 线程创建类型信息\ntypedef struct _CREATE_THREAD_DEBUG_INFO {\n    HANDLE hThread;\n    LPVOID lpThreadLocalBase;\n    LPTHREAD_START_ROUTINE lpStartAddress;\n} CREATE_THREAD_DEBUG_INFO, *LPCREATE_THREAD_DEBUG_INFO;\n\n// 进程创建类型信息\ntypedef struct _CREATE_PROCESS_DEBUG_INFO {\n    HANDLE hFile;\n    HANDLE hProcess;\n    HANDLE hThread;\n    LPVOID lpBaseOfImage;\n    DWORD dwDebugInfoFileOffset;\n    DWORD nDebugInfoSize;\n    LPVOID lpThreadLocalBase;\n    LPTHREAD_START_ROUTINE lpStartAddress;\n    LPVOID lpImageName;\n    WORD fUnicode;\n} CREATE_PROCESS_DEBUG_INFO, *LPCREATE_PROCESS_DEBUG_INFO;\n\n// 线程退出类型信息\ntypedef struct _EXIT_THREAD_DEBUG_INFO {\n    DWORD dwExitCode;\n} EXIT_THREAD_DEBUG_INFO, *LPEXIT_THREAD_DEBUG_INFO;\n\n// 进程退出类型信息\ntypedef struct _EXIT_PROCESS_DEBUG_INFO {\n    DWORD dwExitCode;\n} EXIT_PROCESS_DEBUG_INFO, *LPEXIT_PROCESS_DEBUG_INFO;\n\n// 模块加载类型信息\ntypedef struct _LOAD_DLL_DEBUG_INFO {\n    HANDLE hFile;\n    LPVOID lpBaseOfDll;\n    DWORD dwDebugInfoFileOffset;\n    DWORD nDebugInfoSize;\n    LPVOID lpImageName;\n    WORD fUnicode;\n} LOAD_DLL_DEBUG_INFO, *LPLOAD_DLL_DEBUG_INFO;\n\n// 模块卸载类型信息\ntypedef struct _UNLOAD_DLL_DEBUG_INFO {\n    LPVOID lpBaseOfDll;\n} UNLOAD_DLL_DEBUG_INFO, *LPUNLOAD_DLL_DEBUG_INFO;\n\ntypedef struct _OUTPUT_DEBUG_STRING_INFO {\n    LPSTR lpDebugStringData;\n    WORD fUnicode;\n    WORD nDebugStringLength;\n} OUTPUT_DEBUG_STRING_INFO, *LPOUTPUT_DEBUG_STRING_INFO;\n\ntypedef struct _RIP_INFO {\n    DWORD dwError;\n    DWORD dwType;\n} RIP_INFO, *LPRIP_INFO;\n```\n\n## 两种建立方式的初始事件差异\n\n至此，调试事件生命周期已经完整：内核产生并发送事件，调试器等待、解析并继续事件。\n\n不过，调试关系可以在进程创建时建立，也可以在进程已经运行后才建立；两种建立方式在细节上有些不同。\n\n### 创建进程：额外的异常调试事件\n\n我们可以在上述的简易调试器调试循环判断异常类型的调试事件，将异常发生的地址打印，然后运行代码，就会发现一个被调试进程一切都正常运行，但是产生了一个异常调试事件 `EXCEPTION_DEBUG_EVENT`。\n\n```c\nprintf(\"发生异常调试事件: %x\\n\", debugEvent.u.Exception.ExceptionRecord.ExceptionAddress);\n```\n\n![decf3d7f3ade8116ffb464ffb8eac4f6&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/c9314883fd38c0d26798c6cb4e56351a1996a77a2a67713c1c25d8b68c8357c9.jpg)\n\n为什么会这样？我们回顾一下线程创建后是回到 3 环的流程：\n\n\n\n> **用户线程第一次进 3 环的顺序是**：位置 3 执行指定的用户 APC（即 `LoaderInitRoutine`，也是 `LdrInitializeThunk`），完成用户 APC 后返回到“3 环原位置”（即恢复原始 `CONTEXT` 到位置 2），再由用户态启动桩调用位置 1。 \n\n\n\n我们跟进 `ntdll` 模块中的 `LdrInitializeThunk` 函数，发现会调用 `_LdrpInitialize` 函数，接着又会判断当前创建的是否为第一个线程，如果是就会调用 `_LdrpInitializeProcess` 函数。：\n\n![8335dba50d0a2f73e7c863e4394ebc76&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/42ef050547ac7e63af2bc981179011dc7bafff6ecf4d2124fe1e455e29b72df3.jpg)\n\n我们接着跟进 `_LdrpInitializeProcess` 函数，我们只看关键点：首先，通过将 `PEB` 的地址存储到 `EBX` 寄存器中。接下来检查 `PEB` 结构体中偏移为 `0x2` 的位置，即 `BeingDebugged` 的值是否为 0，如果不等于 0 则跳转并调用函数 `DbgBreakPoint`：\n\n![4d76b67a6396c252f7e31c275ae742df&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/876d79037ade12dcd2864ae8079b395504e6db113e85e8098f7971b673cb7a3d.jpg)\n\n> **可以看到 `DbgBreakPoint` 函数的作用就是执行 `INT 3` 指令。**\n\n**总结**：第一个线程被创建后，在刚回到 3 环时，会检查 `PEB` 中的 `BeingDebugged` 字段来判断当前进程是否正在被调试。如果当前进程正在被调试，就会执行 `INT 3` 指令——给调试器一个极早的暂停程序的时机。\n\n### 附加进程：补发初始状态事件\n\n在创建进程时建立调试关系，调试器能从第一个线程创建、第一个模块加载开始观察目标进程。\n\n但附加进程建立调试关系时，目标进程已经运行了一段时间，调试器错过了此前发生的创建和加载过程。\n\n我们把简易调试器中的 `CreateProcess` 逻辑修改为 `DebugActiveProcess`，观察这种差异：\n\n```c\nDWORD PID;\nscanf(\"%d\", &PID);\nif (!DebugActiveProcess(PID))\n{\n    printf(\"AttachProcess error:%d\\n\", GetLastError());\n    getchar();\n    return 0;\n}\n```\n\n我们通过手动查看任务管理器的方式找到进程 ID，然后在调试器中输入，以达到附加进程调试的目的，这里我们仍然以 `notepad.exe` 为例进行附加调试，查看简易调试器的输出结果：\n\n![14613a94da9c845d2784feaf2fb26e29&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/1a66eafa5ee664faf38993a7e3b5aa86f3e9f7246eae24074e8e3f80a0acad9a.jpg)\n\n我们可以看到有很多的 **DLL 加载类型的调试事件**。但是按照我们正常的理解：在创建进程后就已经完成了 DLL 加载，为什么在附加时又进行了 DLL 的加载呢？\n\n#### 虚假的调试事件\n\n为了解决这个问题，我们需要来看一下 `ntoskrnl` 模块中的 `NtDebugActiveProcess` 函数：\n\n![f522367ce6471203e853b48cb68db9b6&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/a35b06cdce8c260d05e819623ce69fc404f930f538f1b43d9fa710d171e5b2c7.jpg)\n\n在将被调试进程与调试对象关联之前，会调用一个名为 `_DbgkpPostFakeProcessCreateMessages` 的函数，从字面意思理解，就是向调试对象发送一些虚构的假消息。\n\n进入 `_DbgkpPostFakeProcessCreateMessages` 函数后，**我们可以发现与线程相关的虚假消息以及与模块相关的虚假消息都会被发送给调试器**：\n\n![023238d15696019e2d2c818cc6c48557&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/164d5dc94ce708830fe2c9e6b6ec0559bc5d406555e53bc8ba51d5810902caa3.jpg)\n\n这就是为什么我们通过附加进程的方式建立调试关系时，依然能看到大量 DLL 加载调试事件的原因：实际上是由 `_NtDebugActiveProcess` 函数发送给调试器的虚构的假消息。\n\n**为什么要这样**？通过附加进程的方式建立调试关系时，由于调试器没有经历 DLL 模块的加载流程，因此通过这些虚假消息，**希望为调试器提供必要的信息**。\n\n> [!NOTE] 虚假消息的生成依据\n> - 模块加载虚假消息的生成依赖于 `PEB.Ldr` 中的 3 个链表（**很容易被修改，所以并不可靠**），这些链表以不同的顺序存储了该进程加载的所有模块：\n>   ![b9204846d2255598120426130788747a&#95;MD5&#46;jpg](/notes/n-534116c45bce417bac764b15cc9c1f99/media/f148e66c5953910674509216b5236b373fb897c3592725d97b1e1fd5ab323b72.jpg)\n> \n> - 线程创建虚假消息的生成依赖于 `EPROCESS` 中的线程链表。\n\n\n## 围绕调试关系的对抗\n\n在了解了调试原理之后，我们可以总结出一些**反调试的方法**：\n\n1. **`DebugPort` 检查与置 0**：创建一个线程，不断检查当前进程的 `DebugPort` 值，一旦有值就退出程序或将其置 0，中断调试对象与被调试进程之间的联系。\n2. **遍历所有进程的 `TEB + 0xF24` 处**：检查该位置是否有值，如果有值，说明存在调试器，可以选择退出程序。\n3. **Hook `NtCreateDebugObject`**：阻止 `NtCreateDebugObject` 函数创建调试对象，从而防止调试器的附加。\n\n**反反调试的方法：**\n\n1. **针对 `DebugPort` 检查与置 0**：不使用 `DebugPort`，而是在进程结构体中另外选择一个空闲成员来存放 `_DEBUG_OBJECT` 的地址。\n2. **针对 Hook `NtCreateDebugObject`**：自行分配内存给 `_DEBUG_OBJECT` 结构体，并为其成员赋值，绕过原有的 Hook。\n3. **重写 `DebugActiveProcess` 函数**：重新实现 `DebugActiveProcess` 函数，以增加对反调试技术绕过能力。\n\n**思考**：`DbgkpSendApiMessage` 函数是各类调试事件通知最终汇合的统一发送入口。如果在这个函数中设置了钩子，调试器将无法正常进行调试操作。\n",
+  "id": "534116c4-5bce-417b-ac76-4b15cc9c1f99",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows 调试关系与调试事件机制",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "03eee7ef0b55e1313e01b14e10d29e31043f9494cc1b8c1a7ca25366cd143015.jpg",
+    "085adec3359a4f9ea614d57f474889ec97e39b4c2231f73d17c11ed29b6dcb5b.jpg",
+    "137d77da58970f90077f55d472bbc6dd7bff50963881cba967b8ef540c94170e.jpg",
+    "164d5dc94ce708830fe2c9e6b6ec0559bc5d406555e53bc8ba51d5810902caa3.jpg",
+    "1a66eafa5ee664faf38993a7e3b5aa86f3e9f7246eae24074e8e3f80a0acad9a.jpg",
+    "1dbc44f20cc47fd820e2a5c87741d8ece6d60bf7f296397feb4c7a4671219499.jpg",
+    "2e08cb3136eafca81c9d4528846b5693775523ea5a2efeca9feb81d9e4799e9b.jpg",
+    "41359469c980ae4540c468a3551be33c8bd5144936ea75c0c57ca7a5a63fee61.jpg",
+    "42ef050547ac7e63af2bc981179011dc7bafff6ecf4d2124fe1e455e29b72df3.jpg",
+    "4aa80cbad32e9735b0f653dc5dbbca36d1c07cb979a0c4e996a79045c3269b4f.jpg",
+    "50f8b6d3bb31e4779eca87046b4361638903161e68c9b349441a87e8d0a3bc8b.jpg",
+    "70352a94de18bade919167496182498528b809f6ac16289d141fcee7a5b18004.jpg",
+    "876d79037ade12dcd2864ae8079b395504e6db113e85e8098f7971b673cb7a3d.jpg",
+    "a1f80ffd475fce0f1981bc9f452e1dc163eeb35fdbe85e98f0ed13335bc582ac.jpg",
+    "a35b06cdce8c260d05e819623ce69fc404f930f538f1b43d9fa710d171e5b2c7.jpg",
+    "ad2c85e03b03ac84668504cb622fe0aab631ca93494664cde1eecf5211e550bf.jpg",
+    "ad323bd4d12e49d8562adc7241c7b9aaee72030921e5b4d8110b3c7ebb788a4b.jpg",
+    "b9019b2563ad1f3e960125ce8a9b6c3172eefa64b976ded9727b3e93d43614c2.jpg",
+    "c806c34c41ab02b555178ea1623da72b1ddf548a3b03c2fea8be189c15e8b9b0.jpg",
+    "c9314883fd38c0d26798c6cb4e56351a1996a77a2a67713c1c25d8b68c8357c9.jpg",
+    "ee4c888c5f20d76a077aaea01a036930c7b5caf45bfd929c3b83e2309d485a2d.jpg",
+    "f148e66c5953910674509216b5236b373fb897c3592725d97b1e1fd5ab323b72.jpg",
+    "f6cf91b31dafe5458f4cd019df4fdca5ba80510b32b383a40dff3cad733dfcbd.jpg"
+  ],
+  "url": "/notes/n-534116c45bce417bac764b15cc9c1f99/"
+}

@@ -1,0 +1,110 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-ce8a38b73ca7b3548780",
+      "kind": "heading",
+      "offset": 12
+    },
+    {
+      "id": "h-f17fe6a7376c073e5d53",
+      "kind": "heading",
+      "offset": 91
+    },
+    {
+      "id": "h-b919e03384b742f8dff7",
+      "kind": "heading",
+      "offset": 103
+    },
+    {
+      "id": "h-58f003f185a4fe257eaf",
+      "kind": "heading",
+      "offset": 214
+    },
+    {
+      "id": "h-9993fbb514c77a54cac8",
+      "kind": "heading",
+      "offset": 709
+    },
+    {
+      "id": "h-3e69b1a587132e76e820",
+      "kind": "heading",
+      "offset": 779
+    },
+    {
+      "id": "h-6182e69bed83cc9c6b6b",
+      "kind": "heading",
+      "offset": 1138
+    },
+    {
+      "id": "h-10b5edff06f792f91aac",
+      "kind": "heading",
+      "offset": 1292
+    },
+    {
+      "id": "h-95f03d701a02c11315f0",
+      "kind": "heading",
+      "offset": 2384
+    },
+    {
+      "id": "h-a44074509b3f750f70da",
+      "kind": "heading",
+      "offset": 2606
+    },
+    {
+      "id": "h-b69884a0a07a6c7f53bc",
+      "kind": "heading",
+      "offset": 6390
+    },
+    {
+      "id": "h-4c02fa51305793508e93",
+      "kind": "heading",
+      "offset": 6684
+    },
+    {
+      "id": "h-6b7abe376927a57719c8",
+      "kind": "heading",
+      "offset": 7409
+    },
+    {
+      "id": "h-bb10b3e6116f053167cc",
+      "kind": "heading",
+      "offset": 7553
+    },
+    {
+      "id": "h-457309ab3faaf4bafac3",
+      "kind": "heading",
+      "offset": 7565
+    },
+    {
+      "id": "h-18a004d6a45316e00b7c",
+      "kind": "heading",
+      "offset": 7715
+    },
+    {
+      "id": "h-ae14887d97cef62fade0",
+      "kind": "heading",
+      "offset": 8092
+    },
+    {
+      "id": "h-143d1ff042432bf38a9a",
+      "kind": "heading",
+      "offset": 8353
+    }
+  ],
+  "body": "# COM 组件开发基础\n\n相关内容：\n- [COM 组件设计思想](/notes/n-23c88c136e7d414f98de5192becb8546/)\n\n## COM 成员函数\n\n### 函数调用约定\n\n**需要注意的是**，如果讨论的是经典 Win32 COM（32 位），所有成员函数通常都要使用 `__stdcall` 调用约定，因为这是 COM 在该环境下的标准调用约定。\n\n### 函数返回值 `HRESULT`\n\nCOM 要求所有方法都返回一个 `HRESULT` 类型的错误码，其本质是一个类型别名：\n\n```cpp\ntypedef LONG HRESULT;\n```\n\n`HRESULT` 类型的返回值反映了函数的执行情况，其位域规范如下：\n\n![db4962c798153a6717b4b38b2a42564f&#95;MD5&#46;jpg](/notes/n-59332a7e0ef740048875e7c1d3bf71e5/media/add55e1a7078d935dfe96107628170192f7ae1faa12a13bcef1d804642dfcfb1.jpg)\n\n可以看到分为四段：\n1. 31–30：严重度（Severity），指示结果是成功还是失败\n2. 29：自定义标记（Customer bit），反映结果是否为自定义标识，1 为是，0 则不是\n3. 28–16：设施码（Facility Code），表示结果来源\n4. 15–0：状态码（Code），反映操作的具体状态，`WinError.h` 定义了 Win32 函数所有可能的返回结果\n\n## COM 数据类型\n\n所谓的数据类型，目的是告知数据的大小和数据的使用方式。\n\n> 可以在 IDL 文件中描述成员变量及其类型。\n### COM 常见数据类型\n\nCOM 常见的数据类型如下所示，其中加粗部分是需要额外了解的：\n\n`CHAR`, `CHAR*`, `BYTE`, `BYTE*`, `SHORT`, `SHORT*`, `USHORT`, `USHORT*`, `INT`, `INT*`, `UINT`, `UINT*`, `LONG`, `LONG*`, `ULONG`, `ULONG*`, `FLOAT`, `FLOAT*`, `DOUBLE`, `DOUBLE*`, **`VARIANT_BOOL`**, **`VARIANT_BOOL*`**, **`BSTR`**, **`BSTR*`**, `IUnknown*`, `IUnknown**`, **`VARIANT`**, **`VARIANT*`**\n#### `VARIANT_BOOL`\n\n数据类型 `VARIANT_BOOL` 的定义如下，其本质是一个 `short` 类型：\n\n```cpp\ntypedef short VARIANT_BOOL;\n```\n\n我们想要使用这个类型的话需要包含一个头文件：\n\n```cpp\n#include <oaidl.h>\n```\n\n#### `BSTR`\n\n`BSTR` 是 COM 中的字符串类型，`BSTR*` 是其指针。`BSTR` 指向宽字符串，是一个带有字节计数值的字符串，该计数值保存在字符数组开头的前 4 字节中。\n\n![c5e6a2669e6bc20f384ce7b13b38e087&#95;MD5&#46;jpg](/notes/n-59332a7e0ef740048875e7c1d3bf71e5/media/82af5ead2877bb3a0ace8dbba640b3c6f061a4b3b291135f706c61f26e3cb437.jpg)\n\n在使用之前需要包含头文件；如果已包含 `windows.h` 或 `atlbase.h` 则无需额外引入：\n\n```cpp\n#include <atlconv.h>\n```\n\n使用 `BSTR` 不能直接赋值，需要借助专用函数：\n\n```cpp\nBSTR bstrA = SysAllocString(L\"Hello BSTR\"); // 赋值\nBSTR bstrB = SysAllocStringLen(bstrA, SysStringLen(bstrA)); // 指定长度赋值\nSysFreeString(bstrA); // 释放\nSysFreeString(bstrB); // 释放\n```\n\n在 VS 中调试观察内存，可以清楚地看到在 `Hello` 前面记录了字符串的字节长度 `0x14`（即 20）：\n\n![b379551846f8e6beb3ffe3a9439ce3fc&#95;MD5&#46;jpg](/notes/n-59332a7e0ef740048875e7c1d3bf71e5/media/0a0958ef2e67f59067f60154f03aaf74de8c3ebac9de7783836ddf5559a62c5a.jpg)\n\n上述示例中涉及的 `BSTR` 相关函数如下：\n\n```cpp\nBSTR SysAllocString(const OLECHAR *); // 是COM中申请BSTR字符串的方法。\nBSTR SysAllocStringLen(const OLECHAR *, UINT); // 根据字符串指针与字符个数构造BSTR字符串。\nUINT SysStringLen(BSTR); // 获取字符串前面的计数值。\nvoid SysFreeString(BSTR); // 释放字符串，当COM中的字符串（BSTR）不再使用时，调用该函数。\n```\n\n### COM 动态变量类型 `VARIANT`\n\n`VARIANT` 数据类型具有跨语言的特性，同时可以存储任意数据类型，**可以理解为万能数据类型**。\n\n为什么要有 `VARIANT`？我的猜测：对于解释型语言，具有弱变量类型，就需要用到该类型的变量。\n\n比如在 Python 中可以：\n```python\nobj.a = 1 # 整数\n\nobj.a = \"hello world\" #字符串\n```\n\n**核心逻辑**：通过一个标识，告诉使用方如何使用存储的数据。\n#### 结构布局\n\n为实现万能类型的功能，在 C++ 中，`VARIANT` 是一个结构体，内部包含联合体（联合了多种基本数据类型），**同时有变量类型标志 `VARTYPE vt`**，通过 `vt` 指示联合体中当前存储的实际类型。\n\n```cpp\ntypedef /* [wire_marshal] */ struct tagVARIANT VARIANT;\n\nstruct tagVARIANT\n    {\n    union \n        {\n        struct __tagVARIANT\n            {\n            VARTYPE vt;\n            WORD wReserved1;\n            WORD wReserved2;\n            WORD wReserved3;\n            union \n                {\n                LONGLONG llVal;\n                LONG lVal;\n                BYTE bVal;\n                SHORT iVal;\n                FLOAT fltVal;\n                DOUBLE dblVal;\n                VARIANT_BOOL boolVal;\n                _VARIANT_BOOL bool;\n                SCODE scode;\n                CY cyVal;\n                DATE date;\n                BSTR bstrVal;\n                IUnknown *punkVal;\n                IDispatch *pdispVal;\n                SAFEARRAY *parray;\n                BYTE *pbVal;\n                SHORT *piVal;\n                LONG *plVal;\n                LONGLONG *pllVal;\n                FLOAT *pfltVal;\n                DOUBLE *pdblVal;\n                VARIANT_BOOL *pboolVal;\n                _VARIANT_BOOL *pbool;\n                SCODE *pscode;\n                CY *pcyVal;\n                DATE *pdate;\n                BSTR *pbstrVal;\n                IUnknown **ppunkVal;\n                IDispatch **ppdispVal;\n                SAFEARRAY **pparray;\n                VARIANT *pvarVal;\n                PVOID byref;\n                CHAR cVal;\n                USHORT uiVal;\n                ULONG ulVal;\n                ULONGLONG ullVal;\n                INT intVal;\n                UINT uintVal;\n                DECIMAL *pdecVal;\n                CHAR *pcVal;\n                USHORT *puiVal;\n                ULONG *pulVal;\n                ULONGLONG *pullVal;\n                INT *pintVal;\n                UINT *puintVal;\n                struct __tagBRECORD\n                    {\n                    PVOID pvRecord;\n                    IRecordInfo *pRecInfo;\n                    }   __VARIANT_NAME_4;\n                }   __VARIANT_NAME_3;\n            }   __VARIANT_NAME_2;\n        DECIMAL decVal;\n        }   __VARIANT_NAME_1;\n    } ;\n```\n\n成员 `vt` 标识该结构所代表的数据类型，其对应的值：\n\n```cpp\n/* VARIANT STRUCTURE\n *\n *  VARTYPE vt;\n *  WORD wReserved1;\n *  WORD wReserved2;\n *  WORD wReserved3;\n *  union {\n *    LONGLONG       VT_I8\n *    LONG           VT_I4\n *    BYTE           VT_UI1\n *    SHORT          VT_I2\n *    FLOAT          VT_R4\n *    DOUBLE         VT_R8\n *    VARIANT_BOOL   VT_BOOL\n *    SCODE          VT_ERROR\n *    CY             VT_CY\n *    DATE           VT_DATE\n *    BSTR           VT_BSTR\n *    IUnknown *     VT_UNKNOWN\n *    IDispatch *    VT_DISPATCH\n *    SAFEARRAY *    VT_ARRAY\n *    BYTE *         VT_BYREF|VT_UI1\n *    SHORT *        VT_BYREF|VT_I2\n *    LONG *         VT_BYREF|VT_I4\n *    LONGLONG *     VT_BYREF|VT_I8\n *    FLOAT *        VT_BYREF|VT_R4\n *    DOUBLE *       VT_BYREF|VT_R8\n *    VARIANT_BOOL * VT_BYREF|VT_BOOL\n *    SCODE *        VT_BYREF|VT_ERROR\n *    CY *           VT_BYREF|VT_CY\n *    DATE *         VT_BYREF|VT_DATE\n *    BSTR *         VT_BYREF|VT_BSTR\n *    IUnknown **    VT_BYREF|VT_UNKNOWN\n *    IDispatch **   VT_BYREF|VT_DISPATCH\n *    SAFEARRAY **   VT_BYREF|VT_ARRAY\n *    VARIANT *      VT_BYREF|VT_VARIANT\n *    PVOID          VT_BYREF (Generic ByRef)\n *    CHAR           VT_I1\n *    USHORT         VT_UI2\n *    ULONG          VT_UI4\n *    ULONGLONG      VT_UI8\n *    INT            VT_INT\n *    UINT           VT_UINT\n *    DECIMAL *      VT_BYREF|VT_DECIMAL\n *    CHAR *         VT_BYREF|VT_I1\n *    USHORT *       VT_BYREF|VT_UI2\n *    ULONG *        VT_BYREF|VT_UI4\n *    ULONGLONG *    VT_BYREF|VT_UI8\n *    INT *          VT_BYREF|VT_INT\n *    UINT *         VT_BYREF|VT_UINT\n *  }\n */\n```\n\n#### 读写使用\n\n当我们想用 `VARIANT` 来读写 `LONG` 类型时可以这样写：\n\n```cpp\nVARIANT var;\nVariantInit(&var); // 初始化\nvar.vt = VT_I4; // 变量类型标志，如上所示VT_I4对应LONG类型\nvar.lVal = 100; // 这里的成员lVal就表示着LONG，这个可以在VARIANT结构体的定义中找到\n\nif (var.vt == VT_I4) // 判断\n{\n    LONG lVar = var.lVal; // 获取\n}\n\nVariantClear(&var); // 清空\n```\n\n#### 类型转换\n\n如果需要对 `VARIANT` 进行数据类型转换，可以使用 `VariantChangeType` 函数：\n\n```cpp\nWINOLEAUTAPI VariantChangeType(\n    _Inout_ VARIANTARG * pvargDest, // 目标VARIANT的指针\n    _In_ const VARIANTARG * pvarSrc, // 源VARIANT的指针\n    _In_ USHORT wFlags, // 强制转化的控制符\n    _In_ VARTYPE vt // 需要强制转化的类型\n);\n```\n\n例如将 `LONG` 类型转为 `FLOAT` 类型：\n\n```cpp\nVARIANT var;\nVariantInit(&var); // 初始化\nvar.vt = VT_I4; // 变量类型标志，如上所示VT_I4对应LONG类型\nvar.lVal = 100; // 这里的成员lVal就表示着LONG，这个可以在VARIANT结构体的定义中找到\n\nVariantChangeType(&var, &var, 0, VT_R4);\n\nVariantClear(&var); // 清空\n```\n\n![b34df4ff35447bbdaf716d9cd2326958&#95;MD5&#46;jpg](/notes/n-59332a7e0ef740048875e7c1d3bf71e5/media/7f18343797d2c66db0edd3ad0a67b63a44b44d8ec3eac77ae979b2609a2d8d38.jpg)\n\n---\n\n\n## 附录：COM 常用 API 速查\n\n这些 API 是 Windows COM 运行库提供的基础函数。  \n\n在 C++ 中开发 COM 客户端时，包含 COM 相关头文件并链接 `ole32.lib` 后，即可调用这些 API 完成 COM 初始化、对象创建、GUID 转换、内存管理等操作。\n\n### COM 组件相关\n\n#### 初始化函数\n\n1. `CoBuildVersion`：获取 COM 库的版本号\n2. `CoInitialize`：初始化 COM 库\n3. `CoUninitialize`：终止 COM 服务\n4. `CoFreeUnusedLibraries`：释放进程中当前不再使用的组件程序\n\n#### GUID 函数\n\n1. `IsEqualGUID`：判断两个 `GUID` 是否相等\n2. `IsEqualIID`：判断两个 `IID` 是否相等\n3. `IsEqualCLSID`：判断两个 `CLSID` 是否相等\n4. `CLSIDFromProgID`：把字符串形式的 `ProgID` 转换为 `CLSID` 结构\n5. `StringFromCLSID`：把 `CLSID` 结构转换为字符串形式\n6. `IIDFromString`：把字符串形式的接口标识转换为 `IID` 结构\n7. `StringFromIID`：把 `IID` 结构转换为字符串形式\n8. `StringFromGUID2`：把 `GUID` 结构转换为字符串形式\n9. `ProgIDFromCLSID`：从 `CLSID` 获取 `ProgID`\n\n### 对象创建相关函数\n\n1. `CoGetClassObject`：获取指定 COM 类的类工厂\n2. `CoCreateInstance`：创建 COM 对象并返回指定接口指针\n3. `CoCreateInstanceEx`：创建 COM 对象，可指定多个接口或远程对象\n4. `CoRegisterClassObject`：登记一个对象，以便其他应用程序连接到该对象\n5. `CoRevokeClassObject`：取消对象的登记操作\n6. `CoDisconnectObject`：断开其他应用程序与对象的连接\n\n### 内存管理函数\n\n1. `CoTaskMemAlloc`：内存分配函数\n2. `CoTaskMemRealloc`：内存重新分配函数\n3. `CoTaskMemFree`：内存释放函数\n4. `CoGetMalloc`：获取 `COM` 库的内存管理器接口\n",
+  "id": "59332a7e-0ef7-4004-8875-e7c1d3bf71e5",
+  "metadata": {
+    "tags": [
+      "os/windows/com",
+      "lang/cpp"
+    ],
+    "title": "COM 组件开发基础"
+  },
+  "resources": [
+    "0a0958ef2e67f59067f60154f03aaf74de8c3ebac9de7783836ddf5559a62c5a.jpg",
+    "7f18343797d2c66db0edd3ad0a67b63a44b44d8ec3eac77ae979b2609a2d8d38.jpg",
+    "82af5ead2877bb3a0ace8dbba640b3c6f061a4b3b291135f706c61f26e3cb437.jpg",
+    "add55e1a7078d935dfe96107628170192f7ae1faa12a13bcef1d804642dfcfb1.jpg"
+  ],
+  "url": "/notes/n-59332a7e0ef740048875e7c1d3bf71e5/"
+}

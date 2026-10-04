@@ -1,0 +1,73 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c1353b44512abefc40ad",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-d5c333d3a5f1740a1311",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-95bf7384b1e643c89a8e",
+      "kind": "heading",
+      "offset": 43
+    },
+    {
+      "id": "h-daa47ef83ce0fb9d94b2",
+      "kind": "heading",
+      "offset": 227
+    },
+    {
+      "id": "h-2fe27f887d3dc952ef4e",
+      "kind": "heading",
+      "offset": 386
+    },
+    {
+      "id": "h-ecc179939cea0317fa72",
+      "kind": "heading",
+      "offset": 559
+    },
+    {
+      "id": "h-fb4e87981073dc8f2623",
+      "kind": "heading",
+      "offset": 578
+    },
+    {
+      "id": "h-8f40917e5ffc0d04f435",
+      "kind": "heading",
+      "offset": 878
+    },
+    {
+      "id": "h-9bdcce5bb8ef13a95958",
+      "kind": "heading",
+      "offset": 1242
+    },
+    {
+      "id": "h-69c46339a4bcb5e864b6",
+      "kind": "heading",
+      "offset": 1261
+    },
+    {
+      "id": "h-71743caff2109c71345d",
+      "kind": "heading",
+      "offset": 1393
+    }
+  ],
+  "body": "# 易语言程序特点与逆向切入\n\n## 编译与链接特性\n\n### 静态编译架构与调试符号\n- **编译器与链接器分工**：编译器将源代码转换为目标文件，链接器将多个目标文件合并成一个可执行文件。\n- **易语言底层机制**：易语言的编译器为自研，但静态编译使用的是微软 **VC6.0 链接器**（`link.exe`）。由于静态编译依赖微软链接器，逆向分析或开发测试时可以通过开启调试符号生成 PDB 文件，辅助逆向与源码级调试。\n\n### 开启调试符号\n- **配置文件路径**：`易语言安装目录/tools/link.ini`\n- **配置修改项**：\n  ```ini\n  extra_args=/DEBUG:FULL\n  ```\n\n> [!tip] 提示\n> 易语言的链接器支持替换。如果更换了链接器，之前的一些易语言特征会改变或失效。\n\n### 静态编译报错处理\n开启生成调试符号的选项后，进行静态编译时会弹出错误弹窗。\n\n> [!warning] 避坑注意\n> 按下方输出栏提示缺失的文件，从 VC6.0 复制到易语言相应的目录即可（**必须从 VC6.0 复制，从现代 MSVC 复制的不行**）。例如常见的调试符号支持库文件（如 `MSPDB60.DLL` 等）。\n\n---\n\n## 窗口与消息循环机制\n\n### 主线程与子线程载入窗口差异\n- **主线程 / 主窗口**：载入新窗口时，窗口依附于主线程的消息循环，会正常弹出并常驻加载。\n  ![Pasted image 20230813143232&#46;png](/notes/n-ce3b03df129c4b5abaaff4f2538ec2f9/media/a870bc66328757671c8d080e06791b986a195c5d05d4fb5c7421f7a54b7d5576.png)\n\n- **子线程**：如果在子线程中载入窗口，该窗口会一闪而过。\n  - **原因**：子线程默认没有加入消息循环，线程执行完毕即退出，导致窗口被销毁。\n\n### 解决方案与逆向启示\n在子线程中必须加入消息循环，维持线程存活并持续派发窗口消息。正确使用消息循环在子线程中载入窗口的示例如下：\n![Pasted image 20230813164654&#46;png](/notes/n-ce3b03df129c4b5abaaff4f2538ec2f9/media/ec78ad82ff869be6db9df9c5f9593b19cc5f97156f40cbc2d538a3ccc8b5fea2.png)\n\n> [!tip] 逆向切入点\n> 在逆向注入 DLL 弹出界面或分析易语言多线程窗口交互时，窗口的存活依赖于消息驱动机制；逆向跟踪易语言窗口生命周期与按键/鼠标事件时，主线程的消息泵（如 `GetMessage` / `DispatchMessage`）是核心关键点。\n\n---\n\n## 特征码定位思想\n\n### 正向 Demo 差分定位法\n知道一个软件使用的框架/编程语言后，想要快速定位到关键点，可以使用同样的内容去开发一个 Demo，然后提取关键位置的特征码。通过自编写最小功能 Demo，并结合调试符号提取底层关键分发桩的特征码，可在目标无符号程序中快速检索。\n\n### 以 MFC 与易语言为例\n易语言模仿了 MFC 的设计，具有异曲同工的特点，通过学习 MFC 可以熟悉如何逆向易语言程序：\n\n1. 建立一个 MFC 程序。\n2. 分析 MFC 程序按钮事件调用过程。\n3. 快速找到按钮点击后的代码位置（窗口事件必定经过 `_AfxDispatchCmdMsg` 函数）。\n4. **映射到易语言**：易语言的按钮点击与控件事件同样经过其运行库特定的事件分发函数，通过正向 Demo 比对即可提取该类特征码，从而在逆向无符号程序时快速定位真实事件回调。\n\n\n",
+  "id": "ce3b03df-129c-4b5a-baaf-f4f2538ec2f9",
+  "metadata": {
+    "tags": [
+      "reverse/windows",
+      "os/windows"
+    ],
+    "title": "易语言运行机制与逆向"
+  },
+  "resources": [
+    "a870bc66328757671c8d080e06791b986a195c5d05d4fb5c7421f7a54b7d5576.png",
+    "ec78ad82ff869be6db9df9c5f9593b19cc5f97156f40cbc2d538a3ccc8b5fea2.png"
+  ],
+  "url": "/notes/n-ce3b03df129c4b5abaaff4f2538ec2f9/"
+}

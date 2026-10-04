@@ -1,0 +1,103 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-39be00d4d449ad1ebf4e",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-5c64d58f0578962e7c83",
+      "kind": "heading",
+      "offset": 30
+    },
+    {
+      "id": "h-d7818c11c26d16c78a29",
+      "kind": "heading",
+      "offset": 525
+    },
+    {
+      "id": "h-a5dab2366c39a7b12537",
+      "kind": "heading",
+      "offset": 719
+    },
+    {
+      "id": "h-c19d329d9b67f215a889",
+      "kind": "heading",
+      "offset": 750
+    },
+    {
+      "id": "h-cedb8a36824a61c06a72",
+      "kind": "heading",
+      "offset": 1803
+    },
+    {
+      "id": "h-b0c6328f6c77a39c3e9e",
+      "kind": "heading",
+      "offset": 2536
+    },
+    {
+      "id": "h-6aa4310be7614bbfae75",
+      "kind": "heading",
+      "offset": 3598
+    },
+    {
+      "id": "h-256955cf80a701fca16e",
+      "kind": "heading",
+      "offset": 3612
+    },
+    {
+      "id": "h-eeeddea425ade7acf0d6",
+      "kind": "heading",
+      "offset": 5124
+    },
+    {
+      "id": "h-c72396baea44376bb216",
+      "kind": "heading",
+      "offset": 5811
+    },
+    {
+      "id": "h-a0d8431f87880d5ac112",
+      "kind": "heading",
+      "offset": 5820
+    },
+    {
+      "id": "h-d22d96c3ad3d0afd225d",
+      "kind": "heading",
+      "offset": 6180
+    },
+    {
+      "id": "h-64164420b4f6687e7d75",
+      "kind": "heading",
+      "offset": 8015
+    },
+    {
+      "id": "h-1c0116721b3acf484612",
+      "kind": "heading",
+      "offset": 10166
+    }
+  ],
+  "body": "# Windows 内存映射文件\n\n## 什么是内存映射文件\n\n内存映射文件（Memory-Mapped Files）是将磁盘上的文件内容映射到进程的虚拟地址空间中，其原理架构如下图所示：\n\n![4caaf52dfd2864c9bf808b62504b836d&#95;MD5&#46;jpg](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/c0c0d5eba9de313666974f1cecff3dde44265cc946d714f7e3e304b1bba66c16.jpg)\n\n当访问这片虚拟内存时，触发缺页异常，再将文件数据读取到物理页中，然后建立虚拟内存与该物理页的映射关系。\n\n**核心优势**：\n- **简化文件操作**：访问文件就像访问普通内存指针一样简单，无需频繁调用 `ReadFile` / `WriteFile` 等繁杂的传统 I/O 函数。\n- **按需加载与高效随机访问**：面对大文件或随机读写场景时，避免手动将整个文件读入用户缓冲区。实际性能取决于访问模式、缺页异常与缓存策略，并不保证在所有场景下均超越普通文件 I/O。\n\n---\n\n## 基本使用流程与核心 API\n\n> [!note] 内核层对应关系\n> “文件映射对象”本质上是 Windows 内核中的 Section 对象。用户态调用的 `CreateFileMapping` 最终通过 `NtCreateSection` 创建或打开相应 Section；内核态代码还可直接使用 `ZwCreateSection`。具体调用路径会随 Windows 版本有所差异。\n\n### 1. 获得映射对象\n#### 创建新对象：`CreateFileMapping`\n\n`CreateFileMapping` 用于创建一个文件映射内核对象（Section 对象），以描述后备存储的大小和页面保护属性：\n\n```c\nHANDLE CreateFileMapping( \n    HANDLE hFile,                       // 文件句柄；若不关联磁盘文件传 INVALID_HANDLE_VALUE\n    LPSECURITY_ATTRIBUTES lpAttributes, // 安全属性，通常传 NULL\n    DWORD flProtect,                    // 映射对象允许的页面保护属性（如 PAGE_READWRITE）\n    DWORD dwMaximumSizeHigh,            // 映射最大大小的高 32 位（32 位系统通常传 0）\n    DWORD dwMaximumSizeLow,             // 映射最大大小的低 32 位（为 0 表示使用实际文件大小）\n    LPCTSTR lpName                      // 对象名称，跨进程共享时需要指定\n);\n```\n\n> **注意**：`CreateFileMapping` 仅创建内核描述对象，**并不等于立即为整个地址范围分配驻留物理页**。它既可用于真实文件映射，也可用于创建纯内存共享（不关联磁盘文件）。映射真实磁盘文件前，需先通过 `CreateFile` 获取文件句柄。\n\n**参数详解**：\n1. **`hFile`**：要映射的文件句柄。若传入 `INVALID_HANDLE_VALUE`，表示不需要真实磁盘文件，映射对象改由系统页面文件（Pagefile）作为后备存储。\n2. **`lpAttributes`**：安全属性指针，通常传 `NULL` 使用默认安全描述符。\n3. **`flProtect`**：指定页面保护属性，常见值包括 `PAGE_READONLY`、`PAGE_READWRITE`、`PAGE_WRITECOPY` 等。\n4. **`dwMaximumSizeHigh` 与 `dwMaximumSizeLow`**：组合构成 64 位整数，指定文件映射对象的最大字节数。\n5. **`lpName`**：映射对象的名称。若不需要跨进程按名称打开，可传 `NULL`。\n\n#### 打开已有命名对象：`OpenFileMapping`\n\n`OpenFileMapping` 用于**打开一个已存在的命名文件映射对象并返回句柄**：\n\n```c\nHANDLE OpenFileMapping(\n    DWORD  dwDesiredAccess, // 文件数据的访问权限（需与 CreateFileMapping 的 flProtect 匹配）\n    BOOL   bInheritHandle,  // 句柄是否可被子进程继承（TRUE / FALSE）\n    LPCSTR lpName           // 已存在的文件映射对象名称\n);\n```\n\n**参数详解**：\n1. **`dwDesiredAccess`**：指定映射对象的访问权限，必须与 `CreateFileMapping` 设置的 `flProtect` 相匹配：\n\t- `FILE_MAP_ALL_ACCESS` 对应 `PAGE_READWRITE`\n\t- `FILE_MAP_COPY` 对应 `PAGE_WRITECOPY`\n\t- `FILE_MAP_EXECUTE` 对应 `PAGE_EXECUTE_READ` 或 `PAGE_EXECUTE_READWRITE`\n\t- `FILE_MAP_READ` 对应 `PAGE_READONLY` 或 `PAGE_READWRITE`\n\t- `FILE_MAP_WRITE` 对应 `PAGE_READWRITE`\n2. **`bInheritHandle`**：指定句柄继承性。`TRUE` 表示允许子进程继承，`FALSE` 表示不允许。\n3. **`lpName`**：要打开的文件映射对象名称。\n\n### 2. 映射视图：`MapViewOfFile`\n\n创建映射对象后，必须通过 `MapViewOfFile` 将映射对象的视图挂载到进程的虚拟地址空间中：\n\n```c\nLPVOID MapViewOfFile( \n    HANDLE hFileMappingObject,   // FileMapping 对象的句柄\n    DWORD dwDesiredAccess,       // 视图访问模式（权限不得超出映射对象允许的保护范围）\n    DWORD dwFileOffsetHigh,      // 映射偏移量高 32 位（通常传 0）\n    DWORD dwFileOffsetLow,       // 映射偏移量低 32 位（指定映射起始偏移）\n    SIZE_T dwNumberOfBytesToMap  // 要映射的字节大小（传 0 表示映射至对象末尾）\n);\n```\n\n**参数详解**：\n1. **`hFileMappingObject`**：由 `CreateFileMapping` 或 `OpenFileMapping` 返回的映射对象句柄。\n2. **`dwDesiredAccess`**：当前视图的访问方式（如 `FILE_MAP_READ`、`FILE_MAP_ALL_ACCESS`、`FILE_MAP_COPY` 等）。\n3. **`dwFileOffsetHigh` 与 `dwFileOffsetLow`**：构成 64 位文件偏移量，均传 `0` 表示从文件开头开始映射。\n4. **`dwNumberOfBytesToMap`**：映射的字节数，传 `0` 表示自动映射到文件末尾。\n\n这一步会在 VAD 树中分配对应的虚拟地址空间，但**同样不要求整个视图已建立驻留物理页**。\n\n> [!NOTE] 思考\n> **问**：既然 `CreateFileMapping` 和 `MapViewOfFile` 都不立即分配实际物理内存，操作系统是如何在访问虚拟内存时拿到文件数据的？\n> \n> **答**：通过**缺页异常**与 **VAD 树**协同完成（参考：[x86 缺页异常与 Windows 缺页处理](/notes/n-85c26c688a7d414f97a72dd67c15f9bb/)）。当程序首次读取或写入该虚拟地址时触发缺页异常，系统检索 VAD 树找到后备存储，再按需将磁盘文件数据加载到物理页中。优势在于无需一次性将整个文件搬入物理内存。\n\n---\n\n### 3. 访问与同步映射视图\n#### 读取文件内容示例\n\n以下代码示范了打开文件、创建映射对象、挂载虚拟内存视图并读取文件前 4 个字节的完整流程：\n\n```c\nDWORD MappingFile(LPSTR lpcFile) {\n    HANDLE hFile;\n    HANDLE hMapFile;\n    LPVOID lpAddr;\n\n    // 1. 打开文件，获取文件句柄\n    hFile = CreateFile(lpcFile, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);\n    if (hFile == INVALID_HANDLE_VALUE) {\n        printf(\"CreateFile failed: %d \\n\", GetLastError());\n        return 0;\n    }\n\n    // 2. 创建 FileMapping 对象\n    hMapFile = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, 0, NULL);\n    if (hMapFile == NULL) {\n        printf(\"CreateFileMapping failed: %d \\n\", GetLastError());\n        CloseHandle(hFile);\n        return 0;\n    }\n\n    // 3. 将文件映射到虚拟地址空间\n    lpAddr = MapViewOfFile(hMapFile, FILE_MAP_COPY, 0, 0, 0);\n\n    // 4. 读取文件内容（读取文件开头 4 个字节）\n    DWORD dwTest1 = *(LPDWORD)lpAddr;\n    printf(\"dwTest1: %x \\n\", dwTest1);\n\n    // 5. 写入文件（示例）\n    // *(LPDWORD)lpAddr = 0x12345678;\n\n    // 6. 清理并释放资源\n    UnmapViewOfFile(lpAddr);\n    CloseHandle(hMapFile);\n    CloseHandle(hFile);\n\n    return 0;\n}\n```\n\n调用示例与输出效果：\n\n```c\nMappingFile(TEXT(\"C:\\\\A.txt\"));\n```\n\n![e49c6aa43c5653038d08813662d53eb0&#95;MD5&#46;png](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/963140b12910950b4b5611312106933fe44c4ff85ca44f7274a74028dc4f2db7.png)\n\n> **调试小技巧**：在 `VC++ 6.0` 中若想以十六进制（HEX）形式查看文件，可在打开文件时进行如下设置：\n\n![42d0cdccb19dc66a57080a92204ecce6&#95;MD5&#46;png](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/fc042926ec090ae370a95cbc028abeccb1a9440c5ff64f1ef10de1ff706b0080.png)\n\n---\n\n#### 写入与缓存同步机制\n\n通过内存映射写入文件非常简单，直接修改对应的内存指针即可。但必须了解它的**延迟写入机制**：\n\n1. **修改并非立即存盘**：对内存映射视图的修改，最初仅会将对应的内存页标记为“脏页”（Dirty Pages），操作系统会在后台按自身的缓存策略择机写回磁盘。\n2. **不要依赖解除映射或关闭句柄来存盘**：仅仅调用 `UnmapViewOfFile` 或 `CloseHandle`，并不能保证数据立刻、安全地持久化到磁盘。\n\n如果希望**主动**将指定范围内的脏页立刻同步回磁盘，可以使用 `FlushViewOfFile` 函数：\n\n```c\nBOOL FlushViewOfFile(\n    LPCVOID lpBaseAddress,        // 要刷新的内存起始地址\n    SIZE_T dwNumberOfBytesToFlush // 要刷新的字节大小\n);\n```\n\n代码示例：\n\n```c\n// 将 lpAddr 开始的 4 个字节手动刷新同步\nFlushViewOfFile((LPDWORD)lpAddr, 4);\n```\n\n> [!WARNING] 强一致性注意事项\n> `FlushViewOfFile` 仅仅是将数据推送到文件系统的页面缓存中。它**不会刷新文件的元数据**（如修改时间），也**不保证函数返回时数据已穿过硬件磁盘缓存**。\n> 如果需要更强的可靠性保证，在调用 `FlushViewOfFile` 后，还需配合在文件句柄上调用 `FlushFileBuffers`。\n\n---\n\n## 跨进程共享机制与实验\n### 机制概览\n\n内存映射文件允许多个进程共享同一块内存数据：一个进程创建命名的映射对象并写入数据，另一个进程通过 `OpenFileMapping` 指定相同名称打开该对象，挂载视图后即可共同访问同一份物理内存数据。\n\n在同一台机器上，共享内存是效率最高的进程间通信（IPC）机制之一。本节通过递进实验验证前述 API 在跨进程场景下的实际表现。\n\n![6cc6b7cc04560add6c82db6c3b0e5a3a&#95;MD5&#46;png](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/af72bed20f481dc34d6c96c902cfd9672875001eb5efcece43dc89fc4f3fc16a.png)\n\n### 实验：通过命名映射对象共享物理页\n\n**进程 A**：创建命名的页面文件后备映射对象，写入数据后挂起等待：\n\n```c\n#include <windows.h>\n#include <stdio.h>\n\n#define M_NAME \"MappedMemoryA\"\n\nvoid main()\n{\n    // 1. 创建基于系统页面文件后备的命名映射对象\n    HANDLE hMap = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, BUFSIZ, M_NAME);\n    LPTSTR lpBuff = (LPTSTR)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, BUFSIZ);\n\n    // 2. 写入测试数据\n    *(PDWORD)lpBuff = 0x12345678;\n    printf(\"Process A Write Address: %p, Content: %x\\n\", lpBuff, *(PDWORD)lpBuff);\n\n    getchar();\n}\n```\n\n运行程序并使用 WinDbg 查看 VAD 树，可以看到成功创建并挂载了共享数据区间：\n\n![7e7e2fc5232d4b08b4c0fff244c6e552&#95;MD5&#46;jpg](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/9d83e4d5569b2411a383f3b3dde4854518828b85c7b56334af5df5c040a915b0.jpg)\n\n![81fa05cb260babf033e601461546b7d3&#95;MD5&#46;jpg](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/117b89dcfa238f97b7d54e433dfde67e683c9abd7dfd397840682d77a80558bd.jpg)\n\n**进程 B**：在进程 A 运行期间启动，通过相同名称打开映射对象并读取共享数据：\n\n```c\n#include <windows.h>\n#include <stdio.h>\n\n#define M_NAME \"MappedMemoryA\"\n\nvoid main()\n{\n    // 1. 打开进程 A 创建的命名映射对象\n    HANDLE hMap = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, M_NAME);\n    LPTSTR lpBuff = (LPTSTR)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, BUFSIZ);\n\n    // 2. 读取共享数据\n    printf(\"Process B Read Address: %p, Content: %x\\n\", lpBuff, *(PDWORD)lpBuff);\n\n    getchar();\n}\n```\n\n进程 B 成功通过共享映射对象名称读取到了进程 A 写入的数据，在其 VAD 树中也新增了对应的视图节点：\n\n![a2d77cb65269c4781759796eb5708767&#95;MD5&#46;jpg](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/b131175226ef96dd4d88f06787f9a6c3dd0d3030e14cd8007644c3eee413309c.jpg)\n\n![ca722223110d8c7c970645afad17ebba&#95;MD5&#46;jpg](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/71d889cc72db644bcc1b966bd2b50bba533dd8e3a6c69fdcd9956632416f0ed1.jpg)\n\n> **结论**：只要获取到命名映射对象的句柄，其他进程即可将该视图挂载到自身的地址空间。各进程通过视图访问同一个后备内核对象，物理内存按需建立并实现跨进程共享。\n\n---\n\n### 实验：通过命名映射对象共享文件\n\n将实验一中的 `INVALID_HANDLE_VALUE` 替换为 `CreateFile` 返回的真实磁盘文件句柄，后备存储即从系统页面文件转为磁盘上的实际文件。其余流程（命名映射对象、进程 B 通过 `OpenFileMapping` 打开）完全一致。\n\n![da9ae633a0d3097c36c0d54f4186de47&#95;MD5&#46;png](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/8f7bdf1bc36199c2a1f23b9a35336aded0e84bcb9efb9ed421f236f49e484c84.png)\n\n**进程 A**：先使用 `WriteFile` 写入文件，再建立命名映射：\n\n```c\n#include <windows.h>\n#include <stdio.h>\n\n#define M_NAME \"MappedMemoryA\"\n\nvoid main()\n{\n    DWORD dwBytesWritten;\n\n    // 1. 使用传统 CreateFile 与 WriteFile 写入文件\n    HANDLE hFile = CreateFile(\"C:\\\\abc.txt\", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);\n    WriteFile(hFile, M_NAME, strlen(M_NAME), &dwBytesWritten, NULL);\n\n    // 2. 基于同一个文件句柄创建内存映射\n    HANDLE hMap = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, BUFSIZ, M_NAME);\n    LPTSTR lpBuff = (LPTSTR)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, BUFSIZ);\n\n    printf(\"Process A Write Address: %p\\n\", lpBuff);\n    getchar();\n}\n```\n\n在 `C:\\abc.txt` 中写入 `MappedMemoryA` 后将句柄映射至 VAD 树中：\n\n![e53680ec89c5bfe93510aa59bb9db934&#95;MD5&#46;jpg](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/40130f471436f14409905fc4195127a923b1c098e1782b1a8fa3a80116f79f74.jpg)\n\n![70b46fb7e7ebf5f075fb8679edb1df2b&#95;MD5&#46;jpg](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/929fbab146b75d50a0c2b139f107cf2a7c7cca9cebd3156b47e6ddc4855e896e.jpg)\n\n**进程 B**：通过映射视图读取：\n\n```c\n#include <windows.h>\n#include <stdio.h>\n\n#define M_NAME \"MappedMemoryA\"\n\nvoid main()\n{\n    HANDLE hMap = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, M_NAME);\n    LPTSTR lpBuff = (LPTSTR)MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, BUFSIZ);\n\n    printf(\"Process B Read Address: %p, Content: %s\\n\", lpBuff, lpBuff);\n    getchar();\n}\n```\n\n进程 B 成功读取到了进程 A 通过 `WriteFile` 写入的内容。\n\n\n![bcd09f1750e9e8a4a84f67228cab20bc&#95;MD5&#46;jpg](/notes/n-a5ced7cc81224d9196b3d65053f02293/media/d6d8f4486c6b1c45de201f7bb2ae9a1b865ca7f82c100faf1d9db07b9072268a.jpg)\n\n\n若某进程直接修改了共享页，所有映射该页的进程都会同步受影响。\n\n\n**核心差异点**：\n1. 进程 A 需要先通过 `CreateFile` 打开磁盘文件，并将句柄传给 `CreateFileMapping`。\n2. 写入映射视图后，可调用 `FlushViewOfFile` 主动发起脏页刷新；若要确保数据穿过磁盘硬件缓存存盘，需配合 `FlushFileBuffers`。\n\n## 总结\n\n- **`CreateFileMapping`**：创建内核 Section 对象，声明后备存储大小与保护属性。\n- **`MapViewOfFile`**：将映射对象挂载到当前进程的虚拟地址空间。涉及 `VirtualAlloc` 函数的调用。\n- **缺页异常 + VAD**：在访问虚拟内存时由操作系统透明加载磁盘数据到物理页。\n- **跨进程共享**：通过命名映射对象使多进程访问同一物理页（支持页面文件或磁盘文件后备）。\n- **写时拷贝（COW）**：`FILE_MAP_COPY` 与 `EXECUTE_WRITECOPY` 属性使写操作作用于私有副本，保障共享页安全。\n- **缓存一致性**：传统文件 I/O 与内存映射视图共享同一页面缓存，两套接口数据保持实时一致。\n",
+  "id": "a5ced7cc-8122-4d91-96b3-d65053f02293",
+  "metadata": {
+    "tags": [
+      "os/windows/mm",
+      "os/windows/process"
+    ],
+    "title": "Windows 内存映射文件"
+  },
+  "resources": [
+    "117b89dcfa238f97b7d54e433dfde67e683c9abd7dfd397840682d77a80558bd.jpg",
+    "40130f471436f14409905fc4195127a923b1c098e1782b1a8fa3a80116f79f74.jpg",
+    "71d889cc72db644bcc1b966bd2b50bba533dd8e3a6c69fdcd9956632416f0ed1.jpg",
+    "8f7bdf1bc36199c2a1f23b9a35336aded0e84bcb9efb9ed421f236f49e484c84.png",
+    "929fbab146b75d50a0c2b139f107cf2a7c7cca9cebd3156b47e6ddc4855e896e.jpg",
+    "963140b12910950b4b5611312106933fe44c4ff85ca44f7274a74028dc4f2db7.png",
+    "9d83e4d5569b2411a383f3b3dde4854518828b85c7b56334af5df5c040a915b0.jpg",
+    "af72bed20f481dc34d6c96c902cfd9672875001eb5efcece43dc89fc4f3fc16a.png",
+    "b131175226ef96dd4d88f06787f9a6c3dd0d3030e14cd8007644c3eee413309c.jpg",
+    "c0c0d5eba9de313666974f1cecff3dde44265cc946d714f7e3e304b1bba66c16.jpg",
+    "d6d8f4486c6b1c45de201f7bb2ae9a1b865ca7f82c100faf1d9db07b9072268a.jpg",
+    "fc042926ec090ae370a95cbc028abeccb1a9440c5ff64f1ef10de1ff706b0080.png"
+  ],
+  "url": "/notes/n-a5ced7cc81224d9196b3d65053f02293/"
+}

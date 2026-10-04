@@ -1,0 +1,64 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-631b05b1a9d135d3a95e",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-cc402dea5114e54cd9d0",
+      "kind": "heading",
+      "offset": 31
+    },
+    {
+      "id": "h-a873fb233140f7821f61",
+      "kind": "heading",
+      "offset": 229
+    },
+    {
+      "id": "h-e89e8917179f7c19ffe4",
+      "kind": "heading",
+      "offset": 314
+    },
+    {
+      "id": "h-e6c2c73fa5e81e27b6bd",
+      "kind": "heading",
+      "offset": 768
+    },
+    {
+      "id": "h-4a76ca678bf5f841e65a",
+      "kind": "heading",
+      "offset": 910
+    },
+    {
+      "id": "h-55a09889b040271654f3",
+      "kind": "heading",
+      "offset": 1131
+    },
+    {
+      "id": "h-b61f3e7f854a29321859",
+      "kind": "heading",
+      "offset": 1554
+    },
+    {
+      "id": "h-5504e80370f042fc3fcb",
+      "kind": "heading",
+      "offset": 1674
+    },
+    {
+      "id": "h-72b84cbc6b116f9e7a1c",
+      "kind": "heading",
+      "offset": 2065
+    }
+  ],
+  "body": "# JavaScript 实例成员与原型共享机制\n\n## 前言\n\n前置知识：\n- [JavaScript new 关键字](/notes/n-33724b334e2b4a5991c1c1aa900809b3/)\n\n---\n\nJS 使用 `new Obj` 关键字创建实例时，`Obj` 中的属性有些是所有实例共享，有些则是各有一份。在 JavaScript 构造函数模式中，区分“实例私有”与“原型共享”是优化内存和管理状态的核心。\n\n## 非共享属性与方法\n\n**定义方式**：在构造函数内部，使用 `this.key = value` 定义。\n**特点**：每个实例对象在内存中都有一份**独立的副本**。\n### 代码示例\n\n```javascript\nfunction Person(name, age) {\n    // 【非共享属性】：用于存储每个实例特有的状态（数据）\n    this.name = name;\n    this.age = age;\n    this.hobbies = []; // 每个实例都有自己的数组，互不干扰\n\n    // 【非共享方法】：（通常不推荐这样做）\n    // 每次 new Person 时，都会创建一个新的匿名函数对象\n    this.sayName = function() {\n        console.log(this.name);\n    };\n}\n\nconst p1 = new Person('Alice', 20);\nconst p2 = new Person('Bob', 25);\n\n// 验证独立性\nconsole.log(p1.sayName === p2.sayName); // false (不同的内存地址)\n```\n\n### 适用场景\n*   **特有状态**：必须存储每个对象独有的数据（如 `id`, `name`, `color`）。\n*   **引用类型隔离**：如数组或对象（`hobbies`, `config`），必须放在构造函数中，否则会导致一个实例修改影响所有实例。\n\n---\n\n## 共享属性与方法\n\n**定义方式**：直接挂载在构造函数的 `prototype` 对象上。\n**特点**：所有实例对象共享**同一个内存地址**的引用。\n> 非共享数据通过 `this.attr` 方式访问，共享数据呢？也是 `this.attr`，但是原理是什么？参考：[JavaScript 原型链](/notes/n-a14b991065fc4914b7f79e591c0d4531/#h-2982568d148174d9fdc2)\n### 代码示例\n\n```javascript\nfunction Person(name) {\n    this.name = name;\n}\n\n// 【共享方法】：所有实例共用同一个函数，节省内存\nPerson.prototype.sayHello = function() {\n    console.log(\"Hello, I am \" + this.name);\n};\n\n// 【共享属性】：通常定义基本类型常量\nPerson.prototype.species = 'Human';\n\nconst p1 = new Person('Alice');\nconst p2 = new Person('Bob');\n\n// 验证共享性\nconsole.log(p1.sayHello === p2.sayHello); // true (完全相同的函数引用)\nconsole.log(p1.species); // \"Human\"\n```\n\n### 适用场景\n*   **公共行为（方法）**：功能逻辑相同的函数，应始终放在原型上。\n*   **公共常量**：所有实例都一样的固定值（如 `species`, `defaultConfig`）。\n\n---\n\n## ES6 Class 语法糖对应关系\n\nES6 的 `class` 写法自动帮我们遵循了最佳实践：\n\n```javascript\nclass Person {\n    // 1. 对应构造函数内部：非共享（实例）属性\n    constructor(name) {\n        this.name = name;\n        this.data = []; \n    }\n\n    // 2. 对应 prototype：共享（原型）方法\n    sayHello() {\n        console.log(this.name);\n    }\n    \n    // 注意：如果在 class 中写箭头函数属性，它会被编译为实例属性（非共享）！\n    // sayBye = () => { ... } 等同于在 constructor 中写 this.sayBye = ...\n}\n```\n\n## 总结\n\n1.  **私有数据（属性）** $\\rightarrow$ 写在 `constructor` (或 `this`) 中。\n2.  **公共行为（方法）** $\\rightarrow$ 写在 `prototype` 中。\n3.  **引用类型数据** $\\rightarrow$ **绝对不要**写在 `prototype` 中。\n",
+  "id": "6bca5d5e-734e-44f3-b46e-af8c2695cff4",
+  "metadata": {
+    "tags": [
+      "lang/javascript"
+    ],
+    "title": "JavaScript 实例成员与原型共享机制"
+  },
+  "resources": [],
+  "url": "/notes/n-6bca5d5e734e44f3b46eaf8c2695cff4/"
+}

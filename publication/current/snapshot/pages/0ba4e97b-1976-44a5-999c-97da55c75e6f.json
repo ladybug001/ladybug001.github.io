@@ -1,0 +1,60 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-d5acc066565f79f6e9f7",
+      "kind": "heading",
+      "offset": 6
+    },
+    {
+      "id": "h-b6e5e79631588fba7960",
+      "kind": "heading",
+      "offset": 112
+    },
+    {
+      "id": "h-c0d703f1fc327518ce92",
+      "kind": "heading",
+      "offset": 878
+    },
+    {
+      "id": "h-9d7752fe7e323435e7be",
+      "kind": "heading",
+      "offset": 888
+    },
+    {
+      "id": "h-c2f9006d9669d117b1ee",
+      "kind": "heading",
+      "offset": 1414
+    },
+    {
+      "id": "h-371da724ba2cae31c955",
+      "kind": "heading",
+      "offset": 1770
+    },
+    {
+      "id": "h-6812729bfaae5e8f8048",
+      "kind": "heading",
+      "offset": 2109
+    },
+    {
+      "id": "h-e5eaefeb206a3064b93d",
+      "kind": "heading",
+      "offset": 3320
+    },
+    {
+      "id": "h-d08706b0ace925cf453f",
+      "kind": "heading",
+      "offset": 3483
+    }
+  ],
+  "body": "# 设备指纹\n\nAndroid 设备指纹是指能够标识或区分设备的硬件和软件信息，在风控、反作弊和逆向分析中广泛使用。高版本 Android 对 MAC 地址、IMEI 等设备信息的获取做了越来越严格的限制。\n\n## 权限准备\n\n获取部分硬件指纹需要先申请运行时权限。以下使用 XXPermissions 库简化权限申请流程。\n\n添加依赖：\n\n```groovy\n// permission\nimplementation 'com.github.getActivity:XXPermissions:13.5'\n```\n\n权限申请代码：\n\n```java\n@Override\nprotected void onCreate(Bundle savedInstanceState) {\n    super.onCreate(savedInstanceState);\n    setContentView(R.layout.activity_c10);\n    // 权限申请\n    XXPermissions.with(this)\n            .permission(Permission.READ_PHONE_STATE)\n            .request(new OnPermissionCallback() {\n                @Override\n                public void onGranted(List<String> permissions, boolean all) {\n                    initView();\n                }\n\n                @Override\n                public void onDenied(List<String> permissions, boolean never) {\n                }\n            });\n}\n```\n\n## 常见硬件指纹\n\n### IMEI\n\n国际移动设备识别码（International Mobile Equipment Identity），俗称\"手机串号\"，用于在 GSM 移动网络中唯一标识一部手机。全球每部通过正规渠道销售的 GSM 手机均有唯一的 IMEI 码；CDMA 手机则使用 MEID 码。\n\n> [!WARNING] 版本限制\n> Android 10（API 29）起，非系统应用无法获取 IMEI，调用会抛出 `SecurityException`。\n\n```java\n@SuppressLint(\"HardwareIds\")\nprivate String getIMEI() {\n    try {\n        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);\n        return tm.getDeviceId();\n    } catch (Exception ex) {\n        ex.printStackTrace();\n    }\n    return \"-\";\n}\n```\n\n### 设备序列号（SERIAL）\n\n厂商分配给设备的序列号。\n\n> [!WARNING] 版本限制\n> Android 10 起，非系统应用调用 `Build.SERIAL` 返回 `unknown`，需要改用 `Build.getSerial()` 并持有 `READ_PRIVILEGED_PHONE_STATE` 权限。\n\n```java\n@SuppressLint(\"HardwareIds\")\nprivate String getSERIAL() {\n    try {\n        return Build.SERIAL;\n    } catch (Exception ex) {\n        ex.printStackTrace();\n    }\n    return \"-\";\n}\n```\n\n### Android ID\n\n设备首次启动时，系统随机生成一个 64 位数字，并以 16 进制字符串保存，即 `ANDROID_ID`。恢复出厂设置后会重新生成。\n\n```java\n@SuppressLint(\"HardwareIds\")\nprivate String getAndroidId() {\n    try {\n        return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);\n    } catch (Exception ex) {\n        ex.printStackTrace();\n    }\n    return \"-\";\n}\n```\n\n### MAC 地址\n\n网卡的硬件标识。\n\n> [!WARNING] 版本限制\n> Android 6.0 起 `WifiInfo.getMacAddress()` 固定返回 `02:00:00:00:00:00`；以下方式通过 `NetworkInterface` 获取，但 Android 11 起也受到限制。\n\n```java\nimport java.net.NetworkInterface;\nimport java.util.Collections;\nimport java.util.List;\n\npublic class MyClass {\n    public String getMacAddress() {\n        try {\n            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());\n            for (NetworkInterface nif : all) {\n                if (!nif.getName().equalsIgnoreCase(\"wlan0\")) {\n                    continue;\n                }\n                byte[] macBytes = nif.getHardwareAddress();\n                if (macBytes == null) {\n                    return \"\";\n                }\n                StringBuilder res1 = new StringBuilder();\n                for (byte b : macBytes) {\n                    res1.append(Integer.toHexString(b & 0xFF)).append(\":\");\n                }\n                if (res1.length() > 0) {\n                    res1.deleteCharAt(res1.length() - 1);\n                }\n                return res1.toString();\n            }\n        } catch (Exception ex) {\n            ex.printStackTrace();\n        }\n        return \"-\";\n    }\n}\n```\n\n## 其他可采集信息\n\nAndroid 设备上还有大量可被采集的指纹维度，包括但不限于 `Build` 字段、屏幕分辨率、传感器列表、已安装应用列表、电池信息等。以下项目整理了较全面的采集清单：\n\n- [song-dev/device-info](https://github.com/song-dev/device-info)\n\n## 一键新机\n\n\"一键新机\"指通过 Hook 或系统层修改，使设备的各项指纹同时刷新为新值，从而绕过基于设备指纹的风控或封禁。\n\n参考：[virjar/ratel-core](https://github.com/virjarRatel/ratel-core)",
+  "id": "0ba4e97b-1976-44a5-999c-97da55c75e6f",
+  "metadata": {
+    "tags": [
+      "os/android",
+      "reverse/android/bypass"
+    ],
+    "title": "Android 设备指纹"
+  },
+  "resources": [],
+  "url": "/notes/n-0ba4e97b197644a5999c97da55c75e6f/"
+}

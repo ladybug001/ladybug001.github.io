@@ -1,0 +1,16 @@
+{{/* Adapted from Stack 4.0.3 (GPL-3.0): file modification time is list-only metadata. */}}
+<article>
+  <a href="{{ .RelPermalink }}">
+    <div class="article-details">
+      <h2 class="article-title">{{ .Title }}</h2>
+      <footer class="article-meta"><time datetime="{{ .Params.file_modified }}">修改：{{ (time.AsTime .Params.file_modified).Format "2006-01-02 15:04" }}</time></footer>
+    </div>
+    {{ $image := partial "helper/image" (dict "Image" (.Params.list_image | default .Params.image) "Resources" .Resources "Context" .) }}
+    {{ if $image }}
+      <div class="article-image">
+        {{ partial "helper/thumbnail-image" (dict "Resource" $image.Resource "Width" 60 "Height" 60 "Resize" false "Attributes" (dict "src" $image.Permalink "alt" .Title "loading" "lazy" "width" $image.Width "height" $image.Height)) }}
+      </div>
+    {{ end }}
+  </a>
+  {{ partial "article-list/tags" . }}
+</article>

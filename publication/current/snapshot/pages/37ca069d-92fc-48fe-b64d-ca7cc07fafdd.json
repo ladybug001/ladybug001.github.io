@@ -1,0 +1,153 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-a628c414b1d281760546",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-15f5658798f03363da85",
+      "kind": "heading",
+      "offset": 96
+    },
+    {
+      "id": "b-f3juxq",
+      "kind": "block",
+      "offset": 1061
+    },
+    {
+      "id": "h-c4b966826b16e72c5823",
+      "kind": "heading",
+      "offset": 1764
+    },
+    {
+      "id": "h-802b4edafd78a464e59d",
+      "kind": "heading",
+      "offset": 1778
+    },
+    {
+      "id": "h-57646175c1d19fc87b9b",
+      "kind": "heading",
+      "offset": 2937
+    },
+    {
+      "id": "h-cf31801afe0c4180c978",
+      "kind": "heading",
+      "offset": 3237
+    },
+    {
+      "id": "h-652bd8cabd1047843520",
+      "kind": "heading",
+      "offset": 3508
+    },
+    {
+      "id": "h-1c4d79961f5e7a15768a",
+      "kind": "heading",
+      "offset": 4316
+    },
+    {
+      "id": "h-89c3ac79488c04212305",
+      "kind": "heading",
+      "offset": 5091
+    },
+    {
+      "id": "h-3be6d4f8462578646e2d",
+      "kind": "heading",
+      "offset": 6626
+    },
+    {
+      "id": "h-e1aa7bdcad9781b0ae0d",
+      "kind": "heading",
+      "offset": 7046
+    },
+    {
+      "id": "h-3eaf32cbb148802b5691",
+      "kind": "heading",
+      "offset": 7434
+    },
+    {
+      "id": "h-53405a8466ef62c67034",
+      "kind": "heading",
+      "offset": 7649
+    },
+    {
+      "id": "h-cb528466af1af6a507b1",
+      "kind": "heading",
+      "offset": 7827
+    },
+    {
+      "id": "h-f6decc3d503e00112946",
+      "kind": "heading",
+      "offset": 8071
+    },
+    {
+      "id": "h-ad76167268b88dc0d4b0",
+      "kind": "heading",
+      "offset": 8460
+    },
+    {
+      "id": "h-6fb1d990563b96378e3c",
+      "kind": "heading",
+      "offset": 9586
+    },
+    {
+      "id": "h-cc7ba66413ab8a37a232",
+      "kind": "heading",
+      "offset": 9809
+    },
+    {
+      "id": "h-6fba937383557e81c78e",
+      "kind": "heading",
+      "offset": 10184
+    },
+    {
+      "id": "h-2eff396207434e9e0f6e",
+      "kind": "heading",
+      "offset": 10957
+    },
+    {
+      "id": "h-067dce44b882a05cf663",
+      "kind": "heading",
+      "offset": 11248
+    },
+    {
+      "id": "h-5244a13d29e4851fa827",
+      "kind": "heading",
+      "offset": 11448
+    },
+    {
+      "id": "h-70a718b699bf4e30243f",
+      "kind": "heading",
+      "offset": 13737
+    },
+    {
+      "id": "h-b1b58311c721b1732f9a",
+      "kind": "heading",
+      "offset": 16278
+    }
+  ],
+  "body": "# 计算机网络：TCP 协议与套接字开发\n\n传输层负责端到端进程之间的数据传输。网络层解决“主机到主机”的可达性，传输层则在此基础上通过端口号把数据交付给具体应用进程。\n\n## TCP 是什么\n\n先暂时放下抽象定义，看下面这个故事：\n\n**设想这样的场景**：\n\n两支军队驻扎在两个山头，准备攻击山谷里的同一伙敌人。两位将军只有同时发起进攻才能获胜，因此将军 `A` 需要告知将军 `B` 何时发起进攻，而他们通信的唯一方式，是派遣信使穿过敌占区的山谷。如果信使被俘，消息就会丢失。如何设计通信方式才能获胜？\n> 假设仅将军 `A` 需要向将军 `B` 传输数据，且是多次。\n\n**方法一**：发完消息后，默认对方一定收到了。这种做法当然不可靠。\n\n**方法二**：为了确认对方真的收到了信件，将军 `A` 派出信使后，必须等将军 `B` 的确认回信，才能派遣下一个数据的信使。这对应的就是**确认机制**。但问题在于：确认回信本身也可能丢失。过了很长时间，将军 `A` 没有收到回信，他根本不知道是自己的信使被俘了，还是 `B` 的确认信使被俘了。\n\n**方法三**：进一步约定一个等待上限。假设从 `A` 到 `B` 再返回，一个来回最多只需要 `5` 天，那么将军 `A` 如果在 `5` 天内还没有收到回信，就默认本次发送失败，并重新派遣信使。这对应的就是**超时重传**。但这里还有一个问题：对于最后数据的确认信（非末尾数据不会有这个问题），将军 `B` 无法再确认将军 `A` 是否真的收到了自己的确认。也就是说，发送方（将军 `A`）可以尽量确认接收方是否收到；但接收方（将军 `B`）没法对“确认”一直追问下去。\n\n**方法四**：不追求“绝对无误”，而是追求“工程上够用”。将军 `B` 收到最后数据的信使并回复确认后，需要再等待 `5n` 天，如果这几天没有收到将军 `A` 的重传信使，就默认：将军 A 收到了自己的确认。但显然，这样仍然不能保证百分之百成功，但可以尽量把失败概率压低。\n\n> 这里不是“绝对成功”，只是提高成功几率。失败的情形仍然存在：例如 `A` 发的数据信使都没被对方收到，最终没人去攻打；或者 `B` 收到了消息，但回发的确认一直没被 `A` 收到，且 `A` 的重传信使也都没被 `B` 收到，最后只有 `B` 一个人发动攻击，惨败。可以看到，最坏的情况仍然可能发生。\n>\n> 在异步且不可靠的通信链路上，双将军问题在数学上已被证明不存在“完美解”，只能追求“可接受解”。\n\n\n\n在方法四中，最后一次的数据信使，其实带着“沟通结束”的意思，也就是告诉对方“我这里发完了”。将军 `B` 收到后，再发回确认，表示“我知道了”。\n\n> 这里的例子假设只有将军 `A` 持续向将军 `B` 发送数据，而 `B` 只负责回确认。实际网络通信里，`A` 和 `B` 往往都可能发送数据。所以除了 `A` 需要发关闭通知，`B` 在自己也发完后，同样需要发关闭通知。这也是后面要讲的四次挥手的背景。\n\n\n**在这个故事中，不可靠的信使对应的就是 IP报文；**\n\n---\n\n`TCP` 的英文全称是 `Transmission Control Protocol`，中文通常译为**传输控制协议**。`TCP` 是运行在 `IP` 之上，通过序列号、确认、重传、窗口、校验和等机制，把不可靠的分组传输组织成面向连接的可靠字节流。\n\n\n`TCP` 的核心特征可以概括为：\n\n- **面向连接**：正式传输数据前，通信双方要先建立连接；通信结束后，还要按协议关闭连接。这里不能简单等价为“可靠传输”，而是指双方在状态、序列号、窗口和选项等方面先达成协议。\n- **可靠传输**：这里的“可靠”不是指百分之百绝不会出错，而是指协议会尽量处理丢包、乱序、重复、损坏等问题，再把有序字节流交给应用层。\n- **按序交付**：应用层看到的是整理后的有序字节流，而不是网络中间那种可能乱序到达的报文段。\n- **面向字节流**：`TCP` 只保证字节流的传输，不替应用层保留消息边界。也就是说，应用层发出的两次 `send()`，对端不一定会在两次 `recv()` 中原样拿到。\n\n## TCP 首部与抓包\n\n### TCP 首部结构\n\n`TCP` 报文段结构如下图所示：\n\n![9609b3ce6b4d2cca2c07fad09dc66dde&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/7b8872cef187429325d182bbca8fc9ed3bb951f350c5f43e5108f125cffe5971.jpg)\n\n常见字段如下：\n\n1. **源端口**：发送方应用进程对应的端口。\n2. **目的端口**：接收方应用进程对应的端口。\n3. **序列号（Sequence Number）**：标识本报文段数据部分第一个字节在字节流中的序号；`SYN` 和 `FIN` 也会各占用一个序列号。\n4. **确认号（Acknowledgment Number）**：当 `ACK` 标志置位时有效，表示期望收到的下一个字节序号。\n5. **数据偏移（Data Offset）**：类似于 `IPv4` 的首部长度字段，以 `4` 字节为单位，指出 `TCP` 首部长度。\n6. **控制位**：例如 `SYN`、`ACK`、`FIN`、`RST`、`PSH`、`URG` 等，用于建立连接、确认、关闭连接或异常复位。\n7. **窗口（Window）**：接收窗口大小，表示接收端当前愿意接收的数据量，是 `TCP` 流量控制的核心字段。\n8. **校验和（Checksum）**：覆盖 `TCP` 伪首部、`TCP` 首部和 `TCP` 数据，用于检测传输中的错误。\n9. **紧急指针与选项**：分别服务于紧急数据语义和扩展能力，例如最大报文段长度（Maximum Segment Size，`MSS`）、窗口扩大、时间戳、选择确认（Selective Acknowledgment，`SACK`）等。\n\n可以看到，`TCP` 首部没有类似 `MAC` 帧、`IP` 报文中“上层协议类型”的字段。\n\n基于 `TCP` 的应用协议，需要自定义分隔符和属性字段（如长度），并且由自己进行格式解析，例如 `HTTP`、`TLS`。\n\n如下图所示，`A` 和 `B` 基于 `TCP` 协议进行通信；`TCP` 并不直接规定业务内容，而是负责把两端之间的数据传输过程组织得更可靠：\n\n![2b1ec0ecc38612bb9a904c45168ffd68&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/a49ae727460823be5918de4ba172c97a68d63b86d089d01550f6dc0fcfeb742e.jpg)\n### Wireshark 抓包分析\n\n可以通过 `Wireshark` 抓包，随便选择一个 `TCP` 报文段展开，就能看到类似下面的结构：\n\n![b976b3987347bf72081334d8213cc25a&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/fb53c05c2abd35ad10e437cf464a46e32ad6053784d1b2fc7fceae1125ba7603.jpg)\n\n抓包时建议关注 `TCP` 层的端口、`Seq`、`Ack`、`Flags`、`Window`、首部长度和实际负载长度。\n\n## TCP 的可靠传输\n\n所以 `TCP` 的可靠传输到底靠什么实现？\n\n**个人理解**：`TCP` 可靠传输的核心是确认应答和重传机制。对于含有有效数据的报文段，如果一直收不到对方的确认，发送方会认为对应数据可能没有被正确接收，并在满足重传条件后重新发送。\n> 更完整地说，`TCP` 会通过**序列号、确认应答、重传、校验和、流量控制、拥塞控制**等机制，尽量保证数据能够按序、完整地到达对端。\n\n---\n\n“可靠”是不是就等于百分之百没问题？\n\n**不是。** `TCP` 的“可靠”是工程意义上的可靠，不是数学意义上的绝对可靠。\n\n## TCP 三次握手\n\n为什么先讲可靠传输，而不是三次握手、四次挥手？因为握手和挥手都建立在 `TCP` 的可靠传输机制之上。\n\n之前提到，`TCP` 是面向连接的协议。这里的连接，可以先理解成双方先打个招呼，确认对方在场，再把后续沟通的规则谈清楚。这个过程就是**三次握手**。\n\n三次握手的主要作用：\n\n1. 同步双方的初始序列号（Initial Sequence Number，`ISN`），并在建立连接时协商关键选项，例如 `MSS`、窗口扩大、时间戳、`SACK` 等。\n    1. 前两次已经完成了协商，第三次握手本质上是对第二次握手中服务器端 `SYN` 的确认。\n2. 测速双方的网络状态，确认双向路径具备基本通信能力。前两个握手报文通常不承载应用数据，因此丢失后的重传代价相对较低。\n\n> 也可以没有三次握手：例如把序列号约定成统一从 `0` 开始、`MSS` 全球统一相同的数值 等，就不用三次握手临时协商了。\n\n三次握手的标准流程如下：\n\n1. 客户端发送 `SYN`，表示自己希望建立连接，并给出自己的初始序列号 `ISN`。\n2. 服务器端返回 `SYN + ACK`，表示“我收到了你的建连请求，也同意建立连接”，同时给出自己的初始序列号。\n3. 客户端再发送一次 `ACK`，对服务器端的 `SYN` 进行确认。教学示例里，这一步常常只发确认；但从协议状态上说，这一步已经可以携带数据。\n\n![897c506d8b982bd7cda90618c96d4837&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/82ba88e68f1af7e2891d629ff346412d8c9aefe907f0689f506e2c06f0dba1ef.jpg)\n\n三次握手完成后，双方进入正常的数据传输阶段。\n\n---\n### 抓包观察\n\n下面结合抓包结果，看这些标志位、序列号和确认号到底是怎么变化的。\n\n这里使用 `Wireshark` 做抓包分析。在客户端机器上安装 `Wireshark` 软件进行抓包，如下图所示（左侧为服务器端，右侧为客户端）：\n\n![b1a94eea2381b33b978a72981c3e37e7&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/4c620cd259d5dee2e5adcc36d7e265c7d01f445b9947b2571e2f7aa4ed5fe1bc.jpg)\n\n抓包时可以直接抓网卡流量，然后用显示过滤器缩小范围。例如，在当前示例里可以使用：\n\n```text\nip.addr == 172.16.176.5 and tcp.port == 2118\n```\n\n其中，`172.16.176.5` 是服务器端 `IP` 地址，`2118` 是服务器监听的 `TCP` 端口。\n\n如下图所示，一共抓到了三个核心数据包，这三个包正对应三次握手：\n\n![c1a296cad74cffd3bf75e5d7c3fa9e2c&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/66e5cd20057389fc112f3fef2057c0f5f5f29a02f0d5017e1e0aa405591c17a1.jpg)\n\n这里要注意：`Wireshark` 默认常常会显示**相对序列号**。因此图中看到的 `Seq = 0`，通常并不表示真实的初始序列号真的就是 `0`，而是 `Wireshark` 为了便于观察，把第一个序列号相对化显示成了 `0`。\n\n## TCP 四次挥手\n\n四次挥手的主要作用，是让双方分别关闭各自的发送方向。\n\n如下图所示，可以把客户端和服务器端想象成两条独立的数据通道：一端关闭自己“发送”方向时，并不意味着另一端的“发送”方向也同时关闭。\n\n![5b82111e3922c3a12b64ed6513c07a05&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/c413a3a40b81a9367b903580978b411c1edb6b3e95093edad5bd8e792d839346.jpg)\n\n\n要理解为什么通常是四次，先区分三种常见通信模式：\n\n1. **单工**：数据只能单向传输。\n2. **半双工**：双方都能发送和接收，但不能同时进行。\n3. **全双工**：双方都能同时发送和接收。\n\n`TCP` 连接本质上是**全双工**的。也就是说，`A -> B` 的发送方向和 `B -> A` 的发送方向，可以看作两条相互独立的逻辑通道。\n\n因此，当客户端说“我要断开连接”时，严格来说只是表示：**客户端不再发送数据了**。这并不自动等价于“服务器端也不再发送数据”。所以，断开连接通常需要双方分别关闭各自的发送方向，这也是为什么常见情况下会看到四个关键报文段。\n\n---\n\n如下图所示，`TCP` 的四次挥手中，主动关闭一方会先发送 `FIN`，对方回一个 `ACK` 进行确认：\n\n![c131297efe500d9ccb4c190e2f8825e2&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/88311cd096dde96e9511ae9c20e43da659f93b394af303ff262135257bbf741e.jpg)\n\n完整的关闭流程如下：\n1. 主动关闭方发送 `FIN`，表示“我这边已经没有数据要发了”。\n2. 被动关闭方返回 `ACK`，表示“我知道你这边发完了”。到这一步，连接进入**半关闭**状态：主动关闭方不能再发，但仍然可以收；被动关闭方仍然可以继续发送自己剩余的数据。\n3. 等被动关闭方也发送完自己的数据后，它再发送 `FIN`。\n4. 主动关闭方最后回一个 `ACK`。此后主动关闭方通常进入 `TIME_WAIT` 状态，等待足够长时间后才释放连接状态。\n\n> 四次挥手有时也会表现成三次挥手：如果收到 `A` 的结束信号时，`B` 自己也刚好没有数据要继续发送，那么第二次的 `ACK` 和第三次的 `FIN` 可以合并到同一个报文段里。\n\n\n---\n\n把建连、正常通信、断开连接放到一起看，整体流程如下：\n\n![c2d4abbb3bfc41d6ec8ceab28d327d96&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/1c031b02161d2d2d5587c9723ed4204205a8b6ebd2b02008d64bfaa609f5daf0.jpg)\n\n实际 `TCP` 网络中，主动关闭方会进入 `TIME_WAIT` 状态。它的作用之一，是在最后一个 `ACK` 丢失时仍能响应对端重传的 `FIN`，同时也让网络中的旧报文有时间自然消失，避免影响后续同四元组连接的建立。\n\n> 参考：[计算机网络&#65306;TCP 协议与套接字开发](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/#b-f3juxq)\n\n## TCP 分段与 IP 分片\n\n经过前面的分析，我们知道 `TCP` 报文是作为负载通过 `IP` 协议传输的，而 `IP` 协议对负载大小是有限制的，若超过该限制，`IP` 就会对负载进行分片。\n\n`TCP` 不希望被 `IP` 分片，因为 `IP` 协议是不可靠的，所以只要一个分片丢失，就无法重组为 `TCP` 报文。一旦重组失败，接收端就拿不到完整的那个 `TCP` 报文段，发送端只能依靠 `TCP` 的确认与重传机制重传对应的字节范围。\n\n虽然 `TCP` 不直接负责 `IP` 分片，但 `TCP` 会限制单次发送的数据大小（通过最大报文段长度 `MSS`，这也是三次握手协商的数据之一），尽量避免被下层 `IP` 分片。\n> 参考： [计算机网络&#65306;IPv4 首部与分片](/notes/n-959ecb43b92a47b18202c6f1d72ff78a/#h-70f1df4962d285294826)\n## 操作系统实现 TCP 传输\n\n`TCP` 的概念和流程看起来很复杂，例如确认报文、超时重传、窗口管理和连接状态机，但这些都不需要应用程序自己手写处理。操作系统通常已经在内核协议栈中实现了 `TCP`。应用程序开发者主要调用封装好的 `socket API`。\n\n相关概念：\n\n- **发送缓冲区、接收缓冲区**：分别存储待发送数据和已接收但尚未被应用读取的数据。应用通过 `send()` 写入发送缓冲区，通过 `recv()` 从接收缓冲区读取数据；真正的发送、接收、确认与重传由内核协议栈完成。\n- **发送窗口和接收窗口**：用于在可靠传输的前提下提高吞吐量。不需要每发送一个 `TCP` 报文就停下来等确认，而是可以在窗口允许范围内发送多个。\n- **拥塞窗口与接收窗口**：实际可发送量通常受接收端通告窗口和拥塞控制共同限制，前者偏向流量控制，后者偏向网络拥塞控制。\n\n## 服务器端编程框架\n\n理解了 `TCP` 的连接和断开流程后，就可以进入实际编程阶段。一个典型的 `TCP` 服务器端，通常可以按下面步骤组织代码：\n\n1. 初始化网络库\n2. 创建套接字\n3. 绑定套接字\n4. 监听套接字\n5. 等待连接\n6. 收发数据\n7. 断开连接（被动）\n8. 关闭套接字\n\n这里的“套接字（socket）”可以先理解成网络通信端点的抽象。服务器端和客户端都各自持有一个套接字，通过它们完成网络通信。\n\n### 头文件与库\n\n在 `Windows` 环境下使用 `Winsock` 编程时，首先需要包含头文件并链接对应库：\n\n```cpp\n#include <winsock2.h>\n#include <stdio.h>\n#include <string.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n```\n\n### 初始化 `Winsock`\n\n正式调用 `Winsock` 接口前，需要先执行 `WSAStartup()`：\n\n```cpp\nWORD wsVersion = MAKEWORD(2, 2);\nWSADATA wsaData = {0};\nWSAStartup(wsVersion, &wsaData);\n```\n\n> 它的作用是初始化进程对 `Winsock` 库的使用，并指定希望使用的 `Windows Sockets` 版本。实际代码中应检查 `WSAStartup()` 的返回值。\n\n### 创建套接字\n\n创建套接字使用 `socket()`：\n\n```cpp\nSOCKET socket(\n    int af,        // 地址族：如 AF_INET、AF_INET6\n    int type,      // 套接字类型：如 SOCK_STREAM、SOCK_DGRAM\n    int protocol   // 协议：写 0 时由系统根据前两项推断\n);\n```\n\n在当前 `TCP` 示例中，可以这样写：\n\n```cpp\nSOCKET sSocket = socket(AF_INET, SOCK_STREAM, 0);\n```\n\n其中：\n\n- `AF_INET` 表示使用 `IPv4`。\n- `SOCK_STREAM` 表示面向连接的字节流套接字，也就是 `TCP`。\n- `0` 表示由系统根据地址族和套接字类型自动推断具体协议。\n\n### 绑定套接字\n\n绑定本地地址使用 `bind()`：\n\n```cpp\nint bind(\n    SOCKET s,\n    const struct sockaddr* name,\n    int namelen\n);\n```\n\n通常会先准备一个 `sockaddr_in` 结构体来描述 `IPv4` 地址：\n\n```cpp\nstruct sockaddr_in {\n    short sin_family;        // 地址族\n    u_short sin_port;        // 端口\n    struct in_addr sin_addr; // IPv4 地址\n    char sin_zero[8];        // 填充字段\n};\n```\n\n其中真正要关注的是：\n\n- `sin_family`\n- `sin_port`\n- `sin_addr`\n\n在当前示例中，可以这样初始化：\n\n```cpp\nsockaddr_in sockAddrInfo = {0};\nsockAddrInfo.sin_addr.S_un.S_addr = inet_addr(\"172.16.176.5\");\nsockAddrInfo.sin_port = htons(2118);\nsockAddrInfo.sin_family = AF_INET;\n```\n\n这里要注意：\n\n- `inet_addr()` 把点分十进制 `IPv4` 地址转换为网络字节序表示；实际工程中也可以使用更新的地址转换接口。\n- `htons()` 把主机字节序的端口号转换为网络字节序。\n\n> [!NOTE] 网络字节序\n> 网络字节序（network byte order）通常指**大端序（big-endian）**。而很多常见主机体系结构使用的是小端序（little-endian）。\n>\n> 因此，在网络编程里，凡是要写入协议头、端口号、地址字段的数据，通常都要显式做主机字节序到网络字节序的转换，例如：\n>\n> - `htons()`：host to network short\n> - `htonl()`：host to network long\n> - `ntohs()`：network to host short\n> - `ntohl()`：network to host long\n>\n> 这也是为什么前面的端口号初始化需要使用 `htons()`。\n\n然后执行绑定：\n\n```cpp\nbind(sSocket, (sockaddr*)&sockAddrInfo, sizeof(sockAddrInfo));\n```\n\n### 监听套接字\n\n服务器端调用 `listen()` 把套接字切换到被动监听状态：\n\n```cpp\nint listen(\n    SOCKET s,\n    int backlog\n);\n```\n\n示例：\n\n```cpp\nlisten(sSocket, 1);\n```\n\n这里的 `backlog` 常常可以近似理解为“等待处理的连接队列长度”，但不同实现的具体语义和上限可能略有差异。入门阶段先把它理解成“允许积压的待处理连接数”即可。\n\n### 等待连接\n\n等待客户端连接使用 `accept()`：\n\n```cpp\nSOCKET accept(\n    SOCKET s,\n    struct sockaddr* addr,\n    int* addrlen\n);\n```\n\n需要特别注意：`accept()` 返回的是**新的已连接套接字**，而原先的监听套接字 `sSocket` 仍然负责继续监听。\n\n```cpp\nsockaddr_in acceptSockAddrInfo = {0};\nint acceptSockAddrLen = sizeof(acceptSockAddrInfo);\nSOCKET aSocket = accept(sSocket, (sockaddr*)&acceptSockAddrInfo, &acceptSockAddrLen);\n```\n\n### 收发数据\n\n接收数据使用 `recv()`：\n\n```cpp\nint recv(\n    SOCKET s,\n    char* buf,\n    int len,\n    int flags\n);\n```\n\n发送数据使用 `send()`：\n\n```cpp\nint send(\n    SOCKET s,\n    const char* buf,\n    int len,\n    int flags\n);\n```\n\n当前演示代码中，服务器端在循环里接收数据，并把收到的内容又回显给客户端：\n\n```cpp\nchar buf[100] = {0};\n\nwhile (true) {\n    int ret = recv(aSocket, buf, sizeof(buf), 0);\n    if (ret == 0) {\n        // 对端执行了有序关闭\n        break;\n    }\n    if (ret == SOCKET_ERROR) {\n        break;\n    }\n\n    printf(\"Recv data: %s\\n\", buf);\n    send(aSocket, buf, strlen(buf) + 1, 0);\n    memset(buf, 0, sizeof(buf));\n}\n```\n\n这里要补一句：这段代码只是教学用的“字符串回显”示例。\n\n真实的 `TCP` 编程里，`TCP` 是字节流协议，`recv()` 一次读到的数据未必正好对应一条完整业务消息，只保证是有序、连续的字节流。通常需要应用层自己定义长度字段、分隔符等，而不能假设“一次 `recv()` 就收到一整条消息”。\n\n> TCP 的设计目标不是“发消息”，而是“提供可靠、有序的字节流”。\n### 断开连接（被动）\n\n关闭连接方向可以使用 `shutdown()`：\n\n```cpp\nint shutdown(\n    SOCKET s,\n    int how\n);\n```\n\n其中：\n\n- `SD_SEND`：不再发送。\n- `SD_RECEIVE`：不再接收。\n- `SD_BOTH`：同时关闭收发。\n\n当前示例中，服务器端在接收循环结束后执行：\n\n```cpp\nshutdown(aSocket, SD_SEND);\n```\n\n这表示服务器端不再向对方发送数据。这里主要是在演示“关闭发送方向”这个动作；有些简单示例里也会直接 `closesocket()` 结束。\n\n### 关闭套接字\n\n关闭套接字使用 `closesocket()`：\n\n```cpp\nint closesocket(\n    SOCKET s\n);\n```\n\n服务器端需要关闭两个套接字：\n\n```cpp\nclosesocket(aSocket);\nclosesocket(sSocket);\n```\n\n> 断开连接主要是面向通信对端的协议动作，而关闭套接字则是释放本地计算机上的资源。\n\n### 服务器端完整示例\n\n```cpp\n#include <winsock2.h>\n#include <stdio.h>\n#include <string.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n\nint main(int argc, char* argv[])\n{\n    // 0. 初始化\n    WORD wsVersion = MAKEWORD(2, 2);\n    WSADATA wsaData = {0};\n    if (WSAStartup(wsVersion, &wsaData) != 0) {\n        return 1;\n    }\n\n    // 1. 创建套接字\n    SOCKET sSocket = socket(AF_INET, SOCK_STREAM, 0);\n    if (sSocket == INVALID_SOCKET) {\n        printf(\"套接字创建失败!\\n\");\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"套接字创建成功!\\n\");\n    }\n\n    // 2. 绑定套接字\n    sockaddr_in sockAddrInfo = {0};\n    sockAddrInfo.sin_addr.S_un.S_addr = inet_addr(\"172.16.176.5\");\n    sockAddrInfo.sin_port = htons(2118);\n    sockAddrInfo.sin_family = AF_INET;\n\n    int bRes = bind(sSocket, (sockaddr*)&sockAddrInfo, sizeof(sockAddrInfo));\n    if (bRes == SOCKET_ERROR) {\n        printf(\"绑定失败!\\n\");\n        closesocket(sSocket);\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"绑定成功!\\n\");\n    }\n\n    // 3. 监听套接字\n    int lRes = listen(sSocket, 1);\n    if (lRes == SOCKET_ERROR) {\n        printf(\"监听失败!\\n\");\n        closesocket(sSocket);\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"监听成功!\\n\");\n    }\n\n    // 4. 等待连接\n    sockaddr_in acceptSockAddrInfo = {0};\n    int acceptSockAddrLen = sizeof(acceptSockAddrInfo);\n    SOCKET aSocket = accept(sSocket, (sockaddr*)&acceptSockAddrInfo, &acceptSockAddrLen);\n    if (aSocket == INVALID_SOCKET) {\n        printf(\"服务端等待连接失败!\\n\");\n        closesocket(sSocket);\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"服务端等待连接成功!\\n\");\n    }\n\n    // 5. 收发数据\n    char buf[100] = {0};\n    while (true) {\n        int ret = recv(aSocket, buf, sizeof(buf), 0);\n        if (ret == 0) {\n            // 如果 recv() 返回 0，表示客户端执行了有序关闭\n            break;\n        }\n        if (ret == SOCKET_ERROR) {\n            printf(\"接收数据失败!\\n\");\n            break;\n        }\n\n        printf(\"Recv data: %s\\n\", buf);\n        send(aSocket, buf, strlen(buf) + 1, 0);\n        memset(buf, 0, sizeof(buf));\n    }\n\n    // 6. 断开连接（被动）\n    shutdown(aSocket, SD_SEND);\n\n    // 7. 关闭套接字\n    closesocket(aSocket);\n    closesocket(sSocket);\n\n    WSACleanup();\n    return 0;\n}\n```\n\n最后，如果不再使用 `Winsock`，还需要调用 `WSACleanup()` 结束使用。\n\n实际编程中，建议对每一步的返回值都进行检查，不要直接假设调用一定成功。\n\n## 客户端编程框架\n\n客户端整体流程和服务器端类似，但会更简单一些。常见步骤如下：\n\n1. 初始化网络库\n2. 创建套接字\n3. 绑定套接字\n4. 连接服务器\n5. 收发数据\n6. 断开连接（主动）\n7. 关闭套接字\n\n这里要补一句：**客户端的 `bind()` 通常是可选的。** 如果不显式调用，系统一般会自动分配一个临时端口。这里为了和服务器端流程对照，仍保留 `bind()` 这一步。\n\n完整示例代码如下：\n\n```cpp\n#include <winsock2.h>\n#include <stdio.h>\n#include <string.h>\n\n#pragma comment(lib, \"ws2_32.lib\")\n\nint main(int argc, char* argv[])\n{\n    // 0. 初始化\n    WORD wsVersion = MAKEWORD(2, 2);\n    WSADATA wsaData = {0};\n    if (WSAStartup(wsVersion, &wsaData) != 0) {\n        return 1;\n    }\n\n    // 1. 创建套接字\n    SOCKET cSocket = socket(AF_INET, SOCK_STREAM, 0);\n    if (cSocket == INVALID_SOCKET) {\n        printf(\"套接字创建失败!\\n\");\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"套接字创建成功!\\n\");\n    }\n\n    // 2. 绑定套接字\n    sockaddr_in sockAddrInfo = {0};\n    sockAddrInfo.sin_addr.S_un.S_addr = inet_addr(\"172.16.176.12\");\n    sockAddrInfo.sin_port = htons(2119);\n    sockAddrInfo.sin_family = AF_INET;\n\n    int bRes = bind(cSocket, (sockaddr*)&sockAddrInfo, sizeof(sockAddrInfo));\n    if (bRes == SOCKET_ERROR) {\n        printf(\"绑定失败!\\n\");\n        closesocket(cSocket);\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"绑定成功!\\n\");\n    }\n\n    // 3. 连接服务器\n    sockaddr_in serverSockAddrInfo = {0};\n    serverSockAddrInfo.sin_addr.S_un.S_addr = inet_addr(\"172.16.176.5\");\n    serverSockAddrInfo.sin_port = htons(2118);\n    serverSockAddrInfo.sin_family = AF_INET;\n\n    int cRes = connect(cSocket, (sockaddr*)&serverSockAddrInfo, sizeof(serverSockAddrInfo));\n    if (cRes == SOCKET_ERROR) {\n        printf(\"与服务器连接失败!\\n\");\n        closesocket(cSocket);\n        WSACleanup();\n        return 1;\n    } else {\n        printf(\"与服务器连接成功!\\n\");\n    }\n\n    // 4. 收发数据\n    printf(\"Input: \");\n    char sendData[100] = {0};\n    scanf(\"%99s\", sendData);\n    send(cSocket, sendData, strlen(sendData) + 1, 0);\n\n    char buf[100] = {0};\n    recv(cSocket, buf, sizeof(buf), 0);\n    printf(\"Recv data: %s\\n\", buf);\n\n    // 5. 断开连接（主动）\n    shutdown(cSocket, SD_SEND);\n\n    // 6. 关闭套接字\n    closesocket(cSocket);\n\n    WSACleanup();\n    return 0;\n}\n```\n\n与服务器端不同的是，客户端需要主动使用 `connect()` 连接服务器端：\n\n```cpp\nint connect(\n    SOCKET s,\n    const struct sockaddr* name,\n    int namelen\n);\n```\n\n它同样需要一个 `sockaddr_in` 结构体来描述目标服务器的地址和端口。\n\n![5055d14036b9c9e0dafcf0bcb088b8ed&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/806a110d66252c86392b36018cef7c12e177758b955c4c7d7aaf2c0a4af1471f.jpg)\n\n再提醒一次：这里的示例主要是为了讲清 `connect()`、`send()`、`recv()` 和 `shutdown()` 的基本用法。它默认应用层传输的是字符串，并没有处理粘包、拆包、二进制数据、部分发送和部分接收等真实工程问题。\n\n## 抓包分析握手和挥手\n\n在抓包之前，需要先调整服务器端接收数据的逻辑：通常会写一个循环持续调用 `recv()`；当 `recv()` 返回 `0` 时，表示对端执行了**有序关闭（orderly shutdown）**，也就是对方不再发送数据了，此时就可以跳出循环，进入断开连接流程。\n\n![9c144bd5d56db51899b83b1c0e703e2f&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/422f5d328158fd2f7477dcd0f0660c5f3061c3746710625662a01f1813bf6cd1.jpg)\n\n随后用 `Wireshark` 抓包，就能看到连接关闭阶段的完整过程：\n\n![eca97909f67926cae05a1c33e4d43667&#95;MD5&#46;jpg](/notes/n-37ca069d92fc48feb64dca7cc07fafdd/media/6ac65f4860549ce56fcdb85ee7f96872be71553b2e87b0b37ac1bd45f0d62050.jpg)\n\n可以看到，断开连接时出现了 `FIN` 和 `ACK` 等标志位。这里需要注意两点：\n\n- `FIN` 和 `SYN` 一样，也会占用一个序列号，因此很多场景下会看到 `Ack = 上一个 FIN 的 Seq + 1`。\n- 但这并不意味着所有情况下确认号都只是“上一包序列号加一”。如果中间传输了实际数据，那么确认号本质上仍然是依据**收到的字节流长度**来推进的。\n\n因此，抓包时不要只记结论“`Ack` 永远是上一条的 `Seq + 1`”，而应结合是否存在 `SYN`、`FIN` 或实际负载数据一起分析。\n",
+  "id": "37ca069d-92fc-48fe-b64d-ca7cc07fafdd",
+  "metadata": {
+    "tags": [
+      "cs/network",
+      "lang/cpp"
+    ],
+    "title": "计算机网络：TCP 协议与套接字开发"
+  },
+  "resources": [
+    "1c031b02161d2d2d5587c9723ed4204205a8b6ebd2b02008d64bfaa609f5daf0.jpg",
+    "422f5d328158fd2f7477dcd0f0660c5f3061c3746710625662a01f1813bf6cd1.jpg",
+    "4c620cd259d5dee2e5adcc36d7e265c7d01f445b9947b2571e2f7aa4ed5fe1bc.jpg",
+    "66e5cd20057389fc112f3fef2057c0f5f5f29a02f0d5017e1e0aa405591c17a1.jpg",
+    "6ac65f4860549ce56fcdb85ee7f96872be71553b2e87b0b37ac1bd45f0d62050.jpg",
+    "7b8872cef187429325d182bbca8fc9ed3bb951f350c5f43e5108f125cffe5971.jpg",
+    "806a110d66252c86392b36018cef7c12e177758b955c4c7d7aaf2c0a4af1471f.jpg",
+    "82ba88e68f1af7e2891d629ff346412d8c9aefe907f0689f506e2c06f0dba1ef.jpg",
+    "88311cd096dde96e9511ae9c20e43da659f93b394af303ff262135257bbf741e.jpg",
+    "a49ae727460823be5918de4ba172c97a68d63b86d089d01550f6dc0fcfeb742e.jpg",
+    "c413a3a40b81a9367b903580978b411c1edb6b3e95093edad5bd8e792d839346.jpg",
+    "fb53c05c2abd35ad10e437cf464a46e32ad6053784d1b2fc7fceae1125ba7603.jpg"
+  ],
+  "url": "/notes/n-37ca069d92fc48feb64dca7cc07fafdd/"
+}

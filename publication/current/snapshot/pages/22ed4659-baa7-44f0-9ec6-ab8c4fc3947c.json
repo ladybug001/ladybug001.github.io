@@ -1,0 +1,54 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-4cecd9b3b9b617754d0c",
+      "kind": "heading",
+      "offset": 8
+    },
+    {
+      "id": "h-f87e55bae938f3e43592",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-d5bb72fe558f3b8f261d",
+      "kind": "heading",
+      "offset": 157
+    },
+    {
+      "id": "h-9fcc57970fbc601a9492",
+      "kind": "heading",
+      "offset": 284
+    },
+    {
+      "id": "h-83c1bd615a6fee0abe0d",
+      "kind": "heading",
+      "offset": 932
+    },
+    {
+      "id": "h-799019a7718651ead8ba",
+      "kind": "heading",
+      "offset": 1006
+    },
+    {
+      "id": "h-55c55a17a7cbab167200",
+      "kind": "heading",
+      "offset": 1203
+    },
+    {
+      "id": "h-f796dec40e96c083e497",
+      "kind": "heading",
+      "offset": 1798
+    }
+  ],
+  "body": "# C++ 多态\n\n## 核心概念\n\n**多态**：同一个接口（或者说函数调用），在不同对象或不同类型上，表现出不同的行为。\n\nC++ 的多态主要分为两类：\n1.  **静态多态（Static Polymorphism）**\n2.  **运行时多态（Runtime Polymorphism）**\n\n## 静态多态\n\n- **发生时机：** **编译期**（Compile-time）。\n- **实现方式：** 函数重载（Function Overloading）、模板（Templates）。\n- **特点：** 效率高，无运行时开销。\n\n### 2.1) 代码示例\n\n此处演示非虚函数的**覆盖/遮挡**（Hiding）。函数调用地址在编译期已确定，仅取决于指针的**声明类型**。\n\n```cpp\n// build (MSVC): cl /std:c++17 /EHsc /GR rtti_probe.cpp\n#include <iostream>\n\nclass A {\npublic:\n    void funcA() {\n        std::cout << \"I'm Class A\" << std::endl;\n    };\n};\n\nclass B : public A {\npublic:\n    // 并非重写（Override），而是遮挡（Hide）了基类的 funcA\n    void funcA() {\n        std::cout << \"I'm Class B\" << std::endl;\n    };\n};\n\nint main() {\n    // 栈上对象直接调用：编译器明确知道类型是 B\n    B b{};\n    b.funcA(); // 输出: I'm Class B\n\n    // 指针调用：发生静态绑定\n    A* pB { new B() };\n    \n    // 编译器只看 pB 的类型是 A*，且 funcA 不是虚函数\n    // 因此直接硬编码调用 A::funcA\n    pB->funcA(); // 输出: I'm Class A\n}\n```\n\n### 2.2) 实现原理\n\n编译器在编译阶段根据函数签名、模板参数等信息，确定具体调用的函数版本，并将函数地址直接硬编码到指令中（即**静态绑定**）。\n\n## 运行时多态\n\n> 运行时多态允许程序根据对象的**实际类型**（Runtime Type）而非指针或引用的**静态类型**（Static Type）来调用正确的函数版本。\n\n- **发生时机：** **运行期**（Run-time）。\n- **核心机制：** **多态指针/引用**。\n- **底层技术：** 依赖 **虚函数表**（`vtable`）与 **RTTI**。\n\n### 3.1) 代码示例\n\n通过 `virtual` 关键字实现真正的运行时多态。\n\n```cpp\n// build (MSVC): cl /std:c++17 /EHsc /GR rtti_probe.cpp\n#include <iostream>\n\nclass A {\npublic:\n    // 声明为虚函数\n    virtual void funcA() {\n        std::cout << \"I'm Class A\" << std::endl;\n    };\n};\n\nclass B : public A {\npublic:\n    // 重写（Override）基类虚函数\n    void funcA() override { // 推荐加上 override 关键字以通过编译器辅助检查\n        std::cout << \"I'm Class B\" << std::endl;\n    };\n};\n\nint main() {\n    B b{};\n    b.funcA(); // 输出: I'm Class B\n\n    A* pB { new B() };\n    \n    // 运行时查虚表：虽然 pB 是 A*，但指向的对象实际拥有 B 的 vptr\n    pB->funcA(); // 输出: I'm Class B\n}\n```\n\n### 3.2) 实现原理\n\n1.  **虚函数表（`vtable`）：** \n    -   实现对象和函数的**动态绑定**（Dynamic Binding），参考：[C&#43;&#43; 虚函数与虚函数表](/notes/n-7794ffc3e8894de895729386e783249b/#h-836702308025b024d004)。\n    -   当通过基类指针调用虚函数时，通过查询对象内部的虚表指针（`vptr`）跳转到实际类型的函数地址。\n2.  **RTTI（Run-Time Type Information）：**\n    -   实现**运行时类型识别与转换**，参考：[C&#43;&#43; RTTI 机制](/notes/n-05b15a525c2c46f5b96d1ac648d63387/)。\n    -   支持 `dynamic_cast` 进行安全的向下转型（Downcasting）和 `typeid` 操作。\n",
+  "id": "22ed4659-baa7-44f0-9ec6-ab8c4fc3947c",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 多态"
+  },
+  "resources": [],
+  "url": "/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/"
+}

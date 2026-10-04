@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-66fa55ed7ee9d38e3fd4",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-6b78ca29459ff77c7d6d",
+      "kind": "heading",
+      "offset": 65
+    },
+    {
+      "id": "h-341b5d69d2d8d438152c",
+      "kind": "heading",
+      "offset": 318
+    },
+    {
+      "id": "h-65d3be25192514c0e423",
+      "kind": "heading",
+      "offset": 630
+    },
+    {
+      "id": "h-013428e0371818009362",
+      "kind": "heading",
+      "offset": 975
+    }
+  ],
+  "body": "# Python 语言特性 (MOC)\n\n> Python 模块与对象机制、迭代协议、异步执行及打包分发。\n\n## 模块与对象机制\n\n1. [Python 模块与导入机制](/notes/n-1916a97516364548a1dbaa1eab057368/) — 模块查找、引用方式与状态共享。\n2. [Python 魔术方法与语法糖](/notes/n-6d768a4121d94de79d8761f04df2b86d/) — 理解语法与对象协议的对应关系。\n3. [Python 装饰器](/notes/n-f04372ca4a91469c96ef36cea0512554/) — 理解函数包装、参数与语法糖。\n\n## 迭代与异步\n\n1. [Python 迭代器&#12289;可迭代对象与生成器](/notes/n-3462eb49b6c5415bb3e086109d28cb04/) — 理解迭代协议与生成器状态。\n2. [Python asyncio 异步机制](/notes/n-5344b73e8c544f2db3fe00dedd9c607e/) — 建立 Event Loop、Handle、Future 与队列模型。\n3. [Python 协程机制](/notes/n-6a3b85d941b745e5a29b51d1b40dbad2/) — 结合前两项理解 `async/await`、Task 驱动与上下文保持。\n\n## 打包与工程实践\n\n- [Python 程序打包](/notes/n-7d97e0ed5b4843a5b3076b7618e1b2dd/) — Nuitka、PyInstaller、Pyarmor 与具体打包问题。\n- [Web 逆向与爬虫实践 &#40;MOC&#41;](/notes/n-d2343212ccba41979e43c9b7ebf43968/) — 网络请求、异步爬虫、工程记录与交付案例。\n- 记微博评论群控软件 — 结合异步回调、QThread、日志、持久化和打包观察工程应用。\n- [深度学习与视觉识别 &#40;MOC&#41;](/notes/n-89595dc39ccb43efa26520659a3b4335/) — PyTorch 与数据处理的应用路线。\n\n## 相关机制\n\n- [编程语言理论 &#40;MOC&#41;](/notes/n-8bc8da2a86db45ccae511bc955e98539/) — 语言无关的迭代器、协程与异步抽象。\n- [JavaScript 语言机制 &#40;MOC&#41;](/notes/n-06ad026c16634c2b9d0b578a0d0a62d0/) — 对照事件循环与生成器驱动方式。\n",
+  "id": "55594aaf-5280-4fed-aae2-178afc0581e1",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "lang/python"
+    ],
+    "title": "Python 语言特性 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-55594aaf52804fedaae2178afc0581e1/"
+}

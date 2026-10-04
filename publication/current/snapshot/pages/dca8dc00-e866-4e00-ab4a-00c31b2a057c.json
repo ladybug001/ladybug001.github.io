@@ -1,0 +1,34 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c668a413520cf7be0d9d",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-ec47331762a61996ed56",
+      "kind": "heading",
+      "offset": 162
+    },
+    {
+      "id": "h-9e2e007a8a0054c2a412",
+      "kind": "heading",
+      "offset": 523
+    },
+    {
+      "id": "h-4601f5077ee195a0645e",
+      "kind": "heading",
+      "offset": 667
+    }
+  ],
+  "body": "\n# 规范与实现分离\n\n编程语言由**规范 (Specification)** 定义，而**实现 (Implementation)** 则是规范的具体落地。\n\n**核心原则：** 只要满足语言规范定义的行为，具体的底层实现方式可以灵活多样，但对外的可观察行为应一致。\n> 类似于：只要输入与输出符合预期即可\n\n## 核心概念\n\n-   **语言规范 (Specification)：**\n    -   负责定义语法、语义和标准库接口。\n    -   **示例：** `JavaScript` 的 `ECMAScript` 标准（`ES5`、`ES6`/`ES2015`）；`C++` 的 `ISO` 标准（`C++11`、`C++17`）。\n\n-   **具体实现 (Implementation)：**\n    -   开发者根据规范构建的编译器、解释器或运行时环境。\n    -   **示例：**\n        -   `JS` 引擎：`Chrome V8`、`Safari JavaScriptCore`、`Node.js`。\n        -   `C++` 编译器：`GCC`、`Clang`、`MSVC`。\n\n## 案例说明\n\n假设某语言代码为 `y = x * y`：\n-   **实现 A：** 内部可能通过“九九乘法表”得出结果。\n-   **实现 B：** 内部可能通过将 `x` 累加 `y` 次来计算结果。\n\n> 只要最终计算结果 `y` 符合规范定义，A 和 B 都是合法的实现。\n\n## 学习心得\n\n理解“规范与实现分离”的思想有助于深入掌握语言本质，而不被特定编译器的行为（如未定义行为的具体表现）所迷惑。\n\n> 很巧的是，在认识到这一点后不久，在学习 C++ RTTI 时无意间找到的网站，也提到了这种思想：[谷雨同学的 C++ 教程](https://learn-cpp.guyutongxue.site/postscript.html)",
+  "id": "dca8dc00-e866-4e00-ab4a-00c31b2a057c",
+  "metadata": {
+    "tags": [
+      "lang"
+    ],
+    "title": "编程语言：规范与实现分离"
+  },
+  "resources": [],
+  "url": "/notes/n-dca8dc00e8664e00ab4a00c31b2a057c/"
+}

@@ -1,0 +1,34 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-0da80b31ada3b27c87f4",
+      "kind": "heading",
+      "offset": 31
+    },
+    {
+      "id": "h-47c6867828c1bd47d1de",
+      "kind": "heading",
+      "offset": 128
+    },
+    {
+      "id": "h-80815649fb92545273f2",
+      "kind": "heading",
+      "offset": 337
+    },
+    {
+      "id": "h-a619cb110774653c13ad",
+      "kind": "heading",
+      "offset": 938
+    }
+  ],
+  "body": "# 计算机图形渲染：OpenGL 与 Direct3D 的区别\n目前比较流行的图形渲染API：\n1. OpenGL\n2. D3D\n> 对于外挂制作而言，学习这两个 API 的使用，市面上绝大部分游戏，都可以实现的屏幕绘制功能。\n## 什么是 OpenGL？\n\n**OpenGL (Open Graphics Library)** 是一个**跨平台的、与硬件无关的**图形编程接口（API）。它本身并非一个库，而是一个行业标准**规范**，定义了一系列用于渲染 2D 和 3D 图形的函数。具体的函数实现由显卡制造商（如 NVIDIA、AMD、Intel）在他们的驱动程序中提供。这使得开发者可以编写一次代码，在多种操作系统和硬件上运行。\n\n## 什么是 Direct 3D？\n\n**DirectX** 是微软公司推出的一套**多媒体应用程序接口（API）集合**，专为 Windows 平台设计。它是一个功能强大的工具包，涵盖了图形、声音、输入设备和网络等多个方面。\n\nDirectX 主要包含以下模块：\n- **Direct 3D**: 用于 3 D 图形渲染，是 OpenGL 的直接竞争对手。\n- **DirectDraw**: 用于 2 D 图形处理（现已集成到 DirectX Graphics 中）。\n- **DirectSound**: 用于音频处理。\n- **DirectInput** & **DirectPlay**: 分别用于处理输入设备和网络通信。\n\n**Direct 3 D** 作为 DirectX 的核心图形组件，与 OpenGL 一样，也是一个 API 规范，其具体实现同样由显卡驱动负责。\n\n\n> [!NOTE] 为什么 Direct 3D 是 Windows 专用，而 OpenGL 是跨平台的？\n> 尽管两者都依赖显卡驱动实现，但它们的顶层设计不同。Direct 3 D 的架构与 Windows 操作系统紧密耦合，开发者通常需要通过微软提供的特定 DLL（如 `d3d.dll` 系列）作为“跳板”来调用驱动功能，而这些组件是 Windows 平台的一部分。相比之下，OpenGL 的设计从一开始就着眼于平台无关性。\n\n## 各自的特点\n\n- OpenGL\n\t- **架构模式：** **状态机**\n\t- **核心机制：** 基于**全局上下文 (Global Context)**。\n\t- **特点：** 我们可以将其视为一个“巨型对象”，同一时刻、同一线程下只能激活一个上下文。所有的渲染指令（如设置颜色、绑定纹理、绘制）都是对当前上下文状态的修改。一旦修改了某个状态（如开启混合），它会一直保持，直到被再次修改。\n- Direct3D (D3D9 / D3D11 / D3D12)\n\t- **架构模式：** **面向对象**\n\t- **核心机制：** 基于**设备对象** 与 **接口**。\n\t- **特点：** 所有的资源（纹理、缓冲区）和管线状态都封装在独立的“对象”中。渲染时，你需要显式地调用特定对象的方法（例如 `context->Draw()`）。这使得资源管理更加模块化，互不干扰。\n",
+  "id": "63ab4b15-943a-41e2-a68a-74c6dc678637",
+  "metadata": {
+    "tags": [
+      "cs/graphics"
+    ],
+    "title": "计算机图形渲染：OpenGL 与 Direct3D 的区别"
+  },
+  "resources": [],
+  "url": "/notes/n-63ab4b15943a41e2a68a74c6dc678637/"
+}

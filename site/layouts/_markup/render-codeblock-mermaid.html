@@ -1,0 +1,4 @@
+{{- /* Preserve the existing pipeline contract: code, stable anchor, no remote JS. */ -}}
+{{- with .Attributes.id -}}<div id="{{ . }}">{{- end -}}
+<pre><code class="language-mermaid">{{ .Inner }}</code></pre>
+{{- with .Attributes.id -}}</div>{{- end -}}

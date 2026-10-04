@@ -1,0 +1,251 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-e25406358edf5d45886f",
+      "kind": "heading",
+      "offset": 4
+    },
+    {
+      "id": "h-ef8fb46711570e8a117a",
+      "kind": "heading",
+      "offset": 268
+    },
+    {
+      "id": "h-2c700a2ee274114b401c",
+      "kind": "heading",
+      "offset": 976
+    },
+    {
+      "id": "h-fbe2c55c6ea1641cb55d",
+      "kind": "heading",
+      "offset": 987
+    },
+    {
+      "id": "b-4jrmht",
+      "kind": "block",
+      "offset": 2239
+    },
+    {
+      "id": "h-0923efbe74a2251ff61e",
+      "kind": "heading",
+      "offset": 2249
+    },
+    {
+      "id": "h-1f5f9eaca20c4a154fff",
+      "kind": "heading",
+      "offset": 2682
+    },
+    {
+      "id": "e-a3924fc55563d4466a1a-b-4jrmht",
+      "kind": "block",
+      "offset": 2797
+    },
+    {
+      "id": "h-bd5fc7306f6e94593b3d",
+      "kind": "heading",
+      "offset": 2811
+    },
+    {
+      "id": "h-42743b78220009399523",
+      "kind": "heading",
+      "offset": 3221
+    },
+    {
+      "id": "b-r6af6b",
+      "kind": "block",
+      "offset": 3872
+    },
+    {
+      "id": "h-0c730110dddda79c95d3",
+      "kind": "heading",
+      "offset": 4031
+    },
+    {
+      "id": "h-598ae641743b4f22d298",
+      "kind": "heading",
+      "offset": 4474
+    },
+    {
+      "id": "e-63e3a7e63e441559cef9-b-r6af6b",
+      "kind": "block",
+      "offset": 4653
+    },
+    {
+      "id": "h-430a47fdc9f404d5f68c",
+      "kind": "heading",
+      "offset": 5025
+    },
+    {
+      "id": "h-525061c1d4e370e669a8",
+      "kind": "heading",
+      "offset": 5033
+    },
+    {
+      "id": "h-cac83da2b192ef2db5f2",
+      "kind": "heading",
+      "offset": 5567
+    },
+    {
+      "id": "b-fr4ebt",
+      "kind": "block",
+      "offset": 5792
+    },
+    {
+      "id": "h-eb553eec88db21d106bf",
+      "kind": "heading",
+      "offset": 5858
+    },
+    {
+      "id": "h-3d2fc585042c8116f409",
+      "kind": "heading",
+      "offset": 6455
+    },
+    {
+      "id": "h-2f06a6ba1f6166e489ae",
+      "kind": "heading",
+      "offset": 6469
+    },
+    {
+      "id": "h-e6bdd68049c514491fbf",
+      "kind": "heading",
+      "offset": 6922
+    },
+    {
+      "id": "e-264b8c2661e8507c75cc-b-fr4ebt",
+      "kind": "block",
+      "offset": 7247
+    },
+    {
+      "id": "h-f9d5ac39f75a10aab964",
+      "kind": "heading",
+      "offset": 8241
+    },
+    {
+      "id": "h-6eba6a563b168a961178",
+      "kind": "heading",
+      "offset": 8609
+    },
+    {
+      "id": "h-af3ea1afaf9d51b252dd",
+      "kind": "heading",
+      "offset": 8750
+    },
+    {
+      "id": "h-6eda5b2c4c84923d6cad",
+      "kind": "heading",
+      "offset": 8759
+    },
+    {
+      "id": "h-79c16bdd4a71833f816b",
+      "kind": "heading",
+      "offset": 8903
+    },
+    {
+      "id": "h-bf1811de686724128d93",
+      "kind": "heading",
+      "offset": 9250
+    },
+    {
+      "id": "h-639464b6709503605b21",
+      "kind": "heading",
+      "offset": 9267
+    },
+    {
+      "id": "h-c512e881bfacdf81c6d7",
+      "kind": "heading",
+      "offset": 9951
+    },
+    {
+      "id": "h-b39018bd00b635908239",
+      "kind": "heading",
+      "offset": 10030
+    },
+    {
+      "id": "h-ecdeb7181d20b68f6d7a",
+      "kind": "heading",
+      "offset": 10113
+    },
+    {
+      "id": "h-0141ff7f2ba258693827",
+      "kind": "heading",
+      "offset": 10457
+    },
+    {
+      "id": "h-01c12e9cea556c310226",
+      "kind": "heading",
+      "offset": 10467
+    },
+    {
+      "id": "h-44dcf5a6f998e550155e",
+      "kind": "heading",
+      "offset": 11273
+    },
+    {
+      "id": "h-120f029fe76884c45285",
+      "kind": "heading",
+      "offset": 12167
+    },
+    {
+      "id": "h-786599d59b0e0d587c85",
+      "kind": "heading",
+      "offset": 12941
+    },
+    {
+      "id": "h-903c78be3bd38f0a4443",
+      "kind": "heading",
+      "offset": 12952
+    },
+    {
+      "id": "h-726ae50cb65ea045062f",
+      "kind": "heading",
+      "offset": 13581
+    }
+  ],
+  "body": "# 引言\n学习链接： [Learn Git Branching](https://learngitbranching.js.org/?locale=zh_CN)\n\n名词解释：\n- **暂存区** = 暂时存放一些差异内容\n- **commit 区** = 存放与父 commit 间的改动。\n- **工作区** = 当前所在分支的所有 commit 依次叠加后，形成目录中的内容\n\n[](/notes/n-185409b7d5e246189e9f7f7b1374c307/#h-639464b6709503605b21)\n\n# 常用命令\n\n```\n# 在当前目录新建一个Git代码库\ngit init\n\n# 下载一个项目和它的整个代码历史\ngit clone [项目地址]\n\n# 在现有分支A和B之间，建立A追踪B的关系(即设置PUSH和PULL的默认参数)\ngit branch --set-upstream-to [B] [A]\n\n# 查看本地所有分支\ngit branch --list \n\n# 查看所有本地、远程跟踪分支\ngit branch -a\n\n# 添加修改文件至暂存区\ngit add [filename]\n\n# 添加所有修改文件至暂存区\ngit add . \n\n# 提交记录\ngit commit\n\n# 修复最后一次提交记录，将新变动与最后一次提交合并\ngit commit --amend\n\n# 查看提交记录\ngit log\n\n# 将目标提交记录中的 xxx.cpp 文件提取放入工作区\ngit checkout <ref> -- src/xxx.cpp\n\n# 效果等同于：删除工作区中属于当前提交记录的内容，将目标提交记录所有文件粘贴复制放入工作区，并切换HEAD指向目标提交记录\ngit checkout <ref>\n\n# 回退分支至目标提交记录（版本回退）\ngit reset <ref> (三个选项：--soft、mixed、hard，详细区别在文章下面)\n\n# 将当前未提交的修改(即，工作区的修改和暂存区的修改)先暂时储藏起来，后续再恢复\ngit stash \n...\ngit stash pop\n\n# 上传至远程仓库\ngit push \ngit push origin <branchName>\n```\n\n# 本地仓库\n## 暂存&提交修改\n1. `git add xxx.txt`：添加指定改动到暂存区。\n2. `git commit`：创建一个新的提交，来存储所有改动。\n3. `git commit --amend`：将暂存区中的改动，合并、存储到上一个提交中。\n> `git commit --amend` 是 Git 中用于修改最后一次提交的命令。它允许你更改上一次提交的信息，或者将新的更改补充到上一次的提交中 (不是创建一个新的提交)。这个命令非常适合在你意识到最后一次提交有错误或遗漏时使用。\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/3ff721a179058adbf8b9b46a0852797d1803046005b140c2a8dc3a333b61c377.jpeg)\n\n使用 `git commit` 创建一个新的提交记录：\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/b91be9d2813da67b8ecc9ef3fa7e9e21b6e6e747ab51fac684f9aba9754dfd3d.jpeg)\n\n---\n\n**`git commit --amend` 使用示例：**\n1. `git log` 查看提交记录，可以看到有且只有一个提交记录 ![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/a857791c840157aa53626e3ab688cbedc7ffe421d094b2388a1a78cb836edafd.jpeg)\n2. 发现此次提交有疏漏 ![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/72c560935f0fb4efb21fd54e6ba89f5de0fc15cb738046c1218a1ee2dddd8ce5.jpeg)\n3. 使用 `git add .` 命令，将修改添加至暂存区\n4. 执行 `git commit --amend` 命令，对上一次的提交进行修改/弥补。\n5. 执行 `git log` 指令，可以看到仍然只有一个提交记录，也说明 `--amend` 参数是修改最后一次提交，而不是新建一个提交。![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/a9e4a36f4a309f5d48ee25869757121dd7351870118b75eb3fa94cb4da4553ba.jpeg)\n\n---\n\n**commit 的本质：** \n> 一个 Commit 本质上记录的是**相对于其父 Commit 的内容差异（diff）**。工作区中的内容，是由这些差异按顺序叠加后得到的。理解这一点，对理解 **rebase、分支合并** 等 Git 操作非常重要。\n\n\n\n## 新建分支\n- `git branch newBranchName`：创建新分支 `newBranchName`\n- `git checkout -b B A`：从分支 A 的当前状态创建一个新分支 B，并切换到 B\n\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/afc6c0097b9cbcedb7c593b199f9c9cd2f584a1fd7771eaef6ad30a293484f2c.jpeg)\n\n使用 `git branch newBranch` 新建一个名为 `newBranch` 的分支，注意此时 `HEAD` 并不指向新建分支。\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/50269f4ad3a0ea409c1bd7a58631778ec19bb8337378f96c7d2ffa2f91614688.jpeg)\n\n\n## 合并分支\n\n\n> 一个 Commit 本质上记录的是**相对于其父 Commit 的内容差异（diff）**。工作区中的内容，是由这些差异按顺序叠加后得到的。理解这一点，对理解 **rebase、分支合并** 等 Git 操作非常重要。\n\n\n### Merge 合并\n\n执行 `git merge branchName` 指令进行合并，合并后的记录提交在当前 HEAD 指向的分支下。\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/c35037011d457eb29d24b96534babc0e31a133b45599eaefb5700c76891ab4ed.jpeg)\n\n此时 `HEAD` 指向 `main` 分支，执行 `git merge bugFix` 命令，将 `bugFix` 分支的最新记录合并到 `main` 分支上。\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/795d21373e74a077ff125667f2eaf4e76f499b79c91569dc5dc756d5ab0663f3.jpeg)\n\n### Rebase 变基\n\n- 执行 `git rebase branchName` 指令，将当前 `HEAD` 指向的分支变基到 `branchName`（与 `merge` 不同）。\n- 执行 `git rebase branchName1 branchName2` 指令，将 `branchName2` 变基至 `branchName1` 上。\n\n---\n![09b562460291a1d1a8db48dc9df7270e&#95;MD5&#46;jpeg](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/b104a243cbaec6dda54ab9ce3a6d7a3a3ec097d856963f0c2480941c39b33d23.jpeg)\n\n当前所在分支为 `bugFix`，执行 `git rebase main` 指令，将 `bugFix` 分支变基合并至 `main` 分支并得到新记录C3'、C8'、C9'。\n![f0cfe791837a1d2ce62e03b1d4a288d2&#95;MD5&#46;jpeg](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/03fc0a76b147b8c40f546b865f6cb208cc48da9742ae5985ddb25265f78e2af6.jpeg)\n\nRebase 会提取与目标分支最近公共祖先之间的非公共提交记录，然后逐个\"放在\"目标分支后。 \n> 举例：C3' 是由 C1->C2 和 C1->C3 两个差集合并后得来的，如果差集之间有冲突，则需要先处理冲突才能继续。\n\n**Rebase 的优势就是可以创造更线性的提交历史**，这听上去有些难以理解。如果只使用 Rebase 的话，**代码库的提交历史将会变得异常清晰**。\n\n\n### Cherry-pick\n\nHEAD 指向 main 分支时，执行 `git cherry-pick hashValue1 hashValue2 hashValue3` 指令，将目标提交记录依次放入当前分支下(PS：参数顺序与合并顺序相关)\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/17d9eb1d0c9437a003cc09033e18f19f728a7d6f3b459c85cca4bf915635b529.jpeg)\n\n当前所在 main 分支，执行 `git cherry-pick C3 C4 C7` 指令，将按顺序把记录合并至 main 分支。\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/8196876a6680f4163dedcb84a7b97cd509fdeabf1dfc2a3485d867e5a1176bd6.jpeg)\n\n\n### Rebase -i\n\n**当前 HEAD 指向 main 分支**，执行 `git rebase -i destination` 指令，将以交互式的方式**让你在 HEAD 与 destination 的非公共提交记录中**选择要变基合并到 destination 的记录。\n\n\nRebase 会提取与目标分支最近公共祖先之间的非公共提交记录，然后逐个\"放在\"目标分支后。 \n\n\n\n---\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/af25c09813b14c5c29b2e299e60dcd2467cdb51dba42fb193799a430c63956ee.jpeg)\n当前所在 main 分支，执行 `git rebase -i overHere`，将弹出交互式页面 (C2 C3 C4 C5)，选择并调整要合并的记录 C3 C5 C4 (PS：练习网站的交互方式与实际不同)\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/8bae6f0aa65e41c8efa37df10a02ab0d76b81855f1f1a7cae392178516b7ddc2.jpeg)\n\n## 修改 HEAD 指向\n\n### 前言\n\nHEAD 是一个对当前所在分支的符号引用 —— 也就是指向你正在其基础上进行工作的提交记录。\n\nHEAD 总是指向当前分支上最近一次提交记录。大多数修改提交树的 Git 命令都是从改变 HEAD 的指向开始的。\n\n**HEAD 通常情况下是指向分支名的（如 bugFix）**。在你提交时，改变了 bugFix 的状态，这一变化通过 HEAD 变得可见。\n\n\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/7e9bcd4a925424ebe8b13d696d926399b2ae9fa172a01050b832c6c4e9cf3165.jpeg)\n使用如 `git switch C4`、`git checkout C4` 命令后：\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/6f71926d3e21f86d3a1741ca5d7176fb371d0947b0566d9326001c1a1fb2bc16.jpeg)\n\n> 上述操作 HEAD 的指向由 `HEAD->bugFix->C4` 变为 `HEAD->C4`。\n\n###  修改命令\n\n1. 修改 HEAD 指向至目标分支/提交记录的命令：\n\n\t- `git switch branchName/hashValue`\n\t- `git checkout branchName/hashValue`\n\n> `git checkout <ref>`：分离并令 HEAD 指向目标 commit + 清除暂存区 + 修改工作区内容（效果等同于删除当前 commit 在工作区的所有内容，然后复制粘贴目标 commit 内容到当前工作区） \n\n2. 新建分支并令 HEAD 指向新建分支。\n\n\t- `git checkout -b newBranch`\n\n\n\n## 相对引用\n\n调用命令对某记录进行操作时，要传入指向该记录的分支名或该记录的 hash 值作为参数，**有些记录没有被分支名指向，则必须使用 hash 值作为参数，但 hash 值很长十分难记，有没有其它办法可以表示目标记录的位置？** \n\n这就是要介绍的相对引用：\n- `^` 操作符，将其加到分支名称/hashValue 的后面，表示该记录的父节点 (PS：当该记录有两个父节点时，`branchName^2` 表示另外一个父节点)。\n- `~<num>` 操作符，与 `^` 操作符类似，表示该记录前面的第 num 个记录。\n\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/ed5b8e03be329d76d9bc3f1ef24938b4efcd0df47e00982e3769dfc0894569ac.jpeg)\n\n使用 `git switch bugFix^` 或 `git switch bugFix~1`，令 HEAD 指向 C3记录。\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/4763b4ec94af1a7529ad381fc47b27623b5422be95cffef29cf54dd334bbe98f.jpeg)\n\n\n\n## 分支版本回退/撤销提交\n\n### 强制修改分支位置\n\n使用 `git branch -f branchName Destination` 修改分支的位置。\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/a8a29a289dc84d2fbb897087a5cf79d65928b3b109d0512139a4eed6f8d442ca.jpeg)\n\n执行 `git branch -f main C6`，令 main 分支指向 `C6`。\n执行 `git branch -f bugFix HEAD^^`，令 bugFix 分支指向 `C0`。\n执行 `git switch C1`，令 HEAD 指向 `C1`。\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/dab315b9db90cb7d89ff2c66c5a3dfd8d3cd43dc5b13b36d0299de9019893d15.jpeg)\n\n### Reset 指令\n `git reset hashValue` 命令**不能在 HEAD 分离情况下使用**，通过移动当前分支到目标 commit 实现版本回退，可选参数如下：\n 1. `--hard`：分支指向 commit + 清除暂存区 + 工作区变为目标 commit 对应内容\n 2. `--mixed` (默认)：分支指向 commit + 清除暂存区中的内容\n 3. `--soft`：仅令分支指向 commit\n\n\n> `git checkout <ref>`：分离并令 HEAD 指向目标 commit + 清除暂存区 + 修改工作区内容（效果等同于删除当前 commit 在工作区的所有内容，然后复制粘贴目标 commit 内容到当前工作区） \n\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/d42cbe480ea2af801de70230f270e6116d0ae6f8902880dc2662c8193d7f021c.jpeg)\n执行 `git reset HEAD^` 命令，local 分支回退到上次的提交记录 C 1。\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/167faeae1b536b0523ae7b4dfe841d177ffd06bf637f7a44960259643df1aa3b.jpeg)\n\n---\n\n~~**注意！！使用 reset 回退到目标版本后，中间的提交记录会被删除**~~\n\n1. 查看仓库的提交记录 ![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/e410af1d211be655127e62ec50e827784e2a04b2cc49f86ec335e1741f480d2e.jpeg)\n2. 使用 `reset` 命令，后退到第一个提交记录。![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/8e77ced62092b6d2f3028a2ec5b3e24f88408d88e5013dbb9c90fbdeaa1208d4.jpeg)\n3. 再次查看仓库提交记录，可以看到中间的提交记录已经不见了。![d3541f24cf20cf256244a8592eb11484&#95;MD5&#46;jpeg](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/c5606fda60608f628087b25d132c7cbee31d16a0e84df4ef6d1d6cae0bd42cd8.jpeg)\n> 上述内容说的不对，`git reset <ref>` 后并非无法返回新提交，执行 `git log` 提交记录变少的原因是回退到旧提交后，查看的是该旧提交对应的提交记录。\n> \n> 可以使用 ` git reflog ` 配合 `git reset <ref>` 回到新提交。\n### Revert 指令\n\n`git revert hashValue` 指令，会创建一个新的提交，新提交中保存的是与目标回退记录之间的差异。\n\n---\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/0a896637118284540633f847305c8dd30e133ea676a67563a63c4e842f7fa022.jpeg)\n\n执行 `git revert C1` 指令，创建了一个新提交 C1'，C1'与 C1 的状态相同。\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/37a51a61c1fed01b63b72c1b68a1a708b085287dcfa3d50176c2ad3dbf19532d.jpeg)\n### 总结\n\n`git reset` 适用于完全放弃后续提交的情况。使用 `reset` 后，中间的提交记录会被删除。\n\n`git revert`：适用于保留部分提交历史的情况。使用 `revert` 后，会生成一个新的提交来撤销至指定版本，而不会影响先前的提交记录。\n\n\n## Tag 标签\n\n### 打标签\n\n`git tag tagName hashValue/branchName`：给 hashValue/branchName 对应的提交记录打上 tagName 标签。\n\n\n**标签可以像分支名称、hash 值一样用来表示一个提交记录，可以当作参数使用**\n### 获取最近的标签的信息\n\n`git describe <ref>`：输出离 `ref` 最近的标签的信息，输出形式为 `<tag>_<numCommits>_g<hash>`，`tag` 是标签名称，`numCommits` 是表示这个 `ref` 与 `tag` 相差有多少个提交记录，`hash` 表示的是你所给定的 `ref` 指向的提交记录哈希值的前几位。\n\n---\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/696a7877d4749454e8867e584252b01734ebfb0dc52ff7138c82a3974b5012c7.jpeg)\n执行 `git describe HEAD`，输出结果为：v 1_2_gC6\n\n\n# 远程仓库\n\n## Git 中的三类分支概念\n\n> **远程仓库的分支 ≠ 远程跟踪分支 ≠ 本地分支**\n\n1. 远程仓库中的分支\n\t- 存在于**远程仓库**\n\t- 比如 GitHub/Gitee/GitLab 服务器上的分支\n\t- **你本地看不到它的实际内容**\n2. 远程跟踪分支\n\t- 本地记录的**远程分支的镜像**\n\t- Git 用它来知道远程分支的状态\n\t- 不能在上面直接提交（**只读**），只能通过 fetch/pull 获取远程仓库中该分支的最新状态，或者使用 push 成功推送后，该分支会跳到刚刚推送到的那个提交点。\n> 例：`origin/master`（`origin` 仓库的 `master` 分支，在本地的镜像）\n3. 本地分支\n\t- 你开发代码的分支\n\t- 可以提交、合并、切换\n\t- 可以 tracking（跟踪）一个远程跟踪分支，也可以不跟踪\n> 例：`master`, `dev`\n\n| 命令           | 数据流向                                               |\n| ------------ | -------------------------------------------------- |\n| `fetch/pull` | `Remote → origin/* → Local`，本地分支是否合入你自己决定          |\n| `push`       | `Local → Remote → origin/*`，`origin/*` 最终与远程仓库保持一致 |\n\n## 新增远程仓库\n- 新增远程仓库：`git remote add <resposityAlias> <url>`\n> 仅添加仓库，不会创建远程跟踪分支\n\n## 克隆远程仓库\n- 克隆远程仓库：`git clone remoteAddress`\n> 添加仓库，并且对仓库中的每个分支，创建相应的远程跟踪分支。\n\n## 跟踪/追随远程跟踪分支\n\n**与\"创建远程跟踪分支\"做区分**。\n\n- 令分支 `A` 跟随分支 `B`（分支 `A` 是本地分支，而分支 `B` 即可以是本地分支也可以是远程跟踪分支）：\n\t- `Git branch --set-upstream-to [B] [A]`\n\t- `git branch -u B A`\n> 设置“跟踪/追随”关系，只是为了**给 `git pull` 和 `git push` 设置一个默认值**，不过 `pull` 和 `push` 并不是“直接”对远程跟踪分支进行操作，具体参见下文。\n\n`fetch`、`pull` 和 `push` 一般情况下只能用于远程跟踪分支和本地分支，但两个本地分支若有跟踪关系，则也可以使用（很少需要两个本地分支间具有跟踪关系）。\n\n## 拉取\n### Fetch\n1. 更新远程跟踪分支\n\n\t- `git fetch`： 从所有远程仓库的所有分支，下载所有远程跟踪分支缺失的提交记录**放在相应远程跟踪分支下**，并更新远程跟踪分支的指针，如 `origin1/main` 、`origin1/bugFix`、`origin2/main` 、`origin2/bugFix`\n\t- `git fetch origin foo`：从远程仓库 `origin` 的 `foo` 分支，下载远程跟踪分支 `origin/foo` 缺失的提交记录，**并放在远程跟踪分支 `origin/foo` 下**，并更新远程跟踪分支指针。\n2. 更新/创建本地分支\n\n\t- `git fetch origin <source>:<destination>`：从远程仓库 `origin` 的分支 `source` 下载本地分支 `destination` 没有的提交记录，**放在本地分支 `destination` 下**\n\t- `git fetch origin :newBranchName`：**新建一个名为 `newBranchName` 的本地分支**\n\n\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/7dab6d4890f6ff92d111a4ed5fc0e8a69a308790765c49ae86a2053737822d26.jpeg)\n执行 `git fetch` 命令，会同步所有远程跟踪分支，并修改远程跟踪分支指针的位置。\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/6a59705c2a2cf9e61184a9608294e84fa5c8058c5319e4028f9825e3b8ee2c3d.jpeg)\n\n\n\n\n### Pull\n`pull` 命令是由 `fetch` 和 `merge` 复合而来的：\n\n- `git pull origin branchName` 相当于 `git fetch origin branchName` + `git merge origin/branchName` \n> **merge 不会管当前 HEAD 指向哪里**，即执行该 `pull` 指令时，`HEAD` 指向分支中的哪个提交记录，就将该提交记录与 `origin/branchName` 进行合并\n- `git pull origin <source>:<destination>` 相当于 `git fetch origin <source>:<destination>` + `git merge <destination>` \n> 该 merge 同理\n- `git pull`：下载当前分支跟踪/追随分支缺失的提交记录，并将当前分支与更新后的跟踪/追随分支进行合并。\n> [](/notes/n-185409b7d5e246189e9f7f7b1374c307/#h-ecdeb7181d20b68f6d7a)\n\n\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/4dccc00b680610e43712fd1621d5c036d99f5f52f55dcfd2cf7499bcf0fe6be6.jpeg)\n\n执行 `git pull` 和执行 `git fetch` + `git merge o/main` 效果相同(`main` 与 `o/main` 为跟踪关系)：\n![ffe3fd26ed0b9ff9b78f76346a825d6b&#95;MD5&#46;jpeg](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/11c42276de03abd4aa04a9e4d2449584d8acb93f0a72125aa05d7c6f6cedc18e.jpeg)\n\n\n## 推送-push\n> 注意真实顺序：是先推送到远程仓库中的分支，然后再更新其对应的远程跟踪分支。\n> 只不过就结果而言：可以理解为先推送到远程跟踪分支，而后又同步到远程仓库中的分支。\n\n- `git push`：推送当前分支的记录到相应的跟踪/追随分支。\n- `git push origin branchName`：推送本地的 `branchName` 分支至远程跟踪分支 `origin/branchName` (PS：`origin` 代表远程仓库)\n- `git push origin <source>:<destination>`：将本地的 `source` 分支，推送到 `origin/destination` 远程跟踪分支，适用于被推送的本地分支 (` source `) 与目的远程分支 (` destination `)，二者名字不相同的情况。\n- `git push origin :branchName`：删除远程仓库 `origin` 中，名为 `branchName` 的分支\n\n\n---\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/60f35904548ef78ea9e247ace77e675fae60cad08016bb9956c91ad07bbdd534.jpeg)\n\n执行 `git push`，将本地的提交记录推送至远程仓库 (可以看到，推送后远程分支指针与远程仓库中的分支指针位置相同)。\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/1e15d695e57b180016dfdd2acde841f71192e0ccae38f502e860112ea00d56c3.jpeg)\n\n\n\n\n## 常见问题\n### 提交历史偏离\n\n假设你周一克隆了一个仓库，然后开始研发某个新功能。到周五时，你新功能开发测试完毕，可以发布了。但是你的同事这周写了一堆代码，且已经将那些提交推送到远程仓库了，因此你的工作就变成了基于项目**旧版**的代码，与远程仓库最新的代码不匹配了。\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/de84f284af4e7eb53141ba3d0af71bd0efbe42198d38fba9f1172d2cfb8dc805.jpeg)\n\n此时执行 `git push` 将会失败，原因是你最新提交的 `C3` 基于远程分支中的 `C1`。而远程仓库中该分支已经更新到 `C2` 了，所以 Git 拒绝了你的推送请求。\n\n---\n\n**解决方法：** 先同步远程仓库，再将远程分支与本地分支合并，最后再推送至远程仓库\n1. `git fetch`\n2. `git rebase o/main` (PS：`merge` 命令也类似)\n> **上述两条指令可以合并为**：`git pull --rebase`\n3. `git push`\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/349f33ff81e970dec9ed9ed429ac9fd94913545e3fcdee07cb44def046059212.jpeg)\n\n\n\n### 主分支被锁定\n\n如果你是在一个大的合作团队中工作, 很可能主分支被锁定, 需要一些 Pull Request 流程来合并修改。\n\n**换句话说**：就是需要新建一个分支，在该分支中提交记录后，再将其同步至远程仓库。\n\n1. 创建新分支：`git checkout -b newBranchName`\n2. 在新分支中提交记录：`git commit`\n3. 将新分支同步至远程仓库：`git push origin newBranchName`\n\n---\n\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/4d3a1d58ef507b5b9386450c9d6e30bdd767a65b9950e6438ad16c4c2dd03b8d.jpeg)\n1. `git branch -f main o/main`\n2. `git checkout -b feature C2`\n3. `git push origin feature`\n![](/notes/n-185409b7d5e246189e9f7f7b1374c307/media/2c2c7e6475f0573612fc0a4dd3785673fde5d866172207e78940ba2ca40ab809.jpeg)\n\n",
+  "id": "185409b7-d5e2-4618-9e9f-7f7b1374c307",
+  "metadata": {
+    "title": "Git"
+  },
+  "resources": [
+    "03fc0a76b147b8c40f546b865f6cb208cc48da9742ae5985ddb25265f78e2af6.jpeg",
+    "0a896637118284540633f847305c8dd30e133ea676a67563a63c4e842f7fa022.jpeg",
+    "11c42276de03abd4aa04a9e4d2449584d8acb93f0a72125aa05d7c6f6cedc18e.jpeg",
+    "167faeae1b536b0523ae7b4dfe841d177ffd06bf637f7a44960259643df1aa3b.jpeg",
+    "17d9eb1d0c9437a003cc09033e18f19f728a7d6f3b459c85cca4bf915635b529.jpeg",
+    "1e15d695e57b180016dfdd2acde841f71192e0ccae38f502e860112ea00d56c3.jpeg",
+    "2c2c7e6475f0573612fc0a4dd3785673fde5d866172207e78940ba2ca40ab809.jpeg",
+    "349f33ff81e970dec9ed9ed429ac9fd94913545e3fcdee07cb44def046059212.jpeg",
+    "37a51a61c1fed01b63b72c1b68a1a708b085287dcfa3d50176c2ad3dbf19532d.jpeg",
+    "3ff721a179058adbf8b9b46a0852797d1803046005b140c2a8dc3a333b61c377.jpeg",
+    "4763b4ec94af1a7529ad381fc47b27623b5422be95cffef29cf54dd334bbe98f.jpeg",
+    "4d3a1d58ef507b5b9386450c9d6e30bdd767a65b9950e6438ad16c4c2dd03b8d.jpeg",
+    "4dccc00b680610e43712fd1621d5c036d99f5f52f55dcfd2cf7499bcf0fe6be6.jpeg",
+    "50269f4ad3a0ea409c1bd7a58631778ec19bb8337378f96c7d2ffa2f91614688.jpeg",
+    "60f35904548ef78ea9e247ace77e675fae60cad08016bb9956c91ad07bbdd534.jpeg",
+    "696a7877d4749454e8867e584252b01734ebfb0dc52ff7138c82a3974b5012c7.jpeg",
+    "6a59705c2a2cf9e61184a9608294e84fa5c8058c5319e4028f9825e3b8ee2c3d.jpeg",
+    "6f71926d3e21f86d3a1741ca5d7176fb371d0947b0566d9326001c1a1fb2bc16.jpeg",
+    "72c560935f0fb4efb21fd54e6ba89f5de0fc15cb738046c1218a1ee2dddd8ce5.jpeg",
+    "795d21373e74a077ff125667f2eaf4e76f499b79c91569dc5dc756d5ab0663f3.jpeg",
+    "7dab6d4890f6ff92d111a4ed5fc0e8a69a308790765c49ae86a2053737822d26.jpeg",
+    "7e9bcd4a925424ebe8b13d696d926399b2ae9fa172a01050b832c6c4e9cf3165.jpeg",
+    "8196876a6680f4163dedcb84a7b97cd509fdeabf1dfc2a3485d867e5a1176bd6.jpeg",
+    "8bae6f0aa65e41c8efa37df10a02ab0d76b81855f1f1a7cae392178516b7ddc2.jpeg",
+    "8e77ced62092b6d2f3028a2ec5b3e24f88408d88e5013dbb9c90fbdeaa1208d4.jpeg",
+    "a857791c840157aa53626e3ab688cbedc7ffe421d094b2388a1a78cb836edafd.jpeg",
+    "a8a29a289dc84d2fbb897087a5cf79d65928b3b109d0512139a4eed6f8d442ca.jpeg",
+    "a9e4a36f4a309f5d48ee25869757121dd7351870118b75eb3fa94cb4da4553ba.jpeg",
+    "af25c09813b14c5c29b2e299e60dcd2467cdb51dba42fb193799a430c63956ee.jpeg",
+    "afc6c0097b9cbcedb7c593b199f9c9cd2f584a1fd7771eaef6ad30a293484f2c.jpeg",
+    "b104a243cbaec6dda54ab9ce3a6d7a3a3ec097d856963f0c2480941c39b33d23.jpeg",
+    "b91be9d2813da67b8ecc9ef3fa7e9e21b6e6e747ab51fac684f9aba9754dfd3d.jpeg",
+    "c35037011d457eb29d24b96534babc0e31a133b45599eaefb5700c76891ab4ed.jpeg",
+    "c5606fda60608f628087b25d132c7cbee31d16a0e84df4ef6d1d6cae0bd42cd8.jpeg",
+    "d42cbe480ea2af801de70230f270e6116d0ae6f8902880dc2662c8193d7f021c.jpeg",
+    "dab315b9db90cb7d89ff2c66c5a3dfd8d3cd43dc5b13b36d0299de9019893d15.jpeg",
+    "de84f284af4e7eb53141ba3d0af71bd0efbe42198d38fba9f1172d2cfb8dc805.jpeg",
+    "e410af1d211be655127e62ec50e827784e2a04b2cc49f86ec335e1741f480d2e.jpeg",
+    "ed5b8e03be329d76d9bc3f1ef24938b4efcd0df47e00982e3769dfc0894569ac.jpeg"
+  ],
+  "url": "/notes/n-185409b7d5e246189e9f7f7b1374c307/"
+}

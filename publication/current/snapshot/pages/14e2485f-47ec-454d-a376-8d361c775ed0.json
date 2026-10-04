@@ -1,0 +1,109 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-bb17e072421aab2176ba",
+      "kind": "heading",
+      "offset": 32
+    },
+    {
+      "id": "h-d84fb70fc4dca8fad0fd",
+      "kind": "heading",
+      "offset": 41
+    },
+    {
+      "id": "h-37eefb350035c80ace8e",
+      "kind": "heading",
+      "offset": 498
+    },
+    {
+      "id": "e-f896f62f21a8d3b64c07-b-9xp9lk",
+      "kind": "quote-block",
+      "offset": 950,
+      "prefix": "> "
+    },
+    {
+      "id": "h-e284621a988d1b708f0f",
+      "kind": "heading",
+      "offset": 1400
+    },
+    {
+      "id": "h-39934b16b00582c4f0fb",
+      "kind": "heading",
+      "offset": 1793
+    },
+    {
+      "id": "h-6dabb884ca31bdfd9a37",
+      "kind": "heading",
+      "offset": 2474
+    },
+    {
+      "id": "h-3021dfa14211ad3ab79d",
+      "kind": "heading",
+      "offset": 2770
+    },
+    {
+      "id": "h-1442ea85fd840159ffff",
+      "kind": "heading",
+      "offset": 3064
+    },
+    {
+      "id": "h-8671749cf343b6f708f0",
+      "kind": "heading",
+      "offset": 3856
+    },
+    {
+      "id": "h-bf14e87e9e07955d893a",
+      "kind": "heading",
+      "offset": 3880
+    },
+    {
+      "id": "h-8b6aa4a456c71d4335e9",
+      "kind": "heading",
+      "offset": 4112
+    },
+    {
+      "id": "h-4cae17c126662ae88917",
+      "kind": "heading",
+      "offset": 4481
+    },
+    {
+      "id": "h-5e68b8a1e94ac943a05b",
+      "kind": "heading",
+      "offset": 4965
+    },
+    {
+      "id": "h-4e26ab892e123a018efa",
+      "kind": "heading",
+      "offset": 6082
+    }
+  ],
+  "body": "# Windows 线程创建（03）：初始上下文与内核栈现场构造\n\n## 核心结论\n\n`KeInitThread` 已经为线程准备好内核栈；`KiInitializeContextThread` 的作用，是把这块“空栈”加工成新线程第一次被调度时可以被 `SwapContext` 恢复的启动现场。\n\n换句话说，新线程并没有真实的历史调用链。这个函数是在内核栈上伪造出足够像真实执行现场的结构，使调度器第一次切入线程时，可以自然进入线程启动入口。\n\n> [!IMPORTANT]\n> 新线程没有“过去的执行历史”，所以不可能真的从某个函数调用链返回。`KiInitializeContextThread` 做的是伪造一段足够像真实调用链的栈，让上下文切换代码按普通恢复流程把它跑起来。相关内容参考：[Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)、[C 语言模拟 Windows 线程切换](/notes/n-dc26a1ccb21c475a91f966f52af7ca3a/)\n\n\n---\n## 函数签名与调用边界\n\n```c\nVOID\nKiInitializeContextThread (\n    IN PKTHREAD Thread,\n    IN PKSYSTEM_ROUTINE SystemRoutine,\n    IN PKSTART_ROUTINE StartRoutine OPTIONAL,\n    IN PVOID StartContext OPTIONAL,\n    IN PCONTEXT ContextFrame OPTIONAL\n    )\n```\n> `KiInitializeContextThread` 函数有两个版本，amd 64 和 x86，后续介绍的都是 x86 版本。\n\n\n\n> **用户线程第一次进 3 环的顺序是**：位置 3 执行指定的用户 APC（即 `LoaderInitRoutine`，也是 `LdrInitializeThunk`），完成用户 APC 后返回到“3 环原位置”（即恢复原始 `CONTEXT` 到位置 2），再由用户态启动桩调用位置 1。 \n\n\n\n需要先分清这些参数影响哪里：\n\n| 参数              | 说明                                           |\n| --------------- | -------------------------------------------- |\n| `SystemRoutine` | 内核函数地址，用于在线程刚启动时做一些初始化工作，**作为参数放入内核栈中。**     |\n| `StartRoutine`  | 系统线程要执行的内核函数地址，**作为参数放入内核栈中。**用户线程通常为 `NULL` |\n| `StartContext`  | 系统线程的启动参数；用户线程路径中通常是位置 2，**作为参数放入内核栈中。** |\n| `ContextFrame`  | **用于构造用户态陷阱帧**；其中 `PC/EIP` 原始目标是位置 2。       |\n\n\n## 用户线程分支：`ContextFrame != NULL`\n\n\n![ba17fe13958e31d4975fb34542e45f56&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/34cf09c7044c0be34f07e37a851e025525144739222509859c23bb883e7f66ce.jpg)\n\n**逻辑说明**：x86 用户线程先复制/备份 `CONTEXT`，然后从 `Thread->InitialStack` 向低地址切出 `FX_SAVE_AREA` 和 `KTRAP_FRAME` 的空间。\n\n`FX_SAVE_AREA` 位于内核栈上方附近；`TrapFrame` 在它下面。后续还会在 `TrapFrame` 下方继续放启动参数和 `KSWITCH_FRAME`。\n\n\n### 初始化 `NPX` / `FPU` 状态\n\n![4bfe542a2b2479dfc287490a9d942c20&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/e4010ede57273965922c991a17cbbe656314130cea425ec22802ea9045e113ee.jpg)\n**逻辑说明**：这段处理是为线程准备初始的浮点 / SSE 保存现场\n\n代码的逻辑可以分成四步：\n- 初始化 `ContextFrame2` 中的浮点保存区。  \n    如果处理器支持 FXSAVE/FXRSTOR，`PFxSaveArea` 会指向 `ContextFrame2->ExtendedRegisters`，并按 FXSAVE 格式写入初始状态；如果不支持，则退回到旧式 `FloatSave` 格式。\n    \n- 初始化内核栈上的 `NpxFrame`。  \n    `NpxFrame` 是线程内核栈中预留的浮点保存区域，位置靠近 `TrapFrame`，后续会参与线程浮点状态的保存 / 恢复。\n    \n- 设置 `Thread` 的 NPX 相关状态。  \n    如果系统存在 NPX，就把线程状态标记为“浮点状态尚未加载到协处理器”；如果不存在 NPX，则设置 `CR0_EM` 相关状态，让后续浮点操作走模拟路径。\n    \n- 调整 `ContextFlags`。  \n    这一步是为了避免后续继续按不合适的上下文标志处理浮点状态。\n\n### 禁止调试寄存器，并预留启动参数槽\n\n![fd8bf475d791bb255972fb861eee5170&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/ea31794d9ed502dbaaded7b28fe69a583fe934fef61f5495806a6c119fedd6ba.jpg)\n\n**逻辑说明**：新线程的初始 `CONTEXT` 不允许直接设置 debug registers，因此这里会屏蔽相关标志。\n\n同一段代码还会继续向下移动栈指针，在 `TrapFrame` 下方预留启动参数槽。\n#### 用户线程内核栈布局示意图\n\n下图展示了系统第一次调度用户新线程时的内核栈布局：\n\n![632d8f02d42a8aa495f5f7342e07adc9&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/2767244006f94e24a78fcae05cafba2ec9cf78ca803413e34fc47e1441874126.jpg)\n\n这些槽位的顺序与 WRK 中 `SwapContext` / `KiThreadStartup` 的 `pop` 顺序匹配。\n\n### 把 `CONTEXT` 写入 `TrapFrame`\n\n![4f17ae587f4e5d0ff2734fad549d9f9b&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/00998d6051787295ab7fd50bb0e2c75c00584f334a4a3a330ada05759dab6999.jpg)\n\n**逻辑说明**：用户传入的 `CONTEXT` 和 x86 的 `KTRAP_FRAME` 并不完全匹配，所以这里调用 `KeContextToKframes`，把 `CONTEXT` 中需要恢复到用户态的寄存器内容搬进 `KTRAP_FRAME`。\n\n两个结构体的结构对比如下：\n\n![d8acd60be1660edc70c3c44cc24a8c2a&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/9f8e965e5e45ff0d29f726d009d8e1997b06b87b62a11683b62a91c790afabfa.jpg)\n\n这一步决定的是原始用户 `CONTEXT` 中的 `EIP`（位置 2）/ `ESP` 等返回现场。\n> 需要注意：后续 `PspUserThreadStartup -> KiInitializeUserApc` 还会把第一次进入 3 环的返回目标从位置 2 改成位置 3。WRK 源码写入的是 `KeUserApcDispatcher`，它指向用户态 `ntdll!KiUserApcDispatcher`。\n\n之后代码会显式把段寄存器 RPL 设置为用户态，清掉 `Dr7`，并把 `UserContextFlag` 设为 1。\n\n---\n\n## 系统线程分支：`ContextFrame == NULL`\n\n### 构造 dummy 浮点保存区和参数槽\n\n![dd993c9321179e4bf01debbbd937567a&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/4e54320d3d3956ba22a1ef4857a4ea656614cdb014f15f8ef5dde6ce8a3cd9d2.jpg)\n\n系统线程和用户线程的内核栈启动布局相似，但它没有用户态 `TrapFrame`。\n\n#### 系统线程内核栈布局示意图\n\n执行完这一段后的内存布局如下：\n\n![87328cef1598c6448c143414d7e555b0&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/c69d1a388e68e783b42dc74384b1b7991654ac6756d3baff1b1fd7957b661708.jpg)\n\n**逻辑说明**：系统线程不需要用户 `TrapFrame`，但仍然创建 dummy `FX_SAVE_AREA`，以及预留启动参数槽，以保持线程栈布局和浮点状态管理的一致性。\n\n注意这里设置 `UserContextFlag = 0`，这是用以区分创建是用户线程还是系统线程的标志。\n\n## 共同收尾：写入启动参数并设置 `KiThreadStartup`\n\n![9787d62dfaadb97c237300cd6d0e4fdb&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/7e5459ea8cc1757dd832d3cafa3704d9bf89103ca13ad20dc8091617e4f01a6d.jpg)\n\n**逻辑说明**：无论用户线程还是系统线程，都会走到这一步。x86 最后把启动参数写入刚才预留的槽位，并把 `SwitchFrame` 的返回地址设置成 `KiThreadStartup`，然后令 `Thread->KernelStack` 指向 `SwitchFrame`。\n\n这样当线程调度后，`SwapContext` 函数返回后，会从 `KiThreadStartup` 的地址处继续执行。\n> 相关内容参考：[C 语言模拟 Windows 线程切换](/notes/n-dc26a1ccb21c475a91f966f52af7ca3a/)\n\n\n---\n## `KiThreadStartup` 如何消费这些栈参数\n\n![5367ed0688a0d229ebf663663dabc8bd&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/efb5b39898915fbbcf7ed1c9aa33b5884137d6db6c986c94def08c5bd963839a.jpg)\n\n`KiThreadStartup` 是线程第一次被调度后，从 `SwapContext` 恢复出来时进入的启动汇编。\n\n此时内核栈布局：\n![2e5d870b1c02ae3ef5233d83b5b87435&#95;MD5&#46;jpg](/notes/n-14e2485f47ec454da3768d361c775ed0/media/e70fc573d743c7e46f78f5eacdbd2a8d3d62692c8af5fa5a598bcb05fd9be1fb.jpg)\n\n它会先 `pop eax` 取出 `SystemRoutine`，然后调用它：\n1. 用户线程：`SystemRoutine = PspUserThreadStartup`\n2. 系统线程：`SystemRoutine = PspSystemThreadStartup`\n\n由于这些启动包装函数按 `stdcall` 约定使用栈参数，所以 `SystemRoutine` 可以从栈上取得 `StartRoutine` 和 `StartContext`：\n1. `PspUserThreadStartup` 函数不使用`StartRoutine` 参数。\n2. `PspSystemThreadStartup` 函数`StartRoutine` 和 `StartContext` 参数都会被使用。\n> 那么 `SystemRoutine` 究竟干了什么？参考：[Windows 线程创建&#65288;04&#65289;&#65306;用户线程与系统线程启动](/notes/n-965b6f66f3814cca8f4d28e41e7d7d47/)\n\n`SystemRoutine` 返回后，汇编再弹出 `UserContextFlag`：\n- 如果是 1，说明栈上还有用户态 `TrapFrame`，于是跳到 `_KiServiceExit2` 恢复用户态上下文；新用户线程此时的返回目标通常已被改为位置 3。\n- 如果是 0，说明这是系统线程，没有用户态上下文可以返回；如果启动路径错误返回到汇编末尾，会触发 `NO_USER_MODE_CONTEXT` bugcheck。\n\n## x86 版本总体流程\n\n```mermaid\nflowchart TB\n    A[\"ContextFrame 是否存在?\"] -->|\"用户线程\"| B[\"复制 CONTEXT 到 Context2\"]\n    B --> C[\"在栈底部切出 FX_SAVE_AREA / TrapFrame\"]\n    C --> D[\"初始化 NPX / FXSAVE 状态\"]\n    D --> E[\"屏蔽 Debug Registers\"]\n    E --> F[\"在 TrapFrame 下方预留四个参数槽\"]\n    F --> G[\"KeContextToKframes 写入 TrapFrame<br/>PC/EIP 原始目标=位置 2\"]\n    G --> H[\"UserContextFlag = 1\"]\n\n    A -->|\"系统线程\"| I[\"构造 dummy FX_SAVE_AREA\"]\n    I --> J[\"预留四个参数槽\"]\n    J --> K[\"UserContextFlag = 0\"]\n\n    H --> L[\"写入 StartContext / StartRoutine / SystemRoutine\"]\n    K --> L\n    L --> M[\"SwitchFrame->RetAddr = KiThreadStartup\"]\n    M --> N[\"Thread->KernelStack = SwitchFrame\"]\n```\n\nx86 和 amd64 的抽象目标一致，但实现风格不同：amd64 分成 `KiStartUserThread` / `KiStartSystemThread` 两个启动入口；x86 统一进入 `KiThreadStartup`，再通过 `UserContextFlag` 判断后续是否可以返回用户态。\n",
+  "id": "14e2485f-47ec-454d-a376-8d361c775ed0",
+  "metadata": {
+    "aliases": [
+      "KiInitializeContextThread：初始 TrapFrame 与内核栈现场构造",
+      "KiInitializeContextThread"
+    ],
+    "tags": [
+      "os/windows/thread",
+      "reverse/windows",
+      "arch/x86"
+    ],
+    "title": "Windows 线程创建（03）：初始上下文与内核栈现场构造",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "00998d6051787295ab7fd50bb0e2c75c00584f334a4a3a330ada05759dab6999.jpg",
+    "2767244006f94e24a78fcae05cafba2ec9cf78ca803413e34fc47e1441874126.jpg",
+    "34cf09c7044c0be34f07e37a851e025525144739222509859c23bb883e7f66ce.jpg",
+    "4e54320d3d3956ba22a1ef4857a4ea656614cdb014f15f8ef5dde6ce8a3cd9d2.jpg",
+    "7e5459ea8cc1757dd832d3cafa3704d9bf89103ca13ad20dc8091617e4f01a6d.jpg",
+    "9f8e965e5e45ff0d29f726d009d8e1997b06b87b62a11683b62a91c790afabfa.jpg",
+    "c69d1a388e68e783b42dc74384b1b7991654ac6756d3baff1b1fd7957b661708.jpg",
+    "e4010ede57273965922c991a17cbbe656314130cea425ec22802ea9045e113ee.jpg",
+    "e70fc573d743c7e46f78f5eacdbd2a8d3d62692c8af5fa5a598bcb05fd9be1fb.jpg",
+    "ea31794d9ed502dbaaded7b28fe69a583fe934fef61f5495806a6c119fedd6ba.jpg",
+    "efb5b39898915fbbcf7ed1c9aa33b5884137d6db6c986c94def08c5bd963839a.jpg"
+  ],
+  "url": "/notes/n-14e2485f47ec454da3768d361c775ed0/"
+}

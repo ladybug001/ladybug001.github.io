@@ -1,0 +1,9 @@
+{{ define "main" }}
+  {{ $all := where .Site.RegularPages "Section" "notes" }}
+  {{ $pages := (where $all "Params.file_modified" "ne" nil).ByTitle }}
+  <section class="article-list--compact">
+    {{ range first 10 (sort $pages "Params.file_modified" "desc") }}{{ partial "article-list/recent" . }}{{ end }}
+  </section>
+  {{ partialCached "footer/footer" . }}
+{{ end }}
+{{ define "right-sidebar" }}{{ partial "sidebar/right.html" (dict "Context" . "Scope" "homepage") }}{{ end }}

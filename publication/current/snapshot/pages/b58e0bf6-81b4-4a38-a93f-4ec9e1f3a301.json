@@ -1,0 +1,63 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b6db1adfbbf00a8bae8c",
+      "kind": "heading",
+      "offset": 12
+    },
+    {
+      "id": "h-6758d99844ea25fbcc22",
+      "kind": "heading",
+      "offset": 738
+    },
+    {
+      "id": "h-b0265affc4f6f306d443",
+      "kind": "heading",
+      "offset": 1136
+    },
+    {
+      "id": "h-1b1d408de761abbabefd",
+      "kind": "heading",
+      "offset": 1354
+    },
+    {
+      "id": "h-57e80700d465a31bfe45",
+      "kind": "heading",
+      "offset": 1606
+    },
+    {
+      "id": "h-f4aa81333d06046ba2e0",
+      "kind": "heading",
+      "offset": 1885
+    },
+    {
+      "id": "h-e841d21cfb5cba6136b1",
+      "kind": "heading",
+      "offset": 2044
+    },
+    {
+      "id": "h-658f33caacf9417c1cc7",
+      "kind": "heading",
+      "offset": 3251
+    },
+    {
+      "id": "h-7df31d7cf743213b1d28",
+      "kind": "heading",
+      "offset": 3983
+    }
+  ],
+  "body": "# Flutter 简介\n\nFlutter 是 Google 基于 Dart 语言构建的跨平台 UI 框架，可以让开发者使用一套 Dart 代码在 iOS、Android、Web 和桌面平台上构建统一界面（如 Reqable）。\n> Flutter 之于 Dart，好似 Spring 之于 Java。\n\nDart 语言同样对应一个 VM 用来执行其\"字节码\"，在 Android 设备上，一个 Flutter App 启动后，底层就是一个普通的 Linux 进程。但在这个进程的虚拟内存空间里，**同时运行着两套独立的运行时环境**：ART / JVM 虚拟机和 Dart Runtime。\n\n**Android 上的 Flutter App 本质是\"Java 壳做引导，Native 引擎跑核心\"**：应用启动时，由 Zygote `fork` 出进程，JVM/ART 先执行 Java 外壳（`FlutterActivity`）完成引导。随后通过 JNI 加载 C++ 引擎（`libflutter.so`）与编译为机器码的 Dart 逻辑（`libapp.so`），并获取绘制 Surface。此后，Flutter Engine 在 Native 内存中自举出独立的 Dart VM 与 Isolate，业务逻辑执行、GC 和 UI 渲染完全由 Dart 运行时接管，不再经过 JVM 或 Android View 体系。\n\nDart VM 和 Flutter 引擎由同一团队深度定制、紧密耦合，两者打包在同一个文件中：Android 上是 `libflutter.so`，桌面上是 `flutter_windows.dll`。\n\n## Flutter 应用的识别特征\n\n使用 Flutter 构建的 Android APP，`lib` 文件夹会有两个 so 文件：**`libapp.so`** 和 **`libflutter.so`**\n![](/notes/n-b58e0bf681b44a38a93f4ec9e1f3a301/media/0b59bc7cc2a347c4f905ab45a180a5f34c92c37378d00662750886ee1ee9ecca.jpg)\n\n在 `assets` 文件夹下会有 `dexopt` 和 `flutter_assets` 两个文件夹：\n![](/notes/n-b58e0bf681b44a38a93f4ec9e1f3a301/media/e1e0f98bed2897dfbd184fe41ee5350b87eba15663c5f6346ca287abbb63d7c5.jpg)  \n\n## 网络请求与抓包\n\n1. **Dart 标准库的网络请求不走 Wi-Fi 代理**：Flutter 使用 Dart 语言，其标准库中的网络请求不会通过代理发送，这与许多其他应用不同。\n2. **Dart SDK 中的证书信任**：Dart SDK 在 Android 平台上强制只信任系统目录下的证书。在 Windows 上默认使用 Dart 提供的 Mozilla CA 根证书列表。\n\n### hook `ssl_client` 绕过 SSL 校验\n\n在 `libflutter.so` 里搜索 `ssl_client` 定位到方法，内存搜刮函数前 10 字节定位，在运行时将返回函数改为 `true` 即可绕过证书链检查实现抓包（这里以 64 位的 so 为例）  \n![](/notes/n-b58e0bf681b44a38a93f4ec9e1f3a301/media/b5b44bcee64abf79a146c9f10e1530eb1c4a5e933de25b899f38e31315500f76.jpg)\n\n### reFlutter 实现抓包\n\n该框架通过修改 Flutter 的库版本，允许用户监控流量、打印类与函数等信息，便于进行深入的代码审查和分析。**reFlutter** 主要采用 Python 编程语言，并且依赖于特定的 Flutter 引擎版本进行定制。\n\n[reFlutter 开源地址](https://github.com/Impact-I/reFlutter)  \n\n[reFlutter 安装配置指南 - CSDN](https://blog.csdn.net/gitblog_09357/article/details/142232743)\n\n## 反编译 Dart 应用\n\nDart 编译时，如果是 Debug 版本则会生成类似字节码内容，但如果是 Release，则直接生成目标机器码。\n\n尽管是本地机器码，但 Dart 编译为本机汇编代码使用的调用约定等格式未公开，逆向者需要深入掌握 Dart 内部机制才能入门，因此**Flutter 应用目前仍然较难逆向**。\n\n### 快照机制\n\n\"快照\"是 Flutter 应用在编译过程中生成的特定数据结构，用于加速应用的启动和运行。Dart 的快照（Snapshot）思路：\"既然每次启动创建的初始对象都一样，为什么不把初始化好的内存直接存成文件？\"\n\n快照包括四种类型：\n\n- **`_kDartVmSnapshotData`**： 代表 isolate 之间共享的 Dart 堆 (heap) 的初始状态。有助于更快地启动 Dart isolate，但不包含任何 isolate 专属的信息。\n    \n- **`_kDartVmSnapshotInstructions`**：包含 VM 中所有 Dart isolate 之间共享的通用例程的 AOT 指令。这种快照的体积通常非常小，并且大多会包含程序桩 (stub)。\n    \n- **`_kDartIsolateSnapshotData`**：代表 Dart 堆的初始状态，并包含 isolate 专属的信息。\n    \n- **`_kDartIsolateSnapshotInstructions`**：包含由 Dart isolate 执行的 AOT 代码。\n    \n\n**其中 `_kDartIsolateSnapshotInstructions` 是最为重要的**，因为包含了所有要执行的 AOT 代码，即业务相关的代码。\n\n使用 `readelf -s` 命令读取 `libapp.so` 会输出保存快照信息的节区：\n\n```\nSymbol table '.dynsym' contains 6 entries:\nNum:    Value          Size Type    Bind   Vis      Ndx Name\n 0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND\n 1: 000000000014c000 29728 OBJECT  GLOBAL DEFAULT    7 _kDartVmSnapshotInstructi\n 2: 0000000000153440 0x22bd30 OBJECT  GLOBAL DEFAULT    7 _kDartIsolateSnapshotInst\n 3: 0000000000000200 15248 OBJECT  GLOBAL DEFAULT    2 _kDartVmSnapshotData\n 4: 0000000000003dc0 0x147af0 OBJECT  GLOBAL DEFAULT    2 _kDartIsolateSnapshotData\n 5: 00000000000001c8    32 OBJECT  GLOBAL DEFAULT    1 _kDartSnapshotBuildId\n```\n\n#### 逆向方法\n\nAOT 编译剥离了符号并采用私有对象池间接寻址，仅凭纯机器码无法还原业务逻辑与字符串交叉引用。而快照中完整序列化了运行时的类结构、字段偏移、函数映射表及常量对象池——解析快照是恢复符号树、定位网络接口与加解密关键逻辑的核心突破口。\n\n动静态分析快照的方式：\n\n- （静态）解析 **`libapp.so`**，即写一个解析器，将 `libapp.so` 中的快照数据按照其既定格式进行解析，获取业务代码的类的各种信息，包括类的名称、其中方法的偏移等数据，从而辅助逆向工作。\n\n> 关于 Flutter 快照的具体剖析只需要看下面引用的两篇文章：\n> 1. [Reverse engineering Flutter apps (Part 1) (tst.sh)](https://blog.tst.sh/reverse-engineering-flutter-apps-part-1/)\n> 2. [Reverse engineering Flutter apps (Part 2) (tst.sh)](https://blog.tst.sh/reverse-engineering-flutter-apps-part-2/)\n\n- （动态）编译修改过的 **`libflutter.so`** 并且重新打包到 APK 中，在启动 APP 的过程中，由修改过的引擎动态链接库将快照数据获取并且保存。\n\n因为不同版本的 Dart 引擎其快照格式不同，所以静态方法需要频繁跟着版本更新迭代，成本极高；而动态方法也需要重新编译对应版本的链接库。同时如果 APP 作者抹除版本信息和 hash 信息，则难度大幅增加，且重打包 APK 极易被检测到。\n\n#### 推荐工具\n\n- 静态：[blutter](https://github.com/worawit/blutter) — 还原函数名称，方便 IDA 进行分析\n- 动态：[reFlutter](https://github.com/Impact-I/reFlutter) — 修补 Flutter 的库文件并重编译，进而达到逆向目的",
+  "id": "b58e0bf6-81b4-4a38-a93f-4ec9e1f3a301",
+  "metadata": {
+    "tags": [
+      "reverse/android"
+    ],
+    "title": "Flutter 运行机制与逆向"
+  },
+  "resources": [
+    "0b59bc7cc2a347c4f905ab45a180a5f34c92c37378d00662750886ee1ee9ecca.jpg",
+    "b5b44bcee64abf79a146c9f10e1530eb1c4a5e933de25b899f38e31315500f76.jpg",
+    "e1e0f98bed2897dfbd184fe41ee5350b87eba15663c5f6346ca287abbb63d7c5.jpg"
+  ],
+  "url": "/notes/n-b58e0bf681b44a38a93f4ec9e1f3a301/"
+}

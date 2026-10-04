@@ -1,0 +1,94 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-669030a06e85f1f4f12f",
+      "kind": "heading",
+      "offset": 18
+    },
+    {
+      "id": "h-d7458afe0dbcaa0f678e",
+      "kind": "heading",
+      "offset": 31
+    },
+    {
+      "id": "h-7c2b18b2810a1d25df33",
+      "kind": "heading",
+      "offset": 125
+    },
+    {
+      "id": "h-bb4d098f379b8976bdbf",
+      "kind": "heading",
+      "offset": 402
+    },
+    {
+      "id": "h-b1c2c34115f5c8092202",
+      "kind": "heading",
+      "offset": 569
+    },
+    {
+      "id": "h-de795064c5122b6692d1",
+      "kind": "heading",
+      "offset": 2020
+    },
+    {
+      "id": "h-7b8055b6f6a75a9ae6c1",
+      "kind": "heading",
+      "offset": 2168
+    },
+    {
+      "id": "h-b13e3434c2ee5c5913d7",
+      "kind": "heading",
+      "offset": 2487
+    },
+    {
+      "id": "h-835770926689ff5b03ec",
+      "kind": "heading",
+      "offset": 4972
+    },
+    {
+      "id": "h-4ad886e22a3a766503e0",
+      "kind": "heading",
+      "offset": 5692
+    },
+    {
+      "id": "h-1833143475a3b98be257",
+      "kind": "heading",
+      "offset": 6320
+    },
+    {
+      "id": "h-b5c0a4887e82353dddcf",
+      "kind": "heading",
+      "offset": 7245
+    },
+    {
+      "id": "h-098cfbabb6f28a4e6740",
+      "kind": "heading",
+      "offset": 8026
+    },
+    {
+      "id": "h-47328976172587e7a782",
+      "kind": "heading",
+      "offset": 8349
+    }
+  ],
+  "body": "# JVM Class 文件格式解析\n\n## 源文件与编译规则\n\n一个 `.class` 文件对应一个 `Java` 源码文件，一个 `.java` 源文件可以包含 **任意数量** 的类，但必须遵循严格的访问权限和文件命名规则。\n\n### 核心规则\n\n- **最多只能有一个 `public` 类**：一个源文件里可以有零个或一个 `public` 外部类，但绝对不能有两个或更多。\n    \n- **文件名必须匹配 `public` 类名**：如果文件中存在 `public` 类，源文件的名称必须严格等于该类名（大小写敏感，附带 `.java` 后缀）。\n    \n- **非 public 类数量不限**：除了 `public` 类之外，你可以定义任意数量的默认访问权限（package-private）的类。如果没有 `public` 类，源文件可以取任何合法的名称。\n\n### 编译与加载表现\n\n无论在一个 `.java` 文件中写了多少个类，**编译器（`javac`）在编译时，都会为其中的每一个类生成一个独立的 `.class` 文件**。\n\n在运行期被 JVM 加载后，每个类都会变成完全独立的内存实体（如 `InstanceKlass`），底层系统并不关心它们最初是否同属一个源文件。\n\n\n## Class 文件结构\n\nClojure、Groovy、Scala、JRuby、Kotlin 等语言都可以编译为 `.class` 文件，运行在 Java 虚拟机之上。`.class` 文件既是多语言通向 JVM 的统一桥梁，也是 Java 跨平台能力的基础。\n\n![94d4a5633f47617aa633b5c83b7116b5&#95;MD5&#46;jpg](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/media/0af462934254a9edf7c4ef5d9bba6badec51d32ed4ab80d3e28adfd2dc0aa550.jpg)\n\n\n根据 Java 虚拟机规范，Class 文件通过 `ClassFile` 定义，有点类似 C 语言的结构体。\n\n`ClassFile` 的结构如下：\n\n```java\nClassFile {\n    u4             magic; //Class 文件的标志\n    u2             minor_version;//Class 的小版本号\n    u2             major_version;//Class 的大版本号\n    u2             constant_pool_count;//常量池的数量\n    cp_info        constant_pool[constant_pool_count-1];//常量池\n    u2             access_flags;//Class 的访问标记\n    u2             this_class;//当前类\n    u2             super_class;//父类\n    u2             interfaces_count;//接口数量\n    u2             interfaces[interfaces_count];//一个类可以实现多个接口\n    u2             fields_count;//字段数量\n    field_info     fields[fields_count];//一个类可以有多个字段\n    u2             methods_count;//方法数量\n    method_info    methods[methods_count];//一个类可以有多个方法\n    u2             attributes_count;//此类的属性表中的属性数\n    attribute_info attributes[attributes_count];//属性表集合\n}\n```\n\n通过分析 `ClassFile` 的内容，可以看到 Class 的文件格式比起 PE、ELF 更加规整，如下图所示：\n\n\n![4cea66360f648d99fb6c471466f1b284&#95;MD5&#46;jpg](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/media/33e06ce720ce03cf6cb7db767c5098bf34349f568aaeaacb582af05b6fb76a7b.jpg)\n\n\n以下按 `ClassFile` 各字段在文件中的排列顺序，逐项解析其含义与结构。\n\n### 魔数（Magic Number）\n\n```java\nu4             magic; //Class 文件的标志\n```\n\nJava 规范规定魔数为固定值：0xCAFEBABE。如果读取的文件不是以这个魔数开头，Java 虚拟机将拒绝加载它。\n\n### Class 文件版本号（Minor&Major Version）\n\n```java\nu2             minor_version;//Class 的小版本号\nu2             major_version;//Class 的大版本号\n```\n\n紧接着魔数的四个字节存储的是 Class 文件的版本号：第 5 和第 6 个字节是**次版本号**，第 7 和第 8 个字节是**主版本号**。每当 Java 发布大版本（比如 Java 8，Java9）的时候，主版本号都会加 1。\n\n> 高版本的 Java 虚拟机可以执行低版本编译器生成的 Class 文件，但是低版本的 Java 虚拟机不能执行高版本编译器生成的 Class 文件。\n\n### 常量池（Constant Pool）\n\n```java\n    u2             constant_pool_count;//常量池的数量\n    cp_info        constant_pool[constant_pool_count-1];//常量池\n```\n\n紧接着主次版本号之后的是常量池，常量池的数量是 `constant_pool_count-1`（**常量池计数器是从 1 开始计数的，将第 0 项常量空出来是有特殊考虑的，索引值为 0 代表\"不引用任何一个常量池项\"**）。\n\n常量池可以理解为一个以索引访问的数组，主要存放两类内容：字面量和符号引用，我们通过一段极简的代码来解剖这两个概念：\n\n```java\npublic class Demo {\n    public static final String MSG = \"Hello VM\";\n    public static final int MAX_COUNT = 100;\n\n    public void run() {\n        System.out.println(MSG);\n    }\n}\n```\n\n字面量非常接近于 C/C++ 语言中的\"常量\"概念。它指的是在代码中**硬编码死的值**。\n\n在上面的代码中，字面量包括：\n- **字符串字面量**：`\"Hello VM\"`。\n- **基本类型常量**：`100`（被 `final` 修饰的常量值）。\n\n> **底层映射视角**：字面量的存在形态，非常类似于 Windows PE 文件或 ELF 文件中的 `.rdata` / `.rodata`（只读数据段）。它们是真实存在的数据本身。\n\n符号引用是一组**描述目标的字符串**，用来在没有任何内存地址信息的情况下，精确定位到一个类、字段或方法。\n\n在上面的代码中，`System.out.println(MSG)` 这一行代码涉及了大量的符号引用：\n\n- **类/接口的全限定名**：\n    - `java/lang/System` （描述要调用哪个类）\n    - `java/io/PrintStream` （描述 `out` 这个对象的 Java 类）\n- **字段的名称和描述符**：\n    - 名称：`out`\n    - 描述符：`Ljava/io/PrintStream;` （说明 `System.out` 是一个 PrintStream 对象）\n- **方法的名称和描述符**：\n    - 名称：`println`\n    - 描述符：`(Ljava/lang/String;)V` （说明这个方法接收一个 String 参数，返回 void）\n\n常量池中每一项都有一个共同特点：**开头是一个 `u1` 类型的 `tag`，用于标识当前常量的类型**，当前《Java 虚拟机规范》定义了 17 种常量池表：\n\n| 类型                                 | 标志（tag） | 描述           |\n| ---------------------------------- | ------- | ------------ |\n| `CONSTANT_utf8_info`               | 1       | UTF-8 编码的字符串 |\n| `CONSTANT_Integer_info`            | 3       | 整形字面量        |\n| `CONSTANT_Float_info`              | 4       | 浮点型字面量       |\n| `CONSTANT_Long_info`               | 5       | 长整型字面量       |\n| `CONSTANT_Double_info`             | 6       | 双精度浮点型字面量    |\n| `CONSTANT_Class_info`              | 7       | 类或接口的符号引用    |\n| `CONSTANT_String_info`             | 8       | 字符串类型字面量     |\n| `CONSTANT_FieldRef_info`           | 9       | 字段的符号引用      |\n| `CONSTANT_MethodRef_info`          | 10      | 类中方法的符号引用    |\n| `CONSTANT_InterfaceMethodRef_info` | 11      | 接口中方法的符号引用   |\n| `CONSTANT_NameAndType_info`        | 12      | 字段或方法的符号引用   |\n| `CONSTANT_MethodHandle_info`       | 15      | 表示方法句柄       |\n| `CONSTANT_MethodType_info`         | 16      | 标志方法类型       |\n| `CONSTANT_Dynamic_info`            | 17      | 表示动态计算常量     |\n| `CONSTANT_InvokeDynamic_info`      | 18      | 表示一个动态方法调用点  |\n| `CONSTANT_Module_info`             | 19      | 表示模块         |\n| `CONSTANT_Package_info`            | 20      | 表示模块中的包      |\n\n> tag 值 2、13、14 未被使用，属于规范中的保留值。\n\n### 访问标志(Access Flags)\n\n```java\nu2             access_flags;//Class 的访问标记\n```\n\n在常量池结束之后，紧接着的两个字节代表访问标志，这个标志用于识别一些类或者接口层次的访问信息，包括：这个 Class 是类还是接口，是否为 `public` 或者 `abstract` 类型，如果是类的话是否声明为 `final` 等等。\n\n类访问和属性修饰符:\n\n![1fdef9290202cd877dbaaa08c9d52967&#95;MD5&#46;jpg](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/media/126c3761b8fee25e434a9eb1dcfadd8f7c42ea3f50d4dba2518cd2e5bb1d6b17.jpg)\n\n我们定义了一个 `Employee` 类\n\n```java\npackage top.snailclimb.bean;\npublic class Employee {\n   ...\n}\n```\n\n通过 `javap -v class类名` 指令来看一下类的访问标志。\n\n![181309df20c284fb8034880ef5710a76&#95;MD5&#46;jpg](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/media/25ba7fc7df3b3caa2e5a2ed790f34455c948de8a294e461a59f215ff614b39dc.jpg)\n\n### 当前类（This Class）、父类（Super Class）、接口（Interfaces）索引集合\n\n```java\nu2             this_class;//当前类\nu2             super_class;//父类\nu2             interfaces_count;//接口数量\nu2             interfaces[interfaces_count];//一个类可以实现多个接口\n```\n\n类信息通过**索引下标**与常量池联动：\n- `this_class` (u2)：**是索引**。指向常量池，描述当前类。\n- `super_class` (u2)：**是索引**。指向常量池，描述父类（若为 0 代表无父类，即 `Object`）。由于 Java 语言的单继承，所以父类索引只有一个，除了 `java.lang.Object` 之外，所有的 Java 类都有父类，因此除了 `java.lang.Object` 外，所有 Java 类的父类索引都不为 0。\n- `interfaces_count` (u2)：**非索引**。直接表示实现的接口数量。\n- `interfaces[]` (u2 数组)：**全是索引**。数组的每一个元素都指向常量池中的接口类名。接口索引集合用来描述这个类实现了哪些接口，这些被实现的接口将按 `implements` (如果这个类本身是接口的话则是 `extends`) 后的接口顺序从左到右排列在接口索引集合中。\n\n### 字段表集合（Fields）\n\n```java\nu2             fields_count;//字段数量\nfield_info     fields[fields_count];//一个类可以有多个字段\n```\n\n字段表（field info）用于描述接口或类中声明的变量。字段包括类级变量以及实例变量，但不包括在方法内部声明的局部变量。\n\n**field info（字段表） 的结构:**\n\n![f08c4cb3bc6121f48b4c0cafdd209a10&#95;MD5&#46;jpg](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/media/a7d53fa31fbb22394cfbcb8e1bc7a01c006a3f4cc5d563c7e230141c39c26065.jpg)\n\n- **access_flags:** 字段的作用域（`public` ,`private`,`protected` 修饰符），是实例变量还是类变量（`static` 修饰符）,可否被序列化（transient 修饰符）,可变性（final）,可见性（volatile 修饰符，是否强制从主内存读写）。\n- **name_index:** 对常量池的引用，表示字段的名称；\n- **descriptor_index:** 对常量池的引用，表示字段和方法的描述符；\n- **attributes_count:** 一个字段还会拥有一些额外的属性，attributes_count 存放属性的个数；\n- **`attributes[attributes_count]`:** 存放具体属性具体内容。\n\n\n**字段的 access_flag 的取值:**\n\n![c59ffcc519c8e785eee2858627dc7f7a&#95;MD5&#46;jpg](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/media/6d3933915dd5dac103311370539928abfb558c81735da5425f4f5ec607405e8b.jpg)\n\n### 方法表集合（Methods）\n\n```java\nu2             methods_count;//方法数量\nmethod_info    methods[methods_count];//一个类可以有多个方法\n```\n\nmethods_count 表示方法的数量，而 method_info 表示方法表。\n\nClass 文件存储格式中对方法的描述与对字段的描述几乎采用了完全一致的方式。方法表的结构如同字段表一样，依次包括了访问标志、名称索引、描述符索引、属性表集合几项。\n\n**method_info（方法表）的结构:**\n\n![784fcae34dca8e04ff8d278b9f8d0b0b&#95;MD5&#46;jpg](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/media/879dcbab4bbd5095eb009bb23caaff52039eeb3556043f50e37a1e994dbba091.jpg)\n\n**方法表的 access_flag 取值：**\n\n![b06288dba6910490ed4ac0904ff468f7&#95;MD5&#46;jpg](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/media/2ea8e6e9dd4a25eaf7527317539a42c326f6f50645a20d6aabf09b5aeeb729e9.jpg)\n\n注意：因为 `volatile` 修饰符和 `transient` 修饰符不可以修饰方法，所以方法表的访问标志中没有这两个对应的标志，但是增加了 `synchronized`、`native`、`abstract` 等关键字修饰方法，所以也就多了这些关键字对应的标志。\n\n### 属性表集合（Attributes）\n\n可以看到字段表，方法表的表项都有一个属性表字段：\n\n```java\nu2             attributes_count;//此类的属性表中的属性数\nattribute_info attributes[attributes_count];//属性表集合\n```\n\n用于描述某些场景专有的信息，比如对于方法表中的每一项，其属性表中会有一个`code` 属性，用于存储字节码，及函数运行信息（类似调用约定、需要的栈大小）等。\n\n属性表中的属性只要不与已有的公共属性名重复，任何人实现的编译器都可以向属性表中写入自己定义的属性信息，Java 虚拟机运行时会忽略掉它不认识的属性。\n\n\n## Class 文件的线性结构与 JVM 的解析策略\n\n`.class` 中的常量池、字段表、方法表表面看是数组，但表项是变长的，不支持随机存取，只能顺序解析，这也是为什么称为字节流的原因。\n\nJVM 采用的策略是：当 ClassLoader 将字节流读入内存后，JVM 的解析器会把这串流里面的数据重新组装，变成了一个真正的数组（变成 `InstanceKlass` 结构），**获得了 $O(1)$ 的随机存取能力。**\n",
+  "id": "e90838dc-41aa-4ff7-a96b-b58cb0425ed5",
+  "metadata": {
+    "tags": [
+      "lang/java",
+      "cs/binary-format"
+    ],
+    "title": "JVM Class 文件格式解析"
+  },
+  "resources": [
+    "0af462934254a9edf7c4ef5d9bba6badec51d32ed4ab80d3e28adfd2dc0aa550.jpg",
+    "126c3761b8fee25e434a9eb1dcfadd8f7c42ea3f50d4dba2518cd2e5bb1d6b17.jpg",
+    "25ba7fc7df3b3caa2e5a2ed790f34455c948de8a294e461a59f215ff614b39dc.jpg",
+    "2ea8e6e9dd4a25eaf7527317539a42c326f6f50645a20d6aabf09b5aeeb729e9.jpg",
+    "33e06ce720ce03cf6cb7db767c5098bf34349f568aaeaacb582af05b6fb76a7b.jpg",
+    "6d3933915dd5dac103311370539928abfb558c81735da5425f4f5ec607405e8b.jpg",
+    "879dcbab4bbd5095eb009bb23caaff52039eeb3556043f50e37a1e994dbba091.jpg",
+    "a7d53fa31fbb22394cfbcb8e1bc7a01c006a3f4cc5d563c7e230141c39c26065.jpg"
+  ],
+  "url": "/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/"
+}

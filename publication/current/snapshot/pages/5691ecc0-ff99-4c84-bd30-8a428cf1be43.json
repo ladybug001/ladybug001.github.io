@@ -1,0 +1,113 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-2639c3b00150af4df90d",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-c92e7729b087f1b08e5b",
+      "kind": "heading",
+      "offset": 32
+    },
+    {
+      "id": "h-080a81c8afa991cb7560",
+      "kind": "heading",
+      "offset": 468
+    },
+    {
+      "id": "h-ab00e945f2af4a949f92",
+      "kind": "heading",
+      "offset": 966
+    },
+    {
+      "id": "h-945bc87688117f511aff",
+      "kind": "heading",
+      "offset": 2218
+    },
+    {
+      "id": "h-cf8943a24856e37f92ef",
+      "kind": "heading",
+      "offset": 3050
+    },
+    {
+      "id": "h-c1265b3483c4587a260d",
+      "kind": "heading",
+      "offset": 3979
+    },
+    {
+      "id": "h-0312900339adaebce7d9",
+      "kind": "heading",
+      "offset": 4104
+    },
+    {
+      "id": "h-a0b192791c9b3e264a0c",
+      "kind": "heading",
+      "offset": 5617
+    },
+    {
+      "id": "h-8597671f4f48646bb932",
+      "kind": "heading",
+      "offset": 6253
+    },
+    {
+      "id": "h-fb8ecaf465ce7a377044",
+      "kind": "heading",
+      "offset": 6772
+    },
+    {
+      "id": "h-76bc1c34542751567bc9",
+      "kind": "heading",
+      "offset": 6984
+    },
+    {
+      "id": "h-d99c8031a0c2830e2db9",
+      "kind": "heading",
+      "offset": 7223
+    },
+    {
+      "id": "h-4da17103a8689a86f98c",
+      "kind": "heading",
+      "offset": 7441
+    },
+    {
+      "id": "h-6a66bf71e23ca7d60ebc",
+      "kind": "heading",
+      "offset": 7821
+    },
+    {
+      "id": "h-64e17f34c19c7258c6ba",
+      "kind": "heading",
+      "offset": 8495
+    },
+    {
+      "id": "h-c50ee6c55533f4b19e1f",
+      "kind": "heading",
+      "offset": 8751
+    },
+    {
+      "id": "h-35fd1fe5ddd6c89af073",
+      "kind": "heading",
+      "offset": 9344
+    }
+  ],
+  "body": "\n# Windows 内核 Hook 系统调用\n\n## 实验环境\n\n| 项目   | 说明                                      |\n| :--- | :-------------------------------------- |\n| 操作系统 | Windows XP SP3 / Windows 7 x86          |\n| 架构限制 | 仅 x86（32-bit），代码使用 MSVC 内联汇编，不支持 x64 编译 |\n| 编译环境 | WDK 7600 + Visual Studio                |\n| 调试工具 | WinDbg（双机调试）                            |\n| 测试环境 | VMware 虚拟机                              |\n\n> [!warning]\n> Hook 后执行的代码逻辑**应满足**原调用路径允许的 IRQL、可重入性和分页属性等约束。\n\n## SSDT Hook\n\nSSDT Hook 的核心原理是通过 SSDT（`System Service Dispatch Table`，系统服务分发表）——即 `KeServiceDescriptorTable` 或 `KeServiceDescriptorTableShadow`——定位到系统服务表，并篡改其中函数地址表内的特定函数指针，从而拦截目标 API 陷入内核的调用。\n> 相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n> [!note] `KeServiceDescriptorTable` vs `KeServiceDescriptorTableShadow`\n> `KeServiceDescriptorTable` 仅包含第一张表（ntoskrnl 的系统服务），其 `Win32kTable` 成员全零。只有 `KeServiceDescriptorTableShadow` 才同时包含 ntoskrnl 表和 win32k 表。两者不可混淆。\n\n### 根据 SSDT 获取系统服务表\n\n本次实验仅针对第一张内核函数表（`KrnlFuncTable`）进行 Hook 演示。首先定义系统服务表及 SSDT 相关的内部数据结构，并用 `extern` 声明引用旧版 x86 内核导出的未文档化符号 `KeServiceDescriptorTable`：\n\n```c\n// 定义系统服务表结构\ntypedef struct _KSYSTEM_SERVICE_TABLE\n{\n    PULONG ServiceTableBase;         // 函数地址表基址\n    PULONG ServiceCounterTableBase;  // 被调用的次数计数器（通常未使用）\n    ULONG  NumberOfService;          // 服务函数总数\n    PULONG ParamTableBase;           // 参数字节数表基址\n} KSYSTEM_SERVICE_TABLE, *PKSYSTEM_SERVICE_TABLE;\n\n// 定义 SSDT 结构（完整包含 4 张表）\ntypedef struct _KSERVICE_TABLE_DESCRIPTOR\n{\n    KSYSTEM_SERVICE_TABLE KrnlFuncTable;  // ntoskrnl.exe 的系统服务\n    KSYSTEM_SERVICE_TABLE Win32kTable;    // win32k.sys 的 GUI 系统服务 (Shadow SSDT)\n    KSYSTEM_SERVICE_TABLE NotUsedTableA;\n    KSYSTEM_SERVICE_TABLE NotUsedTableB;\n} KSERVICE_TABLE_DESCRIPTOR, *PKSERVICE_TABLE_DESCRIPTOR;\n\n// 导出内核全局变量\nextern PKSERVICE_TABLE_DESCRIPTOR KeServiceDescriptorTable;\n```\n\n随后在驱动入口 `DriverEntry` 打印函数地址表基址，验证获取是否成功：\n\n```c\nDbgPrint(\"Address: %x\\n\", KeServiceDescriptorTable->KrnlFuncTable.ServiceTableBase);\n```\n\n经 WinDbg 对比验证，代码输出的基址与调试器解析结果完全一致，说明成功定位到了 SSDT：\n\n![c645fdd32eb445ebd14b19e3eafe6071&#95;MD5&#46;jpg](/notes/n-5691ecc0ff994c84bd308a428cf1be43/media/50bafbb08bc3e8e21ae68f01198645f617d9f7de5f22a43a2c1bb2014ba7f84b.jpg)\n\n### 确定目标函数与系统调用号\n\n实施 Hook 前需确定目标函数及其对应的系统调用号（SSDT 索引）。以常用的 `OpenProcess` 为例：在应用层 `kernel32.dll` 追踪该函数，发现其最终下发至 `ntdll.dll` 中的 `NtOpenProcess`（或 `ZwOpenProcess`），其系统调用号（Syscall ID）为 `0x7A`（Windows XP SP3）：\n\n![20102f0c4865ebaf1688097014ff8462&#95;MD5&#46;jpg](/notes/n-5691ecc0ff994c84bd308a428cf1be43/media/f97ac9b02a16c3a23541704038284ff852b9732997802d5ce2a84ebf3ec7ec3c.jpg)\n\n通过 WinDbg 在内核 SSDT 地址表中检索索引 `0x7A`，即可找到原始内核函数的入口地址（例如 `0x805CAC46`）：\n\n![5f5df3c0335c96c2ac9b1f6c803b1115&#95;MD5&#46;jpg](/notes/n-5691ecc0ff994c84bd308a428cf1be43/media/38e27be58a172a9dc0fb662df8f87194762793bf361caa449ada627257c56531.jpg)\n\n\n> [!tip] 动态获取 Syscall Number\n> 系统调用号 (Syscall Number) 在不同 Windows 版本间**不固定**。本文使用的索引号 `0x7A`（对应 `NtOpenProcess`）仅适用于 Windows XP SP3。若在其他版本上实验，需自行在 `ntdll.dll` 的对应 `Zw*` 函数 stub 中确认实际调用号。或者程序动态解析 `mov eax, XXXX` 获得调用号。\n\n### 构造代理函数\n\n为了保证驱动卸载时能安全恢复系统环境，在执行地址覆盖前，必须将原函数地址备份保存：\n\n```c\n// 用于保存被 Hook 的原始函数地址\nULONG OldFuncAddr;\n\n// 备份原地址\nOldFuncAddr = KeServiceDescriptorTable->KrnlFuncTable.ServiceTableBase[0x7A];\n```\n\n随后，依照 WDK 文档中 `ZwOpenProcess` 的函数签名规范，构造代理函数。在其中通过函数指针调用原始函数以放行正常逻辑：\n\n```c\n// 声明原函数指针类型\ntypedef NTSTATUS(*NTOPENPROCESS)(\n    PHANDLE ProcessHandle,\n    ACCESS_MASK DesiredAccess,\n    POBJECT_ATTRIBUTES ObjectAttributes,\n    PCLIENT_ID ClientId\n);\n\n// 我们自己注入的代理监控函数\nNTSTATUS MyNtOpenProcess(PHANDLE ProcessHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PCLIENT_ID ClientId)\n{\n    // 自定义的劫持拦截或信息记录代码\n    DbgPrint(\"Hooking MyNtOpenProcess... \\n\");\n    \n    // 最终调用真正的 NtOpenProcess 以不影响系统正常流转\n    return ((NTOPENPROCESS)OldFuncAddr)(ProcessHandle, DesiredAccess, ObjectAttributes, ClientId);\n}\n```\n\n> 关于 `Nt*` 与 `Zw*` 前缀的核心区别参考：[Windows 内核编程基础](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/#h-aa1231f8affc208627e1)\n\n### 解除写保护\n\n系统服务表所在的物理内存页在 Windows 中默认受**写保护（Write Protect）**，直接覆盖会导致蓝屏。因此必须在修改 SSDT 表项前解除写保护，修改后再恢复。\n\n#### 方式：修改页表 PTE 属性（历史实验方式，不受支持）\n\n利用虚拟内存分页机制，根据 PDE/PTE 的自映射区域定位到目标虚拟地址对应的页表项，修改其 R/W 位：\n> 相关内容参考：[x86 保护模式分页机制 &#40;MOC&#41;](/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/)、[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)\n\n```c\n/**\n * 设置指定虚拟地址所在页面的可写属性\n *\n * @param TargetAddr  需要修改页面属性的虚拟地址\n * @param Writable    TRUE = 设置为可写；FALSE = 恢复只读\n *\n * 页表自映射基址（适用于 Windows XP/7 x86，Windows 10 可能因页表随机化而不同）：\n *   非 PAE (10-10-12): PTE 基址 0xC0000000, PDE 基址 0xC0300000\n *   PAE   (2-9-9-12):  PTE 基址 0xC0000000, PDE 基址 0xC0600000\n */\nNTSTATUS SetPageWritable(ULONG TargetAddr, BOOLEAN Writable)\n{\n    ULONG cr4 = 0;\n\n    // 读取 CR4 寄存器\n    _asm\n    {\n        _emit 0x0F  // mov eax, cr4\n        _emit 0x20\n        _emit 0xE0\n        mov cr4, eax\n    }\n\n    // CR4.PAE 位是 bit 5 (0x20)，用于判断当前分页模式\n    if (cr4 & 0x00000020)\n    {\n        // PAE 分页 (2-9-9-12)，每个 PDE/PTE 为 8 字节\n        PULONG64 pPTE = (PULONG64)(0xC0000000 + (((TargetAddr >> 12) << 3) & 0x7FFFF8));\n\n        if (Writable)\n            *pPTE |= 0x2ULL;            // 置位 R/W\n        else\n            *pPTE &= ~0x2ULL;           // 清除 R/W\n    }\n    else\n    {\n        // 非 PAE 分页 (10-10-12)，每个 PDE/PTE 为 4 字节\n        PULONG pPTE = (PULONG)(0xC0000000 + ((TargetAddr >> 10) & 0x3FFFFC));\n\n        if (Writable)\n            *pPTE |= 0x2;               // 置位 R/W\n        else\n            *pPTE &= ~0x2;              // 清除 R/W\n    }\n\n    return STATUS_SUCCESS;\n}\n```\n> PAE 模式的判断，参考：[CR4&#46;PAE 位](/notes/n-377c6374f9f54aea978942cfbee10af9/#h-e0e84ad67513ca9db42a)\n\n#### 方式：修改 `CR0.WP` 位（不推荐）\n\n直接修改 `CR0` 控制寄存器的 `WP` 位，将其置 0 可在**当前 CPU 核心**上全局关闭写保护：\n> 相关内容参考：[CR0&#46;WP 位](/notes/n-377c6374f9f54aea978942cfbee10af9/#h-96403efd64cbb26b0239)\n\n```c\nVOID DisableWriteProtect()\n{\n    _asm {\n        cli                      // 关中断，防止被调度走\n        mov eax, cr0\n        and eax, not 10000h      // 清除 WP 位 (bit 16)\n        mov cr0, eax\n    }\n}\n\nVOID EnableWriteProtect()\n{\n    _asm {\n        mov eax, cr0\n        or  eax, 10000h          // 恢复 WP 位\n        mov cr0, eax\n        sti                      // 开中断\n    }\n}\n```\n\n> [!caution] 多核环境下的致命缺陷\n> 此方法在多核处理器环境中**极不安全**：`cli` 只屏蔽当前逻辑处理器上的可屏蔽中断，不影响其他处理器，也不阻止 NMI / SMI 等事件。\n\n### 执行 Hook\n\n解除写保护后，通过简单的数组赋值完成 SSDT 劫持：\n\n```c\n// 封装 SSDT 劫持写入逻辑\nNTSTATUS HookFuncAddr(ULONG FuncAddr)\n{\n    // 计算 SSDT 表项的虚拟地址（需要对该地址所在页面解除写保护）\n    ULONG SsdtEntryAddr = (ULONG)&KeServiceDescriptorTable->\n        KrnlFuncTable.ServiceTableBase[0x7A];\n\n    SetPageWritable(SsdtEntryAddr, TRUE);   // 解除写保护\n    KeServiceDescriptorTable->KrnlFuncTable.ServiceTableBase[0x7A] = FuncAddr;\n    SetPageWritable(SsdtEntryAddr, FALSE);  // 恢复写保护\n    return STATUS_SUCCESS;\n}\n\n// 在驱动入口调用\nHookFuncAddr((ULONG)MyNtOpenProcess);\n```\n\n### 验证结果\n\n编译驱动并加载运行后，成功实现了对全局进程打开行为的拦截：\n\n![1e5bc6b3dd696b779ebb152baca17e67&#95;MD5&#46;jpg](/notes/n-5691ecc0ff994c84bd308a428cf1be43/media/fabbd6f8dd7f94325a09cb36c1b7520aba95184e4020cee2367baa3306ee4e5b.jpg)\n\n### 驱动卸载\n\n驱动卸载时**必须**恢复被篡改的 SSDT 表项，否则系统会调用已被卸载的驱动代码页，导致蓝屏。卸载函数的结构与安装时对称：\n\n```c\nVOID DriverUnload(PDRIVER_OBJECT DriverObject)\n{\n    HookFuncAddr(OldFuncAddr); // 恢复原始 SSDT 表项\n    DbgPrint(\"[SSDT Hook] Driver unloaded.\\n\");\n}\n```\n\n\n## 其他内核 Hook 技术\n\nSSDT Hook 的局限性在于目标高度集中于系统服务表，极易被 ARK（Anti-Rootkit）工具扫描出异常（即所谓\"改表\"检测）。以下是几种替代思路。\n> 且 SSDT Hook 针对内核态调用可能不起作用，相关原理参考：[Windows 内核编程基础](/notes/n-aa89b77c511542d78cbbe8e10b350cc4/#h-aa1231f8affc208627e1)\n\n\n### Inline Hook\n\nInline Hook 不修改 SSDT 表项，而是直接覆写目标函数入口指令。它可能绕过“只比对 SSDT 表项”的扫描，但代码完整性校验或函数字节扫描仍可发现异常。\n\n对内核函数实施 Inline Hook 时有两个核心注意点：\n1. **写之前先解除页面写保护**（与 SSDT Hook 类似）\n2. **驱动卸载时必须恢复原指令流**（保存并还原被覆盖的字节）\n\n> 高效的 Inline Hook 实现参考：[Trampoline Hook](/notes/n-fa12fc7baceb44f2aabe21ea5fedee59/)\n\n\n> [!warning]\n> 执行 Inline Hook 的时候，如果有人刚好执行到你修改的这行代码，就会出现问题，所以要尽量保证互斥进行修改。\n\n### 修改 `_KTHREAD.ServiceTable`\n\n每个线程的 `_KTHREAD` 结构体都有一个 `ServiceTable` 成员，指向该线程使用的 SSDT 表。系统调用入口函数（`KiFastCallEntry` / `KiSystemService`）通过读取当前线程的 `ServiceTable` 来定位 SSDT。\n> 参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n**优势**：比直接修改全局 SSDT 表更加隐蔽，ARK 软件难以检测。\n\n常用的修改方式：\n1. 直接修改目标线程的 `_KTHREAD.ServiceTable`，使其指向自定义的 SSDT 副本。\n2. Hook `NtCreateThread`，在新线程创建时就替换其 `ServiceTable`。参考：[Windows 线程创建&#65288;02&#65289;&#65306;KTHREAD 初始化](/notes/n-6592c409b1a640c7848b3d4033762bb0/#h-63ba2746e86ef75337f8)\n3. 通过 `_KPCR` 结构体中的 `CurrentThread` / `NextThread` 定位到 `_KTHREAD`，修改其 `ServiceTable`。参考：[Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)\n\n### 修改系统调用入口函数\n\n构建自定义的 SSDT 表副本，然后修改系统调用入口函数（`KiFastCallEntry` / `KiSystemService`）中获取 SSDT 基址的硬编码指令，使其不再通过 `_KTHREAD.ServiceTable` 间接寻址，而是直接使用我们构造的 SSDT 表地址。\n> 参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n**优势**：不易被发现，且实现简便。\n\n### GUI 线程的特殊问题\n\n上述修改 `_KTHREAD.ServiceTable` 和 `KiFastCallEntry` 的方案，对 **GUI（UI）线程**存在兼容问题。\n\n**原因**：系统调用入口（如 `KiFastCallEntry`）中有一段汇编逻辑，当服务号超过 SSDT 的上限时（即调用的是 Shadow SSDT 中的函数），会将当前线程的 `ServiceTable` 与 `KeServiceDescriptorTable` 进行比较：如果**不相等**，系统认为该线程尚未完成 GUI 线程初始化，会将 `ServiceTable` 替换为 `KeServiceDescriptorTableShadow`（包含 win32k 表），并执行 GUI 线程的初始化操作。\n\n也就是说，`ServiceTable` 在内核中还被复用为 **\"线程是否已转换为 GUI 线程\"的状态标记**。修改它会破坏这一隐含语义。由于我们修改了 `ServiceTable`，导致比较结果**不相等**，系统会再次执行 GUI 线程初始化，造成异常行为，即使进程没有终止，也会导致我们的 Hook 失效。\n\n> 相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n### 修改 SSDT 全局变量\n\n直接修改存储 SSDT/Shadow SSDT 表地址的全局变量 `KeServiceDescriptorTable` 或 `KeServiceDescriptorTableShadow`，使其指向自定义表。\n\n**缺点**：容易被 ARK 工具检测——只需对比全局变量的当前值与初始值即可发现异常。\n",
+  "id": "5691ecc0-ff99-4c84-bd30-8a428cf1be43",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "lang/c",
+      "reverse/windows"
+    ],
+    "title": "Windows 内核 Hook 系统调用",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "38e27be58a172a9dc0fb662df8f87194762793bf361caa449ada627257c56531.jpg",
+    "50bafbb08bc3e8e21ae68f01198645f617d9f7de5f22a43a2c1bb2014ba7f84b.jpg",
+    "f97ac9b02a16c3a23541704038284ff852b9732997802d5ce2a84ebf3ec7ec3c.jpg",
+    "fabbd6f8dd7f94325a09cb36c1b7520aba95184e4020cee2367baa3306ee4e5b.jpg"
+  ],
+  "url": "/notes/n-5691ecc0ff994c84bd308a428cf1be43/"
+}

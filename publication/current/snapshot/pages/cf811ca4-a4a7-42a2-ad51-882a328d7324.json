@@ -1,0 +1,160 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-4428996e2252039eb5e9",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-0241df29d33314e46b13",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-64c5744305e5bd2ad794",
+      "kind": "heading",
+      "offset": 525
+    },
+    {
+      "id": "h-cb86985939e2c4a7ac54",
+      "kind": "heading",
+      "offset": 845
+    },
+    {
+      "id": "h-3c02fd2ad774c6113acf",
+      "kind": "heading",
+      "offset": 1377
+    },
+    {
+      "id": "h-c3d7070b4df9796688c2",
+      "kind": "heading",
+      "offset": 1530
+    },
+    {
+      "id": "h-9172b1307b6755329c00",
+      "kind": "heading",
+      "offset": 3520
+    },
+    {
+      "id": "h-85daa2e181e9baab6e57",
+      "kind": "heading",
+      "offset": 4060
+    },
+    {
+      "id": "h-38a659cbfb783a893970",
+      "kind": "heading",
+      "offset": 4295
+    },
+    {
+      "id": "h-3f57dfbabebbf4dd53ec",
+      "kind": "heading",
+      "offset": 4617
+    },
+    {
+      "id": "h-57c7b843b8e4b60b1380",
+      "kind": "heading",
+      "offset": 6314
+    },
+    {
+      "id": "h-646159a2418f779f005d",
+      "kind": "heading",
+      "offset": 6707
+    },
+    {
+      "id": "h-a9902580471239418187",
+      "kind": "heading",
+      "offset": 6794
+    },
+    {
+      "id": "h-533fb5265f2203ac5d76",
+      "kind": "heading",
+      "offset": 7347
+    },
+    {
+      "id": "h-8803258d90d807bfa4f1",
+      "kind": "heading",
+      "offset": 7755
+    },
+    {
+      "id": "h-fd5c31ccfb4bc8af49c2",
+      "kind": "heading",
+      "offset": 8433
+    },
+    {
+      "id": "h-513b219ad36676631c1d",
+      "kind": "heading",
+      "offset": 8523
+    },
+    {
+      "id": "h-2f50455ffe8bd3e3c876",
+      "kind": "heading",
+      "offset": 8859
+    },
+    {
+      "id": "h-3d0a50625c3259a98c64",
+      "kind": "heading",
+      "offset": 9175
+    },
+    {
+      "id": "h-b8acba06197b72b79491",
+      "kind": "heading",
+      "offset": 9681
+    },
+    {
+      "id": "h-1292bf0213c0df995865",
+      "kind": "heading",
+      "offset": 10226
+    },
+    {
+      "id": "h-5fd1c699f355497c129c",
+      "kind": "heading",
+      "offset": 10844
+    },
+    {
+      "id": "h-7b63d1b3e44a02bfe4b3",
+      "kind": "heading",
+      "offset": 11249
+    },
+    {
+      "id": "h-fb0680d3a4320ec9216f",
+      "kind": "heading",
+      "offset": 12080
+    },
+    {
+      "id": "h-e21f218018acee8aa31c",
+      "kind": "heading",
+      "offset": 12476
+    },
+    {
+      "id": "h-99d4d42e26af10cb0373",
+      "kind": "heading",
+      "offset": 12690
+    },
+    {
+      "id": "h-1a8bcba7187829520b86",
+      "kind": "heading",
+      "offset": 12952
+    }
+  ],
+  "body": "# 预处理、编译、汇编、链接\n\n## 概述\n\n编译类语言（如 C/C++）从源代码变成可执行的机器码，需要经过四个阶段：\n\n1. **预处理** — 展开宏、处理条件编译、插入头文件\n2. **编译** — 将高级语言翻译为汇编语言\n3. **汇编** — 将汇编语言翻译为机器码，生成目标文件（`.obj` / `.o`）\n4. **链接** — 将多个目标文件合并，解决符号依赖，生成最终的可执行文件或共享库\n\n![c32f57677921e483e74101e51cd17d30&#95;MD5&#46;jpg](/notes/n-cf811ca4a4a742a2ad51882a328d7324/media/38c14584adba85ab984be1b08009c5ae803682858c93bab8545b6476b8c32b3e.jpg)\n\n下面依次展开，理论与实验穿插进行。实验工具以 Visual Studio（Windows / COFF）和 GCC（Linux / ELF）为主。\n\n> VS 中点击\"生成\"实际上会连续执行上述全部四个阶段；下面需要单独观察某一阶段的产物时，会通过项目属性进行配置。\n\n---\n\n## 预处理\n\n预处理器扫描源代码中以 `#` 开头的预处理指令，输出一个 `.i` 文件，主要做以下工作：\n\n- 删除所有 `#define`，并在使用处展开宏。\n- 处理 `#if`、`#ifdef`、`#else`、`#endif` 等条件编译指令。\n- 递归展开 `#include`，将被包含的文件内容插入到指令位置。\n- 删除所有注释（`//` 和 `/* */`）。\n- 添加行号和文件名标识（如 `#2 \"hello.c\" 2`），供后续编译阶段在报错时显示原始位置。\n- 保留 `#pragma` 指令，交给编译器处理。\n\n处理完成后，`.i` 文件中不再包含任何宏定义——宏已被展开，头文件已被内联。\n\n### 实验：观察预处理结果\n\n默认情况下 VS 不会单独输出预处理结果。需要手动开启：\n\n右键项目 => 属性 => C/C++ => 预处理器 => 开启**预处理到文件**选项。\n\n![](/notes/n-cf811ca4a4a742a2ad51882a328d7324/media/5fe7aaedbbf94919f0a0bbfa1f979721e908546d7170056434bc9fa7a22b76b2.jpeg)\n\n> 开启该选项后，VS 不会继续执行编译，也不会生成 `.obj` 文件，演示后记得关闭。\n\n`main.cpp` 原始内容：\n\n```cpp\n#define myInt int\n\nmyInt main() {\n\n\treturn 0;\n}\n```\n\n右键项目 => 生成，执行成功后在输出目录找到 `main.i`，内容如下：\n\n```\n#line 1 \"D:\\\\360MoveData\\\\Users\\\\1\\\\Desktop\\\\myTest\\\\Project1\\\\main.cpp\"\n\nint main() {\n\n\treturn 0;\n}\n```\n\n可以看到 `#define` 定义的 `myInt` 已被直接替换为 `int`。\n\n---\n\n## 编译\n\n这是整个构建流程中最复杂的阶段。\n\n编译是将预处理后的高级语言翻译为汇编语言的过程。编译器对代码进行词法分析、语法分析、语义分析和优化，最终输出汇编代码文件（`.asm` / `.s`），在这个过程中可以对高级语言的代码进行优化，如删除掉无效的变量、函数调用等。\n\n### 实验：观察编译生成的汇编代码\n\nVS 默认不输出汇编文件，需要配置：右键项目 => 属性 => C/C++ => 输出文件 => 汇编程序输出（选择\"输出汇编程序\"）。\n\n> 若提示选项不兼容：右键项目 => 属性 => C/C++ => 代码生成 => 基本运行时检查（选择\"默认值\"）。\n\n> 建议选择 `Release` 配置，并关闭全程序优化（全程序优化会延迟到链接阶段才生成目标代码：全程序优化生成中间代码后，先不生成目标代码，而是等到了链接的时候，统一优化所有文件的中间代码后再生成目标代码）和安全检查，这样生成的无关代码更少，便于观察。\n\n`main.cpp` 内容如下：\n\n```cpp\n#define myInt int\n\nstatic int a;\nextern int b;\nextern void ext();\n\nvoid bar() {\n\ta = 1;      // 类型：模块内部数据访问\n\tb = 2;      // 类型：模块外部数据访问\n}\n\nvoid foo() {\n\tbar();      // 类型：模块内部函数调用\n\text();      // 类型：模块外部函数调用\n}\n\t\nmyInt main() {\n\tfoo();\n\treturn 0;\n}\n```\n\n右键项目 => 生成（或右键 `main.cpp` => 编译），执行成功后在输出目录找到 `main.asm`，`main` 函数编译后生成的汇编代码如下：\n\n```z80\n; Listing generated by Microsoft (R) Optimizing Compiler Version 19.51.36256.0 \n\n\tTITLE\tG:\\Dev\\Labs\\Project1\\Project1\\Release\\main.obj\n\t.686P\n\t.XMM\n\tinclude listing.inc\n\t.model\tflat\n\nINCLUDELIB MSVCRT\nINCLUDELIB OLDNAMES\n\nPUBLIC\t?bar@@YAXXZ\t\t\t\t\t; bar\nPUBLIC\t?foo@@YAXXZ\t\t\t\t\t; foo\nPUBLIC\t_main\nEXTRN\t?ext@@YAXXZ:PROC\t\t\t\t; ext\nEXTRN\t?b@@3HA:DWORD\t\t\t\t\t; b\n_BSS\tSEGMENT\n?a@@3HA\tDD\t01H DUP (?)\t\t\t\t; a\n_BSS\tENDS\n; Function compile flags: /Odtp\n;\tCOMDAT ?bar@@YAXXZ\n_TEXT\tSEGMENT\n?bar@@YAXXZ PROC\t\t\t\t\t; bar, COMDAT\n; File G:\\Dev\\Labs\\Project1\\main.cpp\n; Line 7\n\tpush\tebp\n\tmov\tebp, esp\n; Line 8\n\tmov\tDWORD PTR ?a@@3HA, 1\n; Line 9\n\tmov\tDWORD PTR ?b@@3HA, 2\t\t\t; b\n; Line 10\n\tpop\tebp\n\tret\t0\n?bar@@YAXXZ ENDP\t\t\t\t\t; bar\n_TEXT\tENDS\n; Function compile flags: /Odtp\n;\tCOMDAT ?foo@@YAXXZ\n_TEXT\tSEGMENT\n?foo@@YAXXZ PROC\t\t\t\t\t; foo, COMDAT\n; File G:\\Dev\\Labs\\Project1\\main.cpp\n; Line 12\n\tpush\tebp\n\tmov\tebp, esp\n; Line 13\n\tcall\t?bar@@YAXXZ\t\t\t\t; bar\n; Line 14\n\tcall\t?ext@@YAXXZ\t\t\t\t; ext\n\tnpad\t1\n; Line 15\n\tpop\tebp\n\tret\t0\n?foo@@YAXXZ ENDP\t\t\t\t\t; foo\n_TEXT\tENDS\n; Function compile flags: /Odtp\n;\tCOMDAT _main\n_TEXT\tSEGMENT\n_main\tPROC\t\t\t\t\t\t; COMDAT\n; File G:\\Dev\\Labs\\Project1\\main.cpp\n; Line 17\n\tpush\tebp\n\tmov\tebp, esp\n; Line 18\n\tcall\t?foo@@YAXXZ\t\t\t\t; foo\n; Line 19\n\tcall\t?bar@@YAXXZ\t\t\t\t; bar\n; Line 20\n\txor\teax, eax\n; Line 21\n\tpop\tebp\n\tret\t0\n_main\tENDP\n_TEXT\tENDS\nEND\n```\n\n### 汇编代码结构分析\n\n生成的 `.asm` 文件，结构上就是人类手写汇编的逻辑：\n\n1. 声明符号——包括本模块提供的符号（`PUBLIC`）和依赖的外部符号（`EXTRN`）。\n2. 声明段（`_BSS`、`_TEXT`）。\n3. 在段内定义函数（`PROC` / `ENDP`）。\n\n**函数签名**：符号名（如 `?bar@@YAXXZ`）并非随意命名，而是由编译器根据函数名、返回类型、形参类型等信息编码而成的\"名称修饰\"（name mangling），用于唯一标识一个符号。\n\n**符号可见性**：带 `PUBLIC` 的符号会被导出供其他模块使用；未标记的则仅限当前编译单元内部（如 `static` 修饰的函数和变量）。\n\n> **编译优化**（可选）：右键项目 => 属性 => C/C++ => 优化 => 优化（选择\"最大优化-速度\"）。开启后编译器会删除未使用的变量（如 `a`）、内联函数等，导致生成的代码不直观，建议学习阶段关闭。\n\n不同编译器生成的汇编代码风格不同。汇编本身也是对机器码的一种文本表示，同一份机器码可以用不同语法来表达（如 Intel 语法与 AT&T 语法）。GCC 默认生成的汇编与 MSVC 差异很大。\n\n### 静态链接与动态链接对编译产物的影响\n\n对引用的外部符号可以采取两种链接方案：\n\n**静态链接**（`extern`）：编译器假设外部符号的地址可以在链接时确定，在编译阶段直接使用绝对寻址或相对寻址访问目标，在链接时重定位该地址即可。\n\n**动态链接**（`__declspec(dllimport)`）：外部符号的地址要到运行时才能确定，编译器会引入一层间接访问——先通过寻址找到一个存放目标地址的\"槽位\"，再从槽位中取出真实地址进行访问。\n\n下面通过实验对比两者的差异。\n\n#### 实验：静态链接方式\n\n前面的示例代码使用 `extern` 声明外部符号，属于静态链接。关注 `bar` 函数中对变量的访问：\n\n```z80\n; Line 8 — 访问内部变量 a：绝对寻址，直接写入\n\tmov\tDWORD PTR ?a@@3HA, 1\n; Line 9 — 访问外部变量 b：同样绝对寻址，直接写入（地址由链接器填入）\n\tmov\tDWORD PTR ?b@@3HA, 2\t\t\t; b\n```\n\n函数调用也是直接跳转：\n\n```z80\n\tcall\t?bar@@YAXXZ\t\t\t\t; bar（模块内部，相对寻址）\n\tcall\t?ext@@YAXXZ\t\t\t\t; ext（外部，同样直接调用，地址由链接器填入）\n```\n\n#### 实验：动态链接方式\n\n将外部符号改为 `__declspec(dllimport)` 声明：\n\n```c\n#define myInt int\n\nstatic int a;\n__declspec(dllimport)  int b;\n\n__declspec(dllimport) void ext();\n\nvoid bar() {\n\ta = 1;      // 类型：模块内部数据访问\n\tb = 2;      // 类型：模块外部数据访问\n}\n\nvoid foo() {\n\tbar();      // 类型：模块内部函数调用\n\text();      // 类型：模块外部函数调用\n}\n\t\nmyInt main() {\n\tfoo();\n\treturn 0;\n}\n```\n\n编译后的汇编代码：\n\n```z80\n; Listing generated by Microsoft (R) Optimizing Compiler Version 19.51.36256.0 \n\n\tTITLE\tG:\\Dev\\Labs\\Project1\\Project1\\Release\\main.obj\n\t.686P\n\t.XMM\n\tinclude listing.inc\n\t.model\tflat\n\nINCLUDELIB MSVCRT\nINCLUDELIB OLDNAMES\n\nPUBLIC\t?bar@@YAXXZ\t\t\t\t\t; bar\nPUBLIC\t?foo@@YAXXZ\t\t\t\t\t; foo\nPUBLIC\t_main\nEXTRN\t__imp_?ext@@YAXXZ:PROC\nEXTRN\t__imp_?b@@3HA:DWORD\n_BSS\tSEGMENT\n?a@@3HA\tDD\t01H DUP (?)\t\t\t\t; a\n_BSS\tENDS\n; Function compile flags: /Odtp\n;\tCOMDAT ?bar@@YAXXZ\n_TEXT\tSEGMENT\n?bar@@YAXXZ PROC\t\t\t\t\t; bar, COMDAT\n; File G:\\Dev\\Labs\\Project1\\main.cpp\n; Line 8\n\tpush\tebp\n\tmov\tebp, esp\n; Line 9\n\tmov\tDWORD PTR ?a@@3HA, 1\n; Line 10\n\tmov\teax, DWORD PTR __imp_?b@@3HA\n\tmov\tDWORD PTR [eax], 2\n; Line 11\n\tpop\tebp\n\tret\t0\n?bar@@YAXXZ ENDP\t\t\t\t\t; bar\n_TEXT\tENDS\n; Function compile flags: /Odtp\n;\tCOMDAT ?foo@@YAXXZ\n_TEXT\tSEGMENT\n?foo@@YAXXZ PROC\t\t\t\t\t; foo, COMDAT\n; File G:\\Dev\\Labs\\Project1\\main.cpp\n; Line 13\n\tpush\tebp\n\tmov\tebp, esp\n; Line 14\n\tcall\t?bar@@YAXXZ\t\t\t\t; bar\n; Line 15\n\tcall\tDWORD PTR __imp_?ext@@YAXXZ\n\tnpad\t1\n; Line 16\n\tpop\tebp\n\tret\t0\n?foo@@YAXXZ ENDP\t\t\t\t\t; foo\n_TEXT\tENDS\n; Function compile flags: /Odtp\n;\tCOMDAT _main\n_TEXT\tSEGMENT\n_main\tPROC\t\t\t\t\t\t; COMDAT\n; File G:\\Dev\\Labs\\Project1\\main.cpp\n; Line 18\n\tpush\tebp\n\tmov\tebp, esp\n; Line 19\n\tcall\t?foo@@YAXXZ\t\t\t\t; foo\n; Line 20\n\txor\teax, eax\n; Line 21\n\tpop\tebp\n\tret\t0\n_main\tENDP\n_TEXT\tENDS\nEND\n```\n\n#### 对比分析\n\n与静态链接相比，差异只出现在对动态导入符号的使用上：\n\n| 操作 | 静态链接 | 动态链接 |\n| --- | --- | --- |\n| 访问变量 `b` | `mov DWORD PTR ?b@@3HA, 2` — 绝对寻址直接写入 | `mov eax, DWORD PTR __imp_?b@@3HA` 再 `mov DWORD PTR [eax], 2` — 先取地址槽位，再间接写入 |\n| 调用函数 `ext` | `call ?ext@@YAXXZ` — 直接调用 | `call DWORD PTR __imp_?ext@@YAXXZ` — 通过地址槽位间接调用 |\n\n原因：动态链接的符号地址在运行时才确定，编译器预留一个地址槽位（运行时由加载器填入真实地址），所有访问都先经过这个槽位做一次间接跳转。这就是导入地址表（IAT）的由来。\n\n---\n\n## 汇编\n\n汇编器将汇编语言逐条翻译为机器码，生成目标文件（`.obj` / `.o`）。这个过程基本是一对一翻译，复杂度远低于编译阶段。\n\n### 目标文件的组成：符号表与重定位表\n\n目标文件不仅仅是一段机器码，还包含：\n\n- **符号表**：记录本模块导出了哪些符号（`PUBLIC`）、依赖哪些外部符号（`EXTRN`）。\n- **重定位表**：记录机器码中所有对非局部符号（全局变量、外部变量、函数调用）的引用位置，以及每处引用是相对寻址还是绝对寻址。\n\n无论静态链接还是动态链接，目标文件都会生成重定位表，记录机器码中所有对非局部符号的引用（访问的符号是什么、引用位置在哪、是相对寻址还是绝对寻址）。\n\n为什么需要重定位？因为无论是相对寻址还是绝对寻址，引用的目标都可能在链接阶段被重新排布——链接器将多个目标文件的段合并后，各符号的最终地址才能确定。重定位表让链接器能够找到所有需要修正的位置并更新。\n\n> 运行时的重定位表比链接时的更精简：只包含绝对寻址项，不含相对寻址项（因为相对偏移在模块内部不会因加载基址变化而改变）。为了减少运行时重定位负担，编译器会尽量使用相对寻址；对于只能使用绝对寻址的情况（如 32 位下 `mov` 指令不支持 RIP 相对寻址），会转化为先读取当前指令地址再做相对偏移的方式，代价是多几条指令。\n\n这些元数据使得链接器能够在合并多个目标文件时，灵活安排代码和数据在内存中的布局，并修正所有引用地址。\n\n### 实验：使用 VS 观察目标文件\n\n右键项目 => 生成（或右键 `main.cpp` => 编译），执行成功后在输出目录找到 `main.obj`，这就是 `main.cpp` 对应的目标文件。\n\n将 `main.obj` 拖入 IDA 可以反汇编查看其中的机器码（动态链接方式的 `.obj` 文件）：\n![674a8a606d1bcded4ef162dc6108f54f&#95;MD5&#46;jpg](/notes/n-cf811ca4a4a742a2ad51882a328d7324/media/dfbf555076074aa4e1b5f6f50a50539c3ad23bb3824a562fc83429be03772004.jpg)\n\n可以看到，会先指定依赖的外部变量、函数在 `.obj` 文件内部，生成对应的汇编机器码。\n\n上述反汇编能显示函数、变量名称是依赖符号表、重定位表实现的。\n\n### 目标文件格式：COFF 与 ELF\n\n目标文件中信息的组织方式因平台而异：Windows 使用 COFF 格式，Linux 使用 ELF 格式。\n\n但两者的目的和实现逻辑相似，且 ELF 更通用、资料更丰富，在 Linux 中用命令 `gcc -c hello32.c -o hello32.obj` 编译同样的源代码：\n\n```cpp\n#define myInt int\n\nstatic int a;\nextern int b;\nextern void ext();\n\nvoid bar() {\n\ta = 1;      // 类型：模块内部数据访问\n\tb = 2;      // 类型：模块外部数据访问\n}\n\nvoid foo() {\n\tbar();      // 类型：模块内部函数调用\n\text();      // 类型：模块外部函数调用\n}\n\t\nmyInt main() {\n\tfoo();\n\treturn 0;\n}\n```\n\n并用工具查看得到的 `.obj` 文件其符号表：\n> 相关内容参考：[Linux ELF 文件格式](/notes/n-95e8c75c9da6476fbc85e09535265997/)\n\n![bad6a063568ed8da798cfffb8c2a3d36&#95;MD5&#46;jpg](/notes/n-cf811ca4a4a742a2ad51882a328d7324/media/d2307b2e859bc438079a0df3477616dbe7c7c069f3d36b33044fac82fb6e977d.jpg)\n\n\n## 链接\n\n每个 `.cpp` 文件被独立编译和汇编后生成一个 `.obj` 文件。链接阶段将多个 `.obj` 文件合并为一个最终产物（可执行文件或共享库）。\n\n### 链接器的核心工作\n\n链接器的核心工作：\n\n1. **解决符号依赖**：每个 `.obj` 文件声明了自己导出的符号和依赖的外部符号。链接器在所有输入文件中查找匹配，将引用绑定到定义。\n2. **合并段**：将各 `.obj` 的同名段（`.text`、`.data`、`.bss` 等）合并。\n3. **重定位**：根据重定位表，修正所有引用的地址。\n4. **生成最终格式**：组织成目标平台支持的可执行文件或共享库格式（PE 或 ELF）。\n\n因此，符号必须是唯一的（否则链接器无法判断使用哪个定义）。在 `.cpp` 中使用 `extern` 声明外部变量和函数，使得编译器将其标记为外部依赖，链接器才知道需要去其他 `.obj` 中查找。\n\n### 位置无关代码与重定位的统一视角\n\n回顾前面的内容，可以总结出一个贯穿编译、汇编、链接和运行时加载的统一机制：\n\n代码中所有对符号的引用，要么是相对寻址，要么是绝对寻址，目标文件中的重定位表记录了所有这些引用位置。\n> 对于运行时才能确定地址的外部符号，通过一个地址槽位做间接访问。\n\n这个机制使得代码天然具备位置无关性——代码本身不预设执行位置，即使预设了，只要按重定位表修正即可。链接和动态加载都利用了这个思路：\n\n1. **链接阶段**：多个 `.obj` 合并后，按重定位表修正所有引用地址，合并后的代码正常运行。\n2. **动态加载**：共享库被加载到任意地址后，加载器按重定位表修正绝对地址引用，填入地址槽位，代码正常运行。\n\n## 附录：编译原理详解\n\n编译过程可以分为 6 个步骤：\n\n- **扫描（Scanning）**（即词法分析）\n- **语法分析（Syntax Analysis）**\n- **语义分析（Semantic Analysis）**\n- **源代码优化（Source Code Optimization）**\n- **目标代码生成（Target Code Generation）**\n- **目标代码优化（Target Code Optimization）**\n\n![6d28ca76eee3ee421202b994d52c1ee8&#95;MD5&#46;jpg](/notes/n-cf811ca4a4a742a2ad51882a328d7324/media/562346d706d2360d61e27718e48f278d8786d1df89fb790c08c34655f706d118.jpg)\n\n下面以一行 C 代码为例，追踪从源代码到目标代码的完整过程：\n\n```c\n// CompilerExpression.c  \narray[index] = (index + 4) * (2 + 6)\n```\n\n### 扫描（词法分析）\n\n扫描器使用有限状态机算法将源代码的字符序列分割成一系列记号（Token）。上述代码共 28 个非空字符，产生 16 个记号：\n\n| 记号    | 类型  | 记号  | 类型   |\n| ----- | --- | --- | ---- |\n| array | 标识符 | [   | 左方括号 |\n| index | 标识符 | ]   | 右方括号 |\n| =     | 赋值  | (   | 左圆括号 |\n| index | 标识符 | +   | 加号   |\n| 4     | 数字  | )   | 右圆括号 |\n| *     | 乘号  | (   | 左圆括号 |\n| 2     | 数字  | +   | 加号   |\n| 6     | 数字  | )   | 右圆括号 |\n\n记号可分为：**关键字**、**字面量**（数字、字符串等）、**特殊符号**（加号、等号等）。\n\n扫描的同时，扫描器还会将标识符存入符号表、将数字和字符串常量存入文字表，供后续阶段使用。\n\n> `lex` 是一个通用词法扫描工具，能按用户定义的词法规则将输入字符串分割成记号。有了它，编译器开发者无需为每种语言编写独立的词法扫描器，只需定义词法规则即可。\n\n### 语法分析\n\n语法分析器对记号序列进行分析，采用上下文无关文法（Context-free Grammar），生成以表达式为节点的语法树（Syntax Tree）。\n\n```c\n// CompilerExpression.c  \narray[index] = (index + 4) * (2 + 6)\n```\n\n![fbdd9cfc969f861e66c1caeccdfab851&#95;MD5&#46;jpg](/notes/n-cf811ca4a4a742a2ad51882a328d7324/media/1c2c6017717bd0534af0304e2bb3e6089a3eeb33fa49e75b1944dffceb09cb92.jpg)\n\n语法分析阶段确定了运算符的优先级和含义（树的底层节点先执行）。例如乘法优先于加法，圆括号优先于乘法。对于一符多义的情况（如 `*` 既可以是乘法也可以是解引用），语法分析也会在此阶段做出区分。括号不匹配、缺少操作符等问题会在此阶段报错。\n\n> 有一个名为yacc（Yet Another Compiler Compiler）的工具可以实现语法分析。其根据用户给定的语法规则对输入的记号序列进行解析，从而构建出语法树。对于不同的编程语言，编译器的开发者只需改变语法规则，而无需为每个编译器编写一个语法分析器。因此，其也称为“编译器编译器（Compiler Compiler）”\n### 语义分析\n\n语法分析只确保结构合法，不判断语义是否合理（例如两个指针相乘在语法上合法，但语义上无意义）。\n\n语义分为两种：\n\n- **静态语义**：编译期可确定的语义。包括类型匹配和隐式转换（如浮点数赋值给整数时插入转换），以及类型不兼容的报错（如将浮点数赋给指针）。\n- **动态语义**：只能在运行期确定，如除以零。\n\n编译器能分析的是静态语义。经过语义分析后，语法树的每个表达式节点都被标注了类型，需要隐式转换的位置会插入转换节点：\n\n![7ad38177f2379f870e79788b38d48062&#95;MD5&#46;jpg](/notes/n-cf811ca4a4a742a2ad51882a328d7324/media/d8c45e4e04955c58dbddad256d8d5589ea93a4298563efcbdaaf0f1c6c8323d6.jpg)\n\n### 源代码优化（中间代码生成）\n\n源码优化器在源码级别做优化。例如上例中 `(2 + 6)` 的值在编译期即可确定，可以直接折叠为常量 `8`：\n\n![8a905e6d90b3c263305c216ffc663336&#95;MD5&#46;jpg](/notes/n-cf811ca4a4a742a2ad51882a328d7324/media/78ed0a44def70ccf6c9688e8d3a2a6b968e69515969945cf8ab4577a1868408d.jpg)\n\n实际实现中，优化器通常先将语法树转换为中间代码（Intermediate Code）再做优化，因为在语法树上直接操作比较困难（JS 的 AST 反混淆就是在语法树上直接操作的例子）。\n\n中间代码是语法树的顺序表示，已经接近目标代码，但与具体机器无关——不涉及数据大小、变量地址或寄存器名。\n\n常见的中间代码形式有三地址码（Three-address Code）和 P-代码（P-Code）。以三地址码为例，基本形式为 `x = y op z`。\n\n上述代码的三地址码：\n\n```\nt1 = 2 + 6  \nt2 = index + 4  \nt3 = t2 * t1  \narray[index] = t3\n```\n\n这里使用了几个临时变量：t1、t2和t3。\n\n\n在三地址码的基础上进行优化时，尝试计算所有目前能得到结果的三地址码——将2+6的结果计算出来得到t1 = 6，然后替换所有使用t1的位置，常量折叠优化后：\n\n```\nt2 = index + 4  \nt2 = t2 * 8  \narray[index] = t2\n```\n\n中间代码将编译器分为**前端**和**后端**：前端生成机器无关的中间代码，后端将中间代码转换为目标平台的汇编。跨平台编译器可以共用同一个前端，配合不同平台的后端。例如 Clang 是前端，LLVM 负责后端；GCC 则是前后端一体的套装。\n\n### 目标代码生成\n\n代码生成器将中间代码转换为目标平台的汇编代码。这个过程是平台相关的——不同机器有不同的字长、寄存器和数据类型。\n\n上例的中间代码在 x86 上可能生成如下汇编（假设 `index` 为 `int` 类型，`array` 为 `int` 数组）：\n\n```nasm\nmovl index, %ecx ; value of index to ecx  \naddl $4, %ecx ; ecx = ecx + 4  \nmull $8, %ecx ; ecx = ecx * 8  \nmovl index, %eax ; value of index to eax  \nmovl %ecx, array(,%eax,4) ; array[index] = ecx\n```\n\n> AT&T 汇编采用\"左源右目标\"顺序（操作数从左到右），与 Intel/NASM 语法相反。\n\n### 目标代码优化\n\n目标代码优化器对生成的汇编做进一步优化，例如使用更高效的寻址方式、用位移代替乘法、删除冗余指令等。\n\n上例优化后，乘法和赋值由基址比例变址寻址（Base Index Scale Addressing）的 `lea` 和 `mov` 指令完成：\n\n```nasm\nmovl index, %edx  \nleal 32(,%edx,8), %eax  \nmovl %eax, array(,%edx,4)\n```\n\n### 小结\n\n经过扫描、语法分析、语义分析、源代码优化、目标代码生成、目标代码优化这一系列步骤，源代码最终被编译为汇编代码。\n\n此时的产物仍然是文本形式——各变量只是符号名称，没有实际的内存地址（如 `mov a, 0x1` 中的 `a` 只是变量名）。由汇编器将其翻译为机器码并分配地址、生成目标文件，再由链接器合并目标文件、确定所有符号的最终地址，生成可执行文件。\n\n\n> 涉及到的数学知识：寄存器分配问题可以建模为图着色问题——用尽量少的颜色（寄存器）覆盖整张干涉图的节点（变量），使得相邻节点颜色不同。\n\n---\n\n## 总结\n\n相关内容参考：\n- 编译参考高质量文章：[计算机那些事(3)——程序构建及编译原理 | 楚权的世界](https://chuquan.me/2018/05/12/compiler-principle/#%E7%BC%96%E8%AF%91%E5%99%A8%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86)\n- 链接参考高质量文章：[计算机那些事(5)——链接、静态链接、动态链接 | 楚权的世界](https://chuquan.me/2018/06/03/linking-static-linking-dynamic-linking/#waline)\n\n\n事实上，编译和链接的具体实现细节非常复杂，本文只做概述。更多细节和优化策略需要进一步探索。\n\n---\n\n",
+  "id": "cf811ca4-a4a7-42a2-ad51-882a328d7324",
+  "metadata": {
+    "tags": [
+      "lang/cpp",
+      "lang/c",
+      "arch/x86"
+    ],
+    "title": "预处理、编译、汇编、链接"
+  },
+  "resources": [
+    "1c2c6017717bd0534af0304e2bb3e6089a3eeb33fa49e75b1944dffceb09cb92.jpg",
+    "38c14584adba85ab984be1b08009c5ae803682858c93bab8545b6476b8c32b3e.jpg",
+    "562346d706d2360d61e27718e48f278d8786d1df89fb790c08c34655f706d118.jpg",
+    "5fe7aaedbbf94919f0a0bbfa1f979721e908546d7170056434bc9fa7a22b76b2.jpeg",
+    "78ed0a44def70ccf6c9688e8d3a2a6b968e69515969945cf8ab4577a1868408d.jpg",
+    "d2307b2e859bc438079a0df3477616dbe7c7c069f3d36b33044fac82fb6e977d.jpg",
+    "d8c45e4e04955c58dbddad256d8d5589ea93a4298563efcbdaaf0f1c6c8323d6.jpg",
+    "dfbf555076074aa4e1b5f6f50a50539c3ad23bb3824a562fc83429be03772004.jpg"
+  ],
+  "url": "/notes/n-cf811ca4a4a742a2ad51882a328d7324/"
+}

@@ -1,0 +1,132 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-e9a015cf28c3a60931c5",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-f3cfd1fddac90d48d803",
+      "kind": "heading",
+      "offset": 104
+    },
+    {
+      "id": "h-b676d50f0ebde32d5cb6",
+      "kind": "heading",
+      "offset": 217
+    },
+    {
+      "id": "h-dc5e99b3a59e347599bd",
+      "kind": "heading",
+      "offset": 229
+    },
+    {
+      "id": "h-46f57838c07569bda8bf",
+      "kind": "heading",
+      "offset": 716
+    },
+    {
+      "id": "h-ebdc530550070babe1e9",
+      "kind": "heading",
+      "offset": 1253
+    },
+    {
+      "id": "h-8f191e782a7cc9452b78",
+      "kind": "heading",
+      "offset": 2214
+    },
+    {
+      "id": "h-1ac8e6a4c30ecd7c90a6",
+      "kind": "heading",
+      "offset": 2987
+    },
+    {
+      "id": "h-714484c1305a4845e15c",
+      "kind": "heading",
+      "offset": 3982
+    },
+    {
+      "id": "h-88bec9024062b781117c",
+      "kind": "heading",
+      "offset": 5599
+    },
+    {
+      "id": "h-5c3a676e5c8f7005053a",
+      "kind": "heading",
+      "offset": 6881
+    },
+    {
+      "id": "h-f922448d3524b1f36add",
+      "kind": "heading",
+      "offset": 6947
+    },
+    {
+      "id": "h-5b2b8075704454037ba2",
+      "kind": "heading",
+      "offset": 7020
+    },
+    {
+      "id": "h-54e92250816ef302ea8c",
+      "kind": "heading",
+      "offset": 9151
+    },
+    {
+      "id": "h-bab26179672a8461c11a",
+      "kind": "heading",
+      "offset": 9531
+    },
+    {
+      "id": "h-e3540bc957da61ee984e",
+      "kind": "heading",
+      "offset": 11226
+    }
+  ],
+  "body": "# Windows PE 节操作与代码注入\n\n相关内容：[Windows PE 文件格式与结构解析](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/)\n\n## 空白区概述\n\nPE 空白区是 PE 文件按照对齐方式对齐后产生的填充空间，可以是节与节之间的空白区，也可以是节表与节之间的空白区。本节的目标是在空白区添加一段代码（Shellcode），并使其在程序入口函数之前执行。\n\n## 空白区注入\n\n### 准备注入代码\n\n以调用 `MessageBoxA` 弹窗为例：\n\n```cpp\n::MessageBoxA(0,0,0,0);\n```\n\n由于没有源文件，无法直接插入高级语言代码，需要插入对应的机器码（硬编码）。在 VC6 中下断点反汇编可以获取该调用的硬编码：\n\n![a02cc9920989ea17cc06384a26156f57&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/21f0aa372a1d9840578f52c12fa856dcc74a2966211e74db1cf406b2aeb6a94e.jpg)\n\n反汇编结果分析：\n\n- 4 次参数压栈：`6A 00`（`PUSH 0`）\n- 函数调用：原始反汇编中是间接调用（通过导入表），注入时需改为直接调用形式 `E8 XX XX XX XX`\n\n`E8` 指令（`CALL rel32`）后跟 4 字节的相对偏移值，计算公式为：\n\n```text\n偏移值 = 目标函数地址 - (当前指令地址 + 5)\n```\n\n### 获取函数地址\n\n需要获取 `MessageBoxA` 的实际地址。该函数由 `USER32.DLL` 导出，可通过以下两种方式获取：\n\n**方式一**：在 `DTDebug` 中打开目标文件，找到 `USER32.DLL` 模块，双击进入后按 `Ctrl+N` 查找 `MessageBoxA` 的地址：\n\n![6189c8019a37f42272da2daf2c55acb1&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/04879691db904819b9a0995db312fb2b7b9852cc74c6804a6c292cdaf2d97048.jpg)\n\n**方式二**：在 VC6 中下断点，单步跟进函数调用即可获取地址：\n\n![429f1c285e61977a31ec34456d22b19e&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/1574e7b024a61fa940c4a0969848ea0887f416e1dba025b47ae273e51eb7dd01.jpg)\n\n### 计算偏移并填充\n\n获得 `MessageBoxA` 地址为 `0x77D5050B`。接下来确定注入位置和计算各偏移值。\n\n根据扩展 PE 头，当前 `ImageBase` 为 `0x400000`：\n\n![67fe7460e0a76b7f130617ab20139deb&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/d08020fb59e678a011d9ddeb4a703e9d2dbceec5fd6903c8545bc75c6c77bd65.jpg)\n\n> [!NOTE] 本例中文件对齐与内存对齐一致\n> 由于现代编译器编译的文件通常不区分文件对齐和内存对齐，因此文件中的偏移地址加上 `ImageBase` 即为内存地址。\n\n选择注入位置为文件偏移 `0xFE0`，布局如下：\n\n1. **参数压栈**（8 字节）：`6A 00 6A 00 6A 00 6A 00`（从 `0xFE0` 开始）\n2. **`CALL` 指令**（从 `0xFE8` 开始）：\n    - 当前指令内存地址：`0xFE8 + 0x400000 = 0x400FE8`\n    - 偏移值：`0x77D5050B - (0x400FE8 + 5) = 0x7794F51E`\n    - 完整指令：`E8 1E F5 94 77`（小端序写入）\n3. **`JMP` 指令**（跳回原入口点）：\n    - 程序入口地址由 `AddressOfEntryPoint + ImageBase` 得到，为 `0x4010B0`：\n      ![eb99355177e4c1748173101255cd92e9&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/1f614a4ee168b92eefd3e583ec9b4d541195d8e6283981dcd4e3bc0ebb7a2fed.jpg)\n\n    - 偏移值：`0x4010B0 - (0x400FE8 + 5 + 5) = 0xBE`\n    - 完整指令：`E9 BE 00 00 00`\n\n### 写入并修改入口点\n\n将准备好的代码填充到空白区：\n\n![0995a1e0f2bed3c94edffb35aa489ac9&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/51221603a846b78fa7ebd7e18c938d2e7778988325accb41be2fe9c3335c8b6e.jpg)\n\n修改扩展 PE 头中的 `AddressOfEntryPoint` 为 `0xFE0`，使程序启动时先执行注入的代码，执行完毕后通过 `JMP` 跳回原入口函数：\n\n![499c94c91aec19c521aeaee4eeaa6f3b&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/b6e0c9ea19e915b141b26e9a9afc939fe75dfaaadb6506a759f3665b713fb08f.jpg)\n\n保存后运行，可以观察到程序先弹出 `MessageBox`，随后正常进入原程序：\n\n![97c94e416b4153abe1f47bbd29d3c80b&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/b9b5037de533036e0d555bba5f5295cf7dfa8cb90c3db4588e50f59edaec667e.jpg)\n\n> [!WARNING] 非标准 Shellcode\n> 本例注入的代码使用了硬编码的函数地址（`0x77D5050B`），仅能在当前系统上运行。不同系统中 `USER32.DLL` 的加载基址可能不同，导致地址失效。\n\n## 扩大节\n\n当需要插入的代码量较大、空白区不够用时，可以扩大已有的节。为避免修改其他节的偏移属性，应选择**扩大最后一个节**。\n\n![84701936935d05f91ee7392ec7a801e3&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/649ebf3cdf72cdafdd8d2d291a955ee360011d3aa69d6ad9c425e067c4e8dd46.jpg)\n\n节表结构体定义（同上文）：\n\n```cpp\n#define IMAGE_SIZEOF_SHORT_NAME 8\ntypedef struct _IMAGE_SECTION_HEADER {\n    BYTE    Name[IMAGE_SIZEOF_SHORT_NAME]; // ASCII字符串（节名），可自定义，只截取8个字节，可以8个字节都是名字\n    union { // Misc，双字，是该节在没有对齐前的真实尺寸，该值可以不准确\n        DWORD   PhysicalAddress; // 真实宽度，这两个值是一个联合结构，可以使用其中的任何一个\n        DWORD   VirtualSize; // 一般是取后一个\n    } Misc;\n    DWORD   VirtualAddress; // 在内存中的 RVA，加上ImageBase才是在内存中的真正地址\n    DWORD   SizeOfRawData; // 节在文件中对齐后的尺寸\n    DWORD   PointerToRawData; // 节区在文件中的偏移\n    DWORD   PointerToRelocations; // 调试相关\n    DWORD   PointerToLinenumbers; // 调试相关 \n    WORD    NumberOfRelocations; // 调试相关 \n    WORD    NumberOfLinenumbers; // 调试相关 \n    DWORD   Characteristics; // 节的属性\n} IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;\n```\n\n### 3.1) 操作步骤\n\n**1. 分配新空间**\n\n在文件末尾插入所需大小的空间（本例为 `0x1000`，即 4096 字节），这样不会打乱其他结构的偏移：\n\n![7593e33f105505da64b4a3fd794b4f5c&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/26048086da3276b6bc5f1f9cee48ac5577f5f07600470e231eceeecc0e52008a.jpg)\n\n**2. 修改节表成员**\n\n找到最后一个节表成员，将 `SizeOfRawData` 和 `VirtualSize` 都修改为：取两者中的较大值，按内存对齐后再加上新增空间大小 `0x1000`。\n> 原理在 [Windows PE 文件格式与结构解析](/notes/n-da3bf6cb121d4cf6862d274b61cadc68/#h-29eb5b763e8d68bfd45b) 中讲过。\n\n![92c086d0a43486fa1b17c993646b38e0&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/3316f540a417fb69200e99a432ae6fda2d53968ed7745098decab818993be1e8.jpg)\n\n如上图所示，`SizeOfRawData` 为较大值。由于文件对齐（`FileAlignment`）和内存对齐（`SectionAlignment`）的值不同，需要先将 `SizeOfRawData` 按内存对齐：\n\n![dc8d3965c2ae49910d40e853b84b3da3&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/615a19983843a968a2997d87ba3e9df38eb89d182e6df459e920519e8dc9776e.jpg)\n\n内存对齐计算：\n\n```text\n⌈SizeOfRawData(0x8000) / SectionAlignment(0x1000)⌉ = 0x8\n0x8 × SectionAlignment(0x1000) = 0x8000\n```\n\n最终将 `SizeOfRawData` 和 `VirtualSize` 均修改为 `0x9000`（`0x8000 + 0x1000`）：\n\n![60b0c971bf4e8faae2a7c8c82fa7406c&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/8cf331a21c7d656e5173eeb1a34086939555f9d3f1033ceee143211cd2b678b8.jpg)\n\n**3. 修改节属性与 `SizeOfImage`**\n\n如需在该节中存放并执行代码，还需修改节的 `Characteristics` 属性，添加可执行权限。\n\n同时修改扩展 PE 头的 `SizeOfImage`（原值如下图）：\n\n![b1af1b3c2c7e1e1b9761374652e05f33&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/7833143d7b75defccb585b1b9748afc40c714a766ffad690848f721a4336833e.jpg)\n\n`SizeOfImage` 本身表示映像在内存展开后的总大小（已按内存对齐），在原值基础上加 `0x1000` 即可。\n\n### 扩大节后插入代码\n\n扩大节后插入代码的方式与空白区注入略有不同：由于文件对齐与内存对齐不一致，不能简单地用文件偏移加 `ImageBase` 计算内存地址。\n\n**计算内存地址的方法**：使用扩大前的 `SizeOfImage` 值。原 `SizeOfImage` 表示 PE 文件在内存中展开的总大小，新增空间位于 PE 文件末尾，因此新增空间的内存起始地址为 `ImageBase + 原SizeOfImage`。\n\n例如，标红部分指令在内存中的地址范围为 `ImageBase(0x1000000) + 原SizeOfImage(0x13000)` = `0x1013000` 起：\n\n![193899c5cdcdc51bbe9f4c172380c3d3&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/c5ffb3c412126f845080e8d8a49a93991e55b0bbe7077bce6e6c1e892318dce7.jpg)\n\n同样以 `MessageBoxA`（`0x77D5050B`）为例，计算偏移量：\n\n```text\n0x77D5050B - 0x1013000 - 13(指令本身长度) = 0x76D3D4F8\n```\n\n拼接完整指令（小端序）：\n\n```text\n6A 00 6A 00 6A 00 6A 00 E8 F8 D4 D3 76\n```\n\n> [!NOTE]\n> 此处省略了 `JMP` 跳回原 `AddressOfEntryPoint` 地址的指令部分。\n\n最后修改 `AddressOfEntryPoint`（OEP）为新代码的内存地址减去 `ImageBase`：\n\n![d185cc5786b49b4e767c84773656537e&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/262bd661457f1a6abe8d2f22774116dd1d6d00d700fa94a7ca9eaad6784c3b5e.jpg)\n\n> [!NOTE] OEP 与 EP 的区别\n> OEP（Original Entry Point）指原始入口点。在未经加壳或其他修改的情况下，`AddressOfEntryPoint` 即为 OEP。若存在加壳或修改，`AddressOfEntryPoint` 只能称为 EP（Entry Point），真正的 OEP 需要通过脱壳分析来确定。\n\n保存运行即可验证效果：\n\n![6b1f14d98e7b2aca139edcf85cecfb6b&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/a52f0381b7cd73a5aead3cdb9cb9d8354974992f8e65b3e930cd9eaf042f2627.jpg)\n\n## 新增节\n\n扩大节的方法虽然有效，但存在弊端：最后一个节的属性被修改，注入的代码与原节数据混合。新增节可以避免这些问题。\n\n### 前置条件\n\n新增节需要在节表末尾有至少 40 字节的空白区用于添加新的 `IMAGE_SECTION_HEADER` 成员。\n\n### 4.2) 操作步骤\n\n**1. 确认空间**\n\n通过标准 PE 头的 `NumberOfSections` 成员确认当前节数量（本例为 4 个）：\n\n![21868565b9ce7179d1c58225757745b7&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/e7c1058c315a6d90799bc18e4424b6358bfea8a9df5cf5bca7c490079ad4b32a.jpg)\n\n在扩展 PE 头之后找到节表，确认节表末尾有足够的空白区（至少 40 字节）。\n\n**2. 在文件末尾追加节数据**\n\n添加 `0x1000`（4096）字节的空间：\n\n![5fde88f38595243331d268c8fa65c9b4&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/1b41e7933859c6b944f1aa8c8a138290c18f444348257e14371718db963e46dc.jpg)\n\n**3. 复制节表成员**\n\n复制一份 `.text` 节表成员作为新增节的模板。选择 `.text` 是因为它本身存放代码，其 `Characteristics` 属性已包含可执行权限，无需额外修改：\n\n![7bfd8498366c52d411b4976cefa49b72&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/ddfee598582d1a162d0177b1bc3468ed89995a0a6a549a87de7b14253e1df1a9.jpg)\n\n**4. 修改 `NumberOfSections`**\n\n将标准 PE 头的 `NumberOfSections` 加 1：\n\n![e49468fa8cdaf136ccbd828a69995527&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/aff19b2cbfbfbfc74df5c22dfc7ecdae7077c49a99b205f874ec943065bfcaf5.jpg)\n\n**5. 修正原最后一个节的 `VirtualSize`**（非必须，但推荐）\n\n将原最后一个节的 `VirtualSize` 修改为与 `SizeOfRawData` 一致：\n\n![172b463506f52099cf4a15639f327cab&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/6c51ba84b3f66df845b3d09a4b9252b20bc1e3106ab6b0e33d06ba1f779e06db.jpg)\n\n> [!NOTE] 为什么要修正 `VirtualSize`？\n> 这一步并非严格必须，PE 加载器在计算下一个节的 `VirtualAddress` 时会取 `max(VirtualSize, SizeOfRawData)` 并按 `SectionAlignment` 对齐。但如果 `VirtualSize` 小于 `SizeOfRawData`，在手动计算新增节的 `VirtualAddress` 时容易出错（可能使用了错误的值）。将两者统一可以简化后续计算，避免地址计算错误。\n\n**6. 修改新增节表成员的属性**\n\n设置以下字段：\n\n- `Name`：自定义节名\n- `VirtualSize`：`0x1000`\n- `SizeOfRawData`：`0x1000`\n- `VirtualAddress`：原最后一个节的 `VirtualAddress`（`0x23000`）+ 其数据大小（`0x4000`）\n- `PointerToRawData`：文件中新增数据的起始偏移\n\n![502b9365eb35c86d863a832fc6990b2c&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/e5459e1c8be23d07d743170f987bcf93d47beb52c90a8400abbf29209e588d3a.jpg)\n\n**7. 修改 `SizeOfImage`**\n\n在原值基础上加 `0x1000`：\n\n![d31623b96719a4d92a99e9a64e4267b3&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/4ba30b0c293148cad51c9150629a49b9c4980965bcb11e9464fa4a917851f3b4.jpg)\n\n至此，新增节操作完成，可以在新节中插入自己的代码。\n\n## 合并节\n\n当节表末尾没有 40 字节的空白区时，无法直接新增节：\n\n![c2030ee20af416ca0e12f47be762dfbe&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/447f7b6f1f73ab9ba84a7ec5c28bd27114c8951f97404bf610dabc0428e1152c.jpg)\n\n> [!TIP] 替代方案\n> 如果 DOS Stub 未被占用，可以将 PE 头上移以腾出空间。但若 DOS Stub 已被占用，则需要通过合并已有节的方式为新增节腾出节表空间。\n\n**核心逻辑**：将原有的节都合并为一个节。注意，还需要保持节在内存中的相对位置不会发生改变，因此需要将各节在文件中的位置调整为内存一致。\n\n### 第一步：按内存对齐展开\n\n合并节前，需要先确认文件对齐与内存对齐是否一致。若不一致（如本例），必须先将所有节按内存对齐方式重新展开。\n\n查看当前 PE 文件的内存对齐值：\n\n![243ed34c4a9b6a9155afa70206cdd7f7&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/ae99b66195912527e5aeb9e1b730232f24283ce5b5a713961fad9ed329169d84.jpg)\n\n内存对齐为 `0x1000`。对每个节执行以下计算：\n\n![58785ca7c525e1e79877710360b3f8ec&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/9d055cd0f20a2640eafc59ac9579e6063d17d7e48a680e2c8761143388243525.jpg)\n\n```text\nResultA = ⌈max(SizeOfRawData, Misc) / SectionAlignment⌉\nResultB = ResultA × SectionAlignment\n```\n\n以第一个节为例：\n\n```text\nmax(0x7800, 0x7748) = 0x7800\n⌈0x7800 / 0x1000⌉ = ⌈7.5⌉ = 0x8\n0x8 × 0x1000 = 0x8000\n```\n\n将计算结果替换原 `SizeOfRawData` 和 `Misc`：\n\n![b7b4b4e5ee25056035828c0f68872122&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/83e7a99a85f2af5672b8160ce1582c2cffd58cbc45980d1947d01762e59a3f1b.jpg)\n\n计算需要插入的空间大小（差值）：\n\n```text\n0x8000 - 0x7800 = 0x800\n```\n\n在该节的末尾位置（`PointerToRawData + 原SizeOfRawData`）插入差值大小的空间：\n\n```text\n0x400 + 0x7800 = 0x7C00\n```\n\n![7d79beca21e218827355572cf9fc53e3&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/53b0c973853def03cfee416156f1b5bf58269bc09d31b7364d5e59c9178626dd.jpg)\n\n在 `0x7C00` 处插入 `0x800` 字节：\n\n![f2a7788932f86bee598e85b92d2a8a83&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/95943591a7cc3f631cd6582c575748a8c133831e2d81d4ec3aeb2a20686354aa.jpg)\n\n由于修改了当前节的大小，后续节的 `PointerToRawData` 需要加上相应的差值：\n\n![a43ad7cf707be07585cbf014202b5234&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/91de06517dcf1524105628861e1bca614151d3c7c48e548c5740ee7c832b4eb7.jpg)\n\n对所有节依次执行上述操作。由于 `SizeOfImage` 本身已按内存对齐计算，展开后的总大小理论上等于 `SizeOfImage`，因此无需修改该值。\n\n### 第二步：手动合并节\n\n计算所有节的总大小。可以使用 `SizeOfImage - ⌈SizeOfHeaders / SectionAlignment⌉ × SectionAlignment` 得出，结果为 `0x12000`：\n\n![a8e3c5c8c6acb14095ae8a4d6adb101d&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/f45af0d01070c9ef2efd5ab6dbb2af974179bedfe5377956529a487029c3b1da.jpg)\n\n将该值赋给第一个节表成员的 `SizeOfRawData` 和 `Misc`：\n\n![a715edf7df4356ce2ddd05b1e2af11ef&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/3531b590c18d766242920fedd4c77c0a9950919b26fde6f3cc92938ee6723c03.jpg)\n\n合并后需要将所有节的 `Characteristics` 属性进行**按位或运算**，确保合并后的节具备所有原节的权限。运算结果为 `0xE0000060`：\n\n![161eeae97ee94d118e071d23ceefb437&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/f04dd3af770e1c481852f5faf57239dae34b9abf3ac295451ef55b8968e7b9aa.jpg)\n\n将该值写入第一个节表成员的 `Characteristics`。\n\n修改 `NumberOfSections` 为 `1`：\n\n![89afc9812b2fc58b0f86dcb8a9064a91&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/283215881468330cf9476afbd38c89ea7181d0c88c7bfeab09d19657a899b80f.jpg)\n\n将其余节表成员用 `0x00` 填充。腾出的空间即可用于添加新的节表成员：\n\n![d19edc64e44c3ace7f5ddb648fc9e70f&#95;MD5&#46;jpg](/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/media/7ce4c5462d46727a307f743a60d6e1c550fa2acef12a449cdd71fc55c2898159.jpg)\n\n",
+  "id": "0dcd8ade-70bc-42bc-b9a9-6cb4af1d8224",
+  "metadata": {
+    "tags": [
+      "reverse/windows",
+      "os/windows"
+    ],
+    "title": "Windows PE 节操作与代码注入"
+  },
+  "resources": [
+    "04879691db904819b9a0995db312fb2b7b9852cc74c6804a6c292cdaf2d97048.jpg",
+    "1574e7b024a61fa940c4a0969848ea0887f416e1dba025b47ae273e51eb7dd01.jpg",
+    "1b41e7933859c6b944f1aa8c8a138290c18f444348257e14371718db963e46dc.jpg",
+    "1f614a4ee168b92eefd3e583ec9b4d541195d8e6283981dcd4e3bc0ebb7a2fed.jpg",
+    "21f0aa372a1d9840578f52c12fa856dcc74a2966211e74db1cf406b2aeb6a94e.jpg",
+    "26048086da3276b6bc5f1f9cee48ac5577f5f07600470e231eceeecc0e52008a.jpg",
+    "262bd661457f1a6abe8d2f22774116dd1d6d00d700fa94a7ca9eaad6784c3b5e.jpg",
+    "283215881468330cf9476afbd38c89ea7181d0c88c7bfeab09d19657a899b80f.jpg",
+    "3316f540a417fb69200e99a432ae6fda2d53968ed7745098decab818993be1e8.jpg",
+    "3531b590c18d766242920fedd4c77c0a9950919b26fde6f3cc92938ee6723c03.jpg",
+    "447f7b6f1f73ab9ba84a7ec5c28bd27114c8951f97404bf610dabc0428e1152c.jpg",
+    "4ba30b0c293148cad51c9150629a49b9c4980965bcb11e9464fa4a917851f3b4.jpg",
+    "51221603a846b78fa7ebd7e18c938d2e7778988325accb41be2fe9c3335c8b6e.jpg",
+    "53b0c973853def03cfee416156f1b5bf58269bc09d31b7364d5e59c9178626dd.jpg",
+    "615a19983843a968a2997d87ba3e9df38eb89d182e6df459e920519e8dc9776e.jpg",
+    "649ebf3cdf72cdafdd8d2d291a955ee360011d3aa69d6ad9c425e067c4e8dd46.jpg",
+    "6c51ba84b3f66df845b3d09a4b9252b20bc1e3106ab6b0e33d06ba1f779e06db.jpg",
+    "7833143d7b75defccb585b1b9748afc40c714a766ffad690848f721a4336833e.jpg",
+    "7ce4c5462d46727a307f743a60d6e1c550fa2acef12a449cdd71fc55c2898159.jpg",
+    "83e7a99a85f2af5672b8160ce1582c2cffd58cbc45980d1947d01762e59a3f1b.jpg",
+    "8cf331a21c7d656e5173eeb1a34086939555f9d3f1033ceee143211cd2b678b8.jpg",
+    "91de06517dcf1524105628861e1bca614151d3c7c48e548c5740ee7c832b4eb7.jpg",
+    "95943591a7cc3f631cd6582c575748a8c133831e2d81d4ec3aeb2a20686354aa.jpg",
+    "9d055cd0f20a2640eafc59ac9579e6063d17d7e48a680e2c8761143388243525.jpg",
+    "a52f0381b7cd73a5aead3cdb9cb9d8354974992f8e65b3e930cd9eaf042f2627.jpg",
+    "ae99b66195912527e5aeb9e1b730232f24283ce5b5a713961fad9ed329169d84.jpg",
+    "aff19b2cbfbfbfc74df5c22dfc7ecdae7077c49a99b205f874ec943065bfcaf5.jpg",
+    "b6e0c9ea19e915b141b26e9a9afc939fe75dfaaadb6506a759f3665b713fb08f.jpg",
+    "b9b5037de533036e0d555bba5f5295cf7dfa8cb90c3db4588e50f59edaec667e.jpg",
+    "c5ffb3c412126f845080e8d8a49a93991e55b0bbe7077bce6e6c1e892318dce7.jpg",
+    "d08020fb59e678a011d9ddeb4a703e9d2dbceec5fd6903c8545bc75c6c77bd65.jpg",
+    "ddfee598582d1a162d0177b1bc3468ed89995a0a6a549a87de7b14253e1df1a9.jpg",
+    "e5459e1c8be23d07d743170f987bcf93d47beb52c90a8400abbf29209e588d3a.jpg",
+    "e7c1058c315a6d90799bc18e4424b6358bfea8a9df5cf5bca7c490079ad4b32a.jpg",
+    "f04dd3af770e1c481852f5faf57239dae34b9abf3ac295451ef55b8968e7b9aa.jpg",
+    "f45af0d01070c9ef2efd5ab6dbb2af974179bedfe5377956529a487029c3b1da.jpg"
+  ],
+  "url": "/notes/n-0dcd8ade70bc42bcb9a96cb4af1d8224/"
+}

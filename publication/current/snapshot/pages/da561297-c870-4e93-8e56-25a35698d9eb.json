@@ -1,0 +1,133 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-599f73320e89daa4978b",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-eab68f7f451d69d5162b",
+      "kind": "heading",
+      "offset": 169
+    },
+    {
+      "id": "h-341c3da738ad84fbfb38",
+      "kind": "heading",
+      "offset": 398
+    },
+    {
+      "id": "h-781c527df3000721c793",
+      "kind": "heading",
+      "offset": 1070
+    },
+    {
+      "id": "h-74dfd84491a39c16f4fb",
+      "kind": "heading",
+      "offset": 1080
+    },
+    {
+      "id": "h-fa5f53f7bdef2171af6a",
+      "kind": "heading",
+      "offset": 1122
+    },
+    {
+      "id": "h-86c4092d8fab1944f56f",
+      "kind": "heading",
+      "offset": 1587
+    },
+    {
+      "id": "h-1327f1314ae06e9de3e4",
+      "kind": "heading",
+      "offset": 1897
+    },
+    {
+      "id": "h-9e26f5506608303e048f",
+      "kind": "heading",
+      "offset": 2382
+    },
+    {
+      "id": "h-c106df42c1fd69aeab9e",
+      "kind": "heading",
+      "offset": 3003
+    },
+    {
+      "id": "h-70968bb40393e1ed12b9",
+      "kind": "heading",
+      "offset": 3506
+    },
+    {
+      "id": "h-b95333463bb87df9a959",
+      "kind": "heading",
+      "offset": 3579
+    },
+    {
+      "id": "h-5a3011afae559366dbf0",
+      "kind": "heading",
+      "offset": 3652
+    },
+    {
+      "id": "h-a559b2363e40c05675f7",
+      "kind": "heading",
+      "offset": 4350
+    },
+    {
+      "id": "h-c28f4b9d68fe788c2a2d",
+      "kind": "heading",
+      "offset": 4360
+    },
+    {
+      "id": "h-4d35b2078807f294a52b",
+      "kind": "heading",
+      "offset": 4825
+    },
+    {
+      "id": "h-382e77a83bcdc3824829",
+      "kind": "heading",
+      "offset": 4849
+    },
+    {
+      "id": "h-cbf5d2a46f98fa41b928",
+      "kind": "heading",
+      "offset": 5075
+    },
+    {
+      "id": "h-353644f8e44faa6bbf26",
+      "kind": "heading",
+      "offset": 5382
+    },
+    {
+      "id": "h-059ddf681810940a2901",
+      "kind": "heading",
+      "offset": 5400
+    },
+    {
+      "id": "h-717b627f357d6fa9c694",
+      "kind": "heading",
+      "offset": 6037
+    },
+    {
+      "id": "h-d5074954808aa981b774",
+      "kind": "heading",
+      "offset": 6382
+    }
+  ],
+  "body": "# C++ 继承与虚继承机制\n\n相关内容：\n1. [C&#43;&#43; 虚函数与虚函数表](/notes/n-7794ffc3e8894de895729386e783249b/)\n2. [C&#43;&#43; 构造函数与析构函数](/notes/n-1801f0c0006b48c4be799a4b8ba4105b/)\n\n## 概述\n\n继承是面向对象编程 (`OOP`) 的核心特性之一，主要实现了**代码复用**和**多态**的基础。\n\n> **编译器说明：** 本文讨论的内存布局细节以 **MSVC** 编译器为例。由于 [编程语言&#65306;规范与实现分离](/notes/n-dca8dc00e8664e00ab4a00c31b2a057c/) 的原则，不同编译器（如 `GCC`、`Clang`）的底层实现细节可能有所差异，但核心设计思想一致。\n\n## 继承方式（访问权限）\n\n继承方式决定了基类成员在派生类中的访问权限。这属于语法层面的访问控制，并不直接改变成员在物理内存中的布局。\n\n| 继承方式        | 基类 `public` 成员 | 基类 `protected` 成员 | 基类 `private` 成员 | 典型场景                 |\n| :---------- | :------------- | :---------------- | :-------------- | :------------------- |\n| `public`    | `public`       | `protected`       | 不可见             | **\"Is-a\"** 关系（最常用）   |\n| `protected` | `protected`    | `protected`       | 不可见             | 仅供内部实现复用             |\n| `private`   | `private`      | `private`         | 不可见             | **\"Has-a\"** 关系（实现细节） |\n> 相关内容：[C&#43;&#43; 类成员的访问控制](/notes/n-25f6e7fa1d944e22a87248457c3cf3ca/)\n\n\n**注意：** 无论哪种继承方式，基类的成员在派生类中**物理上是存在**的，只是被编译器限制了语法访问权限。\n\n## 继承形态与内存布局\n\n### 单重继承\n\n一个派生类仅有一个直接基类。\n\n#### 场景 A：基类无虚函数，派生类有虚函数\n\n```cpp\nclass A {\npublic:\n    int a;\n};\n\nclass C : public A {\npublic:\n    int c;\n    virtual int funcC() {};\n};\n```\n\n**内存布局特点：**\n1. **虚表指针 (`vfptr`)：** 由于派生类 `C` 引入了虚函数，偏移 `0` 处放置 `C` 的虚函数表指针。\n2. **基类成员：** 紧随其后放置基类 `A` 的成员变量 `a`。\n3. **派生类成员：** 最后放置派生类的新增成员 `c`。\n\n![ee111f07fb172d99313cbb3922f7ca07&#95;MD5&#46;jpg](/notes/n-da561297c8704e938e5625a35698d9eb/media/4425009e531234b4ecf2e1f78fbac5dcded82448152da5274bdb17acf5667b94.jpg)\n\n#### 场景 B：基类有虚函数，派生类无虚函数（或仅覆盖）\n\n```cpp\nclass A {\npublic:\n    int a;\n    virtual int funcA() {};\n};\n\nclass C : public A {\npublic:\n    int c;\n};\n```\n\n![4aa6861651ae738f8f9bb599fb6569d9&#95;MD5&#46;jpg](/notes/n-da561297c8704e938e5625a35698d9eb/media/7512d9d40c4f2c26f06e7f20b2259b69118fc0e1d283e993c579a11f6785c5c3.jpg)\n\n#### 场景 C：基类与派生类均有虚函数\n\n```cpp\nclass A {\npublic:\n    int a;\n    virtual int funcA() {};\n};\n\nclass C : public A {\npublic:\n    int c;\n    virtual int funcC() {};\n};\n```\n\n**内存布局算法：**\n1. **虚表合并：** 若基类 `A` 已有虚函数表，派生类 `C` 的虚函数表会与 `A` 的虚函数表**合并**（共用一个 `vfptr`，通常位于偏移 `0`）。\n2. **基类布局：** 放置基类 `A` 的数据成员。\n3. **新增成员：** 放置派生类 `C` 的新增数据成员。\n\n![ff0ade96d363fd9f76945a59b6b2c5f3&#95;MD5&#46;jpg](/notes/n-da561297c8704e938e5625a35698d9eb/media/6a82080cdb8e71b9ea9bafa1f0a7f674d575b0da02425b25c3e9211594f1f1ec.jpg)\n\n### 多重继承\n\n一个派生类有两个或更多直接基类。\n\n```cpp\nclass A {\npublic:\n    int a;\n    virtual int funcA() {};\n};\nclass B {\npublic:\n    int b;\n    virtual int funcB() {};\n};\nclass C : public A, public B {\npublic:\n    int c;\n    virtual int funcC() {};\n};\n```\n\n**内存布局特点：** 按照继承声明的顺序（先 `A` 后 `B`），**逐个堆叠**基类的内存布局，详情参考：[](/notes/n-da561297c8704e938e5625a35698d9eb/#h-74dfd84491a39c16f4fb)\n\n![d0cb32873fc4dcd5b8a63c1bf6f9769f&#95;MD5&#46;jpg](/notes/n-da561297c8704e938e5625a35698d9eb/media/115dbcaea1532e405fb4ae093780af249f6f7fa40bbed0a8ad7aec862d6552b9.jpg)\n- 此处 `C` 的虚函数合并到**第一个**基类 (`A`) 的虚表中。\n- 后续基类 (`B`) 保持自己独立的虚表指针 (`vfptr`)，以支持多态调用。\n\n### 多级继承\n\n派生类充当另一个类的基类（`A` -> `B` -> `C`）。\n\n```cpp\nclass A {\npublic:\n    int a;\n    virtual int funcA() {};\n};\n\nclass B : public A {\npublic:\n    int b;\n    virtual int funcB() {};\n};\n\nclass C : public B {\npublic:\n    int c;\n    virtual int funcC() {};\n};\n```\n\n**内存布局特点：**\n- 本质上是递归的单重继承。`C` 的布局是在 `B` 的布局基础上扩展，而 `B` 又是在 `A` 的基础上扩展。\n\n![d0702f967c617595e0d4e1afb6683c93&#95;MD5&#46;jpg](/notes/n-da561297c8704e938e5625a35698d9eb/media/d2b299198fef41c3f25924e38c7474d173c89b87b432a165ebaaf0e0dc823c2d.jpg)\n\n### 层次继承\n\n一个基类派生出多个不同的子类。每个子类的布局逻辑与**单重继承**或**多级继承**一致，此处不再赘述。\n\n---\n\n## 混合继承与菱形继承\n\n**混合继承**是多种继承形态的组合，其中最复杂的情况是**菱形继承** (`Diamond Inheritance`)。\n\n### 问题场景\n\n当类 `B` 和类 `C` 都继承自类 `A`，而类 `D` 同时继承自 `B` 和 `C` 时：\n\n```cpp\n/*\n      A (基类)\n     / \\\n    B   C (中间类)\n     \\ /\n      BC (最终派生类)\n*/\nclass A {\npublic:\n\tint a;\n\tvirtual int funcA() {};\n};\nclass B :public A {\npublic:\n\tint b;\n\tvirtual int funcB() {};\n};\nclass C :public A{\npublic:\n\tint c;\n\tvirtual int funcC() {};\n};\nclass BC :public B, public C {\npublic:\n\tint bc;\n\tvirtual int funcBC() {};\n};\n```\n\n![87f8a66782fa13ac5cbc2cc17a28723c&#95;MD5&#46;jpg](/notes/n-da561297c8704e938e5625a35698d9eb/media/1d1cb4473cb48139c33910048fc0cdced9de61886ca1aaf662337876fafab2a8.jpg)\n\n**核心缺陷：**\n1. **数据冗余：** `BC` 中包含两份 `A` 的实例（`B::A` 和 `C::A`）。\n2. **二义性：** 访问 `BC.a` 时，编译器无法确定是操作 `B` 中的 `a` 还是 `C` 中的 `a`。\n\n### 解决方案：虚继承\n#### 语法实现\n通过 `virtual` 关键字将 `A` 声明为**虚基类**，`B` 和 `C` 则称为**虚派生类**。\n\n```cpp\nclass A {\npublic:\n    int a;\n    virtual void funcA() {};\n};\n\n// 关键：B 和 C 虚继承 A\nclass B : virtual public A {\npublic:\n    int b;\n    virtual void funcB() {};\n};\n\nclass C : virtual public A {\npublic:\n    int c;\n    virtual void funcC() {};\n};\n\nclass BC : public B, public C {\npublic:\n    int bc;\n    virtual void funcBC() {};\n};\n```\n\n > 以 MSVC 编译器为例。\n \n虚继承通过**间接寻址**彻底改变了内存布局，实现了基类实例的“去重”。\n\n#### 核心机制解析\n\n##### 虚基类表 (`vbtable`)\n\n- **定义：** 一个存储**地址偏移量** (`Offset`) 的整型数组。\n- **归属：** 属于**类** (`Class`) 层级。\n    - 编译器为**每个“虚继承了基类”的子类**创建一个唯一的 `vbtable`。\n    - 同一类的所有对象共享同一份 `vbtable`。\n- **内容：** 记录了从当前 `vbptr` 所在地址，到**虚基类**实际内存地址的偏移距离。\n\n##### 虚基类指针 (`vbptr`)\n\n- **定义：** 一个隐藏的指针成员，指向所属类的 `vbtable`。\n- **归属：** 属于**对象** (`Object`) 层级。\n    - 虚派生类（如 `class B : virtual public A`）的对象内部会新增这个指针。\n- **内存位置：** 通常位于对象非静态数据成员的起始位置（具体取决于编译器实现，参考[编程语言&#65306;规范与实现分离](/notes/n-dca8dc00e8664e00ab4a00c31b2a057c/)）。\n\n> **对比：** `vptr` 用于找函数（实现多态），`vbptr` 用于找数据（实现基类去重）。\n\n#### 内存布局规则\n##### 虚派生类的内存布局规则\n> 以 MSVC 为例。\n\n虚派生类 `B` 的内存布局示意图如下所示：\n![5697c2e2dd61ab977c4e5aeb6f4b7f12&#95;MD5&#46;jpg](/notes/n-da561297c8704e938e5625a35698d9eb/media/9512f6f3e1f91b7be4e640289c1a86678e7134bee436183f2b11b3537e69c8b2.jpg)\n1. **虚基类后置：** 虚基类 (`A`) 的数据不再分散在虚派生类 `B` 和 `C` 中，而是被提取出来，统一放置在整个对象内存的**最尾部**。\n2. **引入 `vbptr`：** 虚派生类 (`B` 和 `C`) 内部新增一个**虚基类指针** (`vbptr`)。\n    - 派生类不再直接持有虚基类的数据。\n    - 而是通过 `vbptr` 指向**虚基类表** (`vbtable`)。\n3. **虚基类表 (`vbtable`)：** 表中记录了从当前 `vbptr` 地址到虚基类 (`A`) 实际内存地址的**偏移量** (`Offset`)。\n4. **独立虚表：** 虚基类和派生类通常**不共用**虚函数表 (`vfptr`)，以确保对象切片 (`Slicing`) 或指针转换时的安全性。\n> **结论：** 虚继承用时间（查表计算偏移）换取了空间（数据去重）和逻辑的正确性。\n\n##### 继承虚派生类的内存布局规则\n\n类 `BC` 继承了两个虚派生类 `B` 和 `C`，其内存布局如下图所示：\n![9120c8abb541e47f25a05f267ac7c1f2&#95;MD5&#46;jpg](/notes/n-da561297c8704e938e5625a35698d9eb/media/a53a39c2f1265743e4a8281cf76034ae17c570e7183cb3fbf680813e90dddf40.jpg)\n1. **常规部分：** 首先按照普通继承规则，放置非虚基类部分（不含虚基类数据，但包含 `vbptr`）。\n2. **虚基类部分：** 将所有虚基类去重后，保证无论有多少条继承路径，虚基类数据**只有一份**，按首次出现顺序排列在对象末尾。\n\n#### 动态寻址流程\n\n当访问虚基类成员时，编译器无法直接使用固定偏移（因为虚基类的位置可能随继承层级变化而浮动），必须通过 `vbptr` 进行计算：\n\n```cpp\nBC obj;\nobj.a = 10; // 访问虚基类成员\n```\n\n**底层执行步骤（伪逻辑）：**\n\n1.  **读取指针：** 获取 `obj` 中 `B` 部分的 `vbptr_B`。\n2.  **查表计算：** 访问 `vbtable`，读取“虚基类 `A` 相对于 `vbptr_B` 的偏移量”。\n3.  **地址合成：** `目标地址 = 当前地址(vbptr_B) + 偏移量`。\n4.  **访问数据：** 在计算出的地址处写入 `10`。\n\n> **一句话总结：** 虚继承通过 **“时间换空间”**（多一次查表操作，换取数据不冗余），利用 `vbptr` 和偏移量表，解决了菱形继承中的二义性难题。\n",
+  "id": "da561297-c870-4e93-8e56-25a35698d9eb",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 继承与虚继承机制"
+  },
+  "resources": [
+    "115dbcaea1532e405fb4ae093780af249f6f7fa40bbed0a8ad7aec862d6552b9.jpg",
+    "1d1cb4473cb48139c33910048fc0cdced9de61886ca1aaf662337876fafab2a8.jpg",
+    "4425009e531234b4ecf2e1f78fbac5dcded82448152da5274bdb17acf5667b94.jpg",
+    "6a82080cdb8e71b9ea9bafa1f0a7f674d575b0da02425b25c3e9211594f1f1ec.jpg",
+    "7512d9d40c4f2c26f06e7f20b2259b69118fc0e1d283e993c579a11f6785c5c3.jpg",
+    "9512f6f3e1f91b7be4e640289c1a86678e7134bee436183f2b11b3537e69c8b2.jpg",
+    "a53a39c2f1265743e4a8281cf76034ae17c570e7183cb3fbf680813e90dddf40.jpg",
+    "d2b299198fef41c3f25924e38c7474d173c89b87b432a165ebaaf0e0dc823c2d.jpg"
+  ],
+  "url": "/notes/n-da561297c8704e938e5625a35698d9eb/"
+}

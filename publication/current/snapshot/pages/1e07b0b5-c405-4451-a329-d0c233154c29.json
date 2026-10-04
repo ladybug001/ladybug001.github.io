@@ -1,0 +1,39 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-4b14758b8b492ffa08f6",
+      "kind": "heading",
+      "offset": 9
+    },
+    {
+      "id": "h-bf04165b279158018a81",
+      "kind": "heading",
+      "offset": 353
+    },
+    {
+      "id": "h-4c683390032e7462e52f",
+      "kind": "heading",
+      "offset": 1545
+    },
+    {
+      "id": "h-2132a418652e02ab2f3c",
+      "kind": "heading",
+      "offset": 2098
+    },
+    {
+      "id": "h-0da51bd2f093e4e4e623",
+      "kind": "heading",
+      "offset": 2515
+    }
+  ],
+  "body": "# C++类型转换\n\nC++ 是面向对象编程的语言，对类型转换有了新的需求，为此又引入了四种功能更明确、意图更清晰的命名转换操作符：\n- `static_cast`\n- `dynamic_cast`\n- `reinterpret_cast`\n- `const_cast`。\n> 如：`dynamic_cast` 转换方式，针对 C++ 新增的多态特性，实现安全转换。\n\n\n在 C++ 中，依然可以使用 C 风格的类型转换（参考：C 类型转换），但其实际行为是尝试执行上述转换操作符的任意组合，具体执行哪种取决于上下文。这使得代码的意图变得模糊不清，**从而埋下安全隐患**（如错误使用 `reinterpret_cast` 实现 `int` 到 `float` 的转换）。\n\n### static_cast\n\n`static_cast<type>(expression)`\n\n`static_cast` 是一种**编译时**的类型转换，编译器在编译时就会确定转换的合法性并**生成相应的机器指令**，但它不会插入运行时的类型检查代码来保证转换的绝对安全。\n\n它主要用于以下场景：\n\n**1. 基本数据类型之间的转换**\n这是最常见的用法，例如在数值类型之间进行转换。\n\n```cpp\n// 基本类型转换\nfloat f = 3.14f;\nint i = static_cast<int>(f); // i 的值为 3\n```\n\n**2. 类层次结构中的指针或引用转换**\n`static_cast` 可以在有继承关系的类之间进行指针或引用的转换。\n- **上行转换（子类 -> 基类）**：总是安全的。\n- **下行转换（基类 -> 子类）**：**不安全**。它**假定**程序员已经确保基类指针确实指向一个子类对象，否则结果将是未定义的。\n\n```cpp\nclass Base {};\nclass Derived : public Base {};\n\n// 上行转换（安全）\nDerived* d_ptr = new Derived();\nBase* b_ptr = static_cast<Base*>(d_ptr);\n\n// 下行转换（不安全）\nBase* b_ptr2 = new Base();\nDerived* d_ptr2 = static_cast<Derived*>(b_ptr2); // 编译通过，但运行时访问 d_ptr2 的成员将是未定义行为\n```\n\n**3. void* 与其他指针类型之间的转换**\n`static_cast` 可以将任何类型的指针转换为 `void*`，也可以将 `void*` 转换回原来的指针类型（只要类型匹配）。\n\n```cpp\nint val = 42;\nvoid* vp = static_cast<void*>(&val);\nint* ip = static_cast<int*>(vp);\n```\n\n**4. 调用显式转换构造函数或转换操作符**\n当类定义了转换构造函数（`MyClass(int)`) 或类型转换操作符 (`operator int()`) 时，`static_cast` 可以显式地调用它们。\n\n```cpp\nclass MyClass {\npublic:\n    // 转换构造函数\n    explicit MyClass(int a) : data(a) {}\nprivate:\n    int data;\n};\n\n// 显式调用 MyClass(10) 来创建一个临时对象\nMyClass obj = static_cast<MyClass>(10);\n```\n\n### dynamic_cast\n\n`dynamic_cast<type>(expression)`\n\n专门用于处理多态类型（即包含虚函数的类），在**运行时**进行类型检查，是**唯一安全的向下转型方式**（把指向基类的指针或引用，转换为指向派生类的指针或引用）。\n\n- **特点**：依赖于 RTTI（参考：[C&#43;&#43; RTTI 机制](/notes/n-05b15a525c2c46f5b96d1ac648d63387/)）。如果转换成功，返回目标类型的指针或引用；如果失败，对指针类型返回 `nullptr`，对引用类型抛出 `std::bad_cast` 异常。\n- **要求**：**只能**用于含有虚函数的类。\n\n- **示例**：\n  ```cpp\n  class Base { public: virtual ~Base() {} };\n  class Derived : public Base {};\n\n  Base* b = new Derived();\n  if (Derived* d = dynamic_cast<Derived*>(b)) {\n      // 转换成功\n  } else {\n      // 转换失败\n  }\n  ```\n\n---\n### reinterpret_cast\n\n`reinterpret_cast<type>(expression)`\n\n用于处理无关类型之间的转换，它只是简单地对二进制位进行重新解释，**是最高风险的转换操作**。\n\n- **特点**：可以用于任意指针或整数类型之间的转换，但结果是平台相关的。\n- **用途**：通常用于底层编程、硬件接口、序列化等，应极度谨慎使用。\n\n- **示例**：\n  ```cpp\n  int i = 42;\n  // 将整数地址强制转换为指针（危险操作）\n  int* p = reinterpret_cast<int*>(i);\n\n  struct MyStruct { int x; };\n  char buffer[sizeof(MyStruct)];\n  // 将字节流解释为结构体指针\n  MyStruct* s = reinterpret_cast<MyStruct*>(buffer);\n  ```\n\n### const_cast\n\n`const_cast<type>(expression)`\n\n**只能**添加或移除类型的 `const` 或 `volatile` 属性。这是**唯一**可以合法地移除 `const` 属性的 C++ 转换。\n\n- **注意**：如果引用的原始对象本身是 `const` 的，那么通过 `const_cast` 移除 `const` 后去修改它，将导致**未定义行为 (Undefined Behavior)**。\n- **用途**：主要用于适配那些未使用 `const` 正确性的旧 API。\n\n- **示例**：\n  ```cpp\n  // 用法一  兼容老旧API\n void legacyFunc(char* p) {\n      // 旧库，不支持 const\n  }\n  \n  void safeFunc(const char* str) {\n      legacyFunc(const_cast<char*>(str)); // ✅ 用法合理\n  }\n  // 用法二  原始对象本身是 `const` 的\n  const int x = 10;\n  int* p = const_cast<int*>(&x);\n  *p = 20; // ❌ UB！内存可能没有写权限或优化器忽略\n  \n  \n  // 用法三  原始对象本身不是 `const` 的\n  int x = 10;\n  const int* p = &x;\n  int* q = const_cast<int*>(p);\n  *q = 20; // ✅ OK！\n  \n  ```\n\n",
+  "id": "1e07b0b5-c405-4451-a329-d0c233154c29",
+  "metadata": {
+    "tags": [
+      "lang/cpp"
+    ],
+    "title": "C++ 类型转换"
+  },
+  "resources": [],
+  "url": "/notes/n-1e07b0b5c4054451a329d0c233154c29/"
+}

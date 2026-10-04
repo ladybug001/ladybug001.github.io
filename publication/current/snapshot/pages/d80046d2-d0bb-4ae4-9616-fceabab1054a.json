@@ -1,0 +1,47 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-af99504984e3712f165d",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-35cf5b1601771e07852f",
+      "kind": "heading",
+      "offset": 107
+    },
+    {
+      "id": "h-20e3bc8b3de41a2bffcd",
+      "kind": "heading",
+      "offset": 473
+    },
+    {
+      "id": "h-f48e3583249e930d3f67",
+      "kind": "heading",
+      "offset": 905
+    },
+    {
+      "id": "h-8cb344f50054e1e7a721",
+      "kind": "heading",
+      "offset": 1187
+    },
+    {
+      "id": "h-0d07b972b19e7eac2b58",
+      "kind": "heading",
+      "offset": 1565
+    }
+  ],
+  "body": "# 计算机组成原理 (MOC)\n\n> 以 x86/x64 体系结构为主：指令编码、整数与浮点运算、寄存器、运行模式、分段、分页和中断。Windows 的使用方式与 CPU 硬件机制分别阅读。\n\n## 指令与运算基础\n\n1. [x86 指令结构与机器码编码](/notes/n-73c020bf8852497187fe07c7be4f453d/) — 理解前缀、操作码与指令长度。\n2. [计算机组成原理&#65306;整数与浮点运算](/notes/n-13b6d01d73b34eb4beb1b8c79221182e/) — 理解数据表示、运算逻辑与结果判断。\n3. [x86 标志寄存器](/notes/n-934fac7bcc294e559fa8e1ef17a99d5f/) — 查阅运算状态、条件判断与执行控制。\n4. [x87&#12289;SSE 与 AVX 浮点指令](/notes/n-74444059016744e0b4a1111089882d0e/) — 了解栈式浮点、SIMD 与浮点指令的演变。\n\n## 运行模式与内存保护\n\n- [内存管理演进&#65306;从实模式到保护模式](/notes/n-eaa94a0f935f447e98140d5afb4ab959/) — 建立内存管理与保护机制的演进背景。\n- [x86 与 x64 运行模式](/notes/n-298cb43cc9a0408f8e9aaca03ad64049/) — 区分实模式、保护模式、长模式及代码位数。\n- [x86 保护模式分段机制 &#40;MOC&#41;](/notes/n-591f04ba95784267982ebc62f2b0c04d/) — 描述符、权限检查、控制转移、中断门与 TSS。\n- [x86 保护模式分页机制 &#40;MOC&#41;](/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/) — 地址转译、页表、TLB、缺页异常与自映射。\n\n先建立模式和地址空间概念，再进入分段、分页两条专题路线，理解两者的配合关系。\n\n## 中断与控制寄存器\n\n- [x86 中断的分类与触发机制](/notes/n-870bed2e9d0049498ba9ef4e6251c5cc/) — 区分外部中断、软件中断与异常。\n- [x86 中断门与陷阱门](/notes/n-12e2ce5ea6a84311952dd4ac3d4978c2/) — 理解异常或中断进入处理例程的现场保存与返回。\n- [x86 系统控制寄存器](/notes/n-377c6374f9f54aea978942cfbee10af9/) — 在掌握分页后查阅 `CR0`、`CR2`、`CR3`、`CR4` 与相关控制位。\n\n## 实验与兼容机制\n\n- [x86 裸机实验&#65306;实模式进入保护模式](/notes/n-b8281eab11a94cc19572b938dead1e60/) — 掌握分段和分页后，通过裸机实验验证模式切换。\n- [计算机基础&#65306;硬盘分区与文件系统](/notes/n-d8e81bf2778444b7a78c241f0e880194/) — 补充裸机实验涉及的存储与启动背景。\n- [V86 与 NTVDM 原理](/notes/n-5d9fe21a449d47cda78d3275b62070e0/) — 理解历史 16 位程序兼容路径。\n- [x86 调用 x64 API](/notes/n-0f96d801492543639c74040ae9bf4b41/) — 区分 CPU 模式切换与 WOW64 系统兼容层。\n\n## 操作系统与逆向应用\n\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 观察操作系统如何使用上述硬件机制。\n- [Windows 内存管理 &#40;MOC&#41;](/notes/n-eaaa660aabe44f52abf865bf51bb3789/) — 区分地址转译与内存分配、缺页恢复等操作系统策略。\n- [Windows PE 与逆向工程 &#40;MOC&#41;](/notes/n-c3b3e9cd34d44e929aaae83f6caebbec/) — 将指令编码与运行环境用于二进制分析。\n- [Shellcode 编写原则](/notes/n-d2bf87ca9bf649a08c1db21f534e3290/) — 指令级知识与位置无关代码的应用。\n",
+  "id": "d80046d2-d0bb-4ae4-9616-fceabab1054a",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "cs/structure",
+      "arch/x86"
+    ],
+    "title": "计算机组成原理 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-d80046d2d0bb4ae49616fceabab1054a/"
+}

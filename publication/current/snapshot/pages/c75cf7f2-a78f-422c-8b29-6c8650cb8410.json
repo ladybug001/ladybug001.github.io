@@ -1,0 +1,75 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6102f4507f7159d7d3de",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-bbce78f94d664377342e",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-270a9669d6ec0971323f",
+      "kind": "heading",
+      "offset": 970
+    },
+    {
+      "id": "h-3ce000004d26821cbccc",
+      "kind": "heading",
+      "offset": 998
+    },
+    {
+      "id": "h-2361653261e70e0e31d2",
+      "kind": "heading",
+      "offset": 1719
+    },
+    {
+      "id": "h-033a078a90aacdafa216",
+      "kind": "heading",
+      "offset": 1730
+    },
+    {
+      "id": "h-17df156a6c30d5967248",
+      "kind": "heading",
+      "offset": 1981
+    },
+    {
+      "id": "h-30f8539eb7ab2a1179c4",
+      "kind": "heading",
+      "offset": 2219
+    },
+    {
+      "id": "h-e5765ec270ea9db9965d",
+      "kind": "heading",
+      "offset": 3808
+    },
+    {
+      "id": "h-8dc72b064280a448e67e",
+      "kind": "heading",
+      "offset": 4066
+    },
+    {
+      "id": "h-90d2524830a47348ae5e",
+      "kind": "heading",
+      "offset": 6061
+    }
+  ],
+  "body": "# Cheat Engine\n\n## 安装与配置\n\n1.  **下载安装**：访问 [官方网站](https://www.cheatengine.org/) 下载并安装 `Cheat Engine`。\n2.  **权限设置**：右键 `CheatEngine.exe` -> **属性** -> **兼容性** -> 勾选 **以管理员身份运行**，确保有足够的权限读取目标进程内存。\n3.  **核心配置**：运行 `Cheat Engine`，进入 **Edit** -> **Settings**：\n    -   **General Settings**：勾选 `Show all windows in the taskbar`，方便多窗口管理。\n    -   **Hotkeys**：配置常用快捷键（如“暂停游戏”、“下一步扫描”等）。\n        ![](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/media/8cddc6b363271a77f27d42b1ec9d7b18f9154543c9539c3f39cc87fa2cd3513a.jpeg)\n    -   **Extra Custom Types**（可选）：根据需求勾选自定义数据类型（如大端序数值）。\n    -   **Scan Settings**：勾选以下选项（`ALL Custom Types` 视情况而定）。\n        ![](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/media/d8a657ea778341ebd2e345790582a1280fdefdaf04a2eeeaf954f8b75d0fc76b.jpeg)\n    -   **Debugger Options**：勾选 `Use VEH Debugger`。`VEH` 调试器无标准调试端口或调试对象句柄，比默认的 Windows 调试器更隐蔽，不易被游戏反作弊检测。相关原理参考：[Windows x86 异常的产生与分发流程](/notes/n-fc98c7868417430fa36063afb251fb17/)\n4.  点击 **OK** 保存更改。\n\n---\n\n## 核心功能\n\n### 数据查找 (Memory Scanning)\n\n查找数据是 `Cheat Engine` 的基础功能，主要通过扫描内存来定位目标数值。\n\n1.  **精确数值扫描**：适用于数值显示明确的数据（如金币、弹药）。通常选择 `4 Bytes` 或 `Double` 类型。\n2.  **浮点数扫描机制**：\n    -   由于浮点数（`Float` / `Double`）在内存中存在精度问题（IEEE 754 标准），直接搜索精确值（如 `1.0`）可能会失败。\n    -   `CE` 提供了 **近似数值 (Value between / Truncated / Rounded)** 匹配模式。当搜索浮点数时，建议使用范围搜索或模糊搜索。\n    -   **精度陷阱**：输入的浮点数越长（如 `1.000000001`），`CE` 的匹配条件越严格。若超出浮点数表示精度，`CE` 会自动调整匹配策略，但可能导致搜索结果不准确。\n3.  **未知初始值扫描**：适用于没有具体数值显示的属性（如血条进度条）。\n    -   流程：首次扫描选择 `Unknown initial value` -> 游戏内变动数值 -> 再次扫描 `Changed value` / `Unchanged value` / `Increased value` 等。\n4.  **代码溯源**：找到数据地址后，右键选择 `Find out what accesses this address`（谁访问了该地址）或 `Find out what writes to this address`（谁写入了该地址），可定位到操作该数据的汇编指令。\n\n### 指针扫描 (Pointer Scan)\n\n#### 概念解析\n> **指针图 (Pointermap)**：是 `CE` 对当前进程内存状态的一个快照。它记录了所有疑似指针的数据及其指向的地址。\n\n通过对比不同游戏会话（重启游戏后）生成的指针图，可以高效地剔除动态地址，筛选出稳定的**基址 (Base Address)** 及**偏移路径 (Offset Path)**。相关概念参考：[逆向&#65306;静态地址&#12289;动态地址与基址](/notes/n-8f71f7d8dbe14e5fa753c2604b51f152/)。\n\n#### 工作原理\n1.  **路径回溯**：给定一个目标地址（如动态的血量地址），`CE` 会在指针图中反向搜索指向该地址的指针。\n2.  **层级遍历**：如果找到的指针地址本身不是基址（模块基址+偏移），则将其作为新的目标继续反向搜索，直到找到基址或达到设定的最大层级 (`Max Level`)。\n3.  **结果筛选**：对比两个或多个指针图的扫描结果，只有在所有指针图中路径结构一致且最终指向正确数值的路径，才会被保留。\n\n#### 实战流程：定位 AssaultCube 血量基址\n\n1.  **定位目标**：扫描并找到当前角色的血量地址 `health-1` (例如 `02A7E2C0`)。\n    ![](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/media/54c2272f4f2e831f3472c4d9c1e47f6703398203f1381663ad46898250397e6f.jpeg)\n2.  **生成快照 1**：右键该地址 -> **Generate pointermap**，保存为 `map-1`。\n3.  **重启游戏**：完全重启游戏进程，重新搜索并定位新的血量地址 `health-2` (例如 `0291E2C0`)。\n    ![](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/media/e837a5b3386bc9cab32549d35755f2487cbcc2e416a97c6cbe2fb3061ab11574.jpeg)\n4.  **生成快照 2**：右键新地址 -> **Generate pointermap**，保存为 `map-2`。\n5.  **执行扫描**：\n    -   右键 `health-2` -> **Pointer scan for this address**。\n    -   勾选 **Use saved pointer map**，选择 `map-2`。\n    -   勾选 **Compare with other saved pointer map**，选择 `map-1`。\n    -   在对比设置中，选择 `Address to find` 并填入 `health-1` 的地址（或从下拉列表选择）。\n    -   设置 **Last Offset**（如已知血量偏移为 `0xF8`，可填入以缩小范围）。\n    ![](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/media/e70130841551aa549570f1a294f5955e5304f115671d0313bac61e45ff148c82.jpeg) ![](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/media/44d79b18b798c6a0034be914cda1e0b2e9dd484e0596a04b05724f35421dd8ef.jpeg)\n6.  **结果分析**：\n    -   扫描完成后，优先关注 **Base Address** 为模块名（如 `\"ac_client.exe\"+...`）的结果。\n    -   路径越短（Offsets 列数越少），通常越稳定。\n    ![](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/media/bba36784f438ee00bb2bbae266674e2664b889d8b07452e577cc6250e6772178.jpeg)\n7.  **最终验证**：双击结果加入地址列表，再次重启游戏，观察该指针是否能自动指向正确的血量数值。\n    ![](/notes/n-c75cf7f2a78f422c8b296c8650cb8410/media/2c339c0a1c60a4feae9437cd475ac48d92705896eb3ffff1f4a84d09ae5f44ec.jpeg)\n\n> **注意**：若目标数据不是 4 字节对齐（如 `Byte` 或 `Short`），扫描时需在高级选项中取消 `Alignment (4 Bytes)` 的勾选。\n\n### 自动汇编 (Auto Assemble)\n\n`Auto Assemble` (AA) 是 `Cheat Engine` 强大的内置脚本引擎，常用于编写作弊脚本、实现 `Inline Hook`（代码注入）及调用 `CE` 内部函数。\n\n-   **入口**：**Memory view** -> **Tools** -> **Auto Assemble**。\n-   **常用模板**：**Template** -> **Cheat Table Framework Code**（生成标准的 Enable/Disable 结构）。\n\n#### 常用指令详解\n\n1.  **Label (标签)**\n    用于定义内存地址的别名，便于跳转和引用。\n    ```assembly\n    [ENABLE]\n    alloc(newmem, 2048) // 申请内存\n    label(returnhere)   // 定义返回标签\n    label(mycode)       // 定义代码标签\n\n    newmem:\n    mycode:\n      mov eax, 1234\n      jmp returnhere    // 跳回原程序\n\n    \"Game.exe\"+123456:\n      jmp newmem\n    returnhere:\n\n    [DISABLE]\n    dealloc(newmem)     // 释放内存\n    \"Game.exe\"+123456:\n      db 89 50 04       // 恢复原始字节\n    ```\n\n2.  **Readmem (读取内存)**\n    复制指定地址的原始机器码到新申请的内存中，常用于备份指令。\n    ```assembly\n    [ENABLE]\n    alloc(newmem, 2048)\n    label(returnhere)\n\n    newmem:\n      readmem(\"Game.exe\"+123456, 5) // 复制原地址 5 字节的指令到此处\n      jmp returnhere\n\n    \"Game.exe\"+123456:\n      jmp newmem\n    returnhere:\n    ```\n\n3.  **Reassemble (重汇编)**\n    **推荐使用**。让 `CE` 自动解析并重写指定地址的汇编指令。相比 `Readmem`，它对指令长度变化的容错性更好。\n    ```assembly\n    [ENABLE]\n    alloc(newmem, 2048)\n    label(returnhere)\n\n    newmem:\n      reassemble(\"Game.exe\"+123456) // 自动执行原地址指令\n      jmp returnhere\n\n    \"Game.exe\"+123456:\n      jmp newmem\n      nop 3 // 填充剩余字节\n    returnhere:\n    ```\n\n4.  **Aobscan / Aobscanmodule (特征码扫描)**\n    通过字节特征码定位内存地址，使脚本不受游戏更新导致的基址变化影响。\n    -   `aobscan`：扫描所有内存区域（速度较慢）。\n    -   `aobscanmodule`：仅扫描指定模块（**推荐**，速度快且精准）。\n    ```assembly\n    [ENABLE]\n    // 在 Game.exe 模块中扫描特征码\n    aobscanmodule(INJECT_POINT, \"Game.exe\", 89 65 0E 8F F1 5? ?? ?? ?? ??)\n\n    alloc(newmem, 2048)\n    label(returnhere)\n\n    newmem:\n      mov eax, 9999\n      jmp returnhere\n\n    INJECT_POINT: // 使用扫描到的地址作为注入点\n      jmp newmem\n      nop 3\n    returnhere:\n\n    [DISABLE]\n    dealloc(newmem)\n    INJECT_POINT:\n      db 89 65 0E 8F F1 5F 01 45 A0 00 // 恢复原始字节\n    ```\n\n5.  **Registersymbol (注册符号)**\n    将脚本中的标签注册为全局符号，使其在 `Cheat Table` 主界面或其他脚本中可直接引用。\n    ```assembly\n    [ENABLE]\n    alloc(mycode, 2048)\n    registersymbol(mycode) // 注册符号\n\n    mycode:\n      mov eax, 888\n      ret\n\n    [DISABLE]\n    unregistersymbol(mycode) // 注销符号\n    dealloc(mycode)\n    ```\n    **应用**：注册后，在 `CE` 主界面的地址栏中直接输入 `mycode` 即可查看该内存地址。\n\n---\n\n## 地址列表管理\n\n当记录的地址数量较多时，合理的组织管理能显著提升效率。\n\n1.  **分组管理 (Header)**：\n    -   在列表空白处右键 -> **Create header**，创建一个分组（如“玩家属性”、“武器数据”）。\n    -   将相关地址拖入该分组下。\n    -   **折叠功能**：右键组头 -> **Group config** -> 勾选 `Hide children when deactivated`，可实现点击激活组头时才展开子项。\n2.  **快捷键 (Hotkeys)**：\n    -   右键地址 -> **Set hotkeys**。\n    -   可以设置修改数值、锁定数值的快捷键，并可绑定激活音效（如“Toggle”音效）。\n3.  **色彩标识**：\n    -   右键地址 -> **Change color**。\n    -   建议对关键基址、分组头使用醒目的颜色（如红色、深灰色），普通偏移地址使用浅色。\n",
+  "id": "c75cf7f2-a78f-422c-8b29-6c8650cb8410",
+  "metadata": {
+    "title": "CE"
+  },
+  "resources": [
+    "2c339c0a1c60a4feae9437cd475ac48d92705896eb3ffff1f4a84d09ae5f44ec.jpeg",
+    "44d79b18b798c6a0034be914cda1e0b2e9dd484e0596a04b05724f35421dd8ef.jpeg",
+    "54c2272f4f2e831f3472c4d9c1e47f6703398203f1381663ad46898250397e6f.jpeg",
+    "8cddc6b363271a77f27d42b1ec9d7b18f9154543c9539c3f39cc87fa2cd3513a.jpeg",
+    "bba36784f438ee00bb2bbae266674e2664b889d8b07452e577cc6250e6772178.jpeg",
+    "d8a657ea778341ebd2e345790582a1280fdefdaf04a2eeeaf954f8b75d0fc76b.jpeg",
+    "e70130841551aa549570f1a294f5955e5304f115671d0313bac61e45ff148c82.jpeg",
+    "e837a5b3386bc9cab32549d35755f2487cbcc2e416a97c6cbe2fb3061ab11574.jpeg"
+  ],
+  "url": "/notes/n-c75cf7f2a78f422c8b296c8650cb8410/"
+}

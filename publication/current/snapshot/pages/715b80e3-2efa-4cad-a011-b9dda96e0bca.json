@@ -1,0 +1,186 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-eb460ebf9abd17bfde9c",
+      "kind": "heading",
+      "offset": 33
+    },
+    {
+      "id": "h-2aabe7901cb5d309b1fb",
+      "kind": "heading",
+      "offset": 148
+    },
+    {
+      "id": "h-859990bcdae46c29010f",
+      "kind": "heading",
+      "offset": 504
+    },
+    {
+      "id": "b-7y45we",
+      "kind": "quote-block",
+      "offset": 3508,
+      "prefix": "> "
+    },
+    {
+      "id": "h-04fd22ca75ab19049579",
+      "kind": "heading",
+      "offset": 3530
+    },
+    {
+      "id": "h-78ca7b0664824cf024a6",
+      "kind": "heading",
+      "offset": 3681
+    },
+    {
+      "id": "h-c722b84ac12811eda542",
+      "kind": "heading",
+      "offset": 4661
+    },
+    {
+      "id": "h-0b1e8c3bcb6ad3108ff4",
+      "kind": "heading",
+      "offset": 4935
+    },
+    {
+      "id": "h-09bea79e98df0d8dd066",
+      "kind": "heading",
+      "offset": 5285
+    },
+    {
+      "id": "h-d9ae3398d565af27817e",
+      "kind": "heading",
+      "offset": 5705
+    },
+    {
+      "id": "h-29c6a99e61a37b49dc21",
+      "kind": "heading",
+      "offset": 6189
+    },
+    {
+      "id": "h-5f132e38b01fd3f27464",
+      "kind": "heading",
+      "offset": 6758
+    },
+    {
+      "id": "h-27bebcc6a4fe8d463980",
+      "kind": "heading",
+      "offset": 7311
+    },
+    {
+      "id": "h-53b88f62dc69e39203c1",
+      "kind": "heading",
+      "offset": 7994
+    },
+    {
+      "id": "h-b8edfd6b2dd9d0f4428a",
+      "kind": "heading",
+      "offset": 10824
+    },
+    {
+      "id": "h-e2815c81a1a38e150830",
+      "kind": "heading",
+      "offset": 10853
+    },
+    {
+      "id": "h-4401ac83a4924d4d795e",
+      "kind": "heading",
+      "offset": 11209
+    },
+    {
+      "id": "h-fd55ad2aaed86a07d7d2",
+      "kind": "heading",
+      "offset": 11581
+    },
+    {
+      "id": "h-ef7ad47cf6e9651e371b",
+      "kind": "heading",
+      "offset": 12581
+    },
+    {
+      "id": "h-47377906534fa63012e3",
+      "kind": "heading",
+      "offset": 12911
+    },
+    {
+      "id": "h-a407e9b64458bc05c8bd",
+      "kind": "heading",
+      "offset": 13400
+    },
+    {
+      "id": "h-038ba0025e363907597e",
+      "kind": "heading",
+      "offset": 13892
+    },
+    {
+      "id": "h-120a3b9891ed5cddac6c",
+      "kind": "heading",
+      "offset": 14353
+    },
+    {
+      "id": "h-4eca3596393d6864954f",
+      "kind": "heading",
+      "offset": 15120
+    },
+    {
+      "id": "h-f5605c0a44d71d24474a",
+      "kind": "heading",
+      "offset": 16075
+    },
+    {
+      "id": "h-71dc384471bedc4c85fb",
+      "kind": "heading",
+      "offset": 16889
+    },
+    {
+      "id": "h-abe5823670cd9f776b17",
+      "kind": "heading",
+      "offset": 17607
+    }
+  ],
+  "body": "# Windows 进程创建（03-1）：非 PAE 地址空间骨架\n\n> [!note] 相关笔记\n> 本组笔记总览见 [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)。\n\n\n## 1) 分析范围\n\n本文分析 WRK 中 x86 非 PAE 条件下的 `MmCreateProcessAddressSpace`。\n\n该函数的目标不是完成整个用户进程地址空间，而是为新进程创建一个最小、可继续初始化的地址空间骨架：页目录、HyperSpace、VAD bitmap、working set list 以及系统空间 PDE 映射。\n\n函数原型：\n\n```c\nBOOLEAN\nMmCreateProcessAddressSpace (\n    IN ULONG MinimumWorkingSetSize,\n    IN PEPROCESS NewProcess,\n    OUT PULONG_PTR DirectoryTableBase\n    );\n```\n\n## 2) 阶段一：commit 与物理资源检查\n\n函数开始先收取 commit：\n\n![7783632330cba86acf618e981985cdd2&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/e46031e3d653a7652f4213fde2ac2297c96afbdcd26764d2e8103b6247130bc2.jpg)\n\n```c\nif (MiChargeCommitment(MM_PROCESS_COMMIT_CHARGE, NULL) == FALSE) {\n    return FALSE;\n}\n```\n\n非 PAE 下 `MM_PROCESS_COMMIT_CHARGE` 为 4，定义在 `base\\ntos\\mm\\mi.h` 的架构条件分支中。\n\n注意：`MiChargeCommitment` 只是预收系统提交量（commit charge），并不会立即分配物理页。\n\n---\n\n随后初始化进程页颜色种子和 `HyperSpace` 锁：\n\n![cb8ed35a35493c669674a9cb3d247a89&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/360f44f247edcab7517989f9c299ff3e15f264d3aeb52403659d1a344f250ba7.jpg)\n\n```c\nNewProcess->NextPageColor = (USHORT)(RtlRandom(&MmProcessColorSeed));\nKeInitializeSpinLock(&NewProcess->HyperSpaceLock);\n```\n\n> 页颜色是按物理页号中会参与寻找 cache 组的那些位，把物理页分成若干组；分配时轮换颜色，把不同页分散到不同 cache 组，降低 cache 冲突。这里先用 `RtlRandom(&MmProcessColorSeed)` 为进程初始化起始色值，后续分配物理页时再通过页颜色宏递增选择颜色。\n\n> `HyperSpace` 是每个进程都有的一段特殊虚拟地址范围，用于访问工作集、临时映射页等每进程私有内存管理结构；这里的 `HyperSpaceLock` 用于互斥访问 `HyperSpace`。\n\n---\n\n接着函数获取 `PFN lock`，并检查当前可用于兑现常驻页承诺的物理页余量是否大于 `MinimumWorkingSetSize`：\n\n![ac405f0a29f8e10d6d7d51582445c4ed&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/7875643bbdbe61b038f8418f1ca46471dc71be6930e4508de70071b3dcdaefe1.jpg)\n\n> `PFN` 数据库是 Windows 管理物理页的全局结构，用于记录物理页的空闲/占用状态、引用计数、所属映射等信息。因此，访问和修改相关物理页状态时需要通过 `PFN lock` 进行互斥保护。\n\n- 如果余量不足，函数释放 `PFN lock`，归还先前预收的 commit，然后返回 `FALSE`。注意源码判断条件是 `<= MinimumWorkingSetSize`，因此只有余量严格大于 `MinimumWorkingSetSize` 时才会继续。\n- 如果余量充足，函数通过 `MI_DECREMENT_RESIDENT_AVAILABLE` 扣减 `MinimumWorkingSetSize` 对应的 resident available 预算。这里仍然没有真实分配物理页，只是预留一部分“将来必须能够兑现为常驻页”的物理页额度。\n\n图中涉及的几个变量含义如下：\n- `MmAvailablePages`：表示当前可用于分配的、未被使用的物理页总量。\n- `MmResidentAvailablePages`：表示在满足各进程至少保有最小工作集的情况下，还有多少可以使用的物理页，它并不等同于实际可分配的物理页。初始化时通常由 `MmAvailablePages - MM_FLUID_PHYSICAL_PAGES` 得到，会在创建线程、创建进程、调整工作集等需要常驻页保证的路径中被扣减。\n- `MmSystemLockPagesCount`：表示所有被进程额外锁定、不能被页面置换机制回收的物理页数量。\n> 所以实际上：`MmResidentAvailablePages - MmSystemLockPagesCount`，这才是真正的系统可分配用以维护进程最小运转的可用物理页数量。`MI_NONPAGEABLE_MEMORY_AVAILABLE()` 返回的也正是该值。\n\n\n> [!QUESTION] 检查了两次\"内存\"是否够用，为什么？\n> **检查的不是同一种“够用”。**\n> \n> `MiChargeCommitment` 检查的是系统提交量 `commit`，即“物理内存 + 分页文件”共同提供的提交能力。\n> \n> 而 `MI_NONPAGEABLE_MEMORY_AVAILABLE()` 检查的是在最坏情况下，系统是否仍能为该进程兑现最低工作集等必须常驻于物理内存的运行条件。\n> \n> **设定一个简化场景**：系统有一间运行区 A 和一间仓库 B，各有 100 个资源 R。A 代表物理内存，B 代表 pagefile。当前有 4 个进程，每个进程至少需要 10 个 R 才能维持运行，因此最低常驻需求一共是 40 个 R。假设这 4 个进程当前除了最低保障外，又额外使用了 30 个 R，那么 A 中实际已经使用 70 个 R，还剩 30 个 R 处于可分配或可回收状态；B 中 100 个 R 还没有被承诺出去。\n> \n> 在这个状态下，三个变量可以这样理解：\n> \n> `MmAvailablePages` 表示 A 中当前仍可用的物理页数量，也就是那 30 个还处于可分配或可较快回收状态的 R。它反映的是当前物理内存流动性。\n> \n> `MmResidentAvailablePages` 表示在保证所有进程最低常驻需求后，系统还能使用多少的物理页。当前 4 个进程的最低需求是 40 个 R，A 总共有 100 个 R，所以 resident 预算的直观上限是 60 个 R；它包括当前可用页，也包括必要时可以从普通工作集中回收的额外页。\n> \n> `commit` 表示 A + B 合起来还能提供多少未来可兑现的 backing store。当前 A 还剩 30 个可用物理资源，B 还有 100 个仓库资源，因此简化来看还剩 130 个可承诺资源。如果某进程此时 commit 100 个 R，系统只是在 commit 账本上扣掉 100 个承诺额度，并不会修改 `MmAvailablePages`，等它真正访问时才按需分配物理页并扣减 `MmAvailablePages`，必要时通过 B 保存换出的内容。\n\n## 3) 阶段二：分配 4 张基础物理页\n\n前面的 `MiChargeCommitment` 检查只保证这 4 张基础结构页已有提交额度；真正能否取得物理页仍依赖 `MI_NONPAGEABLE_MEMORY_AVAILABLE()`、`MiEnsureAvailablePageOrWait` 和后续零页分配。\n\n### 3.1) 页目录页\n\n接下来判断当前可用物理页数目是否较少；若较少，则调用 `MiEnsureAvailablePageOrWait` 做回收、等待或工作集调整等处理。\n\n![471679d43595a70be14fa2429a2497e9&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/9ace7e2b5af2ad9ca9e955a78562d92e7697177be456705dd99072daabeab406.jpg)\n\n随后计算页颜色 `Color`，并调用 `MiRemoveZeroPageMayReleaseLocks` 分配一张物理页的页框号（`PFN`）。注意这里拿到的是页框号而不是物理地址；被分配的物理页用途是作为顶级页目录表 `PDT`，也就是非 PAE x86 下 `CR3` 指向的根页表页；\n> `MI_PAGE_COLOR_PTE_PROCESS` 会递增进程的 `NextPageColor`，再与 `MmSecondaryColorMask` 做掩码得到颜色；分配器优先从对应颜色链表取页，必要时再向后轮转查找其它颜色。\n\n然后根据得到的页框号，从 `PFN` 数据库中拿到该物理页的管理结构并修改相关标记。随后检查 `PFN cache attribute`：如果不是 `MiCached`，则改为 cached，并设置 `FlushTbNeeded`，稍后统一刷新：\n![035c87423e459500ef72185e00a2a65a&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/421a4cc770bc33eec82ec6c05eaca192d46a6ad8cee092c84fa55a0d0bad869a.jpg)\n\n> [!QUESTION] 是否使用缓存不是看的页表项吗？\n> PFN 数据库本身不直接控制 CPU cache 命中。`PFN` 数据库里的 `CacheAttribute` 用于记录“这张物理页应该用什么缓存类型映射”。它不是硬件开关，但后续内核创建 `PTE/PDE` 映射时会参考它。\n\n### 3.2) HyperSpace 页表页\n\n![018ccc7e65f9176122d792721171cacf&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/6c8823ffe92997572f012320bc09b552b58ceaa060601202f6f65a008e43c76a.jpg)\n\n这张物理页是用于映射 `HyperSpace` 虚拟范围的 page table 页；后面会被 `HyperSpace` 虚拟范围对应的 `PDE` 指向。\n\n### 3.3) VAD bitmap 页\n\n![c09280ba32499758055eb3b5eafc64d7&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/c6b602fc418a60d9e60eccf05732d00759963b74a241d6ecd79eee9ac95fd40c.jpg)\n\n该物理页用于保存新进程的 `VAD bitmap`。`VAD` 本身描述进程虚拟地址空间中的区域；`VAD bitmap` 不是 VAD 树本身，而是以位图形式辅助内存管理器快速判断某些用户虚拟地址范围的占用情况。后面会将该物理页映射到新进程的固定虚拟地址 `VAD_BITMAP_SPACE`。\n\n### 3.4) Working set list 页\n\n![08b8abcffe72406bc403009c156196e7&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/164d6bca9e6b52b4a3448da3cf0f987a044e12037a7f20301a2ad97a7ec1801c.jpg)\n\n\n该物理页保存新进程的工作集，是进程工作集管理结构的起始页。工作集记录的是当前驻留在物理内存中的页面集合，以及相关的工作集条目。后续页面置换、工作集修剪、页面老化等逻辑都要依赖它。\n\n同时，`EPROCESS` 里也会记录它：\n\n```c\nNewProcess->WorkingSetPage = PageContainingWorkingSet;\n```\n\n\n后续会调用 `MmInitializeProcessAddressSpace` 初始化该物理页。\n\n### 3.5) 结束物理页分配\n\n![0cb1d7078afd693d5277ec4f683c3578&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/c53ca42db0e22255c16317d1e01e38bfc1f370a740d896fa6f2b58eda3aa1ccd.jpg)\n\n分配完成后释放 `PFN lock`。如果前面修改过任一物理页的 `CacheAttribute`，则刷新整个 `TB/TLB`。\n\n\n> [!QUESTION] 为什么要刷新 `TLB`？\n> 进程切换会刷掉普通非 global `TLB` 项；但 cache attribute 改变时，内核不能只依赖这一点，因为可能存在 global 的旧 `TLB` 项。所以 WRK 选择整个 `TB flush`，保守清掉所有可能的旧映射。相关内容参考：[x86 TLB 与 Cache 机制](/notes/n-a00926a3652e489ab79048c7e29efd4b/)\n\n## 4) 阶段三：进入地址空间状态 1\n\n![9ef5403ca2e450202e335427deef99a1&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/ab5cf32cb3b566ad1656edd85db1511a166838b7d82d6c712272cf976b3b3be6.jpg)\n\n分配 4 页物理页并释放 `PFN lock` 后，先断言新进程地址空间状态必须是 0。\n\n然后设置：\n\n```c\nPS_SET_BITS(&NewProcess->Flags, PS_PROCESS_FLAGS_ADDRESS_SPACE1);\n```\n\n这段代码把新进程标记为“地址空间第一阶段创建完成”，也就是从无地址空间状态 0 进入半初始化状态 1。状态 1 的含义是：地址空间硬骨架已经分配，但还没有完成工作集、`VAD`、`PFN` 数据库等完整初始化。此时：\n\n```c\nNewProcess->AddressSpaceInitialized == 1\n```\n\n\n然后断言，确认状态确实变成了 1：\n\n```c\nASSERT (NewProcess->AddressSpaceInitialized == 1);\n```\n\n---\n\n### 4.1) 地址空间状态存在的意义\n\n如果 `MmCreateProcessAddressSpace` 成功，但后续初始化失败，进程清理和删除路径会根据状态处理：\n\n- `AddressSpaceInitialized == 1`：说明只完成了创建阶段。`MmCleanProcessAddressSpace` 会清掉状态并回还 `MinimumWorkingSetSize - MM_PROCESS_CREATE_CHARGE` 这部分 resident available；随后 `MmDeleteProcessAddressSpace` 直接把 4 张基础页放回 free list，并回还剩余的 `MM_PROCESS_CREATE_CHARGE`。\n- `AddressSpaceInitialized == 2`：说明 `MmInitializeProcessAddressSpace` 已经初始化 `PFN`、`WSL`、`VAD` 等结构，删除时需要走完整 share count、`VAD`、`WSL`、page table commitment 回收流程。\n\n这就是状态 1/2 设计的主要价值：让半初始化地址空间和完整地址空间使用不同清理策略。\n\n## 5) 阶段四：填写 DirectoryTableBase 等字段\n\n![627da374e542969dcf0aee5bcc24c97f&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/c2658b2fa3e658a9896e719a221361d788e7b53838ed3db45cfa4a6890bc62eb.jpg)\n\n首先设置进程的最小工作集 `MinimumWorkingSetSize`，来自传入的调用参数。\n\n然后把用于记录工作集数据的物理页框号（PFN）写入 `EPROCESS` 的 `WorkingSetPage` 字段。\n\n最后设置 `DirectoryTableBase` 返回值：\n```c\nINITIALIZE_DIRECTORY_TABLE_BASE(&DirectoryTableBase[0], PageDirectoryIndex);\nINITIALIZE_DIRECTORY_TABLE_BASE(&DirectoryTableBase[1], HyperSpaceIndex);\n```\n\n展开后等价于：\n\n```c\nDirectoryTableBase[0] = PageDirectoryIndex << PAGE_SHIFT;\nDirectoryTableBase[1] = HyperSpaceIndex << PAGE_SHIFT;\n```\n\n可以看到，`DirectoryTableBase` 中保存的是真正的物理页地址而非 PFN。\n\n## 6) 阶段五：初始化 HyperSpace 页表页\n\n`HyperSpace` 是一片虚拟地址范围，`HyperSpaceIndex` 是新进程中用于描述这片范围的页表页。`VAD_BITMAP_SPACE` 和 `MmWorkingSetList` 都是这个页表页中的表项，本阶段就是把这两个映射写入 `HyperSpaceIndex`。\n\n问题在于：此时 CPU 还运行在当前进程上下文中，不能直接通过新进程的虚拟地址访问这张物理页。怎么办呢？\n\n因此下面这段代码先临时映射 `HyperSpaceIndex`到当前进程上下文，然后再将其作为“新进程 `HyperSpace` 的 `PTE` 页”填好：\n> [!IMPORTANT] 核心逻辑\n> 因为进程不能直接使用物理地址，所以需要将物理地址填入到某个虚拟地址对应的页表项中，再通过该虚拟地址完成对物理页的读写。\n\n![80f74a195603e203cb8de1510a5855ab&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/8ccba2cd4649addfcdad0685377c9f285742e143b0bf9d8883f5c9656cd4f06c.jpg)\n\n这里先用 `ValidPdePde` 作为模板生成一个有效页表项，并提前填好必要属性位：\n![3958e21bc56ddfb1c3da8eabf48ec5fb&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/8aedfe926f2c9c10cf765b9cd473218d6251f4175ff07b54791d7032856a72ba.jpg)\n\n清 global bit 的原因是后续要放入 `HyperSpace` 页表的两个表项（`VAD_BITMAP_SPACE` 和 working set list）都是每进程私有映射，不能作为全局 `TLB` 项跨进程保留。\n> 相关内容参考：[x86 TLB 与 Cache 机制](/notes/n-a00926a3652e489ab79048c7e29efd4b/)\n\n\n优先尝试向 system PTE 池借一个 `PTE`，得到的是这个 `PTE` 本身的虚拟地址：\n> 系统 `PTE` 仍是当前地址空间中系统范围页表的一部分。这里借用 system PTE 的目的，是临时建立“某个系统虚拟地址 -> `HyperSpaceIndex` 物理页”的映射。\n\n![e8fae89732796c2c76005cef961193a7&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/f2f0e57855380e6f5da7b60f8d1a7f736c735e8c049439d9b9f906288c4e6223.jpg)\n\n然后判断是否借到：\n![9d01af9d8f373ca74f52939cbcb9f211&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/89bb39dbe2dd4efa661d9e3ed2f068ca7d739cc9696e8874b758a1ff5bbfb429.jpg)\n\n如果借到一个 system PTE，就把 `HyperSpaceIndex` 填入该 `PTE` 中，然后通过 `MiGetVirtualAddressMappedByPte` 得到该 `PTE` 所映射的虚拟地址。\n> 因为页表项地址和被映射虚拟地址之间存在固定换算关系（参考：[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)），x86 非 PAE 下 `MiGetVirtualAddressMappedByPte(PTE)` 等价于把 `PTE` 地址左移 10 位。\n> \n> 这个映射关系是可逆的，即通过虚拟地址也可以计算出对应页表项的虚拟地址。\n\n\n如果没有借到，则将 `HyperSpaceIndex` 临时映射到当前进程 `HyperSpace` 中的某片区域，并返回虚拟地址：\n![efb63d6827cca7f50e5036e12d09de11&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/fec303eda49940b3de18d6689289534ea807969d719b2d53f8f08ebad89fdede.jpg)\n\n\n拿到 `PointerPte` 后，它指向的是 `HyperSpaceIndex` 这张物理页的虚拟映射。于是代码在里面写两个 `PTE`：\n\n![8405bd87916500d99b637addc975003c&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/77d30d5fca97030b736ad91a33d79c017d9c0f1b86ddf9151e6d30566bbd3437.jpg)\n\n> 通过 `MiGetPteOffset` 得到 10-10-12 地址划分中的页表索引。注意 `VAD_BITMAP_SPACE` 和 `MmWorkingSetList` 都是固定虚拟地址，这从侧面说明 `VAD bitmap` 和 working set list 在每个进程中的虚拟地址是确定的。\n\n结果是：\n\n```text\n新进程的 HyperSpace PTE 页\n  [offset(VAD_BITMAP_SPACE)] -> VadBitMapPage\n  [offset(MmWorkingSetList)] -> PageContainingWorkingSet\n```\n\n最后释放临时映射：\n![64e9e2ab51fe30b484e3dd8fe0c03f67&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/8cddbe505c802e5003a60b56cee86b12e40c64bbbe8fcaa7d67d5649a3fda5fd.jpg)\n\n\n这个阶段完成后，新进程一旦切换到自己的地址空间，访问固定虚拟地址 `VAD_BITMAP_SPACE` 和 `MmWorkingSetList` 就会落到它自己的 per-process 页面。\n\n## 7) 阶段六：初始化页目录页\n\n### 7.1) 设置页目录 PFN 的 PTE 地址\n\n![08450f6accb101bfe3e15aaa9a5792d1&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/9667c29ab29ff6320e38f05c0750bd46ccb50c7c9927edadc7f50b2adb9a61c2.jpg)\n\n这告诉 `PFN` 数据库：这张页目录页对应的 `PTE` 地址是 `PDE_BASE`。非 PAE 下页目录通过自映射机制可以在固定虚拟地址范围中被访问。\n\n> 相关内容参考：[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)\n\n### 7.2) 准备用于 HYPER_SPACE PDE 的 PTE\n![5822c08ec424e0c7db2aff59114e0775&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/385ff23b7da2d7655f9e89d11d8f950ea792df7183b402f63865ff34147397f5.jpg)\n\n\n这会构造一个指向 `HyperSpaceIndex` 的有效 `PDE`。清 global bit 的原因是 `HyperSpace` 是每进程私有映射，不能作为全局 `TLB` 项跨进程保留。\n\n> 相关内容参考：[x86 TLB 与 Cache 机制](/notes/n-a00926a3652e489ab79048c7e29efd4b/)\n\n### 7.3) 插入 MmProcessList\n\n![1ad3aa28b3c57f27fc092544628b3b3f&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/15bebbe8dad43689ee79a81faa7d5cbe53cc145414d8424d53f48b5dac73c3f0.jpg)\n\n这段代码把**正在创建的新进程**加入 MM 自己维护的进程链表 `MmProcessList`。\n\n---\n\n先确认这个进程的 `KPROCESS` 还没有正式初始化地址空间根：\n```c\nASSERT (NewProcess->Pcb.DirectoryTableBase[0] == 0);\n```\n> 此时 `MmCreateProcessAddressSpace` 正在构建 `DirectoryTableBase`，但还没有将其写入到 `Pcb.DirectoryTableBase` 中。之前写入的 `DirectoryTableBase` 是传入的独立参数，而不是 `Pcb` 中的成员属性。\n\n接着获取 MM 的 expansion lock：\n> 这里保护的是一些全局 MM 结构，包括 `MmProcessList` 和系统 `PDE` 更新相关状态。\n```c\nLOCK_EXPANSION (OldIrql);\n```\n\n然后把新进程挂到 `MmProcessList` 链表尾部：\n\n```c\nInsertTailList (&MmProcessList, &NewProcess->MmProcessLinks);\n```\n\n最后释放锁：\n\n```c\nUNLOCK_EXPANSION (OldIrql);\n```\n\n> [!QUESTION] 为什么要将进程加入到 MM 的私有链表中？\n> 在 x86 非 PAE 下，高 2GB 的系统空间是进程共享的，共享方式是复制页表项，这些页表项称为系统页表项；每个进程都有自己的系统 `PDE` 副本，需要在系统 `PDE` 发生需要同步的变化时（例如系统 large page 映射建立或拆除，导致页面从大页变成小页，或反向变化），内存管理器可以通过 `MmProcessList` 找到各个进程，并更新或标记需要更新的系统 `PDE`。\n\n### 7.4) 临时映射页目录页\n\n![e347dc45c7846590b1de8994e2850873&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/9afdaeb87fcbebb78c882c0cd120d5966f382beac97a11dd5c0ace833082da5b.jpg)\n\n和前面处理 `HyperSpace` 页表页一样，代码先尝试借 system PTE，如果成功，映射 `PageDirectoryIndex`；否则用当前进程 `HyperSpace` 临时映射。\n\n此时 `PointerPte` 指向映射后新进程页目录页对应的虚拟地址。\n\n### 7.5) 复制系统空间 PDE\n\n![407b107fbf24e7de72feaada642681b8&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/a83edf1abefad8d355ccf66835d7c0ab6b596b8cc84b76bb2b0b7e0261272e6b.jpg)\n\n这一步把当前地址空间中 `MmSystemRangeStart` 以上的系统 `PDE` 复制到新进程页目录 `PDT` 中。\n\n> x86 中 `MmSystemRangeStart` 通常为 `0x80000000`；如果开启 `/3GB` 启动选项，`MmSystemRangeStart` 会变为 `0xC0000000`。\n\n意义是：新进程刚创建出来就拥有与当前系统一致的内核空间映射，包括内核代码、HAL、系统缓存、系统 `PTE`、session space 等系统地址范围。\n\n\n**注意**：复制的是高 2G 空间的页目录项（PDE），而不是页表项（PTE）。\n### 7.6) 映射 HyperSpace 页表页\n\n![a25fb10a65e7abb274ca0de1622d4a1a&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/695d27779a5f1fad2bd816bb131ce000fd25cec7626878cd06ad8258128b450e.jpg)\n> 这里变量 `PointerPte` 从当前语境看，它实际指向页目录页中的 `PDE` 数组，称作 `PointerPde` 会更贴合含义。\n\n前一阶段已经在 `HyperSpaceIndex` 中填好了 `VAD_BITMAP_SPACE` 和 `MmWorkingSetList` 两个 `PTE`。这一步让新进程页目录中 `HYPER_SPACE` 虚拟地址对应的 `PDE` 指向 `HyperSpaceIndex`。\n\n**注意**：因为 `HYPER_SPACE` 位于内核空间中，所以代码先复制内核页表项，再覆盖 `HYPER_SPACE` 相关的页表项。\n\n### 7.7) 清零 HyperSpace 后续 PDE 范围\n\n![70769f3c6fe1ba57036d3778fdda014a&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/21c03507e5bc27c7c3dc216d10e4e84e21306ab5b4463f748487a1ad3fe2eac0.jpg)\n\n这里清空页目录中 `HyperSpace` 起始 `PDE` 之后、直到 `MmHyperSpaceEnd` 的剩余 `PDE`；因为 `HyperSpace` 虚拟范围可能跨多个页表页，但创建时只建立第一张页表页，所以其它 `PDE` 必须先置零。\n> 非 PAE 下 `DirectoryTableBase[1]` 只保存第一张 `HyperSpace` page table。其它 `HyperSpace` page table 创建时不存在，也不记录在 `DirectoryTableBase`；需要时以后再分配并挂到页目录中。\n\n\n### 7.8) 建立页目录自映射\n\n![d3188bc31cda6ddf20b057e3633798c1&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/7f11e4fd46d425c105008ad06df821750f90d0847d29ed2c3c15646fac07efc2.jpg)\n\n这一步是非 PAE x86 地址空间的关键技巧：让页目录中的某个 `PDE` 指向页目录自身。为什么这里求 `PTE_BASE = 0xC0000000` 的 `PdeOffset`，而不是求 `PDE_BASE`？因为所有页表都处在同一个页表映射窗口中，对该窗口内任意页表虚拟地址使用 `MiGetPdeOffset` 得到的都是同一个页目录索引。\n> 相关内容参考：[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)\n\n通过 `MiGetPteAddress(VA)`、`MiGetPdeAddress(VA)` 这类宏可以快速计算给定虚拟地址的页表项索引。\n> 这与前面的 `MiGetVirtualAddressMappedByPte` 相对应，二者在页表自映射窗口中互为逆向计算。\n\n最后执行临时映射释放等资源清理操作：\n\n![3b0477597bc3521761b6a724ff30f9d0&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/3a6bae84541f133cdad2d3cf3c920d25047311b0944debbc053151ef49dfa673.jpg)\n\n## 8) 阶段七：统计和 session 引用\n\n\n页目录初始化完成后，函数更新全局进程 commit 统计：\n![509e62db8f2f60d4b283ebca5b15eb59&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/4a37f422b7f6e26cb70976ec8a3b3a096cb02e32a8d0668939ffaf54687b90b8.jpg)\n\n\n这里和开头代码的区别：\n\n```c\nif (MiChargeCommitment (MM_PROCESS_COMMIT_CHARGE, NULL) == FALSE) {\n    return FALSE;\n}\n```\n\n1. `MmTotalCommittedPages`：负责资源约束，决定系统 commit 是否超限。\n2. `MmProcessCommit`：负责分类观察，说明总 commit 里有多少来自进程相关结构。\n> 可以看到两者为超集和子集的关系。\n\n\n---\n\n然后尝试增加 session space 引用：\n![1cc3edbdc4aba364b78ad9ff6c1cc2ea&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/1300929669d0ecf80343bd6fc77b94c01f6cda370a3ca8b41fac12dd992494a2.jpg)\n\n`MiSessionAddProcess` 会先检查当前进程是否处于 session。如果调用进程没有 `PS_PROCESS_FLAGS_IN_SESSION`，新进程也不会获得 session，函数直接返回；否则它会增加 session 引用计数，并把新进程挂入 `SessionGlobal->ProcessList`，链表成员是 `NewProcess->SessionProcessLinks`。\n\n> Windows session 相关内容参考：[Windows 窗口站与桌面隔离机制](/notes/n-03cb68347b47416b85e51a2da3d3e18c/)\n\n## 9) 创建后的地址空间结构\n\n\n**非 PAE 版本的 `MmCreateProcessAddressSpace` 用 4 张物理页搭出新进程的最小两级分页骨架：页目录、`HyperSpace` 页表、`VAD bitmap`、working set list；再复制系统 `PDE`、建立 `HyperSpace` 映射和页目录自映射，为后续完整地址空间初始化铺路。**\n\n函数返回成功时，新进程地址空间大致如下：\n\n![d020e6e0406b99040dd91ad7dc25c8fb&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/5436461032bd33fb44135b06be30e61002384d4f583fc92b6a5d9f3b7be7da4e.jpg)\n> 注意，图中展示的是 2GB 内核空间下的情况，如果是 3GB 则缩减黄色区域的面积即可。\n\n此时它还不是完整用户进程地址空间。它只是具备了继续初始化所需的最小结构。\n\n\n**注意**：上述页目录表尚未写入 `EPROCESS` 的相关结构体中，目前只是保存在独立输出参数 `DirectoryTableBase` 中：\n\n![a1a74636ba098033667ac6a90dbe5f2a&#95;MD5&#46;jpg](/notes/n-715b80e32efa4cada011b9dda96e0bca/media/50202b9b0494a2775c043aafca05f8ab70184091d9e81d98bbeadc83b0a9943e.jpg)\n\n```text\nDirectoryTableBase[0]\n  -> PageDirectoryIndex\nDirectoryTableBase[1]\n  -> HyperSpaceIndex\n```\n\n## 10) 总体流程\n\n```mermaid\nflowchart TD\n    A[\"预收 commit: MiChargeCommitment(4)\"] --> B[\"初始化页颜色和 HyperSpaceLock\"]\n    B --> C[\"获取 PFN lock\"]\n    C --> D{\"非分页可用页是否足够?\"}\n    D -- \"不足\" --> E[\"释放 PFN lock / 归还 commit / FALSE\"]\n    D -- \"足够\" --> F[\"扣减 MinimumWorkingSetSize resident available\"]\n    F --> G[\"分配 PageDirectoryIndex\"]\n    G --> H[\"分配 HyperSpaceIndex\"]\n    H --> I[\"分配 VadBitMapPage\"]\n    I --> J[\"分配 PageContainingWorkingSet\"]\n    J --> K[\"释放 PFN lock / 必要时刷新 TB cache attribute\"]\n    K --> L[\"AddressSpaceInitialized = 1\"]\n    L --> M[\"填写 DirectoryTableBase[0]/[1]\"]\n    M --> N[\"初始化 HyperSpace 页表页\"]\n    N --> O[\"初始化新进程页目录页\"]\n    O --> P[\"增加 MmProcessCommit / 条件性增加 session 引用\"]\n    P --> Q[\"返回 TRUE\"]\n```\n\n## 11) 关键设计点总结\n\n1. 非 PAE 版本只直接分配 4 张基础物理页。\n2. `MinimumWorkingSetSize` 是 resident available 预留，不是实际立即分配数。\n3. `DirectoryTableBase[0]` 是页目录物理地址，`DirectoryTableBase[1]` 是 `HyperSpace` 页表物理地址。\n4. 函数通过临时映射修改新进程尚未启用的页表页。\n5. 系统空间 `PDE` 直接从当前地址空间复制，使新进程立即继承内核映射。\n6. `HYPER_SPACE` 的 `PDE` 指向 `HyperSpaceIndex`，而 `HyperSpaceIndex` 中映射 `VAD_BITMAP_SPACE` 和 `MmWorkingSetList`。\n7. `PTE_BASE` 自映射让当前进程的页表可以通过固定虚拟地址访问。\n8. 函数返回成功时 `AddressSpaceInitialized == 1`，并不代表地址空间已完全可 fault、可运行。\n9. 函数会把进程挂入 `MmProcessList`；如果当前进程属于 session，还会通过 `MiSessionAddProcess` 把新进程挂入 session 的 `ProcessList`，对应链表成员为 `SessionProcessLinks`。\n",
+  "id": "715b80e3-2efa-4cad-a011-b9dda96e0bca",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "os/windows/mm",
+      "reverse/windows",
+      "arch/x86",
+      "lang/c"
+    ],
+    "title": "Windows 进程创建（03-1）：非 PAE 地址空间骨架"
+  },
+  "resources": [
+    "1300929669d0ecf80343bd6fc77b94c01f6cda370a3ca8b41fac12dd992494a2.jpg",
+    "15bebbe8dad43689ee79a81faa7d5cbe53cc145414d8424d53f48b5dac73c3f0.jpg",
+    "164d6bca9e6b52b4a3448da3cf0f987a044e12037a7f20301a2ad97a7ec1801c.jpg",
+    "21c03507e5bc27c7c3dc216d10e4e84e21306ab5b4463f748487a1ad3fe2eac0.jpg",
+    "360f44f247edcab7517989f9c299ff3e15f264d3aeb52403659d1a344f250ba7.jpg",
+    "385ff23b7da2d7655f9e89d11d8f950ea792df7183b402f63865ff34147397f5.jpg",
+    "3a6bae84541f133cdad2d3cf3c920d25047311b0944debbc053151ef49dfa673.jpg",
+    "421a4cc770bc33eec82ec6c05eaca192d46a6ad8cee092c84fa55a0d0bad869a.jpg",
+    "4a37f422b7f6e26cb70976ec8a3b3a096cb02e32a8d0668939ffaf54687b90b8.jpg",
+    "50202b9b0494a2775c043aafca05f8ab70184091d9e81d98bbeadc83b0a9943e.jpg",
+    "5436461032bd33fb44135b06be30e61002384d4f583fc92b6a5d9f3b7be7da4e.jpg",
+    "695d27779a5f1fad2bd816bb131ce000fd25cec7626878cd06ad8258128b450e.jpg",
+    "6c8823ffe92997572f012320bc09b552b58ceaa060601202f6f65a008e43c76a.jpg",
+    "77d30d5fca97030b736ad91a33d79c017d9c0f1b86ddf9151e6d30566bbd3437.jpg",
+    "7875643bbdbe61b038f8418f1ca46471dc71be6930e4508de70071b3dcdaefe1.jpg",
+    "7f11e4fd46d425c105008ad06df821750f90d0847d29ed2c3c15646fac07efc2.jpg",
+    "89bb39dbe2dd4efa661d9e3ed2f068ca7d739cc9696e8874b758a1ff5bbfb429.jpg",
+    "8aedfe926f2c9c10cf765b9cd473218d6251f4175ff07b54791d7032856a72ba.jpg",
+    "8ccba2cd4649addfcdad0685377c9f285742e143b0bf9d8883f5c9656cd4f06c.jpg",
+    "8cddbe505c802e5003a60b56cee86b12e40c64bbbe8fcaa7d67d5649a3fda5fd.jpg",
+    "9667c29ab29ff6320e38f05c0750bd46ccb50c7c9927edadc7f50b2adb9a61c2.jpg",
+    "9ace7e2b5af2ad9ca9e955a78562d92e7697177be456705dd99072daabeab406.jpg",
+    "9afdaeb87fcbebb78c882c0cd120d5966f382beac97a11dd5c0ace833082da5b.jpg",
+    "a83edf1abefad8d355ccf66835d7c0ab6b596b8cc84b76bb2b0b7e0261272e6b.jpg",
+    "ab5cf32cb3b566ad1656edd85db1511a166838b7d82d6c712272cf976b3b3be6.jpg",
+    "c2658b2fa3e658a9896e719a221361d788e7b53838ed3db45cfa4a6890bc62eb.jpg",
+    "c53ca42db0e22255c16317d1e01e38bfc1f370a740d896fa6f2b58eda3aa1ccd.jpg",
+    "c6b602fc418a60d9e60eccf05732d00759963b74a241d6ecd79eee9ac95fd40c.jpg",
+    "e46031e3d653a7652f4213fde2ac2297c96afbdcd26764d2e8103b6247130bc2.jpg",
+    "f2f0e57855380e6f5da7b60f8d1a7f736c735e8c049439d9b9f906288c4e6223.jpg",
+    "fec303eda49940b3de18d6689289534ea807969d719b2d53f8f08ebad89fdede.jpg"
+  ],
+  "url": "/notes/n-715b80e32efa4cada011b9dda96e0bca/"
+}

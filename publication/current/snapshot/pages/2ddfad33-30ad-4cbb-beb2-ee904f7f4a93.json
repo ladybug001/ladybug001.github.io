@@ -1,0 +1,76 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-efd4ccd3b01ac78a2d6f",
+      "kind": "heading",
+      "offset": 41
+    },
+    {
+      "id": "h-08ead42cb21346ff97da",
+      "kind": "heading",
+      "offset": 558
+    },
+    {
+      "id": "h-2e11bc36c83005a4750b",
+      "kind": "heading",
+      "offset": 745
+    },
+    {
+      "id": "h-ced4ef795aeeeaef8523",
+      "kind": "heading",
+      "offset": 767
+    },
+    {
+      "id": "h-13d230231eacd27a8e4a",
+      "kind": "heading",
+      "offset": 1500
+    },
+    {
+      "id": "h-a833013927b879bd8157",
+      "kind": "heading",
+      "offset": 2274
+    },
+    {
+      "id": "h-4bd2b13bb6ec483efbcf",
+      "kind": "heading",
+      "offset": 2429
+    },
+    {
+      "id": "h-f28c555fd2764d3e7fb8",
+      "kind": "heading",
+      "offset": 4106
+    },
+    {
+      "id": "h-f7c8649d5323873e06bd",
+      "kind": "heading",
+      "offset": 5132
+    },
+    {
+      "id": "h-2d2b2612c9eb3592ddac",
+      "kind": "heading",
+      "offset": 5676
+    }
+  ],
+  "body": "# Windows x86 `RtlDispatchException` 异常分发\n\n在用户态发生异常，若没有调试器或调试器第一次选择不处理时，内核会给用户一次处理该异常的机会：先返回用户态的 `KiUserExceptionDispatcher`，由它调用用户态的 `RtlDispatchException`。\n> 相关内容参考：[Windows x86 异常的产生与分发流程](/notes/n-fc98c7868417430fa36063afb251fb17/)。VEH 和 SEH 的 API、登记结构、回调格式及编译器扩展参考：[Windows x86 VEH 与 SEH](/notes/n-513b4c801b634b30839654b1a72897cc/)。\n\n本笔记分析 `RtlDispatchException` 函数，说明它如何按以下顺序尝试处理当前异常：\n\n1. 搜索进程级 VEH 全局链表。\n2. VEH 未处理时，遍历当前线程的 SEH 登记链。\n3. 普通 SEH 均未处理时，继续到达启动函数预先安装的链尾兜底 SEH。\n> 内核中存在同名的 `RtlDispatchException`，但内核态只查找 SEH 链表，不使用 VEH。\n\n## 第一阶段：搜索 VEH 全局链表\n\n`RtlDispatchException` 首先调用已注册的 VEH 处理器。某个 VEH 返回 `EXCEPTION_CONTINUE_EXECUTION` 时，异常搜索结束；处理器返回 `EXCEPTION_CONTINUE_SEARCH` 时，则继续调用后续 VEH。所有 VEH 都未处理异常后，流程转入 SEH 搜索。\n\n## 第二阶段：遍历 SEH 登记链\n\n### 获取线程栈范围与 SEH 链表头\n\n跟进 `RtlDispatchException` 函数可以看到：VEH 搜索未能处理异常后，`RtlDispatchException` 会转入 SEH 搜索，并调用两个函数取得遍历 SEH 链表所需的信息：\n\n![899fa52ce34fec13f0c5e73d469a61cb&#95;MD5&#46;jpg](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/media/9061dfa5c8b7d523b6491ad35cbf7df2a2cd0f60099b0f38df85acbde60cfb55.jpg)\n\n1. 第一个函数 `RtlpGetStackLimits` 取了 `FS:[8]` 和 `FS:[4]` 的值，即 `_TEB._NT_TIB.StackBase` 和 `_TEB._NT_TIB.StackLimit`，这两个值就是栈的基址和栈的大小，**取这两个值的目的就是为了检查 SEH 链表是否属于当前线程的栈中**。\n2. 第二个函数 `RtlpGetRegistrationHead` 取 `FS:[0]` 的值，即 `_TEB._NT_TIB.ExceptionList`，**也就是 SEH 链表头地址**。\n\n![4bc1841b7b347d35a27b1c3a636434b0&#95;MD5&#46;jpg](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/media/4c5c5dba1cb13a854cc65313f9178ed8396fff212411b7629df545e58ef46eb6.jpg)\n\n### 验证并执行 SEH 处理器\n\n取得栈范围和 SEH 链表头后，`RtlDispatchException` 从链表头开始逐个处理表项：\n\n1. 先调用 `RtlIsValidHandler`，验证当前表项中的异常处理函数是否有效。验证失败属于无效处理器分支，本文不再展开；下面继续分析验证通过后的正常搜索路径。\n2. 验证通过后，调用 `RtlpExecuteHandlerForException` 执行当前异常处理函数。\n3. 若当前处理器表示不能接管异常时，继续访问下一个 SEH 表项；某个处理器接管异常后，停止遍历并使 `RtlDispatchException` 返回 1。\n4. 如果一直遍历到链尾都没有处理器接管异常，`RtlDispatchException` 返回 0，表示 VEH 和 SEH 都未能处理该异常。\n\n> 对于编译器扩展的 SEH 节点，`RtlpExecuteHandlerForException` 实际调用的 handler 是 `_except_handler3`，它再根据 `scopetable` 和 `trylevel` 搜索具体的过滤器。该搜索逻辑详见 [Windows x86 VEH 与 SEH](/notes/n-513b4c801b634b30839654b1a72897cc/#h-97d30a88cf6900f9c2b4)。\n\n![64c95c3f8e303199b80f6febd08ce43e&#95;MD5&#46;jpg](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/media/41380dfdf001df26bb6c37d73cae138e6ebfc8a3ee54dfc1199f845ec65ea1ed.jpg)\n\n## 链尾阶段：系统提供的未处理异常兜底\n\n当应用自身注册的 VEH 和 SEH 都没有接管异常时，我们将其称为应用层的**未处理异常**。这只表示应用自身的处理器没有接管，并不意味着系统已经停止处理；接下来需要继续查看 SEH 链尾还有哪些系统提供的处理器。\n> **本章节所学习的是用户空间的未处理异常**。\n\n### 启动函数安装的兜底 SEH\n\n我们首先编写一个简单的代码，启动一下，看它的调用栈，我们可以看见，**程序启动时并不是直接从main函数开始执行的，它的上层有mainCRTStartup、KERNEL32!7c816d4f()**。\n\n![42cb3488b241baebc68166367e641122&#95;MD5&#46;jpg](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/media/092d17964894edceb497e1c2329658ff5865dcd5b683f7ebde6740ccc7fd872a.jpg)\n\n**KERNEL32!7c816d4f** 所在的函数实际上就是 **`BaseProcessStart`** 函数，我们跟进该函数发现其调用 `__SEH_prolog` 将增强版的 SEH 结构体挂入到 SEH 链表上。\n> 参考：[Windows 线程创建&#65288;01&#65289;&#65306;线程创建主流程](/notes/n-928a46ce58c649e289fbf643a9baabe5/#h-5b39d001080c8466a79c)、[Windows 进程创建&#65288;01&#65289;&#65306;用户态创建流程](/notes/n-a563a14132aa4c968d5f20c4000cb850/#h-721bfe2111db74e6c271)\n\n![9e4158a182a2f9ffa7329aa60b73bf6c&#95;MD5&#46;jpg](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/media/019ddbd9e47c7b7a0ff1b05d14f366be90f46202be2f1cbc2a0864a38e5b762a.jpg)\n\n`BaseProcessStart` 在进入用户代码之前先安装这个 SEH 记录；用户代码随后注册的普通 SEH 会插入到它的前面，并保留指向原链表的链接。因此，当用户代码中的处理器都选择继续搜索时，`RtlDispatchException` 最终会到达由 `BaseProcessStart` 安装的记录，它也就成为进程入口线程的链尾兜底 SEH。\n\n这个兜底记录的处理函数同样是 `_except_handler3`：它会依据 `ScopeTable` 和 `tryLevel`，通过 `previousTryLevel` 找到相应的过滤表达式，其中就包括对 `UnhandledExceptionFilter` 的调用。\n\n---\n\n普通线程是否也有相同的兜底结构？可以继续通过 IDA 查看线程的初始执行函数 `BaseThreadStart`：\n\n> 相关内容参考：[Windows 线程创建&#65288;01&#65289;&#65306;线程创建主流程](/notes/n-928a46ce58c649e289fbf643a9baabe5/)\n\n![5624c07c70d860927d35d1a1a2f3a387&#95;MD5&#46;jpg](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/media/f26b6d926fc7aefc224fc1d5a91af575fa19aaa785f14d40f7e76e6e64832e2d.jpg)\n\n可以看到，`BaseThreadStart` 同样调用了 `_SEH_prolog`，在线程进入用户代码之前安装兜底 SEH。因此，无论是进程入口线程还是普通线程，应用注册的 VEH 和普通 SEH 都没有接管异常时，SEH 搜索仍会到达系统启动函数安装的兜底记录。\n\n至于该记录如何通过 `UnhandledExceptionFilter` 决定后续行为，需要继续看它的过滤逻辑。\n\n### `UnhandledExceptionFilter` 的判断逻辑\n\n\n`BaseProcessStart` 和 `BaseThreadStart` 函数的伪代码类似于：\n\n```cpp\n__try\n{\n}\n__except (UnhandledExceptionFilter(GetExceptionInformation()))\n{\n    //终止线程\n    //终止进程和线程\n}\n```\n\n过滤表达式中的函数 `UnhandledExceptionFilter`，其返回值决定兜底处理器是执行终止逻辑、恢复执行，还是继续搜索并进入第二次分发，其逻辑如下：\n\n1. 通过 `NtQueryinformationProcess` 函数查询当前进程是否正在被调试：\n    1. 如果被调试，返回 `EXCEPTION_CONTINUE_SEARCH`，此时会进入第二轮分发——给了调试器第二次机会。\n    2. 如果没有被调试，查询是否注册了顶级异常处理函数（通过 `SetUnhandledExceptionFilter`）\n        1. 如果有就调用；\n        2. 如果没有，判断有无即时调试器\n            1. 若有，就弹出窗口让用户选择终止程序还是启动即时调试器；\n               ![b8d709c3b77a3f299aa2cd556181a8d8&#95;MD5&#46;jpg](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/media/83cccca34bc8abfdff4d8c5621ec9dbacbeaab19f7a8d619019442388dcd135f.jpg)\n            2. 若没有，该函数返回 `EXCEPTION_EXECUTE_HANDLER`，`_except_handler3` 执行 `__except` 块中的逻辑，结束线程和进程。\n\n> [!QUESTION] 为什么要判断有无调试器？\n> 异常发生时最先得知的是调试器，`UnhandledExceptionFilter` 为什么还要判断是否存在调试器？\n> 调试器确实是先获得第一次处理机会；但当调试器选择放行、想观察程序能否自行处理时，如果链尾兜底直接接管了异常——终止进程，会导致无法调试 BUG，所以若存在调试器则不终止进程。\n\n## `KiUserExceptionDispatcher` 返回后的路径\n\n用户态处理结束后存在二类结果：\n\n1. 某个 VEH 或 SEH 修复了异常，`RtlDispatchException` 返回已处理，`KiUserExceptionDispatcher` 随后通过 `ZwContinue` 恢复修正后的线程现场。\n\t1. 链尾兜底 SEH 的过滤器接受异常时，会进入相应的终止或顶层处理逻辑，此时可能不会回到 `RtlDispatchException` 函数继续执行。\n2. 所有处理器都选择继续搜索（包括兜底 SEH），`RtlDispatchException` 返回未处理，`KiUserExceptionDispatcher` 通过 `ZwRaiseException` 发起第二次异常分发。\n\n> 调试器的第二次异常分发机会参考： [Windows x86 异常的产生与分发流程](/notes/n-fc98c7868417430fa36063afb251fb17/#h-760d42c1345872984c1c)。\n\n > 实验验证参见：[OD 验证&#65306;用户态异常的一次机会与二次机会](/notes/n-1477ec63df444763ab8200c27fda5815/)：\n\n## 反调试应用：利用未处理异常处理差异\n\n我们可以利用未处理异常，在有/无调试器时的处理差异来进行反调试，如下代码正常打开是会执行 `printf` 的，但如果通过 OD 打开则会停止运行：\n\n```cpp\n#include <stdio.h>\n#include <windows.h>\n\nlong _stdcall callback(_EXCEPTION_POINTERS* excp)\n{\n    excp->ContextRecord->Ecx = 1;\n    return EXCEPTION_CONTINUE_EXECUTION;\n}\n\nvoid main(int argc, char* argv[])\n{\n    // 注册一个最顶层异常处理函数\n    SetUnhandledExceptionFilter(callback);\n\n    // 除0异常\n    _asm\n    {\n        xor edx,edx\n        xor ecx,ecx\n        mov eax,0x10\n        idiv ecx\n    }\n\n    // 程序正常执行\n    printf(\"Running ... \");\n    getchar();\n}\n```\n\n**原理**：这段代码在无调试器和有调试器时会经过两条不同的路径：\n\n1. **没有调试器时**：`UnhandledExceptionFilter` 会调用通过 `SetUnhandledExceptionFilter` 注册的 `callback`。该回调把 `ECX` 修改为 1，并返回 `EXCEPTION_CONTINUE_EXECUTION`，程序随后重新执行除法指令并继续运行到 `printf`。\n2. **存在调试器时**：`UnhandledExceptionFilter` 检测到调试器后返回 `EXCEPTION_CONTINUE_SEARCH`，不会调用上面的顶层过滤器，异常会继续进入第二次分发。此时如果调试器直接继续执行但没有修正异常现场，程序会回到原处再次触发异常；如果调试器最终也不处理，则进入进程终止逻辑。\n\n如下图所示我们使用纯净版的 Ollydbg 调试该程序就没法执行正常的代码，如果我们使用带插件版的 OD，如吾爱破解的 OD 则可以直接绕过反调试：\n\n![7cb25a00255feb3a22f3bd4f6548c897&#95;MD5&#46;jpg](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/media/7f05c155195cf91fd6024dc58f00a83420f0c0798189f38cd04c2c6341cb032c.jpg)\n\n绕过反调试的原理：`UnhandledExceptionFilter` 函数是通过 `NtQueryInformationProcess` 来判断是否被调试的，而 `NtQueryInformationProcess` 是通过 `DebugPort` 的值来判断程序是否正在被调试，因此我们只需要 Hook 了 `NtQueryInformationProcess`，修改 `DebugPort` 的值就可以绕过反调试了。\n",
+  "id": "2ddfad33-30ad-4cbb-beb2-ee904f7f4a93",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows x86 RtlDispatchException 异常分发",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "019ddbd9e47c7b7a0ff1b05d14f366be90f46202be2f1cbc2a0864a38e5b762a.jpg",
+    "092d17964894edceb497e1c2329658ff5865dcd5b683f7ebde6740ccc7fd872a.jpg",
+    "41380dfdf001df26bb6c37d73cae138e6ebfc8a3ee54dfc1199f845ec65ea1ed.jpg",
+    "4c5c5dba1cb13a854cc65313f9178ed8396fff212411b7629df545e58ef46eb6.jpg",
+    "7f05c155195cf91fd6024dc58f00a83420f0c0798189f38cd04c2c6341cb032c.jpg",
+    "83cccca34bc8abfdff4d8c5621ec9dbacbeaab19f7a8d619019442388dcd135f.jpg",
+    "9061dfa5c8b7d523b6491ad35cbf7df2a2cd0f60099b0f38df85acbde60cfb55.jpg",
+    "f26b6d926fc7aefc224fc1d5a91af575fa19aaa785f14d40f7e76e6e64832e2d.jpg"
+  ],
+  "url": "/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/"
+}

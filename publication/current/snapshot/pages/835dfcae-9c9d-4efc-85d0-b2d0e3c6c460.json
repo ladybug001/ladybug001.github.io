@@ -1,0 +1,78 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-ee776609af16edd415e1",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-eff23784a814e306d02a",
+      "kind": "heading",
+      "offset": 128
+    },
+    {
+      "id": "h-03fd5ace0be0ddee4671",
+      "kind": "heading",
+      "offset": 293
+    },
+    {
+      "id": "h-54f45640c4b5615dbeef",
+      "kind": "heading",
+      "offset": 1011
+    },
+    {
+      "id": "h-e96ed77affc4a7b865e3",
+      "kind": "heading",
+      "offset": 1393
+    },
+    {
+      "id": "h-1975134f538b37def8e1",
+      "kind": "heading",
+      "offset": 2603
+    },
+    {
+      "id": "h-4a7bf8cc8dde00f25dae",
+      "kind": "heading",
+      "offset": 2804
+    },
+    {
+      "id": "h-011fd3c60bfc1b25ceb8",
+      "kind": "heading",
+      "offset": 3498
+    },
+    {
+      "id": "h-c784ff53508412737856",
+      "kind": "heading",
+      "offset": 3603
+    },
+    {
+      "id": "h-acad9e7e8ee846558ca4",
+      "kind": "heading",
+      "offset": 4108
+    },
+    {
+      "id": "h-dcba31293be44a7f0c7f",
+      "kind": "heading",
+      "offset": 4690
+    },
+    {
+      "id": "h-c781fe2a579284d60846",
+      "kind": "heading",
+      "offset": 5325
+    }
+  ],
+  "body": "# Linux 进程权限模型\n\n\n下文介绍的系列机制，本质上只是用户态内部的进一步权限分层，真正的绝对特权依然属于内核态：进程试图执行任何敏感操作（如挂载磁盘、杀死进程、读写受限文件），都必须通过系统调用陷入内核，交由内核代为裁决与执行。\n\n## 核心问题\n\n一个进程想对一个文件做某件事，内核如何决定放不放行？\n\nLinux 内核按顺序执行三层检查，全部通过才放行：\n\n1. **DAC**（自主访问控制）—— 你是谁？\n2. **Capabilities** —— 你有这个能力吗？\n3. **MAC**（强制访问控制，如 SELinux）—— 策略允许吗？\n\n## 第一层：DAC\n\n一个进程同时携带三个 UID：\n\n- **真实用户（RUID）**：谁启动了这个进程。\n- **有效用户（EUID）**：内核做权限检查时看的值。`top` 的 `USER` 列显示的就是 EUID。\n- **保存用户（SUID）**：保存进程曾经拥有的 EUID，用于临时放弃特权后恢复。\n\n默认情况下 EUID = RUID。\n> 只有当可执行文件的 **setuid 位**被置位时，EUID 才变为文件归属者的 UID。\n\nDAC 的核心逻辑：内核比对**进程的 EUID/EGID** 与**文件的 owner/group/other 权限位**（`rwx`），决定是否放行。\n\n用 `ls -l /etc/shadow` 可以直接看到文件的 owner、group 和三组权限位（owner / group / other 各自的 `rwx`）：\n\n![7a775320fca116364c29fcc9b1c619c3&#95;MD5&#46;jpg](/notes/n-835dfcae9c9d4efc85d0b2d0e3c6c460/media/d3afe6e030808e13c043d5513b779b6957ce08482cfe74fabd82a961069d7f99.jpg)\n\n**内核的检查过程**：进程的 EUID 匹配 owner → 用 owner 权限位；EGID 匹配 group → 用 group 权限位；都不匹配 → 用 other 权限位。\n>内核看的是 UID 数字，不是用户名。用户名只是 `/etc/passwd` 里 UID 的别名。\n\n\n## 第二层：Capabilities\n\n早期 Linux 只有两种状态：EUID = 0 （即 Root）拥有一切特权，EUID ≠ 0 没有任何特权，内核在做 DAC 检查时，发现进程的 EUID = 0，直接跳过权限位检查——这就是 Root \"无视 DAC\" 的原因。\n\n现代 Linux 引入了 Capabilities 机制，把 Root 的\"一切特权\"拆分成约 40 个独立开关（如 `CAP_NET_RAW`、`CAP_DAC_OVERRIDE`、`CAP_SYS_ADMIN` 等），一个进程可以只持有其中几个 capability，而不必拥有完整的 root 特权。\n> 其中 `CAP_DAC_OVERRIDE` 权限就是可以无视 DAC 机制——进程的 UID = 0 则无视 DAC 的原因。\n\n### File Capability 与 Process Capability\n\nCapability 存在于两个层面：\n\n- **File Capability**：绑定在可执行文件上（如 `ping` 的 `cap_net_raw=ep`），是 `execve()` 时的权限来源之一。\n- **Process Capability**：进程运行期间实际持有的 capability 集合，内核做权限检查时看的是这个。\n\n用 `getcap` 查看文件上绑定的 capabilities，用 `getpcaps <pid>` 查看进程当前持有的 capabilities：\n\n![e85fdc5ec3448fb494e07607a0b09fa0&#95;MD5&#46;jpg](/notes/n-835dfcae9c9d4efc85d0b2d0e3c6c460/media/d37098057c27806440fe6b24ad68b54107fea8017de8f1560c4103c4acd5ea71.jpg)\n\n从上图的 `getcap /usr/bin/ping` 输出可以看出，该文件被设置了 `cap_net_raw=ep` 属性，表示它拥有 `CAP_NET_RAW` 权限（允许使用 Raw Socket 等底层网络操作）。\n\n其中的字母对应 Linux 文件 Capabilities 的标志位：\n- **p (Permitted)**：**拥有的上限**——该程序最多能够获取并启用的权限。\n- **e (Effective)**：**生效标志**——程序启动时是否立即激活该权限（这里为启用状态）。\n- **i (Inheritable)**：**继承掩码**——决定执行新程序时，哪些权限允许被子进程继承（当前未配置，故未显示）。\n\n给 `ping` 配置这个 capability 后，不需要完整 root 权限（置位 setuid 位）就能发送原始网络包。\n\n`execve()` 执行一个文件时，进程最终拥有的 capability 权限由**调用进程的 Inheritable、Bounding、Ambient 集合**，与**文件的 Permitted、Inheritable 集合及 Effective 标志位**共同计算得出。\n\n即使进程的 EUID = 0，如果执行某个特权操作所需的 capability 不在当前 Effective 集合中，操作仍然会被拒绝。\n\n> [!question] 如果 root 用户启动 ping，它的 capabilities 是什么？\n> 在默认的传统 root 语义下，EUID = 0 的进程执行 `execve()` 时有特殊处理——新程序通常会重新获得 Bounding Set 允许的全部 capabilities，而不会被文件上配置的少数 File Capability 限制住。\n\n## 第三层：MAC\n\n即使有了 Capabilities 机制，对访问的控制还是不够精细，所以又引入了 MAC 机制：对访问的控制进一步细化到\"哪个主体能对哪个客体执行哪种具体操作\"\n\nMAC 有两种典型实现：\n- **SELinux** 基于标签 / 类型，策略更细但也更复杂；\n- **AppArmor** 基于路径 / 配置文件，更容易读懂和配置。\n\n以下以 SELinux 为例。\n\n### 安全上下文与类型强制\n\nSELinux 给系统中的每个进程和文件贴上一个**安全上下文（标签）**，格式为 `user:role:type:level`。其中 **type** 是策略的核心。\n\n用 `ls -Z` 查看文件的安全上下文：\n\n```\n$ ls -Z /var/www/html/index.html\nsystem_u:object_r:httpd_sys_content_t:s0  /var/www/html/index.html\n```\n\n其中 `httpd_sys_content_t` 就是这个文件的 type。\n\n用 `ps -Z` 查看进程的安全上下文（域）：\n\n```\n$ ps -Z -C httpd\nLABEL                             PID  CMD\nsystem_u:system_r:httpd_t:s0      1234 httpd\n```\n\n其中 `httpd_t` 就是 httpd 进程的 domain。\n\n策略规则就是在说这两个 type 之间允许什么操作，形式为：\n\n```\nallow <进程的域(domain)> <文件的类型(type)>:<对象类> { 操作 };\n```\n\n例如 `allow httpd_t httpd_sys_content_t:file { read };` 表示 `httpd_t` 域的进程可以读取 `httpd_sys_content_t` 类型的文件。\n\n**默认拒绝**：如果没有 `allow` 规则，即使进程是 root，操作也会被拒绝。\n\n### SELinux 的三种模式\n\n- **Enforcing**：拦截违反策略的操作并记录日志。\n- **Permissive**：不拦截，只记录日志（用于调试）。\n- **Disabled**：完全关闭 SELinux。\n\n## 三者总结\n\n| 机制             | 主动操作者 | 被动对象                          | 核心判断                        |\n| -------------- | ----- | ----------------------------- | --------------------------- |\n| **DAC**        | 进程    | 文件/目录等资源                      | 这个进程的 UID/GID 有没有权限访问它？     |\n| **Capability** | 进程/线程 | 某种受保护的内核操作或资源                 | 这个进程有没有执行这种特权操作的能力？         |\n| **MAC**        | 进程    | 文件、进程、socket、设备、IPC 等 | 安全策略是否允许这个进程操作这个对象？         |\n\n> 容器隔离机制（命名空间、cgroups、Seccomp）负责资源视图隔离与系统调用过滤，属于不同的问题域。\n\n### 综合示例\n\n用户在一台已 Root 的 Android 手机上通过 `su` 获取 root shell，尝试读取某个应用的私有配置文件 `/data/data/com.example/shared_prefs/config.xml`：\n\n当前 `su` 进程：EUID = 0，SELinux Domain = `su`，Effective Capability 包含 `CAP_DAC_OVERRIDE`。\n\n目标文件：Owner = `u0_a123`，Mode = `0600`，SELinux Type = `app_data_file`。\n\n1. **DAC 检查**：文件权限 `0600`，只有 `u0_a123` 可读写；但进程持有 `CAP_DAC_OVERRIDE`，可以绕过 `rwx` 权限限制 → **通过**。\n2. **Capabilities 检查**：Effective 集合中包含 `CAP_DAC_OVERRIDE` → **通过**。\n3. **MAC 检查（SELinux）**：进程域为 `su`，文件类型为 `app_data_file`。查询策略中是否存在 `allow su app_data_file:file { open read getattr };`——如果没有 → **拒绝**。\n\n## SetUID 机制\n\n在 Linux 中，非特权用户无法直接访问特权资源（如 `/etc/shadow`、`/etc/sudoers`）。系统通过 **文件权限位**、**内核系统调用** 以及底层的 **Capabilities 映射**，实现多维度的“受控借权”与隔离：\n\n- **SetUID 文件权限位（被动触发）**：可执行文件置位该标志后，任意用户执行它，内核在 `execve` 时都会将进程的 **有效用户ID（EUID）** 和 **保存设置用户ID（SUID）** 设为文件归属者（RUID 保持原启动者不变）。\n    \n    - 特权与 Capabilities 提升：如果文件属主是 root（UID 0），内核在置位 EUID=0 的同时，还会自动将进程的 **Capabilities（Permitted 与 Effective 集合）提升为全量内核特权**，从而赋予进程底层的特权系统调用执行能力与全量文件读写权限。\n        \n- **`setuid()` 系统调用（主动调节与降权防护）**：允许具备特权（拥有 `CAP_SETUID` 或 EUID=0）的进程在运行时主动修改自身的 UID（RUID/EUID/SUID），完成身份切换。\n    - 特权丢弃机制：当特权进程调用 `setuid()` 彻底切换为非 root 普通用户时，内核会自动清空其所有 Capabilities，防止特权泄露到降权后的用户环境中。\n\n### 典型应用\n\n- **`passwd`：受限修改高权限文件**\n    - **提权读写**：属主为 root 且置位 SetUID。普通用户启动后，进程获得 `EUID = 0` 及对应特权，从而具备读写 `/etc/shadow` 的物理权限。\n    - **逻辑自限**：进程保留了调用者的真实身份（RUID）；程序内部根据 RUID 做安全限制，仅允许修改当前用户自身的那一行数据，防止篡改他人密码。\n- **`su`：受控切换用户身份**\n    - **认证**：以 `EUID = 0` 启动，凭借内核特权读取 `/etc/shadow` 校验目标用户的凭证。\n    - **降权切换**：验证通过后，主动调用 `setuid()` 将进程所有 UID 切换为目标用户，内核随之撤销特权 Capabilities，最后 `exec` 加载目标 Shell。\n- **`sudo`：基于策略的委托执行**\n    - **权限转变节点**：用户执行瞬间即获得 `EUID = 0` 与特权集，因此具备读取并解析 `/etc/sudoers` 的权限。\n    - **鉴权与派生**：根据 RUID 匹配策略、完成认证；通过后以目标身份（通常为 root）派生执行指定命令。",
+  "id": "835dfcae-9c9d-4efc-85d0-b2d0e3c6c460",
+  "metadata": {
+    "tags": [
+      "os/android",
+      "os/linux"
+    ],
+    "title": "Linux 进程权限模型"
+  },
+  "resources": [
+    "d37098057c27806440fe6b24ad68b54107fea8017de8f1560c4103c4acd5ea71.jpg",
+    "d3afe6e030808e13c043d5513b779b6957ce08482cfe74fabd82a961069d7f99.jpg"
+  ],
+  "url": "/notes/n-835dfcae9c9d4efc85d0b2d0e3c6c460/"
+}

@@ -1,0 +1,57 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c5eea25d221561fb7d00",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-bc63acd0383e19e59e61",
+      "kind": "heading",
+      "offset": 83
+    },
+    {
+      "id": "h-7f4ae644b63da79b6d91",
+      "kind": "heading",
+      "offset": 471
+    },
+    {
+      "id": "h-b1ae4be92a2bc3c49024",
+      "kind": "heading",
+      "offset": 750
+    },
+    {
+      "id": "h-01ba3f3b4eeb6689fedb",
+      "kind": "heading",
+      "offset": 1315
+    },
+    {
+      "id": "h-cadac2bf2db34296f306",
+      "kind": "heading",
+      "offset": 1980
+    },
+    {
+      "id": "h-b27bdf886133a505f577",
+      "kind": "heading",
+      "offset": 2247
+    },
+    {
+      "id": "h-5c9b13d1e1fcccb413a7",
+      "kind": "heading",
+      "offset": 2506
+    }
+  ],
+  "body": "# Android 运行机制与逆向 (MOC)\n\nAndroid 应用包、运行时、Java/Native 调用、调试 Hook 与网络分析。\n\n## 应用包与组件运行\n\n1. [APK 文件结构](/notes/n-9729337d6cd24c80af4df65b837ba7cd/) — 识别 Manifest、资源、DEX 与 Native 库。\n2. [Android DEX 文件格式解析](/notes/n-4c20579667134e5a8dcb61db2edc1268/) — 区分 JVM `Class` 与 DEX 的表达方式。\n3. [Smali 语法基础](/notes/n-002979857fc44b608dd689b83da78b53/) — 阅读与修改 DEX 对应的指令表示。\n4. [Android 组件与界面交互](/notes/n-3e717d798d4e4a66875e4734b91d9e25/) — 从组件声明、进程启动、Binder/Looper 到界面事件理解应用执行。\n\n## 环境准备与权限\n\n- [Linux 进程权限模型](/notes/n-835dfcae9c9d4efc85d0b2d0e3c6c460/) — 理解权限检查与 Root 的基础。\n- [Android 刷机与 Root](/notes/n-eb9073f394f64c15b44241a6cead74ac/) — 了解分区、刷机和 Root 的准备过程。\n- [Android 动态调试](/notes/n-ca4c5edc9202426bbb01eefc6daa9971/) — 根据调试权限与目标层选择 Java 或 SO 调试方式。\n\n## Java 层与 Hook\n\n- [Java 与 JVM 运行机制 &#40;MOC&#41;](/notes/n-d80736f80c16419c85c2511be976a2d5/) — 补充类文件、类加载、加载器与反射基础，注意 JVM 与 Android 运行时的差异。\n- [Xposed 框架原理](/notes/n-de6265b6e8a74a7c987667457b8da0c3/) — 理解框架介入应用执行的方式及技术演变。\n- [Xposed 模块开发](/notes/n-9026c0305fcd4f06b979cc9328bc05a6/) — 模块项目、方法 Hook、反射与加载器选择。\n- [Frida](/notes/n-609ad4e4ccd3483c81e98a4f389550e0/#h-1b8e255ab1dcffed50eb) — 按需要查阅运行时 Java Hook；完整工具用法见 [Frida](/notes/n-609ad4e4ccd3483c81e98a4f389550e0/)。\n- [Android Java 加密与哈希算法实现及 Hook](/notes/n-438f78d4e2554e5da12e7b5b853ed404/) — 观察算法调用的输入、输出与关键参数。\n\n## Native 层与加载\n\n1. [Linux ELF 文件格式](/notes/n-95e8c75c9da6476fbc85e09535265997/) — 理解文件布局、动态链接、重定位与地址关系。\n2. [Android 常用系统库](/notes/n-c9854103b1aa4adeb714e7e0b2559172/) — 识别 ART、libc、libdl 与 linker 的作用。\n3. [SO 加载与初始化流程](/notes/n-569d0c18845340eea0b3eda45fe9828e/) — 理解构造函数、初始化数组与 `JNI_OnLoad` 的关系。\n4. [JNI 与 NDK&#65306;原生方法注册机制](/notes/n-e10db2f9ffca40938f9bd601a6b14ffd/) — 区分 JNI 接口、NDK 工具与 native 方法绑定。\n5. [Frida](/notes/n-609ad4e4ccd3483c81e98a4f389550e0/#h-2acf2fb672c1261c2a98) — 分析 Native 函数的参数、返回值与调用时机。\n\n- [OLLVM 混淆原理](/notes/n-6a5a36a4ceb54c23abc33e984f1d7dcd/)\n- [Flutter 运行机制与逆向](/notes/n-b58e0bf681b44a38a93f4ec9e1f3a301/) — 识别 Dart/Flutter 运行环境与分析入口。\n\n## 签名、环境检测与设备信息\n\n- [Android 签名校验与对抗](/notes/n-0c28501e5cc44cd7bd8e0d2cecbdb6fc/) — 区分安装／更新签名验证与应用内自检。\n- [Android 环境检测与对抗](/notes/n-9a0ea8eec6bc433c974f2451c775f059/) — Root、模拟器、反调试与 Frida 检测。\n- [Android 设备指纹](/notes/n-0ba4e97b197644a5999c97da55c75e6f/) — 查阅设备信息、权限与指纹采集。\n\n## 网络分析与案例\n\n- [Android 抓包技术与反抓包对抗](/notes/n-898d5cfcbe054ff481fe086af87ff59d/) — 选择抓包方式并排查代理、证书与应用限制。\n- 配置mitmProxy安卓抓包 — 具体环境配置与验证。\n- 分析郎诗寓app登录 — 结合请求和应用行为分析登录案例。\n- [流量抓包与代理原理 &#40;MOC&#41;](/notes/n-89074cb03d004c5f835aac39af5ef5bc/) — 补充流量接管、代理协议与 TLS 可见性。\n\n## 相关入口\n\n- [加密&#12289;认证与安全通信](/notes/n-7cd1017c7a814f29a4852a9adbdcfe79/) — 算法、证书与协议基础。\n- [Windows 调试与逆向分析 &#40;MOC&#41;](/notes/n-da63b3ac0bcb46c7bb4db1de80503df3/) — 查阅 Windows 的调试事件、断点与异常分发机制。\n",
+  "id": "2b992cf7-b193-4491-bd31-a57f0b3266ac",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/android",
+      "reverse/android"
+    ],
+    "title": "Android 运行机制与逆向 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-2b992cf7b1934491bd31a57f0b3266ac/"
+}

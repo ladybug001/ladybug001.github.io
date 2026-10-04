@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-edbb4a7f82ca5a2bada8",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-662fde26c64c7cf6065a",
+      "kind": "heading",
+      "offset": 287
+    },
+    {
+      "id": "h-445de6d9640c67cb3021",
+      "kind": "heading",
+      "offset": 548
+    },
+    {
+      "id": "h-4f844123d2af4cbf8e5e",
+      "kind": "heading",
+      "offset": 799
+    },
+    {
+      "id": "h-7916b248bb7d0e345d09",
+      "kind": "heading",
+      "offset": 1046
+    }
+  ],
+  "body": "# x86 保护模式分页机制 (MOC)\n\nx86 CPU 将线性地址转换为物理地址的分页机制：`10-10-12`、`PAE`、`TLB` 缓存、缺页中断、控制寄存器与页表自引用，通过 Windows 双机调试实验验证。\n\nIntel-64 处理器支持 4 种分页模式：\n1. 32 位分页（二级分页）。\n2. PAE 分页（三级分页）。\n3. 4 级分页机制。\n4. 5 级分页机制。\n\n64 位处理器兼容 x86 的分页模式。\n\n> [!NOTE] 机制本质说明\n> 分页地址转译由 CPU 硬件完成；本系列以 Windows 为实验平台。\n\n---\n\n## 基础分页\n\n先掌握地址术语与基础页表，再阅读 PAE 扩展。\n\n- [x86 10&#45;10&#45;12 分页机制](/notes/n-12692fae35ce406db9d1af54f066bdd0/) — 地址术语、多级页表查表流程、PDE/PTE 属性位、表基址与自引用机制\n- [x86 PAE 分页机制](/notes/n-0f53280a204b4365ac0c265d025d4bc0/) — 从 32 位到 36 位物理地址的扩展设计，PDPTE/PDE/PTE 结构与 XD/NX 位\n## 转译性能与异常\n\n- [x86 TLB 与 Cache 机制](/notes/n-a00926a3652e489ab79048c7e29efd4b/) — 地址转换缓存（TLB）与高速数据缓存（CPU Cache）的物理区别，PWT/PCD 控制位与 PAT 查表索引\n- [x86 缺页异常与 Windows 缺页处理](/notes/n-85c26c688a7d414f97a72dd67c15f9bb/) — 缺页异常触发条件、`CR2` 线性地址存储、0xE 中断路由与系统接管处理流程\n## 控制与页表管理\n\n在理解基础分页、PAE 和缺页异常后阅读以下两项。\n\n- [x86 系统控制寄存器](/notes/n-377c6374f9f54aea978942cfbee10af9/) — `CR0`/`CR2`/`CR3`/`CR4` 的关键控制位与硬件开关，写保护（WP）内核绕过实验\n- [x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/) — 页表管理的自转译死锁打破方案，空间拓扑比例及自引用的几何证明\n\n---\n\n## 相关笔记\n\n- [Windows 双机调试环境配置](/notes/n-f3bf0f2965bc449fa09061edc6abf9fb/) — 实验环境搭建\n\n- [Windows 内存管理 &#40;MOC&#41;](/notes/n-eaaa660aabe44f52abf865bf51bb3789/) — 从 CPU 转译进入操作系统的分配、缺页恢复与物理页管理。\n- [x86 裸机实验&#65306;实模式进入保护模式](/notes/n-b8281eab11a94cc19572b938dead1e60/) — 结合分段知识验证分页配置。\n- [x86&#47;x64 体系结构](/notes/n-d80046d2d0bb4ae49616fceabab1054a/) — 返回硬件基础总览。\n",
+  "id": "2b4685ae-fa86-4bad-91ae-7a1ad1ebbabe",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows",
+      "arch/x86"
+    ],
+    "title": "x86 保护模式分页机制 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/"
+}

@@ -1,0 +1,161 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-804e34aed762724cde5f",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-ae81a36ec47522e139f8",
+      "kind": "heading",
+      "offset": 285
+    },
+    {
+      "id": "h-c4c86cd38af314a9ae03",
+      "kind": "heading",
+      "offset": 920
+    },
+    {
+      "id": "h-003ab68d2c8a89c523a2",
+      "kind": "heading",
+      "offset": 1706
+    },
+    {
+      "id": "h-303ebc5c8851aa270013",
+      "kind": "heading",
+      "offset": 1724
+    },
+    {
+      "id": "h-63168992b0af180550c3",
+      "kind": "heading",
+      "offset": 2012
+    },
+    {
+      "id": "h-f5c81a41c37011fb747f",
+      "kind": "heading",
+      "offset": 2364
+    },
+    {
+      "id": "h-d8075409fcae8ff8889c",
+      "kind": "heading",
+      "offset": 3369
+    },
+    {
+      "id": "h-e3d1a84c736880ef3532",
+      "kind": "heading",
+      "offset": 3957
+    },
+    {
+      "id": "h-ed845e97c9767c76c61f",
+      "kind": "heading",
+      "offset": 4403
+    },
+    {
+      "id": "h-95b78e95fb0dded1dd4c",
+      "kind": "heading",
+      "offset": 4505
+    },
+    {
+      "id": "h-ce4f001708ff1372451b",
+      "kind": "heading",
+      "offset": 5044
+    },
+    {
+      "id": "h-a895818ef84c851369b1",
+      "kind": "heading",
+      "offset": 5485
+    },
+    {
+      "id": "h-abdea92f45c798cbb13b",
+      "kind": "heading",
+      "offset": 5828
+    },
+    {
+      "id": "h-43a9c48f4fa198dc2284",
+      "kind": "heading",
+      "offset": 6126
+    },
+    {
+      "id": "h-0f6d8e0bdaa160b6fa82",
+      "kind": "heading",
+      "offset": 6692
+    },
+    {
+      "id": "h-fddbce99b00bd87bb881",
+      "kind": "heading",
+      "offset": 6844
+    },
+    {
+      "id": "h-efec20f1e352acb2b5c3",
+      "kind": "heading",
+      "offset": 6963
+    },
+    {
+      "id": "h-4bb6023fa6ec9381e0e2",
+      "kind": "heading",
+      "offset": 7261
+    },
+    {
+      "id": "h-61d90313dc6229de48eb",
+      "kind": "heading",
+      "offset": 7384
+    },
+    {
+      "id": "h-74e6a49b6996e89fffc5",
+      "kind": "heading",
+      "offset": 7491
+    },
+    {
+      "id": "h-1d122adc86d4fd133825",
+      "kind": "heading",
+      "offset": 7647
+    },
+    {
+      "id": "h-09de9a64150038e0cf7d",
+      "kind": "heading",
+      "offset": 7980
+    },
+    {
+      "id": "h-e9964e01f63ff52602b6",
+      "kind": "heading",
+      "offset": 8114
+    },
+    {
+      "id": "h-b7d67f6b44c46526259e",
+      "kind": "heading",
+      "offset": 8198
+    },
+    {
+      "id": "h-d9bd2282b08321bd5eb7",
+      "kind": "heading",
+      "offset": 8298
+    }
+  ],
+  "body": "# x86 10-10-12 分页机制\n\n在保护模式下，内存寻址高度依赖于段机制和页机制。相较于段机制，页机制在现代操作系统中更为核心。本节将详细探讨 x86 架构下的 `10-10-12` 分页机制。\n\n![image2022&#45;7&#45;8&#95;15&#45;23&#45;56&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/30cad79a9beed89c6d86ebbd0762a1a9201fb0eb3df7e82b7e2077a7c46187b5.png)\n\n## 地址术语定义\n\n在汇编指令中，我们经常遇到如下形式的内存访问指令：\n\n```asm\nMOV EAX, DWORD PTR DS:[0x12345678]\n```\n\n在这条指令中，地址经历了三个层级的抽象：\n- **有效地址（Effective Address / Offset）**：指令中直接给出的偏移量，即 `0x12345678`。\n- **线性地址（Linear Address）**：有效地址加上段基址转换后的地址，即 `DS.Base + 0x12345678`。在未开启分页时，线性地址直接对应物理地址。\n- **物理地址（Physical Address）**：CPU 的内存管理单元（MMU）将线性地址经过分页机制转译后，最终发送到系统总线上的实际物理内存地址。\n![f9da1f5b9d1e8637fa8763533d749bfe&#95;MD5&#46;jpg](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/bb601d319e3fbb7c98ce2b4602bdb3787ffaec7341b86bfb280e817992524f50.jpg)\n\n在 32 位 x86 系统中，线性地址向物理地址的转译主要有两种硬件模式：`10-10-12` 分页（二级页表）和 `2-9-9-12` 分页（PAE，三级页表）。本节重点讨论 `10-10-12` 分页机制。\n\n---\n\n## 线性地址转换为物理地址的原理\n\nCPU 从线性地址转换到物理地址的过程依赖于多级嵌套的页表结构。每一个活动进程都拥有一套独立的页表，其第一级页表的物理基址存储在 `CR3` 寄存器中。\n\n> [!NOTE] CR3 寄存器的硬件本质\n> `CR3` 寄存器（又称页目录表基址寄存器，PDBR）在硬件设计上是核心专属的（每个 CPU 核心配备一个独立的 `CR3` 寄存器）。这确保了当操作系统进行多任务进程切换时，当前 CPU 核心只需重写自身的 `CR3`，即可瞬间切换整个进程虚拟地址空间的转译规则，而不会干扰其他核心。\n\n`10-10-12` 分页将 32 位的线性地址拆分为三个部分：**10 位页目录索引（PDI）**、**10 位页表索引（PTI）** 和 **12 位页内偏移（PPI）**。转译的基本流程如下：\n\n1. **查第一级页表（页目录表 PDT）**：MMU 以 `CR3` 寄存器中存储的物理基址定位页目录表，利用线性地址的前 10 位作为索引，找到对应的页目录项（PDE）。\n2. **查第二级页表（页表 PTT）**：从 `PDE` 中获取下一级页表的物理基址，利用线性地址的中间 10 位作为索引，找到对应的页表项（PTE）。\n3. **定位物理页**：从 `PTE` 中提取出最终物理页的物理基址，加上线性地址的低 12 位页内偏移量，精确定位到具体的物理内存数据。\n\n![image2022&#45;7&#45;18&#95;10&#45;27&#45;38&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/53b8e6ed54994567437016645ebe3657486cda586093ceb36481d58744efd118.png)\n\n### 实验验证：线性地址到物理地址的转换步骤\n\n#### 1. 寻找目标线性地址\n在操作系统中打开记事本，输入任意特征字符串。使用 Cheat Engine（CE）软件搜索该字符串，获取其在记事本进程中的虚拟线性地址。假设搜索得到的线性地址为 `0x000AAFF8`：\n\n![image2022&#45;7&#45;18&#95;10&#45;8&#45;27&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/6d7f85f9aad8a49811ddef6218d93c3d6b5dd56ff8b5351713ad0b49f374db28.png)\n\n#### 2. 线性地址的二进制拆分\n将线性地址 `0x000AAFF8` 转换为二进制，并按照 `10-10-12` 规则进行拆分。由于每个表项占用 4 字节，计算偏移时前两部分索引需要乘以 4：\n* **前 10 位 (PDI)**：`0000 0000 00` $\\rightarrow$ 十六进制：`0x0`，页目录表内偏移量：`0 * 4 = 0`。\n* **中 10 位 (PTI)**：`00 1010 1010` $\\rightarrow$ 十六进制：`0xAA`，页表内偏移量：`0xAA * 4 = 0x2A8`。\n* **低 12 位 (PPI)**：`1111 1111 1000` $\\rightarrow$ 十六进制：`0xFF8`（物理页内偏移，无需乘以 4）。\n\n#### 3. 使用 WinDbg 级联查表\n获取当前进程的 `CR3` 值为 `0x16bcf000`。在 WinDbg 中，利用物理读取命令 `!dd` 加上页目录表的起始物理基址和第一部分偏移量，定位页目录项（PDE）：\n\n```text\nkd> !dd 16bcf000+0\n```\n\n![image2022&#45;7&#45;18&#95;11&#45;6&#45;0&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/08586e8305cc6f6e73629f0c1f3d6dde3d66615132f45468cf6ea39e2527c4b1.png)\n\n读取所得的页目录项（PDE）内容为 `0x16d0e867`。该值的高 20 位代表页表的物理基址，低 12 位为属性位。我们将低 12 位属性清零，得到页表的实际物理基址 `0x16d0e000`。\n接着，利用页表基址加上第二部分的偏移量，定位页表项（PTE）：\n\n```text\nkd> !dd 16d0e000+2A8\n```\n\n![image2022&#45;7&#45;18&#95;11&#45;6&#45;44&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/52e40dae202fb2dc8d04e2dd7d7e66bb28346b94729585728443526b83d4bd64.png)\n\n获取到的页表项（PTE）内容为 `0x16d45867`。同样将低 12 位属性位清零，得到最终物理页的物理基址 `0x16d45000`。\n最后，将物理页基址加上第三部分的页内偏移量 `0xFF8`，即得到目标物理地址 `0x16d45FF8`。使用 `!db` 命令以字节形式读取该物理内存，成功获取记事本中输入的字符串内容：\n\n![image2022&#45;7&#45;18&#95;11&#45;8&#45;9&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/d47c50c037504fd9144167b9f0b3d53f35f7f6a89044167c15e981200cf48443.png)\n\n---\n\n## 页目录表（PDT）与页表（PTT）的结构\n\n在 `10-10-12` 分页机制中，用于进行地址转译的二级目录体系具有严格的物理结构：\n\n1. **第一级：页目录表（PDT，Page Directory Table）**\n   大小为 4 KB，刚好占用一个物理页。它包含 1024 个成员，每个成员大小为 4 字节，称为**页目录项（PDE，Page Directory Entry）**。\n2. **第二级：页表（PTT，Page Table）**\n   大小同样为 4 KB。它包含 1024 个成员，每个成员大小为 4 字节，称为**页表项（PTE，Page Table Entry）**。\n\n![image2022&#45;7&#45;18&#95;16&#45;0&#45;50&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/6b1ad141d435844ecf4534d1546150b14aa6959104cf3b207584b837a83088e1.png)\n\n这种结构与 `10-10-12` 的划分逻辑完全一致：物理页大小为 4096 字节（$2^{12}$），对应 12 位页内偏移；而 `PDT` 和 `PTT` 的 1024 个表项（$2^{10}$）则完美对应两个 10 位的索引。\n\n### 页表项（PTE）的映射特征\n- **有效性**：一个 `PTE` 可以没有对应的实际物理页（此时页属性的 `P` 位为 0，代表页面无效，强行访问会触发缺页异常）。\n- **一对一映射**：一个有效 `PTE` 在同一时间仅能映射到一个具体的物理页。\n- **共享内存（多对一）**：多个不同的 `PTE` 可以映射到同一个物理页上，这是操作系统实现进程间物理内存共享的基础。\n\n通常情况下，线性地址 `0x0` 是一个空指针无效地址，其对应的 `PTE` 未挂接任何物理页（呈 Present = 0 状态）：\n\n![image2022&#45;7&#45;18&#95;16&#45;26&#45;58&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/6d9d1ec93adb2a0584d9cd2d2fd75663d16096da3040826bcaa6b786c78e2144.png)\n\n### 实战：通过修改 PTE 实现 0 地址物理映射\n\n如果在内核调试中，手动为 `0x0` 地址的 `PTE` 写入一个有效物理页基址，则此空指针地址将变得可读写。以下通过一段 C 语言代码配合 WinDbg 验证此过程：\n\n#### 1. 运行测试代码\n运行以下测试程序，获取局部变量 `a` 的虚拟线性地址。程序将在获取地址后暂停，等待我们在 WinDbg 中对 `0x0` 地址的 `PTE` 进行物理重映射。\n\n```c\n#include <stdio.h>\n\nvoid main()\n{\n    int a = 10;\n    printf(\"a address: %x \\n\", &a);\n    \n    getchar(); // 暂停，在此期间进行内核调试修改\n    \n    *(int*)0 = 123;\n    printf(\"0 address data: %x \\n\", *(int*)0);\n    getchar();\n}\n```\n\n程序输出变量 `a` 的线性地址为 `0x0012FF7C`：\n\n![image2022&#45;7&#45;18&#95;16&#45;44&#45;22&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/713696684b856066239245fd07015da99509e5d7fc2b81d54f6939b3eaf7e2af.png)\n\n#### 2. 线性地址二进制拆分与 PTE 查找\n将 `0x0012FF7C` 拆分为二进制：\n```text\n0000 0000 01 // PDI = 0x1,  偏移：1 * 4 = 4\n00 1010 1111 // PTI = 0x12F, 偏移：0x12F * 4 = 0x4BC\n1111 0111 1100 // PPI = 0xF7C\n```\n在 WinDbg 中级联查表，定位该地址对应的 `PTE`：\n\n![image2022&#45;7&#45;18&#95;16&#45;58&#45;14&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/02d7a94d9fe7901e259b9c5559eb3fe8095e6d397ba6d47054fe9d92d1271b2b.png)\n\n查询获取到变量 `a` 线性地址对应的 `PTE` 物理内容为 `0x25D97867`。\n\n#### 3. 将该 PTE 写入 0 地址对应的 PTE 中\n线性地址 `0x00000000` 拆分对应的 PDI = 0，PTI = 0。我们在 WinDbg 中找到 0 地址对应的 `PTE` 物理位置，将变量 `a` 物理页的 `PTE` 值（`0x25D97867`）直接覆盖写入：\n\n```text\nkd> !ed 25f01000 25d97867\n```\n\n![image2022&#45;7&#45;18&#95;16&#45;59&#45;53&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/88189cc61a779d27b9b35367c9f3b640f63210c8cee2d088dc28dbd4e4d26f12.png)\n\n#### 4. 验证结果\n返回用户态程序，敲击回车继续运行。程序成功向空指针地址 `*(int*)0` 写入并读取了数据 `123`，未发生任何内存访问违规异常（Access Violation），实验成功：\n\n![image2022&#45;7&#45;18&#95;17&#45;0&#45;31&#46;png](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/7cc94d4327dbbd92c4c201f578f1b02f8112a5f7cac507cf2d297fc6a5f914a4.png)\n\n---\n\n## PDE 与 PTE 的低 12 位物理属性解析\n\n`PDE` 和 `PTE` 的低 12 位用于表示页属性。最终物理页的属性是 `PDE` 和 `PTE` 属性位**进行逻辑与（AND）运算**的结果。\n\n如下图所示，分别为 PDE 和 PTE 的结构：\n![e81194af97ed77e497edf394b4fcc60b&#95;MD5&#46;jpg](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/a3c22141be42a2f717256cb9b8cdefd4f16dd8e56152a4eccdfdbd91960e286c.jpg)\n\n更详细的硬件属性结构如下图所示：\n\n![1cae200bb321c31213f15a747ecff51c&#95;MD5&#46;jpg](/notes/n-12692fae35ce406db9d1af54f066bdd0/media/5119a1c8a1ad586aa8a7fe2852f9bb562cb409757ad6a411c062ddd76cf946b8.jpg)\n\n> [!IMPORTANT] 最终物理页属性计算原则\n> **物理页的最终控制属性 = PDE 属性 & PTE 属性（即两级属性进行逻辑“与”运算的结果）**。\n\n#### P 位 (Present)\n\n**第 0 位**：物理页有效标志位。置 1 代表页面有效；置 0 代表页面无效。\n\n* 只有当 `PDE` 和 `PTE` 的 `P` 位均置为 1 时，MMU 才会认为该物理页有效。任何一级为 0 均会触发 `Page Fault`（缺页异常）。\n\n#### R/W 位 (Read/Write)\n\n**第 1 位**：读写控制标志位。置 1 代表可读写；置 0 代表只读。\n\n* 常量区、代码段所在的物理页通常将其置 0。在内核开发中，可以通过修改此位解除只读页面写保护。\n\n#### U/S 位 (User/Supervisor)\n\n**第 2 位**：特权级控制标志位。置 1 代表用户态（User）可访问；置 0 代表仅系统态（Supervisor）可访问。\n\n* **访问规则**：\n\t* **系统特权级（Ring 0, 1, 2）**：能正常访问所有系统页（U/S = 0）与用户页（U/S = 1）。虽然 Ring 1 和 Ring 2 的特权分级不及 Ring 0，但它们在硬件分页转译上同样属于系统特权级（Supervisor）范畴。\n\t* **用户特权级（Ring 3）**：仅允许访问用户级页面（U/S = 1），一旦强行访问系统级页面，CPU 会直接拦截并抛出保护异常。\n\n#### PWT 和 PCD 位\n\n**第 3、4 位**：与 CPU 的缓存控制策略相关，详细原理参考：[x86 TLB 与 Cache 机制](/notes/n-a00926a3652e489ab79048c7e29efd4b/)。\n\n#### A 位 (Accessed)\n\n**第 5 位**：访问标志位。当硬件对该页执行了读或写操作时，CPU 硬件会自动将此位置 1。操作系统内存管理器利用该位进行物理页面置换算法（如 LRU）的统计。\n\n#### 第 6 位（D 位 / 忽略位）\n\n* **在 PDE 中**：为保留位，CPU 不予解析。\n* **在 PTE 中**：为**脏位（Dirty 位）**。当该物理页的内容被 CPU 写入或修改过，硬件会自动将此位置 1。该位主要指示操作系统在换出此页面时是否需要将其写回磁盘 swap 区。\n\n#### 第 7 位（PS 位 / PAT 位）\n\n* **在 PDE 中（PS，Page Size）**：大页控制标志位。当 `PS = 1` 且 `CR4.PSE = 1` 时，代表该 `PDE` 直接指向一个大小为 **4 MB 的物理大页**，跳过第二级页表 `PTT` 阶段。此时线性地址被拆分为两部分：10 位 PDI 和 22 位页内偏移。\n* **在 PTE 中（PAT，Page Attribute Table）**：页属性表控制位，配合 `PWT` 和 `PCD` 参与 CPU 高级 Cache 缓存机制控制，详细原理参考：[x86 TLB 与 Cache 机制](/notes/n-a00926a3652e489ab79048c7e29efd4b/)。\n\n#### G 位 (Global)\n\n**第 8 位**：全局缓存标志位。详细原理参考：[G 位与 TLB 刷新](/notes/n-a00926a3652e489ab79048c7e29efd4b/#h-1dbbe5c52dfcceb3ae1e)。\n\n#### Avail 位 (Available)\n\n**第 9-11 位**：系统保留位。CPU 硬件完全忽略这三个属性位，专门提供给操作系统设计者或程序员用作自定义的状态元数据标记。\n\n---\n\n## 页表的自映射\n\n操作系统不能使用物理地址，那要如何管理页表中的映射关系呢？\n\n参考：[x86 页表自映射机制](/notes/n-c70d247705c24a7a9f3be163e7b7521e/)\n# 相关笔记\n\n- [x86 PAE 分页机制](/notes/n-0f53280a204b4365ac0c265d025d4bc0/) — 基于本笔记的 PDE/PTE 概念，扩展到 36 位物理地址\n- [x86 TLB 与 Cache 机制](/notes/n-a00926a3652e489ab79048c7e29efd4b/) — TLB 缓存的正是本笔记中 PDE/PTE 的映射关系\n- [x86 系统控制寄存器](/notes/n-377c6374f9f54aea978942cfbee10af9/) — CR3 寄存器指向 PDT，CR4.PSE 控制大页开关\n\n",
+  "id": "12692fae-35ce-406d-b9d1-af54f066bdd0",
+  "metadata": {
+    "tags": [
+      "arch/x86",
+      "os/windows/mm"
+    ],
+    "title": "x86 10-10-12 分页机制"
+  },
+  "resources": [
+    "02d7a94d9fe7901e259b9c5559eb3fe8095e6d397ba6d47054fe9d92d1271b2b.png",
+    "08586e8305cc6f6e73629f0c1f3d6dde3d66615132f45468cf6ea39e2527c4b1.png",
+    "30cad79a9beed89c6d86ebbd0762a1a9201fb0eb3df7e82b7e2077a7c46187b5.png",
+    "5119a1c8a1ad586aa8a7fe2852f9bb562cb409757ad6a411c062ddd76cf946b8.jpg",
+    "52e40dae202fb2dc8d04e2dd7d7e66bb28346b94729585728443526b83d4bd64.png",
+    "53b8e6ed54994567437016645ebe3657486cda586093ceb36481d58744efd118.png",
+    "6b1ad141d435844ecf4534d1546150b14aa6959104cf3b207584b837a83088e1.png",
+    "6d7f85f9aad8a49811ddef6218d93c3d6b5dd56ff8b5351713ad0b49f374db28.png",
+    "6d9d1ec93adb2a0584d9cd2d2fd75663d16096da3040826bcaa6b786c78e2144.png",
+    "713696684b856066239245fd07015da99509e5d7fc2b81d54f6939b3eaf7e2af.png",
+    "7cc94d4327dbbd92c4c201f578f1b02f8112a5f7cac507cf2d297fc6a5f914a4.png",
+    "88189cc61a779d27b9b35367c9f3b640f63210c8cee2d088dc28dbd4e4d26f12.png",
+    "a3c22141be42a2f717256cb9b8cdefd4f16dd8e56152a4eccdfdbd91960e286c.jpg",
+    "bb601d319e3fbb7c98ce2b4602bdb3787ffaec7341b86bfb280e817992524f50.jpg",
+    "d47c50c037504fd9144167b9f0b3d53f35f7f6a89044167c15e981200cf48443.png"
+  ],
+  "url": "/notes/n-12692fae35ce406db9d1af54f066bdd0/"
+}

@@ -1,0 +1,53 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-376fbcfb43eefd1e0c89",
+      "kind": "heading",
+      "offset": 10
+    },
+    {
+      "id": "h-a0ac7d49467115a066e8",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-0012bccef62a63ed0175",
+      "kind": "heading",
+      "offset": 262
+    },
+    {
+      "id": "h-8751df866d6a5bca2a6f",
+      "kind": "heading",
+      "offset": 486
+    },
+    {
+      "id": "h-e7270a625bb5e6c8d69e",
+      "kind": "heading",
+      "offset": 772
+    },
+    {
+      "id": "h-50f27f6d3b17f6b28c0a",
+      "kind": "heading",
+      "offset": 2014
+    },
+    {
+      "id": "h-5cb7a21d6a60d8005e2c",
+      "kind": "heading",
+      "offset": 2647
+    }
+  ],
+  "body": "# DNS 基础概念\n\n## 什么是 DNS\n\nDNS（Domain Name System，域名系统）是互联网中用于将域名解析为 IP 地址的分布式数据库系统。它将人类易于记忆的域名（如 `www.example.com`）转换为计算机能够识别的 IP 地址（如 `192.0.2.1`）。\n\nDNS 采用分层结构，类似倒置的树形：根域位于最顶层，其下是顶级域（如 `.com`、`.cn`），再往下是二级域名（如 `example.com`）和子域名（如 `www.example.com`）。\n\n## DNS 解析过程\n\nDNS 解析分为正向解析（域名 → IP 地址）和反向解析（IP 地址 → 域名）。\n\n正向解析的流程如下：\n1. 客户端首先查询本地缓存或 `hosts` 文件。\n2. 若未命中，请求发送到本地 DNS 服务器。\n3. 本地 DNS 服务器查询自身缓存，若无则向根域名服务器发起请求，请求方式二选一：\n\t1. 递归查询\n\t2. 迭代查询\n4. 直到获取最终的 IP 地址，查询结果返回客户端，并缓存以供后续使用。\n\n### 递归查询与迭代查询\n\nDNS 查询有两种方式：\n\n- **递归查询**：类似于函数递归。\n- **迭代查询**：逐级查询，每次返回下一步需要查询的服务器地址，直到获取最终结果。\n\n但实际应用中，是两者结合的形式，如下图所示：\n![b173189a94da3766a4a80ecd8918e5cb&#95;MD5&#46;jpg](/notes/n-e32ccbfef69a4277a6bb262496b3707e/media/1aa8f1e89b21e5ce9d4bb3232d4ef2b7133f1e7f1be70667b9dc31b546e1664a.jpg)\n\n## DNS 记录类型\n\nDNS 记录是域名与 IP 地址或其他信息的映射关系。`A` / `AAAA` 查询是最常见、最基础的\"查域名对应 IP\"的查询；其余记录类型则用于邮件路由、文本验证、服务发现等不同用途。\n\n| 记录类型             | 作用                         | 示例                                                 |\n| ---------------- | -------------------------- | -------------------------------------------------- |\n| `A`              | 域名 → IPv4 地址               | `example.com → 93.184.216.34`                      |\n| `AAAA`           | 域名 → IPv6 地址               | `example.com → 2606:2800:220:1:248:1893:25c8:1946` |\n| `CNAME`          | 别名记录，将一个域名指向另一个域名          | `www.example.com → example.com`                    |\n| `MX`             | 邮件交换记录，指定邮件服务器地址           | —                                                  |\n| `NS`             | 名称服务器记录，指定负责解析域名的 DNS 服务器  | —                                                  |\n| `PTR`            | 反向解析记录，IP 地址 → 域名          | —                                                  |\n| `TXT`            | 存储文本信息，常用于域名验证（如 SPF、DKIM） | —                                                  |\n| `SRV`            | 服务发现记录，指定服务的主机和端口          | —                                                  |\n| `HTTPS` / `SVCB` | HTTPS 服务参数发现               | —                                                  |\n\n## DNS 安全性\n\n传统 DNS 查询以明文传输（通常使用 `UDP/53` 或 `TCP/53`），链路上的中间人可以窥探查询内容，存在隐私泄露风险：\n![9db6a045e37532496f3ae4d2bb197fe4&#95;MD5&#46;jpg](/notes/n-e32ccbfef69a4277a6bb262496b3707e/media/5b68d0e25af89a09dfadd44aa566dedcbc0eb8a35b0dcb5168aa4f59b03506ea.jpg)\n\n为解决这一问题，可使用加密 DNS 协议：\n\n- **DoH**（DNS over HTTPS）：将 DNS 查询封装在 HTTPS 请求中传输。\n- **DoT**（DNS over TLS）：通过 TLS 加密的专用通道传输 DNS 查询。\n- **DoQ**（DNS over QUIC）：基于 QUIC 协议传输 DNS 查询。\n> 相关内容参考：QUIC 是什么、[TLS 1&#46;2 握手流程](/notes/n-40bfe154a9514003b8b98ef574574c2e/)、[TLS 1&#46;3 握手流程](/notes/n-2f4b0b459c394b46a9995f63ae0c0edb/)、[HTTPS 基础概念](/notes/n-1a1344f9c46d453ba463f5909e17d74b/)\n\n### 什么是加密 DNS：以 DoH 为例\n\n以 DoH 为例，配置时通常涉及两个参数：\n\n- **Bootstrap DNS**：必须是 IP 地址（如 `8.8.8.8`），用于完成初始引导解析。\n- **HTTPS 链接**：DoH 服务端的地址（如 `https://dns.google/dns-query`），可以是 IP 也可以是域名。若为域名，则需要先通过 Bootstrap DNS 解析出该域名的 IP。\n\n配置完成后，后续所有 DNS 查询都通过 HTTPS 链接进行加密解析，本地不再发出明文 DNS 请求。\n\n浏览器内置了对 DoH 的支持，例如：\n![7ebce6eb7ed9600c47ae8faf0a36a2ee&#95;MD5&#46;jpg](/notes/n-e32ccbfef69a4277a6bb262496b3707e/media/048ef4180a6d4603e9a98dacaddee0f7daf0c75b4d296422d41e1b336f7e191e.jpg)\n",
+  "id": "e32ccbfe-f69a-4277-a6bb-262496b3707e",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "DNS 基础概念"
+  },
+  "resources": [
+    "048ef4180a6d4603e9a98dacaddee0f7daf0c75b4d296422d41e1b336f7e191e.jpg",
+    "1aa8f1e89b21e5ce9d4bb3232d4ef2b7133f1e7f1be70667b9dc31b546e1664a.jpg",
+    "5b68d0e25af89a09dfadd44aa566dedcbc0eb8a35b0dcb5168aa4f59b03506ea.jpg"
+  ],
+  "url": "/notes/n-e32ccbfef69a4277a6bb262496b3707e/"
+}

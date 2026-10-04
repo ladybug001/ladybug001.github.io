@@ -1,0 +1,89 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b1443516acdc576e587b",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-d2ba2dcc27c4a0813da8",
+      "kind": "heading",
+      "offset": 125
+    },
+    {
+      "id": "h-738b8bc059e5fe9798f1",
+      "kind": "heading",
+      "offset": 133
+    },
+    {
+      "id": "h-58126c12673e8879c1a7",
+      "kind": "heading",
+      "offset": 437
+    },
+    {
+      "id": "h-2ea432c8dd2572add8db",
+      "kind": "heading",
+      "offset": 510
+    },
+    {
+      "id": "h-8206d9958ae892795c56",
+      "kind": "heading",
+      "offset": 642
+    },
+    {
+      "id": "h-34e56a361e22832be60e",
+      "kind": "heading",
+      "offset": 774
+    },
+    {
+      "id": "h-fc26d1243677a50622f2",
+      "kind": "heading",
+      "offset": 1158
+    },
+    {
+      "id": "h-bdb41e6ead56c26b4201",
+      "kind": "heading",
+      "offset": 1355
+    },
+    {
+      "id": "h-f22920a89f4c66342d88",
+      "kind": "heading",
+      "offset": 1386
+    },
+    {
+      "id": "h-5ccc2a3a95cbec9fab54",
+      "kind": "heading",
+      "offset": 1773
+    },
+    {
+      "id": "h-f02dda3030aab9225671",
+      "kind": "heading",
+      "offset": 1919
+    },
+    {
+      "id": "h-34d62f3f36012a469328",
+      "kind": "heading",
+      "offset": 2137
+    },
+    {
+      "id": "h-a65bdefc603fd8e39cab",
+      "kind": "heading",
+      "offset": 2397
+    },
+    {
+      "id": "h-cf1523435970f0981e22",
+      "kind": "heading",
+      "offset": 2493
+    }
+  ],
+  "body": "# Python 生成器、迭代器与可迭代对象\n\n**类比参考**： [JavaScript 迭代器&#12289;可迭代对象与生成器](/notes/n-a26ebbdfa1114aa1b4f94c90100be921/)\n\n## 迭代器与可迭代对象\n### 迭代器\n\n1. **迭代器**：实现了 `__next__` 和 `__iter__`，调用 `__next__` 返回下一个元素。\n\n迭代器的原理是通过闭包/类实现的，参考：[编程语言&#65306;迭代器的原理](/notes/n-1120995a4e7743639fe022c5319e2db8/)\n\n`for` 语句其实是一个语法糖：\n```python\n# 迭代器和可迭代对象可以使用 for 语法\n# 原理：obj.__iter__()，然后一直调用__next__直到报错 `StopIteration`\nfor i in iterable_obj:\n\tprint(i)\n```\n\n### 可迭代对象\n\n1. **可迭代对象**：实现了 `__iter__`，如列表、元组、集合等，调用 `__iter__` 返回一个迭代器对象。\n\n## 生成器\n\n生成器是一种**特殊的迭代器**，目的是**简化程序员编写迭代器的步骤**，\n\nPython 生成器分为：\n1. 生成器表达式，如 `x for x in [1,2,3,4]`。\n2. 生成器函数，我们重点介绍生成器函数。\n\n### 普通函数 vs 生成器函数\n\n- 普通函数执行后返回一个值。\n- 生成器函数执行后返回一个生成器对象：\n\n```python\ndef gen():\n    yield 1\n    yield 2\n\ng = gen()  # g 是生成器对象\n```\n\n---\n\n### 为什么使用生成器函数\n\n传统函数一次性执行完后返回结果，无法暂停或保存中间状态：\n\n```python\ndef square_list(nums):\n    result = []\n    for n in nums:\n        result.append(n*n)\n    return result\n```\n\n- 所有结果一次性生成，可能占用大量内存。\n- 无法在迭代过程中处理一部分数据再暂停。\n\n---\n\n`yield` 可以让函数**暂停执行并返回中间值**：\n\n```python\ndef square_generator(nums):\n    for n in nums:\n        yield n*n\n```\n\n- 函数每次遇到 `yield` 时暂停，返回值给调用者。\n- 下一次调用 `next()` 时从暂停位置继续执行。\n\n### 生成器函数的生命周期\n\n1. **创建**：调用生成器函数，返回生成器对象。\n2. **运行**：通过 `next()` 或 `send()` 启动生成器。\n3. **挂起**：遇到 `yield` 暂停。\n4. **恢复**：再次调用 `next()` 或 `send()` 继续执行。\n5. **完成**：执行完毕或遇到 `return`，抛出 `StopIteration`。\n\n### 生成器函数的使用机制\n\n#### `next()` 与 `send(Value)`\n\n- 调用 `next()/send(None)` 会启动生成器或从上一次暂停位置继续执行，直到遇到下一条 `yield` 语句或函数结束。\n- 调用 `send(Value)` 会传入一个值到当前暂停处（`yield` 处），并让生成器继续执行（使用 `send(Value)` 前，需要先启动生成器——至少调用过一次 ` next()/send(None) `）\n\n**示例代码**：\n```python\ndef gen():\n    yield 1\n    value = yield 2\n    print(value)\n\ng = gen()  \n\nprint(next(g))  # 1\nprint(g.send(None))  # 2\ng.send(3)\nprint(next(g))  # 3  StopIteration\n```\n\n#### 挂起与恢复机制\n\n- `yield` 会**保存局部状态**，包括局部变量、指令指针，也就是挂起。\n- `next()/send(None)/send(Value)` 恢复执行上下文，也就是恢复执行。\n> 依赖栈帧（Stack Frame）的挂起和恢复。\n#### `StopIteration` 与返回值\n\n```python\ndef g():\n    yield 1\n    return 42\n\ngen_obj = g()\nprint(next(gen_obj))  # 1\nprint(next(gen_obj))  # StopIteration: 42\n```\n\n恢复生成器执行后，若此次生成器执行到 `return` 语句或函数结束，则会抛出 `StopIteration` 异常\n\n#### `throw(exc)` 抛出异常\n\n```python\ndef gen():\n    try:\n        yield 1\n    except:\n        pass\n    yield 2\n    yield 3\n    return \n\ng = gen()\nprint(g.send(None)) # 1\nprint(g.throw(IOError)) # 2\nprint(next(g)) # 3\n```\n- 调用 `throw()` 后，先在生成器当前暂停处抛出异常，再尝试继续执行生成器。\n\n#### `close()` 终止生成器\n```python\ng.close()  # 触发 GeneratorExit\n```\n- 调用 `close()` 后，生成器无法再被使用\n\n\n#### `yield from` 与迭代器\n> 与原子级的 `yield` 指令不同，`yield from` 是一种**高级语法糖**。它在底层会展开为一套**复杂的委托逻辑**，自动处理调用方与子生成器之间的双向通信、异常传播及返回值捕获，即背后 Python 解释器替我们写了很多代码完成这些逻辑。\n\n1. 不使用 `yield from` 语法，迭代 `yield` 列表中的元素\n```python\ndef delegator():\n    yield 1\n    for i in [2,3,4]:\n        yield i\n\n\nfor v in delegator():\n    print(v)  # 输出 1 2 3 4\n```\n2. 使用 `yield from` 语法\n```python\ndef delegator():\n    yield 1\n    yield from [2, 3, 4]\n\n\nfor v in delegator():\n    print(v)  # 输出 1 2 3 4\n```\n3. 又因为生成器是一种特殊的迭代器，所以有：\n```python\ndef subgen():\n    yield 2\n    yield 3\n    return 4\n\ndef delegator():\n    yield 1\n    # 返回值需要接收\n    retValue = yield from subgen()\n    # 输出返回值\n    # print(retValue)\n\nfor v in delegator():\n    print(v)  # 输出 1 2 3  返回值4不会被输出\n```\n> **注意**：`yield from` 不仅仅是简化了 `for` 循环。更重要的是，它自动处理了**调用者与子生成器之间的双向通信**（包括 `send`、`throw` 和 `close` 的透传），以及自动捕获子生成器的返回值（`StopIteration.value`）。\n",
+  "id": "3462eb49-b6c5-415b-b3e0-86109d28cb04",
+  "metadata": {
+    "tags": [
+      "lang/python"
+    ],
+    "title": "Python 迭代器、可迭代对象与生成器"
+  },
+  "resources": [],
+  "url": "/notes/n-3462eb49b6c5415bb3e086109d28cb04/"
+}

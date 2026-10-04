@@ -1,0 +1,49 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-d76db85f4a0520599cdd",
+      "kind": "heading",
+      "offset": 15
+    },
+    {
+      "id": "h-13136edb886c4fd4a1a9",
+      "kind": "heading",
+      "offset": 31
+    },
+    {
+      "id": "h-37c32b262c34dad2131a",
+      "kind": "heading",
+      "offset": 739
+    },
+    {
+      "id": "h-267d20af3bde4059f894",
+      "kind": "heading",
+      "offset": 1400
+    },
+    {
+      "id": "h-c22b7f8993092bc7fb59",
+      "kind": "heading",
+      "offset": 1449
+    },
+    {
+      "id": "h-12afb4e86871e95f0059",
+      "kind": "heading",
+      "offset": 1601
+    },
+    {
+      "id": "h-558a419bc65394e793cc",
+      "kind": "heading",
+      "offset": 1961
+    }
+  ],
+  "body": "# FLIRT 静态库函数识别\n\n## 背景：静态库的识别难题\n\n在逆向分析中，识别程序调用了哪些系统或第三方 API 是至关重要的一步。\n- **动态链接库（DLL）**：很好识别。我们可以直接通过导入表、导出表，甚至下载官方的 PDB 符号文件（如在 x32dbg 中右键下载符号）来直接看清函数名。\n- **静态链接库（LIB）**：一旦被静态编译，其内部的机器码会直接被揉进最终的 EXE 文件中，所有原始的函数符号名全部丢失，逆向时只能看到一片无名的汇编代码。\n\n为了解决这个问题，IDA 提供了 **FLIRT**（Fast Library Identification and Recognition Technology，库文件快速识别与鉴定技术）。它的核心思想是：预先提取出已知静态库中各种函数的机器码特征（模式），制作成**签名文件 (.sig)**，然后再去目标程序的无名汇编代码中进行特征匹配，从而批量还原出原始的函数名。\n\n> [!note] 静态库 (`.lib`) 的结构特性\n> - **命名约定**：带 `d` 的通常是调试版本（如 `msvcrtd.lib`），不带 `d` 的是发布版本（如 `msvcrt.lib`）。\n> - **物理结构**：`.lib` 文件本质上是一个压缩包格式（可用 7-zip 直接打开，但 Bandizip 不支持）。\n> - **内容区分**：如果里面解压出一大堆 `.obj` 对象文件，这是**真正的静态库**，其代码会直接参与链接并写入目标程序；如果解压出一堆 DLL 文件和符号文本，这只是**导入库**，里面没有真实代码，仅用于告知链接器该如何导入外部的 DLL。\n\n## 制作 FLIRT 签名\n\n如果遇到了一个陌生但开源/公开的第三方静态库，我们可以手动提取它的特征并制作签名。\n依赖工具：IDA 根目录提供的 `pcf.exe` 与 `sigmake.exe`。\n\n**第一步：提取模式（Pattern）**\n根据已知静态库，生成模式特征文件：\n```bash\npcf.exe xxx.lib xxx.pat\n```\n\n> [!NOTE] Title\n> 针对不同平台和编译器生成的静态库，需要使用对应的模式提取工具。本文演示的 `pcf.exe` 专用于解析 Windows 平台（COFF 格式）的 `.lib` 文件。其他平台的解析工具可参考：[IDA FLIRT使用 - Bl0od - 博客园](https://www.cnblogs.com/zUotTe0/p/12729390.html)\n\n**第二步：生成签名（Signature）**\n将模式特征文件转化为 IDA 可识别的二进制签名文件：\n```bash\nsigmake.exe xxx.pat xxx.sig\n```\n\n**异常处理：解决特征码冲突**\n在执行第二步时，如果同一个特征码碰巧对应了静态库中的多个不同函数符号，`sigmake` 就会报错中止，并生成一个包含冲突信息的 `xxx.exc` 文件。\n**解决办法**：用文本编辑器打开生成的 `xxx.exc` 文件，直接**删除开头包含提示信息的前几行**，保存后再次执行上述的 `sigmake.exe` 命令即可强制生成 `.sig` 文件。\n\n## 签名的应用与辅助调试\n\n拿到 `.sig` 签名文件后，如何将其应用到我们的调试工具中？\n\n### 在 IDA 中使用\n直接将生成的 `.sig` 文件复制到 IDA 安装目录下的 `sig` 文件夹中。\n在 IDA 界面顶部菜单栏依次点击：`File -> Load file -> FLIRT signature file`，选择目标签名即可开始自动识别并重命名无名函数。\n\n### 在 OD / x32dbg 中使用\n传统的动态调试器原生并不支持 FLIRT 签名，必须通过插件或转换来间接使用：\n\n- **方法一：直接利用 Godump 插件**\n  在 OD 中使用 `Godump` 插件，定位并选择刚才生成的 `.sig` 文件以及对应的 `dumpsig.exe` 目录，由插件协助进行内存匹配。\n- **方法二：借助 IDA 转换为 MAP（推荐）**\n  1. 先按上文方法，在 IDA 中成功加载 `.sig` 文件并还原出函数名。\n  2. 在 IDA 菜单依次点击：`File -> Produce file -> Create MAP file`，全部选中并生成。\n  3. 回到 OD 中，右键选择 `LoadMapEx` 插件，载入刚刚由 IDA 生成的 MAP 文件。\n\n### 实战案例：还原易语言程序符号\n易语言编译的程序底层打包了大量的静态库代码。我们可以通过 FLIRT 技术极大减轻易语言的逆向压力：\n1. 找到易语言安装目录下的静态库文件：`.e\\static_lib\\krnln_static.lib`。\n2. 使用 `pcf` 和 `sigmake` 对其生成对应的 `.sig` 签名。\n3. 把该易语言编译的目标程序拖入 IDA，加载该 Sig 文件。\n4. 在 IDA 中导出 MAP，最后进 OD 加载该 MAP。\n通过这套组合拳，即可在 OD 中完美还原出绝大部分的易语言专属内部调试符号。\n\n---\n\n> [!note] 逆向随记\n> **不要迷信函数特征**：像 `printf` 这样的函数，由于编译器的不同，其底层来源可能截然不同。比如在古老的 VC6 中，`printf` 是链接自 `msvcrt.lib` 库；而在较新的 VS 版本中，`printf` 往往是直接将源码展开为内联汇编。针对前者的签名，对后者将完全失效。\n",
+  "id": "afb27cef-15c7-40d1-ba20-120c6d7b8c59",
+  "metadata": {
+    "tags": [
+      "reverse"
+    ],
+    "title": "FLIRT 静态库函数识别"
+  },
+  "resources": [],
+  "url": "/notes/n-afb27cef15c740d1ba20120c6d7b8c59/"
+}

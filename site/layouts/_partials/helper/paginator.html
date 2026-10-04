@@ -1,0 +1,10 @@
+{{/* Adapted from Stack 4.0.3 (GPL-3.0): all-notes keeps its alphabetical index. */}}
+{{ $result := slice }}
+{{ if eq .Layout "all-notes" }}
+  {{ $result = .Paginate ((where .Site.RegularPages "Section" "notes").ByTitle) }}
+{{ else if eq .Layout "recent" }}
+  {{/* Recent is a fixed ten-note list, not a paginated index. */}}
+{{ else if or .IsHome (in (slice "section" "taxonomy" "term") .Kind) }}
+  {{ $result = .Paginate (partial "helper/pages.html" .) }}
+{{ end }}
+{{ return $result }}

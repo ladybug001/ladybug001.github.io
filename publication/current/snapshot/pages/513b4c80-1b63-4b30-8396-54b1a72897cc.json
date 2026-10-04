@@ -1,0 +1,175 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-1770eefbe223a0d60eff",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-42e23561cbf2e2993c60",
+      "kind": "heading",
+      "offset": 114
+    },
+    {
+      "id": "h-4b3a373ea12ee2fa899e",
+      "kind": "heading",
+      "offset": 660
+    },
+    {
+      "id": "h-ce51587b685d4cf9c0a7",
+      "kind": "heading",
+      "offset": 1243
+    },
+    {
+      "id": "h-d8a2b9079606852fafa7",
+      "kind": "heading",
+      "offset": 1664
+    },
+    {
+      "id": "h-be756df16d00386f04d1",
+      "kind": "heading",
+      "offset": 2067
+    },
+    {
+      "id": "h-0f98ea585807b0d7e138",
+      "kind": "heading",
+      "offset": 2078
+    },
+    {
+      "id": "h-0e2714f247a08a0bf9bc",
+      "kind": "heading",
+      "offset": 2146
+    },
+    {
+      "id": "h-f8c953dd99dc947deab4",
+      "kind": "heading",
+      "offset": 2408
+    },
+    {
+      "id": "h-d5ba1014047a20fddc59",
+      "kind": "heading",
+      "offset": 3930
+    },
+    {
+      "id": "h-afb6a63241b910852706",
+      "kind": "heading",
+      "offset": 3987
+    },
+    {
+      "id": "h-1c95414f0c22e7d3a647",
+      "kind": "heading",
+      "offset": 5124
+    },
+    {
+      "id": "h-0d78267950fda5269abf",
+      "kind": "heading",
+      "offset": 5598
+    },
+    {
+      "id": "h-a5e63f0d12d166a32212",
+      "kind": "heading",
+      "offset": 5609
+    },
+    {
+      "id": "h-4c02e205ffea05036dcb",
+      "kind": "heading",
+      "offset": 5677
+    },
+    {
+      "id": "h-4f423f363c2c2df60c40",
+      "kind": "heading",
+      "offset": 5845
+    },
+    {
+      "id": "h-d0a181d31f2c5b27e456",
+      "kind": "heading",
+      "offset": 7102
+    },
+    {
+      "id": "h-5acf92c5a2b6d1f82ea3",
+      "kind": "heading",
+      "offset": 7220
+    },
+    {
+      "id": "h-ef20b66b6e96d78753d6",
+      "kind": "heading",
+      "offset": 7680
+    },
+    {
+      "id": "h-2f796e2da89519072ae9",
+      "kind": "heading",
+      "offset": 9918
+    },
+    {
+      "id": "h-2e845f45fa370ec9a024",
+      "kind": "heading",
+      "offset": 10446
+    },
+    {
+      "id": "h-74b56a50c2b37a319a98",
+      "kind": "heading",
+      "offset": 10637
+    },
+    {
+      "id": "h-7683c41b29a31474d36d",
+      "kind": "heading",
+      "offset": 12072
+    },
+    {
+      "id": "h-97d30a88cf6900f9c2b4",
+      "kind": "heading",
+      "offset": 12624
+    },
+    {
+      "id": "h-af1ed72de0b9818f36c3",
+      "kind": "heading",
+      "offset": 13179
+    },
+    {
+      "id": "h-244368758cb217d44e4d",
+      "kind": "heading",
+      "offset": 14076
+    },
+    {
+      "id": "h-5299ac3ef981145fd96a",
+      "kind": "heading",
+      "offset": 14500
+    },
+    {
+      "id": "h-55d65131829ae8d20398",
+      "kind": "heading",
+      "offset": 16155
+    },
+    {
+      "id": "h-6f40185525b4a924e044",
+      "kind": "heading",
+      "offset": 16382
+    }
+  ],
+  "body": "# Windows x86 VEH 与 SEH\n\nVEH 和 SEH 都能在 Windows 用户态执行异常处理逻辑，但二者负责的范围不同：VEH 是进程级机制，SEH 是当前线程的栈帧级机制。\n\n## VEH 与 SEH 对照\n\n| 维度   | VEH                         | 原生 x86 SEH                        |\n| ---- | --------------------------- | --------------------------------- |\n| 作用范围 | 进程内全局                       | 当前线程                              |\n| 登记位置 | `ntdll.dll` 管理的进程级登记结构      | 当前线程栈上的异常登记链                      |\n| 查找时机 | SEH 搜索之前                    | VEH 未处理之后                         |\n| 处理方式 | 回调可以观察异常、修改 `CONTEXT` 或继续搜索 | handler 可以处理异常、修改 `CONTEXT` 或继续搜索 |\n| 生命周期 | 通过 API 显式注册、注销              | 随受保护栈帧进入、退出                       |\n\n\n\n## VEH：进程级向量异常处理\n\nVEH 回调通过进程级 API 注册。异常进入用户态分发后，系统按登记顺序调用这些回调，VEH 回调格式如下：\n\n```cpp\nLONG NTAPI VectoredHandler(\n    PEXCEPTION_POINTERS ExceptionInfo\n);\n```\n\n参数 `ExceptionInfo` 指向 `EXCEPTION_POINTERS`：\n\n```cpp\ntypedef struct _EXCEPTION_POINTERS {\n    PEXCEPTION_RECORD ExceptionRecord; // 异常记录\n    PCONTEXT ContextRecord;             // 异常发生时的线程上下文\n} EXCEPTION_POINTERS, *PEXCEPTION_POINTERS;\n```\n\n回调常用的两个返回值为：\n> 回调可以只观察异常并继续搜索，也可以修改异常线程的上下文后恢复执行。\n\n```cpp\n#define EXCEPTION_CONTINUE_SEARCH       0  // 当前回调未处理，继续搜索\n#define EXCEPTION_CONTINUE_EXECUTION   -1  // 已处理，根据当前 CONTEXT 恢复执行\n```\n\n\n### 注册、顺序与注销\n\n回调函数 `VectoredHandler` 创建好之后，需要进行注册——**添加到进程的全局链表中**，注册接口如下：\n\n```cpp\nPVOID AddVectoredExceptionHandler(\n    ULONG First,                         // 非 0：放到最前；0：放到最后\n    PVECTORED_EXCEPTION_HANDLER Handler\n);\n```\n\n注册成功后，返回值是该登记项的句柄；失败时返回 `NULL`。\n\n\n注销接口如下：\n\n```cpp\nULONG RemoveVectoredExceptionHandler(\n    PVOID Handle // AddVectoredExceptionHandler 返回的句柄\n);\n```\n\n注销时传入的是注册接口返回的句柄，不是回调函数地址。成功时返回非 0，失败时返回 0。\n\n### 进程内的登记结构\n\n从机制上可以把多个 VEH 登记项理解为一个进程级双向链表：\n\n```cpp\ntypedef struct _VEH_REGISTRATION {\n    struct _VEH_REGISTRATION *next;\n    struct _VEH_REGISTRATION *prev;\n    PVECTORED_EXCEPTION_HANDLER pfnVeh;\n} VEH_REGISTRATION, *PVEH_REGISTRATION;\n```\n\n多个 VEH 间通过 `next`、`prev` 成员串联组成一个双向链表。\n\n\n在 `Ntdll.dll` 模块中的全局变量 `RtlpCalloutEntryList` 指向该链表的链表头（内核中没有该变量，因为内核不使用 VEH）。\n\n> 内核态异常处理不依赖这条用户态 VEH 链表。\n\n### 实验：通过 VEH 修复除 0 异常\n\n#### 实验目的\n\n验证 VEH 回调可以读取异常状态码、修改异常线程的 `CONTEXT`，并让处理器重新执行原本失败的指令。\n\n#### 关键观察点\n\n- `idiv ecx` 的除数是 `ECX`，`EDX:EAX` 是被除数。\n- 第一次执行时 `ECX = 0`，因此产生整数除 0 异常。\n- VEH 回调判断是否为除 0 异常，若是则把 `ECX` 改成 `1`，再返回 `EXCEPTION_CONTINUE_EXECUTION`。\n- 处理器从当前 `EIP` 恢复并重新执行 `idiv ecx`，第二次执行成功。\n- 也可以在这个特定实验中令 `EIP += 2` 跳过 `idiv ecx`，因为图中编码下该指令长度为 2 字节；\n\n#### 实验代码\n\n```cpp\n#include <stdio.h>\n#include <windows.h>\n\n// 定义指向AddVectoredExceptionHandler函数的函数指针\ntypedef PVOID(NTAPI *FnAddVectoredExceptionHandler)(ULONG, PVECTORED_EXCEPTION_HANDLER);\nFnAddVectoredExceptionHandler MyAddVectoredExceptionHandler;\n\n// 定义异常处理函数\nLONG NTAPI VectExcepHandler(PEXCEPTION_POINTERS pExcepInfo)\n{\n    MessageBox(NULL,\"VEH异常处理函数执行了...\",\"VEH异常\",MB_OK);\n\n    // 除0异常\n    if (pExcepInfo->ExceptionRecord->ExceptionCode == EXCEPTION_INT_DIVIDE_BY_ZERO)\n    {\n        // 修改发生异常时的EIP\n        // pExcepInfo->ContextRecord->Eip = pExcepInfo->ContextRecord->Eip + 2;\n\n        // 修改发生异常时的ECX\n        pExcepInfo->ContextRecord->Ecx = 1;\n\n        // 此处返回表示异常已处理\n        return EXCEPTION_CONTINUE_EXECUTION;\n    }\n    // 此处返回表示异常未处理\n    return EXCEPTION_CONTINUE_SEARCH;\n}\n\n// 主函数\nint main()\n{\n    // 动态获取AddVectoredExceptionHandler函数地址，并将异常处理函数挂入VEH链表\n    HMODULE hModule = GetModuleHandle(\"Kernel32.dll\");\n    MyAddVectoredExceptionHandler = (FnAddVectoredExceptionHandler)::GetProcAddress(hModule,\"AddVectoredExceptionHandler\");\n\n    // 注册\n    MyAddVectoredExceptionHandler(0, (PVECTORED_EXCEPTION_HANDLER)VectExcepHandler);\n\n    // 构造除0异常\n    _asm\n    {\n        xor edx, edx\n        xor ecx, ecx\n        mov eax, 100\n        idiv ecx\n    }\n\n    printf(\"Running ... \");\n\n    getchar();\n    return 0;\n}\n```\n\n\n> [!info] 历史兼容性\n> VEH 从 Windows XP 开始提供。早期为了兼容 XP 之前的系统，程序可能先通过 `GetModuleHandle` 和 `GetProcAddress` 动态获取 `AddVectoredExceptionHandler`，避免在不支持该 API 的系统上产生静态导入问题。现代目标系统通常可以直接调用该接口。\n\n## 原生 x86 SEH：线程栈上的异常登记链\n\nSEH 不是进程级公共回调链，而是当前线程栈上的异常登记链，每个线程都有自己的链表。\n\n### SEH 登记链\n\nSEH 链表的格式如下所示，它是一个单向链表：\n\n![d00919e360a38c3a8d9df9eadb8343c9&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/c4249e5c77678fd6cbfc11f28a454d8efe065a505287ab046fa8e85443adfe07.jpg)\n每个表项中包含了两个成员：\n```text\nkd> dt _EXCEPTION_REGISTRATION_RECORD\nnt!_EXCEPTION_REGISTRATION_RECORD\n   +0x000 Next             : Ptr32 _EXCEPTION_REGISTRATION_RECORD\n   +0x004 Handler          : Ptr32 _EXCEPTION_DISPOSITION\n```\n\nSEH 表项两个字段的含义：\n\n- `Next` 指向下一个 `_EXCEPTION_REGISTRATION_RECORD`；链尾使用 `-1` 表示。\n- `Handler` 指向该表项的异常处理函数。\n\n线程的 SEH 链表头保存在 TEB（线程环境块）中。TEB 的第一个成员是 `NtTib`，`NtTib` 的第一个字段 `ExceptionList` 指向 `_EXCEPTION_REGISTRATION_RECORD`：\n\n![ab5f9bba4803b14a47b6b4fbe5dec249&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/b63825bf55686c3fd55a06f6b27599a39954c37719886502de2e687f5882668d.jpg)\n\n\n在 32 位用户态中，`FS` 指向当前线程的 TEB，因此可以通过 `FS:[0]` 取得 `NtTib.ExceptionList`，也就是当前 SEH 登记链的表头。\n\n> [!note] 内核态边界\n> 32 位内核态下 `FS` 指向 `_KPCR`，但其相关布局兼容了异常链入口。\n\n`RtlDispatchException` 如何校验、遍历并执行 SEH 登记链，详见 [Windows x86 RtlDispatchException 异常分发](/notes/n-2ddfad3330ad4cbbbeb2ee904f7f4a93/#h-2e11bc36c83005a4750b)。\n\n### 原生 SEH handler 的接口\n\n原生 SEH handler 接收四个参数，我们主要关注前三个：\n\n```cpp\nEXCEPTION_DISPOSITION _cdecl MyExceptionHandler(\n    struct _EXCEPTION_RECORD *ExceptionRecord, // 异常记录\n    PVOID EstablisherFrame,                     // 当前 SEH 登记记录地址\n    struct _CONTEXT *ContextRecord,             // 异常发生时的线程上下文\n    PVOID DispatcherContext\n);\n```\n\n返回值类型是 `EXCEPTION_DISPOSITION`，其取值与含义：\n- `ExceptionContinueExecution`：根据当前 `CONTEXT` 恢复执行。\n- `ExceptionContinueSearch`：当前表项不处理，继续遍历 SEH 登记链。\n\n### 实验：手工挂入原生 SEH 登记项\n\n#### 实验目的\n\n验证当前线程可以在栈上构造异常登记记录，把它挂到 `FS:[0]` 指向的链表头，并在使用完毕后恢复原链表。\n\n#### 关键观察点\n\n1. 先保存原 `FS:[0]`，它将成为新表项的 `Next`。\n2. 在新表项的字段初始化完成后，再把它挂到链表头（避免链表短暂指向未初始化记录）。\n3. handler 与 VEH 实验一样把 `ECX` 改为 `1`，然后恢复执行。\n4. 实验结束后把原表头写回 `FS:[0]`，摘除手工插入的表项。\n\n#### 实验代码\n\n```cpp\n#include <stdio.h>\n#include <windows.h>\n\nstruct _MY_EXCEPTION\n{\n    struct _MY_EXCEPTION *Next;\n    DWORD Handler;\n};\n\nEXCEPTION_DISPOSITION _cdecl MyExceptionHandler(\n    struct _EXCEPTION_RECORD *ExceptionRecord,\n    PVOID EstablisherFrame,\n    struct _CONTEXT *ContextRecord,\n    PVOID DispatcherContext\n)\n{\n    MessageBoxA(NULL, \"SEH 异常处理函数执行了...\", \"SEH\", MB_OK);\n\n    if (ExceptionRecord->ExceptionCode == EXCEPTION_INT_DIVIDE_BY_ZERO)\n    {\n        // ContextRecord->Eip += 2;\n        ContextRecord->Ecx = 1;\n        return ExceptionContinueExecution;\n    }\n\n    return ExceptionContinueSearch;\n}\n\nint main()\n{\n    DWORD previousExceptionList;\n    _MY_EXCEPTION exceptionRecord; // 必须位于当前线程栈中\n\n    _asm\n    {\n        mov eax, fs:[0]\n        mov previousExceptionList, eax\n    }\n\n    exceptionRecord.Next = (_MY_EXCEPTION *)previousExceptionList;\n    exceptionRecord.Handler = (DWORD)&MyExceptionHandler;\n\n    _asm\n    {\n        lea eax, exceptionRecord\n        mov fs:[0], eax\n    }\n\n    _asm\n    {\n        xor edx, edx\n        xor ecx, ecx\n        mov eax, 1\n        idiv ecx\n    }\n\n    _asm\n    {\n        mov eax, previousExceptionList\n        mov fs:[0], eax\n    }\n\n    printf(\"Running ... \");\n    getchar();\n    return 0;\n}\n```\n\n#### 实验结论\n\n原生 SEH 的核心并不复杂：在当前线程栈上建立登记记录，并把记录链接到 `FS:[0]`。麻烦之处在于登记、摘除和 handler 接口都需要程序员手工维护，这也是编译器扩展 SEH 的直接动机。\n\n## 编译器对 SEH 的扩展\n\n上一节手工挂入原生 SEH 时，我们自己构造登记记录、编写 handler、操作 `FS:[0]`，最后还要恢复链表——可以说原生 SEH 是面向汇编程序员的。编译器提供的 `__try / __except` 和 `__try / __finally` 把这些步骤自动化了，但它做的不仅仅是自动化，还在结构上做了扩展。\n> 正是因为系统的 SEH 和 VEH 机制，才给了 C++处理/接管异常的机会。\n\n\n下面先看最简单的情况：单个 `__try / __except` 编译后变成了什么。\n\n> [!warning] 实现边界\n> 下文的 `_except_handler3`、`_local_unwind2`、`_global_unwind2`、`scopetable` 和 `trylevel` 描述的是本笔记反汇编样本中的 MSVC x86 实现。不同 MSVC 版本、安全选项或其他兼容编译器可能使用不同的 handler 和记录布局。\n\n### `__try / __except`：从源码到编译结果\n\n`__try / __except` 的使用：\n\n![b42bbd51a1b7cddd5733c15cf887062f&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/8442bb145ad68062a86613cdc34dfd8ce6aa49b80b3e4fd247d0696eda55f0e5.jpg)\n\n编译器把这段代码编译成了什么？通过反汇编来看，如下图所示，与手动挂入链表类似：保存原 `FS:[0]`，将其作为 `prev`，然后将 `FS:[0]` 指向当前的登记记录。但注意这里的异常处理函数不是我们写的过滤逻辑，而是一个固定地址——`_except_handler3`。\n\n![0326c206d71d4875df7be314e3f0c1e1&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/ceee212a2ce4179b1262e18f21535da67bf6353893b1dcb4985269f18b65d421.jpg)\n\n那我们写的过滤表达式在哪？实际上，`_except_handler3` 会调用我们传入的过滤表达式，并依据返回值决定接下来的操作。过滤表达式可以是常量、表达式或函数调用，但最终必须计算出下列三个结果之一：\n\n```cpp\n#define EXCEPTION_EXECUTE_HANDLER       1\n// 接受异常；完成展开后进入对应的 __except 块。\n\n#define EXCEPTION_CONTINUE_SEARCH       0\n// 当前过滤器不处理；继续向外搜索。\n\n#define EXCEPTION_CONTINUE_EXECUTION   -1\n// 根据当前或已修改的 CONTEXT 尝试恢复执行。\n```\n\n这三个值是过滤表达式交给 `_except_handler3` 的结果，由它决定继续搜索、进入 `__except`，还是恢复执行。原生 SEH handler 返回的则是 `ExceptionContinueExecution` 和 `ExceptionContinueSearch`，二者所属层次不同。\n\n过滤表达式中可以使用 `GetExceptionCode()` 和 `GetExceptionInformation()` 获取异常状态码与异常上下文，其中 `GetExceptionInformation()` 只能在过滤表达式中求值，但可以把得到的指针传给辅助函数：\n\n```cpp\nint getFilterCode(PEXCEPTION_POINTERS pExcepInfo)\n{\n    pExcepInfo->ContextRecord->Ecx = 1;\n    return EXCEPTION_CONTINUE_EXECUTION;\n}\n\n__try\n{\n    // 可能产生异常的代码\n}\n__except(getFilterCode(GetExceptionInformation()))\n{\n    // 返回 CONTINUE_EXECUTION 时不会进入这里\n}\n```\n\n回到反汇编。除了 handler 固定为 `_except_handler3` 之外，编译器还对原生登记记录做了扩展：\n\n```cpp\nstruct _EXCEPTION_REGISTRATION\n{\n    struct _EXCEPTION_REGISTRATION *prev;\n    PVOID handler;\n    struct scopetable_entry *scopetable;\n    int trylevel;\n    int _ebp;\n};\n```\n\n前两个字段对应原生 SEH 记录中的 `Next` 和 `Handler`。新增的三个字段——`scopetable`、`trylevel`、`_ebp`——的作用先不展开，后面在嵌套场景中会逐一用到。\n\n*图：扩展 SEH 登记记录在当前函数栈帧中的布局。*\n\n![ebf20ff7205068c9b45c157e47496889&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/47251da876872dcfb435f3337d290d5d0fbf0fb1cabfad8a23aa609e4a8187ed.jpg)\n\n图中红线标出的关键动作是：\n\n1. 建立新栈帧。\n2. 压入初始 `trylevel` 值 `-1`。\n3. 压入当前函数的 `scopetable` 地址。\n4. 压入统一的异常处理入口 `_except_handler3`。\n5. 读取原 `FS:[0]` 作为 `prev`，再把新记录写入 `FS:[0]`。\n\n因此，`__try / __except` 并没有绕开原生 SEH——它仍然向原生登记链挂入一个节点，只是该节点的 handler 固定为 `_except_handler3`，并且比原生记录多保存了作用域表和当前作用域状态。\n\n### 嵌套 `__try` 时只有一个登记记录\n\n单个 `__try / __except` 的编译结果已经看到了。接下来的问题是：同一个函数中出现多个独立或嵌套的 `__try` 时，编译器会为每一层都向 `FS:[0]` 挂入一个扩展登记记录，还是让它们共用一个？\n\n反汇编中只在函数入口附近看到一次写入 `FS:[0]` 的挂链操作；随后进入不同 `__try` 时，代码修改的是同一扩展登记记录中的 `trylevel`，图中依次出现了 `0`、`1`、`2`。\n\n![a4d23d6c571b526bb20b5550a1b758ff&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/c5e222b0c2cf42d96e3515f46a57f1f0774a205a0a972e0fcb5cbe246b5c5ddb.jpg)\n\n因此，同一函数内的多个 `__try` 作用域共用一个扩展登记记录。编译器没有用多个原生链表节点来表示嵌套。\n\n那么，一个登记记录为什么能够描述多个 `__try / __except` 块？答案就在前面提到的三个扩展字段中。\n\n### 一个登记记录如何描述多个 `__try` 作用域\n\n回到扩展登记记录新增的三个字段——`_ebp`、`scopetable`、`trylevel`。其中 `_ebp` 保存的是上层函数的栈底，直接复用每个函数开头的 `push ebp`；换句话说，在函数中任意位置使用 `__try / __except`，编译器都会在函数开头建立扩展登记记录。\n\n关键在于另外两个字段。\n\n#### `scopetable`：静态记录所有作用域\n\n`scopetable` 是一个指针，指向编译器为该函数生成的 `scopetable_entry` 结构体数组。每个 `__try / __except` 或 `__try / __finally` 作用域对应一个表项：\n\n```cpp\nstruct scopetable_entry\n{\n    int previousTryLevel; // 外层作用域在表中的索引；没有外层时为 -1\n    PVOID lpfnFilter;     // 过滤函数地址；__finally 对应项为 NULL\n    PVOID lpfnHandler;    // __except 处理代码或 __finally 代码的地址\n};\n```\n\n`previousTryLevel` 把静态数组中的表项连成一条嵌套链：没有外层时为 `-1`，有外层时指向外层作用域在数组中的索引。`lpfnFilter` 指向 `__except` 过滤表达式对应的代码地址。`lpfnHandler` 指向过滤器接受异常后执行的 `__except` 代码，或者 `__finally` 的清理代码。\n\n---\n示例代码及其反汇编如下所示：\n```c\nvoid test()\n{\n    __try\n    {\n    }\n    __except(1)\n    {\n        printf(\"123\");\n    }\n\n    __try\n    {\n        __try\n        {\n        }\n        __except(1)\n        {\n            printf(\"456\");\n        }\n    }\n    __except(1)\n    {\n        printf(\"789\");\n    }\n}\n```\n\n每个 `__try / __except` 块分别对应一个 `scopetable_entry`，这些表项组成一个全局数组：\n\n![9365bf0d8c7d5b38409d24c63b73ec5a&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/506fe0d35851c44baf080de577166ba3767d9f37133750185618153c958037be.jpg)\n\n图中两个表项的 `previousTryLevel` 为 `-1`，说明它们没有外层作用域；另一个表项的值为 `1`，说明它嵌套在索引 `1` 对应的作用域中。\n> 沿 `previousTryLevel` 链查找连续的非 `-1` 值，能确定某个 `__try` 的嵌套深度。\n\n通过反汇编我们可以看见过滤代码段是有 `RET` 指令的，所以要视为一个函数，且它们没有独立的 `mov ebp, esp`——因此 `EBP` 没有改变，仍可以通过原函数栈帧定位局部变量。这也是为什么过滤表达式可以使用函数中局部变量的原因。\n> 异常处理代码段则没有 `RET` 指令，是一个普通的代码段。\n\n`scopetable` 描述了\"这个函数一共有哪些作用域\"。但异常发生时，`_except_handler3` 怎么知道当前执行到哪个作用域？这就需要 `trylevel`。\n\n#### `trylevel`：动态标记当前作用域\n\n`trylevel` 成员表示当前在哪个 `__try / __except` 程序块，\n初始为 `-1` 表示尚未进入任何 `__try`。每进入一个 `__try`，编译器先把 `trylevel` 改为对应的作用域索引；离开该作用域后，再恢复外层索引。因此 `trylevel` 会随着控制流动态变化。\n> 通过 `[EBP-4]` 观察。\n\n*图：进入和离开 `__try` 时对 `trylevel` 的更新。*\n\n![42f1d74b7d03762c77be66408fc5b417&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/28ce3b2364620bcb9210c206dfa1173d0f96413493a0bd6cb8705660aeb55194.jpg)\n\n总结：多层嵌套不是用多个原生链表节点，而是用\"一个扩展登记记录＋一张静态作用域表 `scopetable`＋一个动态索引 `trylevel`\"来表示。`scopetable` 记录所有作用域的嵌套关系和对应的过滤/处理代码，`trylevel` 标记当前执行到哪个作用域。\n### `_except_handler3` 的搜索逻辑\n\n当发生异常时，原生 SEH 机制会找到并执行 `_except_handler3`。\n\n有了 `scopetable` 和 `trylevel`，异常发生时 `_except_handler3` 的搜索逻辑就很直接了：\n\n1. 读取当前登记记录中的 `trylevel`。\n2. 从对应的 `scopetable_entry` 开始，沿 `previousTryLevel` 逐层向外。\n3. 遇到 `lpfnFilter` 非空的表项时，调用过滤表达式。\n\t1. 如果过滤器返回 `EXCEPTION_CONTINUE_SEARCH`，继续查找外层作用域。\n\t2. 如果过滤器返回 `EXCEPTION_CONTINUE_EXECUTION`，根据当前 `CONTEXT` 恢复执行。\n\t3. 如果过滤器返回 `EXCEPTION_EXECUTE_HANDLER`，先确定该表项为目标处理器，随后进入展开阶段。\n\n如果当前函数的作用域表中没有过滤器接受异常，则 `_except_handler3` 返回 `ExceptionContinueSearch`（这是原生 SEH 的返回值），原生 SEH 分发继续查找更外层栈帧的登记记录。\n\n### `__try / __finally`：为什么一定会执行\n\n除了 `__try / __except` 程序块之外，编译器还提供了 `__try / __finally`，**在 `__finally` 块内的代码一定会去执行**，如下图所示，无论使用 `continue`、`break` 控制、`return` 返回还是触发异常，**`__finally` 块内的代码始终会被执行**：\n\n\n![04b369e82b111611695fff2c14e5ed43&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/7c3af757e7b21c14ef64f28ae4869479f5f717830bc9a8c231b4440eba9807ca.jpg)\n\n它是怎么做到的？先看 `__finally` 在 `scopetable` 中长什么样。编译器仍然使用同一类 `scopetable_entry` 描述 `__finally`，但它对应的表项有一个关键特征：`lpfnFilter` 为 `NULL`。这意味着搜索阶段会跳过它——`__finally` 不参与\"是否接受异常\"的判断。`lpfnHandler` 则指向 `__finally` 块中的代码。\n\n下面的反汇编图对应一个包含 `return` 的单层 `__try / __finally`。右侧内存窗口中，红框表项的 `lpfnFilter` 为 `0`，`lpfnHandler` 则指向下方的 `__finally` 代码。\n\n![4d86cdb5a933bf8182bec4ba7b183a10&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/353f9acc806f657d89e344354d458d78a70786784bd436af391fb77cc404deb4.jpg)\n\n是如何做到在函数退出时执行 `__finally` 的？\n\n#### 非异常退出：局部展开 `_local_unwind2`\n\n上一张图中，在真正执行 `return` 之前，编译器先调用 `_local_unwind2`，跟进该函数可以看到，它从作用域表中取出目标 `__finally` 块地址并调用（通过寄存器的值计算）：\n\n![c062e898b2e9af307921db389637134b&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/f31b921658fba03d062f70e8b987693c49e90f319f52716bf48c33205e85c926.jpg)\n\n因此，非异常退出时，编译器在离开作用域的控制流中直接插入了局部展开逻辑——它根据当前 `trylevel` 和 `scopetable` 找到需要离开的 `__finally` 表项，然后调用该表项的 `lpfnHandler`。\n\n#### 异常退出：全局展开 `_global_unwind2`\n\n非异常退出靠局部展开，那异常退出呢？考虑下面这个嵌套场景：异常发生在最内层，通往外层 `__except` 的路径上还隔着两个 `__finally`：\n\n```cpp\nvoid test()\n{\n    __try\n    {\n        __try\n        {\n            __try\n            {\n                *(int *)0 = 1;\n            }\n            __finally\n            {\n                printf(\"Finally2 ... \\n\");\n            }\n        }\n        __finally\n        {\n            printf(\"Finally1 ... \\n\");\n        }\n    }\n    __except(EXCEPTION_EXECUTE_HANDLER)\n    {\n        printf(\"Except ... \\n\");\n    }\n}\n```\n\n当发生异常时，`_except_handler3` 从当前 `trylevel` 开始沿 `previousTryLevel` 向外搜索时，会依次遇到这三个表项：\n\n1. 内层 `__finally`：`lpfnFilter` 为 `NULL`，搜索阶段跳过。\n2. 中间层 `__finally`：`lpfnFilter` 为 `NULL`，搜索阶段继续跳过。\n3. 外层 `__except`：过滤器返回 `EXCEPTION_EXECUTE_HANDLER`，确定它为目标处理器。\n\n这里最重要的时序是：过滤器接受异常时只是确定了\"由谁处理\"，并不表示立即进入 `__except` 代码块。目标处理器与异常发生点之间的两个 `__finally` 还需要先展开。\n\n下图显示外层过滤器返回 `1` 后，执行流回到 `_except_handler3`；随后 `_except_handler3` 调用 `_global_unwind2`，正式从搜索阶段转入展开阶段：\n\n![d2ae6720e50b0f62a6b7c2a0f4fd41cd&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/7f2e8b3294f483c175093c5886eadfb74805032cdc8f39cdb92f6de2b0a3975e.jpg)\n\n`_global_unwind2` 从异常发生点向目标处理器展开，并在经过每个 `__finally` 表项时触发局部展开。由于离异常点最近的是 `Finally2`，随后才是 `Finally1`，最终运行结果依次为 `Finally2 → Finally1 → Except`：\n\n![890834a7b1ea73a0887ce6b348c217ce&#95;MD5&#46;jpg](/notes/n-513b4c801b634b30839654b1a72897cc/media/761c24d57e71272be9004079ca8f53b10532365daf46e6d6a2f16aef2f168d1f.jpg)\n\n完整过程可以分成三个阶段：\n\n1. **搜索阶段**：从内向外检查过滤器，跳过两个 `__finally`，确认最外层 `__except` 是目标处理器。\n2. **展开阶段**：目标确定后调用 `_global_unwind2`，沿路径依次执行 `Finally2` 和 `Finally1`。\n3. **处理阶段**：展开完成后，才进入目标 `__except` 代码块。\n\n异常退出也保证了 `__finally` 的执行——第二条路也解决了。\n\n#### 小结\n\n- **非异常退出**：编译器在 `break`、`continue`、`return` 等离开作用域的代码前插入局部展开，由局部展开调用对应的 `__finally`。\n- **异常退出**：先搜索并确定目标异常处理器，再进行全局展开；全局展开沿路径触发局部展开，依次调用中间作用域的 `__finally`。\n\n两条路径的共同点是：`__finally` 不在搜索阶段执行，而在真正离开相应 `__try` 作用域的展开过程中执行。\n\n## 总结\n\n- VEH 是进程级异常回调机制，在 SEH 搜索之前统一观察或处理用户态异常。\n- 原生 x86 SEH 通过当前线程栈上的登记链组织栈帧级 handler，链表头位于 `FS:[0]`。\n- 单个 `__try / __except` 会让编译器挂入一个 handler 为 `_except_handler3` 的扩展登记记录。\n- 同一函数中的嵌套 `__try` 不靠多个原生登记节点表示，而是共用一个扩展记录，由静态 `scopetable` 描述作用域关系、动态 `trylevel` 标记当前作用域。\n- `_except_handler3` 从当前 `trylevel` 开始沿 `previousTryLevel` 搜索过滤器；过滤器只负责确定是否处理异常。\n- `__finally` 不参与接受异常的判断。非异常退出通过局部展开执行它；异常退出先确定目标处理器，再通过全局展开沿路径执行它。\n\n最值得记住的主线是：**先看单个 `__try` 如何接入原生 SEH，再看嵌套作用域如何共享登记记录；搜索负责决定\"谁处理\"，展开负责执行通往目标处理器路径上的清理。**\n",
+  "id": "513b4c80-1b63-4b30-8396-54b1a72897cc",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "arch/x86",
+      "lang/cpp"
+    ],
+    "title": "Windows x86 VEH 与 SEH"
+  },
+  "resources": [
+    "28ce3b2364620bcb9210c206dfa1173d0f96413493a0bd6cb8705660aeb55194.jpg",
+    "353f9acc806f657d89e344354d458d78a70786784bd436af391fb77cc404deb4.jpg",
+    "47251da876872dcfb435f3337d290d5d0fbf0fb1cabfad8a23aa609e4a8187ed.jpg",
+    "506fe0d35851c44baf080de577166ba3767d9f37133750185618153c958037be.jpg",
+    "761c24d57e71272be9004079ca8f53b10532365daf46e6d6a2f16aef2f168d1f.jpg",
+    "7c3af757e7b21c14ef64f28ae4869479f5f717830bc9a8c231b4440eba9807ca.jpg",
+    "7f2e8b3294f483c175093c5886eadfb74805032cdc8f39cdb92f6de2b0a3975e.jpg",
+    "8442bb145ad68062a86613cdc34dfd8ce6aa49b80b3e4fd247d0696eda55f0e5.jpg",
+    "b63825bf55686c3fd55a06f6b27599a39954c37719886502de2e687f5882668d.jpg",
+    "c4249e5c77678fd6cbfc11f28a454d8efe065a505287ab046fa8e85443adfe07.jpg",
+    "c5e222b0c2cf42d96e3515f46a57f1f0774a205a0a972e0fcb5cbe246b5c5ddb.jpg",
+    "ceee212a2ce4179b1262e18f21535da67bf6353893b1dcb4985269f18b65d421.jpg",
+    "f31b921658fba03d062f70e8b987693c49e90f319f52716bf48c33205e85c926.jpg"
+  ],
+  "url": "/notes/n-513b4c801b634b30839654b1a72897cc/"
+}

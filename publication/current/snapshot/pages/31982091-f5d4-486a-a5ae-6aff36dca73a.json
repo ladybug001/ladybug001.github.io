@@ -1,0 +1,48 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-8171b19666f1c12fcc15",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-7334b4db3e3f8bab825e",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-b0acbb6f1603a707d4fe",
+      "kind": "heading",
+      "offset": 124
+    },
+    {
+      "id": "h-960d208f2cfc6f7586ca",
+      "kind": "heading",
+      "offset": 757
+    },
+    {
+      "id": "h-c9f4755e610ae32e8cc2",
+      "kind": "heading",
+      "offset": 1332
+    }
+  ],
+  "body": "# Windows 虚拟分页机制\n\n## 前言\n\n虚拟分页机制是现代操作系统的基础，相关概念不再赘述，后续内容讲解的都是在 Windows 这一具体的系统下（且是 32 位 Windows），它的虚拟分页有何特点。\n\n## 虚拟内存与物理内存的关系\n\n每个进程都有自己的 4GB 虚拟地址空间，但这 4GB 并不是真实存在的物理内存，而是一块**虚拟内存**。\n\n在进程 A 的 `0x12345678` 地址中存入一个值，在进程 B 的 `0x12345678` 地址中也存入一个值，两者并不会冲突，各自存放各自的数据。\n\n![c4154fa6ce29aa210c230b8d18ec9d42&#95;MD5&#46;png](/notes/n-31982091f5d4486aa5ae6aff36dca73a/media/0c3862d29167cecda5bf7a8ceda426469fe227f64b3afd7fd2242f3acfc882bc.png)\n\n但数据最终是存放在物理内存上的，所以虚拟内存和物理内存之间存在一个映射关系。当你真正使用的时候才会分配物理内存，不使用的时候只有虚拟内存（相当于\"空头支票\"）。\n\n![b180f721cb8304b0eff9daf84e0e1571&#95;MD5&#46;png](/notes/n-31982091f5d4486aa5ae6aff36dca73a/media/6bf018952c50737388eb3cc2085cbe0ce1645043b01fe6feaf421541b4628029.png)\n\n每一个物理页的大小是 4KB，**物理内存按照 4KB 大小来分页（Page）**，因此就有了\"物理页\"的概念。\n\n## 虚拟内存的空间划分\n\n每个进程都有 4GB 的虚拟地址空间，划分为**高 2G** 和**低 2G** 两部分：\n\n- **低 2G（用户空间）**：供应用程序使用。\n- **高 2G（内核空间）**：所有进程共用。\n\n需要注意的是，低 2G 的用户空间中，**前 64KB 为空指针赋值区**、**后 64KB 为用户禁入区**，这两个区域不可使用。\n\n![bd9ef2e08e88662ded9cfcfcda6ec2fe&#95;MD5&#46;png](/notes/n-31982091f5d4486aa5ae6aff36dca73a/media/9f087e8e81bcdddd568c41c53cc290c46bb30c40156054e0692ad51e84082924.png)\n\n![bf168daeba8a1d939ef8b7452f0f2d85&#95;MD5&#46;png](/notes/n-31982091f5d4486aa5ae6aff36dca73a/media/cc5b52e2f3d25eb61028c4c8940b0ba15b4d479758b802667f1dabe1fa74567a.png)\n\n> 术语说明：线性地址即虚拟内存的地址。线性地址有 4G，但未必都能访问，所以需要记录哪些地方已被分配。\n\n\n## 页面置换机制\n\n进程使用虚拟内存时会分配物理页，但物理页数量有限。操作系统会监测程序对物理页的使用频率，如果某个物理页不被频繁访问，系统会将其内容换出到硬盘空间——页面文件，然后将该物理页分配给其他需要的进程。\n> 此处涉及**工作集（Working Set）** 和**页面置换算法**的概念。\n\n\n可以通过系统属性查看和更改当前分配的页面文件大小：\n\n![5a1327ba0c8f8115394ad4e688b9060d&#95;MD5&#46;png](/notes/n-31982091f5d4486aa5ae6aff36dca73a/media/10d020ad293c43c55e8e6633f325b291b4296b8bbfa331c3afdf5280b4c396fb.png)\n\n页面文件存放在系统盘下的 `pagefile.sys`（需要显示系统隐藏文件才可见），其大小与设置的初始值一致：\n\n![e92ee52c9fb7e60d5f7b91e6bf1ea6fc&#95;MD5&#46;png](/notes/n-31982091f5d4486aa5ae6aff36dca73a/media/f671f1a19f04237e8ed3db371dc8022d61d3b42f00a93d423e81a91769ebebd0.png)\n\n\n\n当程序再次访问被换出的页面时，系统会重新分配物理页，并从 `pagefile.sys` 中将数据换入（Swap In）。整个过程对应用程序透明，编写程序时感知不到这些细节。\n\n![d028595d673ef4baf651f5cb9687be41&#95;MD5&#46;png](/notes/n-31982091f5d4486aa5ae6aff36dca73a/media/141d42a6bf708a605f355e43fa5d14caef5c232aa51152a25531630b07ebb7ff.png)\n",
+  "id": "31982091-f5d4-486a-a5ae-6aff36dca73a",
+  "metadata": {
+    "tags": [
+      "os/windows/mm",
+      "arch/x86"
+    ],
+    "title": "Windows 虚拟分页机制"
+  },
+  "resources": [
+    "0c3862d29167cecda5bf7a8ceda426469fe227f64b3afd7fd2242f3acfc882bc.png",
+    "10d020ad293c43c55e8e6633f325b291b4296b8bbfa331c3afdf5280b4c396fb.png",
+    "141d42a6bf708a605f355e43fa5d14caef5c232aa51152a25531630b07ebb7ff.png",
+    "6bf018952c50737388eb3cc2085cbe0ce1645043b01fe6feaf421541b4628029.png",
+    "9f087e8e81bcdddd568c41c53cc290c46bb30c40156054e0692ad51e84082924.png",
+    "cc5b52e2f3d25eb61028c4c8940b0ba15b4d479758b802667f1dabe1fa74567a.png",
+    "f671f1a19f04237e8ed3db371dc8022d61d3b42f00a93d423e81a91769ebebd0.png"
+  ],
+  "url": "/notes/n-31982091f5d4486aa5ae6aff36dca73a/"
+}

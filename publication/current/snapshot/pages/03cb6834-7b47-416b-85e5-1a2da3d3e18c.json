@@ -1,0 +1,38 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-e8caec81fcdd95c6ca88",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-e0d4190c8e2c4fee2b11",
+      "kind": "heading",
+      "offset": 111
+    },
+    {
+      "id": "h-e86994b27b67b709b734",
+      "kind": "heading",
+      "offset": 1623
+    },
+    {
+      "id": "h-e32d4d84a475e2126292",
+      "kind": "heading",
+      "offset": 1961
+    }
+  ],
+  "body": "# Windows 窗口站与桌面隔离机制\n\n> **Session → Window Station → Desktop → Window / Message Queue / Hook / Input**\n\n## 层级概览\n\n| 层级             | 内核本质                      | 持有资源                                 | 绑定粒度  |\n| -------------- | ------------------------- | ------------------------------------ | ----- |\n| Session        | 登录会话隔离单元（本地登录 / RDP 各占一个） | 独立的对象命名空间、虚拟内存空间                     | 用户登录  |\n| Window Station | 内核对象（`WINSTA`），图形资源隔离边界   | **剪贴板**、**全局 Atom 表**、一组 Desktop     | 进程级绑定 |\n| Desktop        | 内核对象（`DESK`），UI 运行环境      | **窗口树**、**消息队列**、**Hook 链**、**输入焦点** | 线程级绑定 |\n\n完整结构示意：\n\n![da6e80b2ef3905f587e5f2d26eb49dbb&#95;MD5&#46;jpg](/notes/n-03cb68347b47416b85e51a2da3d3e18c/media/86ea7c3fa6e953e40798f7033e9290f1372e8a765b9499d3699255eca223d96d.jpg)\n\n\n日常显示的桌面是 `Session 1\\WinSta0\\Default`。下图展示通过 `CreateDesktop` 新建一个桌面、将 notepad.exe 启动于其上，再调用 `SwitchDesktop` 切换后的效果：\n\n![ed26cb5b796b9be90804065897e4157e&#95;MD5&#46;jpg](/notes/n-03cb68347b47416b85e51a2da3d3e18c/media/595900c8f7e219cfbd23530c47b9ceb3fba45ba3b0dcaf164fba34d416f07fb2.jpg)\n\n绑定规则补充：\n- **进程**有且仅有一个 Window Station，继承自父进程；可在启动时通过 `STARTUPINFO.lpDesktop`（格式 `WinSta0\\MyDesktop`）指定，运行期间极少切换（`SetProcessWindowStation`）；`lpDesktop = NULL` 时继承父进程，目标 Desktop 须提前 `CreateDesktopW` 创建，否则启动失败。\n- **线程**绑定 Desktop，同进程不同线程可绑不同 Desktop；`SetThreadDesktop` 必须在线程创建任何窗口前调用，否则失败。\n- `SwitchDesktop` 是切换用户可见桌面（如 Win+L），与 `SetThreadDesktop` 是完全不同的操作。\n- **Session** 由 Token 决定，与 Window Station 是不同层次；跨 Session 启动进程需 `WTSQueryUserToken` 获取目标 Session 的用户 Token，再通过 `CreateProcessAsUserW` 启动（需要 `SeTcbPrivilege`）。否则启动的进程属于当前 Session。\n\n## WinSta0 的特殊性与 Session 0 Isolation\n\n`WinSta0` 是**唯一连接物理显示和输入设备**的 Window Station。其下的任意 Desktop 均可渲染窗口，但同一时刻只有**当前激活的 Desktop** 可见并接收键鼠输入，通过 `SwitchDesktop` 切换；`Default` 只是登录后默认激活的那个，并无特权。普通交互式程序都运行在 `Session X\\WinSta0\\Default`。\n\n从 Vista 起，服务强制运行在 Session 0，其 WinSta0 与用户 Session 的 WinSta0 **物理上是不同对象**——服务创建的窗口用户永远看不到，反之亦然。这是 **Session 0 Isolation** 的核心含义。\n\n\n## 与对象命名空间的关系\n\nWindow Station 和 Desktop 挂在 Session 私有的对象命名空间下，NT 路径为：\n\n```text\n\\Sessions\\1\\Windows\\WindowStations\\WinSta0\n```\n\n`WinSta0` 是一个目录对象，其下的 Desktop 作为命名子对象存在：\n\n```text\n\\Sessions\\1\\Windows\\WindowStations\\WinSta0\\Default\n\\Sessions\\1\\Windows\\WindowStations\\WinSta0\\Winlogon\n\\Sessions\\1\\Windows\\WindowStations\\WinSta0\\Disconnect\n```\n\nWin32 API 层面只需传 `WinSta0\\Default`，系统会自动前缀当前 Session 路径。可用 **WinObj**（Sysinternals）实时观察这些对象。\n\n> 相关内容参考：[Windows 内核路径解析&#65306;对象命名空间与 DeviceMap 机制](/notes/n-fd51c9c5b3534549885452c844b09c8e/)\n\n\n> [!note]- 安全权限（展开）\n> Window Station 和 Desktop 都是内核安全对象，知道名字不等于可以打开。\n>\n> | 对象 | 常用权限 | 典型需求场景 |\n> |---|---|---|\n> | Window Station | `WINSTA_READSCREEN` | 截屏/镜像 |\n> | Window Station | `WINSTA_ACCESSCLIPBOARD` | 读写剪贴板 |\n> | Window Station | `WINSTA_CREATEDESKTOP` | 在该 WinSta 下新建 Desktop |\n> | Window Station | `WINSTA_ACCESSGLOBALATOMS` | 注册全局窗口类 |\n> | Desktop | `DESKTOP_CREATEWINDOW` | 在该 Desktop 上创建窗口 |\n> | Desktop | `DESKTOP_HOOKCONTROL` | 安装全局 Hook（`SetWindowsHookEx`） |\n> | Desktop | `DESKTOP_JOURNALRECORD` | 录制输入事件（高权限，常被 AV 监控） |\n> | Desktop | `DESKTOP_SWITCHDESKTOP` | 调用 `SwitchDesktop` |\n>\n> 跨 Desktop 注入进程（如 `CreateRemoteThread`）至少需要目标 Desktop 的 `DESKTOP_CREATEWINDOW`，以及目标 WinSta 的 `WINSTA_ACCESSGLOBALATOMS`。\n",
+  "id": "03cb6834-7b47-416b-85e5-1a2da3d3e18c",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows"
+    ],
+    "title": "Windows 窗口站与桌面隔离机制"
+  },
+  "resources": [
+    "595900c8f7e219cfbd23530c47b9ceb3fba45ba3b0dcaf164fba34d416f07fb2.jpg",
+    "86ea7c3fa6e953e40798f7033e9290f1372e8a765b9499d3699255eca223d96d.jpg"
+  ],
+  "url": "/notes/n-03cb68347b47416b85e51a2da3d3e18c/"
+}

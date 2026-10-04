@@ -1,0 +1,16 @@
+{{/* Adapted from Stack 4.0.3 (GPL-3.0): the generated first-body image is list-only. */}}
+{{ $image := partial "helper/image" (dict "Image" (.Params.list_image | default .Params.image) "Resources" .Resources "Context" .) }}
+<article class="{{ if $image }}has-image{{ end }}">
+  <header class="article-header">
+    {{ if $image }}
+    <div class="article-image">
+      <a href="{{ .RelPermalink }}">
+        {{ partial "helper/responsive-image" (dict "Resource" $image.Resource "Widths" nil "Attributes" (dict
+          "src" $image.Permalink "width" $image.Width "height" $image.Height
+          "alt" .Title "loading" "lazy")) }}
+      </a>
+    </div>
+    {{ end }}
+    {{ partial "article/components/details" (dict "Page" . "IsList" true) }}
+  </header>
+</article>

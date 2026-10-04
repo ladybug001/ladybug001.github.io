@@ -1,0 +1,119 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-2b7f3957c55e8a3676f7",
+      "kind": "heading",
+      "offset": 26
+    },
+    {
+      "id": "h-f5e2e16c9fe717b5bbfc",
+      "kind": "heading",
+      "offset": 33
+    },
+    {
+      "id": "h-34dae549dfc478a5d9a6",
+      "kind": "heading",
+      "offset": 536
+    },
+    {
+      "id": "h-ee74d07d2d5febb26b55",
+      "kind": "heading",
+      "offset": 1214
+    },
+    {
+      "id": "h-7c97e284c3b36eb613a4",
+      "kind": "heading",
+      "offset": 1346
+    },
+    {
+      "id": "h-f6905588f236b13fa836",
+      "kind": "heading",
+      "offset": 2027
+    },
+    {
+      "id": "h-a342babec9e68a325326",
+      "kind": "heading",
+      "offset": 2038
+    },
+    {
+      "id": "h-63976b6226c5251789e3",
+      "kind": "heading",
+      "offset": 2383
+    },
+    {
+      "id": "h-1cbb631a925bf77c3bbf",
+      "kind": "heading",
+      "offset": 2437
+    },
+    {
+      "id": "h-a53c6083fb1bcde12081",
+      "kind": "heading",
+      "offset": 2717
+    },
+    {
+      "id": "h-46976b74f9b431bbf030",
+      "kind": "heading",
+      "offset": 2853
+    },
+    {
+      "id": "h-9453c5d364e89494b4e9",
+      "kind": "heading",
+      "offset": 2863
+    },
+    {
+      "id": "h-1ee54f703c39d6e20f30",
+      "kind": "heading",
+      "offset": 3879
+    },
+    {
+      "id": "h-5a3bfa116d859648dec8",
+      "kind": "heading",
+      "offset": 4942
+    },
+    {
+      "id": "h-3e32f8fbef5737559da3",
+      "kind": "heading",
+      "offset": 4982
+    },
+    {
+      "id": "h-455ca877577ddfab9eb5",
+      "kind": "heading",
+      "offset": 5693
+    },
+    {
+      "id": "h-4d6a876a8311f99128e3",
+      "kind": "heading",
+      "offset": 6545
+    },
+    {
+      "id": "h-2889fa7c73f971fc6c15",
+      "kind": "heading",
+      "offset": 6969
+    },
+    {
+      "id": "h-4ae20789ab683fcff42f",
+      "kind": "heading",
+      "offset": 7709
+    },
+    {
+      "id": "h-fdb0f073fc0f066631f8",
+      "kind": "heading",
+      "offset": 8479
+    }
+  ],
+  "body": "# JavaScript 事件循环与 Promise\n\n## 前言\n\n- 参考：异步编程的本质与实现机制\n- JavaScript 主要依赖于 `Promise` 、 `SetTimeout`、宏/微任务队列以及**事件循环**（轮询消息队列并执行任务）机制来实现异步操作。\n\n- **类比参考 [Python asyncio 异步机制](/notes/n-5344b73e8c544f2db3fe00dedd9c607e/)：**\n\t1.  **协程/生成器** $\\approx$ **协程/生成器**\n\t2.  **Promise** $\\approx$ **Task/Future**\n\t3.  **setTimeout** $\\approx$ `loop.call_later` 等\n\t4.  **微任务队列** $\\approx$ **就绪队列**\n\t5.  **宏任务队列** $\\approx$ **等待队列**\n\t    *   *注*：不完全一致。Python 的等待队列会遍历所有元素看是否达到执行条件；而 JS 的宏任务和微任务是父子关系，一个宏任务（父）对应多个微任务（子），在宏任务执行完毕后立即清空其产生的微任务队列。\n\n## 宏、微任务队列\n\n任务队列的调度机制，可对照 [Python Event Loop](/notes/n-5344b73e8c544f2db3fe00dedd9c607e/#h-02e545dc7c893e0f53c9)。\n\n- **消息队列（宏任务队列）**：清空堆栈之后，从宏任务队列中取出一个任务执行，如 setTimeout `、` fetch `、` onCreate等在该队列中，遵循先入先出(FIFO)的规则\n- **作业队列（微任务队列）**：每完成一个宏任务（同步代码也算一个宏任务），就清空微任务队列中的所有任务，如 Promise在该队列中\n\n根据调用函数不同，任务会被加入到不同的队列中，其对应关系如下表所示：\n\n| 名称  | 英文         | 典型示例                                                             |\n| --- | ---------- | ---------------------------------------------------------------- |\n| 宏任务 | Macro-task | `setTimeout`、`setInterval`、`setImmediate`（Node）、I/O、UI 渲染        |\n| 微任务 | Micro-task | `Promise.then/catch/finally`、`queueMicrotask`、`MutationObserver` |\n\n## 微任务—Promise\n\n> 微任务以 Promise 为代表\n\n结果保存与完成回调的概念，可对照 [Python Future](/notes/n-5344b73e8c544f2db3fe00dedd9c607e/#h-b657b871b2a9b9df2b27)。\n\n### 状态机制\n\n- **Promise 实例有三种状态**：\n    1. **Pending（等待中）**：初始状态，既未完成也未拒绝。\n\t    1. Promise 处于 **pending** 状态，调用 `.then/.catch` 函数，不会将回调加入任务队列，而只是在Promise 对象中记录该成功/失败回调；\n\t\t2. Promise 被 **resolve** 或 **reject**时，对应的已记录的所有成功/失败回调都会被添加到微任务队列中。\n    2. **Fulfilled（已完成）**：调用 `resolve()` 修改 Promise 对象为此状态，表示操作成功。\n\t    1. 后续调用 `.then` 函数，直接将回调函数添加到微任务队列中。\n    3. **Rejected（已拒绝）**：调用 `reject()` 修改 Promise 对象为此状态，表示操作失败。\n\t    1. 后续调用 `.catch` 函数，直接回调函数添加到微任务队列中。\n- **关键规则**：\n    - **只有第一次调用的 `resolve` 或 `reject` 有效**：后续调用会被忽略，即：从 `Pending` 变为 `Fulfilled` 或 `Rejected` 后，不能再切换状态。\n    - 可以多次调用 `.then` 和 `.catch` 记录/添加多个回调函数，多个回调函数都会执行。\n\t- 在 Promise 中调用 resolve 或者 reject 传入的参数，是回调函数执行时的参数。\n\n### 用法示例\n\n#### 基础用法\n\n这是构建 Promise 并在其完成后处理结果的最标准方式。\n\n```js\nconst p = new Promise((resolve, reject) => {\n    const ok = Math.random() > 0.5;\n\n    if (ok) {\n        resolve(\"成功值\");\n    } else {\n        reject(\"失败原因\");\n    }\n});\n\n// 若resolve 则向微任务队列添加任务\np.then((value)=>{console.log(value)})\n// 若reject 则向微任务队列添加任务\np.catch((value)=>{console.log(value)})\n```\n#### 静态方法\n\n用于快速创建已确定状态的 Promise 对象，常用于测试或数据转换。\n\n##### `resolve`\n\n- **`Promise.resolve(value)`**:\n\t- 若 `value` 为普通值：返回一个状态为 `fulfilled` 的 `Promise`。\n\t- 若 `value` 为 `Promise` 对象：直接返回该对象（引用传递，不复制）。\n\t- 若 `value` 为 `thenable` 对象（有 `then` 方法）：将其展开，根据 `then` 的执行结果决定最终状态。\n\n\n```javascript\nconst pResolved = Promise.resolve(\"直接成功\");\n```\n\n##### `reject`\n\n- **`Promise.reject(reason)`**:\n\t- 返回一个状态为 Rejected 的 Promise。\n\n```javascript\nconst pRejected = Promise.reject(\"直接失败\");\n```\n\n#### 链式调用\n\n##### 特点\nPromise 的核心特性，用于解决回调地狱，将异步流程扁平化。\n\n* **核心机制**：`.then()` 和 `.catch()` 方法执行后，**总是返回一个新的 Promise 对象**。\n* **状态流转规则**：\n    1. **返回普通值**：新 Promise 会以该值 **resolve**。\n    2. **抛出异常**：新 Promise 会以该错误 **reject**。\n    3. **返回 Promise**：新 Promise 会**等待**该内部 Promise 的状态。内部 Promise 成功则新 Promise 成功，反之亦然。\n\n```javascript\nPromise.resolve(1)\n    .then((n) => {\n        console.log(\"Step 1:\", n); // 1\n        return n + 1; // 返回普通值 2 -> 下一个 Promise Resolve(2)\n    })\n    .then((n) => {\n        console.log(\"Step 2:\", n); // 2\n        // 返回一个新的异步 Promise -> 下一个 Promise 等待它完成\n        return new Promise(resolve => setTimeout(() => resolve(n * 2), 1000));\n    })\n    .then((n) => {\n        console.log(\"Step 3 (1s later):\", n); // 4\n        throw new Error(\"中间出错了\"); // 抛出错误 -> 下一个 Promise Reject\n    })\n    .catch((err) => {\n        console.warn(\"Caught Error:\", err.message);\n        return \"错误已修复\"; // 错误被捕获并返回普通值 -> 下一个 Promise Resolve\n    })\n    .then((msg) => {\n        console.log(\"Final:\", msg); // \"错误已修复\"\n    });\n```\n##### 原理\n```js\n// .then的伪代码\nPromise.prototype.then = function (onFulfilled, onRejected) {\n    const promise2 = new Promise((resolve, reject) => {\n\t\t// 再度封装成功回调\n        const fulfilledTask = () => {\n            try {\n                const x = onFulfilled(this.value);\n                resolvePromise(promise2, x, resolve, reject);\n            } catch (e) {\n                reject(e);\n            }\n        };\n\n\t\t// 再度封装失败回调\n        const rejectedTask = () => {\n            try {\n                const x = onRejected(this.reason);\n                resolvePromise(promise2, x, resolve, reject);\n            } catch (e) {\n                reject(e);\n            }\n        };\n\t\t// 入队逻辑\n        if (this.state === 'fulfilled') {\n            queueMicrotask(fulfilledTask);\n        } else if (this.state === 'rejected') {\n            queueMicrotask(rejectedTask);\n        } else {\n            this.onFulfilledCallbacks.push(fulfilledTask);\n            this.onRejectedCallbacks.push(rejectedTask);\n        }\n    });\n\t// 返回新的Promise\n    return promise2;\n};\n```\n#### 并发控制 `Promise.all`\n\n用于并行处理多个异步操作，常用于聚合多个独立请求的结果。\n\n##### 特点\n* **用法**：接收一个 `Promise` 可迭代对象（如数组）。\n* **成功条件**：所有 `Promise` 都成功，返回结果数组（顺序与传入数组一致，而非完成时间顺序）。\n* **失败条件**：只要有一个失败，立即 `reject`，返回第一个失败的原因。\n\n```javascript\nconst task1 = new Promise(resolve => setTimeout(() => resolve(\"Result A\"), 1000));\nconst task2 = new Promise(resolve => setTimeout(() => resolve(\"Result B\"), 500));\nconst task3 = Promise.reject(\"Error C\");\n\n// 场景 1：全部成功\nPromise.all([task1, task2])\n    .then(results => {\n        // 虽然 task2 先完成，但结果数组中 task1 的结果依然在前面\n        console.log(\"All success:\", results); // [\"Result A\", \"Result B\"]\n    });\n\n// 场景 2：存在失败\nPromise.all([task1, task3])\n    .catch(reason => {\n        console.error(\"One failed:\", reason); // \"Error C\" -> task1 的结果被丢弃\n    });\n```\n\n##### 原理\n```js\nPromise.all = function (iterable) {\n    return new Promise((resolve, reject) => {\n\n        const results = [];\n        let remaining = 0;\n        let index = 0;\n\t\t\n\t\t// iterable 为空\n\t\tif (index === 0) {\n\t\t    resolve([]);\n\t\t}\n\t\t\n\t\t// 不为空 逐个遍历\n        for (const item of iterable) {\n            const currentIndex = index;\n            index++;\n            remaining++;\n\t\t\t// 逐个添加回调\n            Promise.resolve(item).then(\n            \t// 成功回调\n                value => {\n                    results[currentIndex] = value;\n                    remaining--;\n\n                    if (remaining === 0) {\n                        resolve(results);\n                    }\n                },\n                // 失败回调\n                reason => {\n                    reject(reason);\n                }\n            );\n        }\n\n    });\n};\n\n```\n\n## 宏任务—SetTimeout\n\n延迟回调的用法，可对照 [Python Event Loop](/notes/n-5344b73e8c544f2db3fe00dedd9c607e/#h-02e545dc7c893e0f53c9) 中的 `loop.call_later` 示例。\n\n\n> 宏任务以 SetTimeout 为代表\n```js\nfunction func1(){\n\tconsole.log('fun1执行')\n}\nfunction func2(){\n\tconsole.log('fun2执行')\n}\n\nfunction foo(){\n  console.log('foo执行')\n  // 将func1放入宏任务队列，1秒后有机会执行\n  setTimeout(func1, 1000)\n  // 执行func2函数\n  func2()\n}\nfoo()\n```\n\n输出结果：\n```ts\nfoo执行\nfun2执行\nfun1执行\n```\n## 宏、微任务执行顺序示例\n\n```js\nconsole.log(\"同步 1\");\n\n// 第一个宏任务\nsetTimeout(() => {\n    console.log(\"宏任务 1 开始\");\n\n    Promise.resolve().then(() => console.log(\"微任务 A\"));\n    Promise.resolve().then(() => console.log(\"微任务 B\"));\n\n    console.log(\"宏任务 1 结束\");\n}, 0);\n\n// 第二个宏任务\nsetTimeout(() => {\n    console.log(\"宏任务 2 开始\");\n\n    Promise.resolve().then(() => console.log(\"微任务 C\"));\n    Promise.resolve().then(() => console.log(\"微任务 D\"));\n\n    console.log(\"宏任务 2 结束\");\n}, 0);\n\nconsole.log(\"同步 2\");\n\n// 向微任务队列中，加入两个任务\nPromise.resolve().then(() => console.log(\"微任务 S1\"));\nPromise.resolve().then(() => console.log(\"微任务 S2\"));\n\n\n// 同步代码结束，此时会清空同步阶段生成的微任务\n\n```\n\n输出内容：\n```\n同步 1\n同步 2\n微任务 S1\n微任务 S2\n宏任务 1 开始\n宏任务 1 结束\n微任务 A\n微任务 B\n宏任务 2 开始\n宏任务 2 结束\n微任务 C\n微任务 D\n```\n\n## 异步代码的调试&跟栈\n\n1. 在调试JS代码的时候，经常可以在堆栈中看到\"异步\"字样，如下图所示：![b109e20842f0a42f2077aa2744031ba3&#95;MD5&#46;jpeg](/notes/n-05362560259140a7ada563abf99d1a7c/media/12fe32243420edd6ae7dcd6f26659fd31608914f823f87447365b42b23cd9a90.jpeg)\n2. 点击\"异步\"字样下的第一个栈帧，可以跳转至创建异步任务的代码位置。![dbfa5bb84df222ae75eaa9c3bf5c3298&#95;MD5&#46;jpeg](/notes/n-05362560259140a7ada563abf99d1a7c/media/115af73c992f3397059d290144e810cb8a600ac30fece987e6483233e987fbfd.jpeg)\n3. 点击\"异步\"上方的第一个栈帧，可以跳转至异步函数中执行某函数调用的位置。![722a915f196680f625b1d95c9446e1bd&#95;MD5&#46;jpeg](/notes/n-05362560259140a7ada563abf99d1a7c/media/1971dc75f293ec6cc70db3d0b523780fdd6462d47e556df57b96050ae950d410.jpeg)\n\n> [!NOTE] 为什么调试异步函数时，堆栈中的某些栈帧点击后不显示相应的局部变量？\n> 猜测：因为异步函数是在创建自己的父函数执行结束后才寻找时机执行，所以当断点断在异步函数里时，父函数的栈帧已经被释放，所以无法得到局部变量值等信息，而仅有调用序列被保存。\n\n## 参考链接\n\n1. [消息队列和作业队列_shaobohong的博客-CSDN博客](https://blog.csdn.net/qq_17613195/article/details/112678789)\n2. [一篇搞定（Js异步、事件循环与消息队列、微任务与宏任务） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/139967525)\n",
+  "id": "05362560-2591-40a7-ada5-63abf99d1a7c",
+  "metadata": {
+    "tags": [
+      "lang/javascript",
+      "cs/concurrency"
+    ],
+    "title": "JavaScript 事件循环与 Promise"
+  },
+  "resources": [
+    "115af73c992f3397059d290144e810cb8a600ac30fece987e6483233e987fbfd.jpeg",
+    "12fe32243420edd6ae7dcd6f26659fd31608914f823f87447365b42b23cd9a90.jpeg",
+    "1971dc75f293ec6cc70db3d0b523780fdd6462d47e556df57b96050ae950d410.jpeg"
+  ],
+  "url": "/notes/n-05362560259140a7ada563abf99d1a7c/"
+}

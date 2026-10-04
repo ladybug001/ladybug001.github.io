@@ -1,0 +1,117 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-cb6c65c0cf9c2fe4e4d8",
+      "kind": "heading",
+      "offset": 30
+    },
+    {
+      "id": "h-fcd02f14d061771941d1",
+      "kind": "heading",
+      "offset": 44
+    },
+    {
+      "id": "h-43ad10e71657f2a1bab6",
+      "kind": "heading",
+      "offset": 193
+    },
+    {
+      "id": "h-9f580512bff3d2fbd2f1",
+      "kind": "heading",
+      "offset": 507
+    },
+    {
+      "id": "e-fa9548ca662756170f21-b-9xp9lk",
+      "kind": "quote-block",
+      "offset": 660,
+      "prefix": "> "
+    },
+    {
+      "id": "h-b473a1d362a891861b20",
+      "kind": "heading",
+      "offset": 2125
+    },
+    {
+      "id": "h-ab03ee1707ae53b364b7",
+      "kind": "heading",
+      "offset": 2149
+    },
+    {
+      "id": "h-583f0543a312f09495d3",
+      "kind": "heading",
+      "offset": 2972
+    },
+    {
+      "id": "h-63ba2746e86ef75337f8",
+      "kind": "heading",
+      "offset": 3522
+    },
+    {
+      "id": "h-5e1ae9ff8b6d078f1ab4",
+      "kind": "heading",
+      "offset": 4076
+    },
+    {
+      "id": "h-d8a20d1c109c70cb2848",
+      "kind": "heading",
+      "offset": 5062
+    },
+    {
+      "id": "h-deb1fbc3a69ceb2a1ccf",
+      "kind": "heading",
+      "offset": 5691
+    },
+    {
+      "id": "h-a71de3aa6f4143ba7ef8",
+      "kind": "heading",
+      "offset": 6091
+    },
+    {
+      "id": "h-f52c06d0eb5cf45e4238",
+      "kind": "heading",
+      "offset": 6104
+    },
+    {
+      "id": "h-2fd23d690946a0f3b634",
+      "kind": "heading",
+      "offset": 6538
+    },
+    {
+      "id": "h-cc054c2bdc28ee64b138",
+      "kind": "heading",
+      "offset": 7281
+    },
+    {
+      "id": "h-b88f3d1d76c7fe519840",
+      "kind": "heading",
+      "offset": 7692
+    }
+  ],
+  "body": "# Windows 线程创建（02）：KTHREAD 初始化\n\n## 入口参数与职责边界\n\n相关内容参考：[Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)、[C 语言模拟 Windows 线程切换](/notes/n-dc26a1ccb21c475a91f966f52af7ca3a/)\n\n### 函数原型\n\n```c\nNTSTATUS\nKeInitThread (\n    __out PKTHREAD Thread,\n    __in_opt PVOID KernelStack,\n    __in PKSYSTEM_ROUTINE SystemRoutine,\n    __in_opt PKSTART_ROUTINE StartRoutine,\n    __in_opt PVOID StartContext,\n    __in_opt PCONTEXT ContextFrame,\n    __in_opt PVOID Teb,\n    __in PKPROCESS Process\n    );\n```\n\n### 参数归属\n\n\n\n> **用户线程第一次进 3 环的顺序是**：位置 3 执行指定的用户 APC（即 `LoaderInitRoutine`，也是 `LdrInitializeThunk`），完成用户 APC 后返回到“3 环原位置”（即恢复原始 `CONTEXT` 到位置 2），再由用户态启动桩调用位置 1。 \n\n\n\n\n| 参数              | 含义                            | 关键点                                                             |\n| --------------- | ----------------------------- | --------------------------------------------------------------- |\n| `Thread`        | 要初始化的 `KTHREAD`               | 调用前必须已经清零，通常对应 `ETHREAD.Tcb`                                    |\n| `KernelStack`   | 可选的内核栈顶地址                     | 为 `NULL` 时，由本函数调用 `MmCreateKernelStack` 分配                      |\n| `SystemRoutine` | 线程被调度时，执行的第一个内核函数，用于做一些初始化工作。 | 用户线程通常是 `PspUserThreadStartup`，系统线程通常是 `PspSystemThreadStartup` |\n| `StartRoutine`  | 系统线程要执行的内核函数地址                | 用户线程路径一般为 `NULL`                                                |\n| `StartContext`  | `SystemRoutine` 使用的参数         | 用户线程路径中保存用户态启动桩地址，即位置 2                                      |\n| `ContextFrame`  | 用户态初始寄存器上下文                   | 非 `NULL` 表示按用户线程上下文初始化；其中 `PC/EIP` 指向位置 2                    |\n| `Teb`           | 用户线程的 TEB 地址                  | 系统线程为 `NULL`                                                    |\n| `Process`       | 所属 `KPROCESS`                 | 用于继承部分默认属性、绑定 APC 状态、分配栈节点                                      |\n\n> [!IMPORTANT]\n> `KeInitThread` 初始化的是 **KTHREAD 层**，也就是 TCB，而不是完整的 `ETHREAD`。`ETHREAD` 的 CID、LPC、I/O、Registry、对象安全等字段在 `PspCreateThread` 中初始化；`KeInitThread` 只负责调度器和内核线程对象真正需要的部分。\n> 相关内容参考：[Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)\n\n---\n\n## KTHREAD 字段初始化\n\n### Dispatcher 与等待基础结构\n![138fe7cf5e58d75a1462a3b7a18437eb&#95;MD5&#46;jpg](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/ccca383dd5004201981f3376ad6191ddc178fd1e4f2933040dc9a0c927f50cba.jpg)\n\n**逻辑说明**：这一段先建立 `KTHREAD` 的 dispatcher object 身份。\n\n1. `Header.Type = ThreadObject` 表示该对象是一个可被等待的内核 dispatcher 对象。\n2. `Header.WaitListHead` 是等待该线程对象的其他线程要挂入的等待链表。相关内容参考：[Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/)\n3. `MutantListHead` 是当前线程持有的 mutant 链表头。线程退出时，内核需要通过它找到线程尚未释放的 mutant，并处理 abandoned mutant 等同步语义。\n4. `WaitBlock` 是线程内置的等待块数组。调用 `KeWaitForMultipleObjects` 等待多个对象时，内核会把 `KWAIT_BLOCK` 挂到多个目标对象的等待链表上。`WaitBlock.Thread` 表示当前正在等待的线程是谁，所以这里要把每个 wait block 的反向指针都填成当前线程。相关内容参考：[Windows 并发控制&#65288;2&#65289;&#65306;可等待对象&#12289;等待块与唤醒机制](/notes/n-eaedaf73c12f4b0a9808ad59b11f9e04/#h-2a4588d40cc83672b52a)\n\n---\n\n### 默认线程标志与线程锁\n![Pasted image 20260706151733&#46;png](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/01befcd4e8e5ace18684d5cccb00a85da073ddc627e80f3bf43c9b13fbde98cc.png)\n\n**逻辑说明**：源码假设 `Thread` 已经被清零，因此这里只设置那些需要非零默认值、或语义上需要明确初始化的字段。\n\n- `AutoAlignment` 从进程继承，表示该线程是否自动处理未对齐访问。\n- `EnableStackSwap = TRUE` 表示该线程允许内核栈被换出。\n- `KernelStackResident = TRUE` 表示新线程的内核栈初始处于 resident 状态。\n- `SwapBusy = FALSE` 表示当前没有进行栈换入 / 换出操作。\n- `ThreadLock` 是保护线程自身字段的同步锁。\n- `AdjustReason = AdjustNone` 表示初始状态下没有动态优先级调整原因。\n\n这一段的逻辑是：先继承进程级策略，再把线程自身的同步、栈管理和调度调整状态放到干净的初始值。\n\n---\n\n### 系统调用服务表\n![0bca64fc9eb67577bad90b6595e5361c&#95;MD5&#46;jpg](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/0454ef1588da894cc69f2d448e395df55e5d04b925870ea2a4012aa717c719a3.jpg)\n\n**逻辑说明**：线程执行系统调用时，需要通过 service table 找到对应的系统服务函数。新线程默认指向普通 NT 内核服务表。\n\n1. amd64 保存的是 service table 的 `Base` 和 `Limit`。\n2. x86 保存的是 `KeServiceDescriptorTable[0]` 的地址。两者只是结构布局不同，语义相同。\n\n如果线程后来变成 Win32 GUI 线程，Win32k 相关路径可能会把它切换到 shadow service table，使系统调用分派能够覆盖 win32k 服务。\n\n> 相关内容参考：[SSDT 与系统服务分发](/notes/n-a5e29edced624217af32c21baaee2060/#h-5ad6185752c4bb9bc537)\n\n---\n\n### APC 状态与进程绑定\n![5f95aedf17709b8bc9fb4728a75c995d&#95;MD5&#46;jpg](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/91be146e7412e83d7c721592a7aa7cb48d0c2ee5e513848deec53f3b88129495.jpg)\n\n**逻辑说明**：这一段把线程接入 APC 机制，并建立它和进程地址空间之间的关系。\n\n`ApcState` 中有两条 APC 队列：kernel APC 队列和 user APC 队列。`InitializeListHead` 会把这两条队列初始化为空。`ApcState.Process = Process` 表示当前 APC 状态属于传入的进程地址空间。\n\n`ApcStatePointer[0]` 和 `ApcStatePointer[1]` 分别指向当前 APC 状态和保存用 APC 状态。这个设计服务于 `KeStackAttachProcess` / `KeUnstackDetachProcess`：线程临时 attach 到另一个进程时，当前 APC state 会被移动保存，`SavedApcState` 用来保存原来的进程上下文。\n\n> 相关内容参考：[APC 状态与挂靠环境](/notes/n-3d7533bad94d40888f2bb35b29d2125e/#h-32fc0eebe8a524cca198)\n\n`Thread->Process = Process` 是线程的所属进程字段；`Thread->ApcState.Process` 是当前 APC 状态关联的进程。正常情况下两者一致，但当线程 attach 到其他进程时，当前 APC state 关联的进程可以临时不同。\n\n> 相关内容参考：[Windows 进程挂靠与跨进程读写机制](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/)\n\n> [!IMPORTANT]\n> `Thread->Process` 更像“线程归属”，`Thread->ApcState.Process` 更像“当前执行 / APC 语义所在的进程上下文”。两者不是永远等价。\n\n---\n\n### 挂起机制与超时等待结构\n![2edf0e5a41bec1eedbad5a6bd35717f2&#95;MD5&#46;jpg](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/58a5177a7843b42683260da367e77fd2149648e876952ec7b7dd23f7d28874c0.jpg)\n\n**逻辑说明**：Windows 的线程挂起不是简单地把某个 `State` 改成 suspended。挂起请求会通过线程内置的 `SuspendApc` 投递到目标线程，让目标线程在安全点进入 `KiSuspendThread`，并通过 `SuspendSemaphore` 配合等待和恢复。\n\n> 相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/)\n\n后半段初始化线程内置的超时 timer 和它专用的 wait block。带超时的等待需要一个 timer 对象来表示“时间到了”这件事；WRK 把这个 timer 直接放在 `KTHREAD` 内部，并固定使用 `WaitBlock[TIMER_WAIT_BLOCK]` 与它绑定。\n\n这里设置 `WaitKey = STATUS_TIMEOUT`，意思是如果等待因为这个 timer 满足而返回，等待结果可以表现为超时状态。\n\n---\n\n### APC 队列锁与 TEB\n![c3391669de8d2d942598518658062d63&#95;MD5&#46;jpg](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/23e8d0eee36571e5dd7445584aaea1a9e4187af9c395f98c5eb51490822c2cae.jpg)\n\n**逻辑说明**：`ApcQueueLock` 用于保护线程 APC 队列。APC 可能由其他线程或其他处理器插入目标线程队列，因此这里必须使用独立锁来保护插入、删除等队列操作。\n\n`Thread->Teb = Teb` 只是保存 TEB 指针，不负责创建 TEB。用户线程的 TEB 在 `PspCreateThread` 中通过 `MmCreateTeb` 创建；系统线程没有用户态 TEB，通常传入 `NULL`。\n\n---\n\n## 构造初始执行现场\n### 分配或接收内核栈\n![520a1cbf29c78745f46e23c29ba932ce&#95;MD5&#46;jpg](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/07775186c07ee46f7356b93e7997cfdc22a2743a3f890143d5dd0b0e21ba28ee.jpg)\n\n**逻辑说明**：如果调用者没有提供内核栈，`KeInitThread` 会调用 `MmCreateKernelStack` 分配一个普通内核栈。第二个参数使用 `Process->IdealNode`，说明栈分配会尽量考虑进程的理想 NUMA 节点。\n\n如果调用者已经提供内核栈，函数会直接使用这块栈，但不会认为自己拥有它。\n\n`KernelStackAllocated` 用来记录所有权：只有本函数自己分配的栈，异常时才由本函数负责释放。\n\n---\n\n### 调用 `KiInitializeContextThread`\n![600899692107825b737cdfe6fea0da77&#95;MD5&#46;jpg](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/bf24033f4197150e7c649793829e5b7526ed7aea99738282eb576d7c770ea691.jpg)\n\n**逻辑说明**：这一段是 `KeInitThread` 的核心。`KeInitThread` 负责平台相对通用的线程结构初始化；真正决定“线程第一次被切换进来时从哪里开始执行、内核栈上应该长什么样”的工作，会交给架构相关的 `KiInitializeContextThread`。\n\n`ContextFrame` 可能来自用户态，读取它时可能触发访问异常。因此这里用 `try/except` 包住。一旦发生异常，就由这里捕获；如果内核栈是本函数刚分配的，则释放栈并返回异常码。\n\n> 相关内容参考：[Windows 线程创建&#65288;03&#65289;&#65306;初始上下文与内核栈现场构造](/notes/n-14e2485f47ec454da3768d361c775ed0/)\n\n> [!QUESTION] `ThreadContext` 指针来自用户态，虽然 `NtCreateThread` 检查过该区域是否可以访问，但没有检查内容是否合法。这里是否存在任意执行漏洞？还是 `KiInitializeContextThread` 内部做了检查？\n> \n> **答案**：用户提供的上下文最终只是影响返回用户态后的执行现场，不会让内核直接跳到用户指定地址执行。\n\n---\n\n### 标记 `Initialized` 状态\n![ef1d6dbbb0c5c1a863ec6c9f4a5dd172&#95;MD5&#46;jpg](/notes/n-6592c409b1a640c7848b3d4033762bb0/media/18f7d3c54731eed816a0cebc7a83073c2ac2cd17971ce8a42ea7773e44c5a8fa.jpg)\n\n**逻辑说明**：到这里，`KTHREAD` 的内部结构、APC、等待机制、内核栈和初始上下文都已经准备好。函数把线程状态设为 `Initialized`，表示线程对象初始化完成。\n\n但是 `Initialized` 不是 `Ready`。此时线程还没有完成 `KeStartThread` 中的 priority、affinity、quantum 继承，也还没有被 `KeReadyThread` 放入调度器 ready 路径。\n\n## KeInitThread 执行流程总览\n\n`KeInitThread` 的真实作用可以压缩成一句话：\n\n> 它把一个清零的 `KTHREAD` 变成一个“结构上完整、栈上有初始执行现场、但尚未进入调度系统”的线程对象。\n\n\n```mermaid\nflowchart TB\n    A[\"输入：已清零的 KTHREAD\"] --> B[\"初始化 Dispatcher Header\"]\n    B --> C[\"初始化 MutantListHead 与内置 WaitBlock\"]\n    C --> D[\"设置默认标志与 ThreadLock\"]\n    D --> E[\"设置系统调用 ServiceTable\"]\n    E --> F[\"初始化 APC 状态并绑定 KPROCESS\"]\n    F --> G[\"初始化 SuspendApc / SuspendSemaphore / Timer WaitBlock\"]\n    G --> H[\"保存 TEB 指针\"]\n    H --> I{\"KernelStack 是否为空?\"}\n    I -->|\"为空\"| J[\"MmCreateKernelStack 分配内核栈\"]\n    I -->|\"非空\"| K[\"使用调用方提供的栈\"]\n    J --> L[\"设置 InitialStack / StackBase / StackLimit\"]\n    K --> L\n    L --> M[\"try: KiInitializeContextThread\"]\n    M --> N{\"上下文构造成功?\"}\n    N -->|\"失败\"| O[\"释放本函数分配的栈<br/>返回异常码\"]\n    N -->|\"成功\"| P[\"Thread->State = Initialized\"]\n    P --> Q[\"返回 STATUS_SUCCESS\"]\n\n    style M fill:#e8f5e9,stroke:#4caf50,color:#000\n    style O fill:#ffebee,stroke:#e53935,color:#000\n    style P fill:#fff3e0,stroke:#fb8c00,color:#000\n```\n\n---\n",
+  "id": "6592c409-b1a6-40c7-848b-3d4033762bb0",
+  "metadata": {
+    "aliases": [
+      "KeInitThread：KTHREAD 初始化与初始执行现场构造",
+      "KeInitThread"
+    ],
+    "tags": [
+      "os/windows/thread",
+      "reverse/windows",
+      "arch/x86"
+    ],
+    "title": "Windows 线程创建（02）：KTHREAD 初始化",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [
+    "01befcd4e8e5ace18684d5cccb00a85da073ddc627e80f3bf43c9b13fbde98cc.png",
+    "0454ef1588da894cc69f2d448e395df55e5d04b925870ea2a4012aa717c719a3.jpg",
+    "07775186c07ee46f7356b93e7997cfdc22a2743a3f890143d5dd0b0e21ba28ee.jpg",
+    "18f7d3c54731eed816a0cebc7a83073c2ac2cd17971ce8a42ea7773e44c5a8fa.jpg",
+    "23e8d0eee36571e5dd7445584aaea1a9e4187af9c395f98c5eb51490822c2cae.jpg",
+    "58a5177a7843b42683260da367e77fd2149648e876952ec7b7dd23f7d28874c0.jpg",
+    "91be146e7412e83d7c721592a7aa7cb48d0c2ee5e513848deec53f3b88129495.jpg",
+    "bf24033f4197150e7c649793829e5b7526ed7aea99738282eb576d7c770ea691.jpg",
+    "ccca383dd5004201981f3376ad6191ddc178fd1e4f2933040dc9a0c927f50cba.jpg"
+  ],
+  "url": "/notes/n-6592c409b1a640c7848b3d4033762bb0/"
+}

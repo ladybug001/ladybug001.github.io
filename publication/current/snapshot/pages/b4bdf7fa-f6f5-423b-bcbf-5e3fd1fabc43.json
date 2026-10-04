@@ -1,0 +1,44 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6f6075ca57b61d515f67",
+      "kind": "heading",
+      "offset": 4
+    },
+    {
+      "id": "h-28250ab1fec1589ab4af",
+      "kind": "heading",
+      "offset": 63
+    },
+    {
+      "id": "h-d30beaec7cf470178a44",
+      "kind": "heading",
+      "offset": 77
+    },
+    {
+      "id": "h-51439ffa4fb49f72d7c6",
+      "kind": "heading",
+      "offset": 824
+    },
+    {
+      "id": "h-c94d0f51bba5b5a3e2e3",
+      "kind": "heading",
+      "offset": 1072
+    },
+    {
+      "id": "h-99785cdd82383c2d04fc",
+      "kind": "heading",
+      "offset": 2230
+    }
+  ],
+  "body": "# 简介\n+ 箭头函数的this\n+ 匿名函数的this\n+ 普通函数的this\n+ this的显示绑定、隐式绑定\n\n# 示例\n### 普通函数的this\n通过 var声明的变量，会绑定到当前的this中。而const、let声明的变量不会。\n示列：\n```js\nvar myParams = '1'\nconsole.log(windows.myParams)\n// 输出1\nconst myParams2 = '1'\nconsole.log(windows.myParams2)\n// 提示未定义\nlet myParams3 = '1'\nconsole.log(windows.myParams3)\n//提示未定义\n\n```\n\n普通函数的this与调用它的对象有关：\n```js\nfunction name(params) {\n    console.log(this);\n    return function myFunc(param) {\n        console.log(this);\n    }\n}\nobj = {'a':1,'b':2}\nname.call(obj)()\n// 一个this指向obj，一个指向全局的windows对象\n\n//结论: 一个函数的返回值如果是函数，那么默认情况这个返回的函数的this指向是windows全局对象\n```\n普通函数的this可以通过apply、call、bind来进行修改\n```js\nname = 'windows'\nobj1 = {name:'obj1'}\nfunction myFunc(){\nconsole.log(this.name)\n}\nmyFunc()\n// windows\nmyFunc.call(obj1)\n// obj1\nmyFunc.apply(obj1)\n// obj1\nmyFunc.bind(obj1)\n// obj1\n```\n### 匿名函数的this\n匿名函数的执行环境具有全局性，因此它的this对象通常指向windows.\n```js\nvar name = \"The Window\";\nvar object = {\nname : \"My Object\",\ngetNameFunc : function(){\nreturn function(){\nreturn this.name;\n};\n}\n};\nalert(object.getNameFunc()()); //\"The Window\"（在非严格模式下）\n```\n### 箭头函数的this\n\n箭头函数并不是简单的function(){}匿名函数的简写，箭头函数和匿名函数有个明显的区别：箭头函数内部的this是词法作用域(外层调用者)，在编写函数时就已经确定了。而匿名函数的this指向运行时实际调用该方法的对象，无法在编写函数时确定。\n\n```js\nvar name = 'window'; \n\nvar A = {\n   name: 'A',\n   sayHello: function(){\n      var s = () => console.log(this.name)\n      return s//返回箭头函数s\n   }\n}\n\nvar sayHello = A.sayHello();\nsayHello();// 输出A \n\nvar B = {\n   name: 'B';\n}\n\nsayHello.call(B); //还是A\nsayHello.call(); //还是A\n```\n\n\n\n字面里创建的对象，作用域是window,如果里面有箭头函数属性的话，this指向的是window\n\n\n箭头函数的this是无法通过bind、cal1、apply来直接修改，但是可以通过改变作用域中this的指向来间接修改。\n\n\n\n```js\nvar name = 'window'\nvar obj1={name:'obj1',\nfoo:function (){\nconsole.log(this.name)\n}};var obj2 ={name:'obj2',\nfoo:()=>{\nconsole.log(this.name)\n}}\n\nobj1.foo()\nobj2.foo() \n// 输出\n// obj1\n// window\n// undefined\n\n```\n\n\n```js\n\n// ========================================\nvar name ='window'\n\nfunction Person(name){\n\nthis.name=name\n\nthis.foo1 =function (){\n\nconsole.log(this.name)\n\n  \n\n}\n\nthis.foo2 =()=>{\n\nconsole.log(this.name)}}\n\nvar person2={\n\nname:'person2',\n\nfoo2:()=>{\n\nconsole.log(this.name)\n\n}}\n\nvar person1 = new Person('person1')\n\nperson1.foo1()\n\nperson1.foo2()\n\nperson2.foo2()\n// 输出\n// person1\n// person1\n// window\n```\n\n# 总结\n\n- 对象的this指向最后一个调用它的对象\n- 匿名函数的this指向略微特殊，它里面的this是由外层作用域来决定的，且指向函数定义时的this而非执行时\n- 字典里创建的对象，作用域是window，如果里面有箭头函数属性的话，this的指向是window。\n- 构造函数创建的对象，作用域是可以理解为是这个构造函数，且这个构造函数的this是指向新建的对象的，因此this指向这个对象。\n- 箭头函数的this是无法通过bind、cal1、apply来直接修改，但是可以通过改变作用域中this的指向来间接修改。\n\n可以通过 call，apply，bind的方式改变this的指向。\n",
+  "id": "b4bdf7fa-f6f5-423b-bcbf-5e3fd1fabc43",
+  "metadata": {
+    "tags": [
+      "lang/javascript"
+    ],
+    "title": "JavaScript this 绑定规则"
+  },
+  "resources": [],
+  "url": "/notes/n-b4bdf7faf6f5423bbcbf5e3fd1fabc43/"
+}

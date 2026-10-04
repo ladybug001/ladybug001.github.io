@@ -1,0 +1,121 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-7c1f4c74d773b78e49b1",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-5cb9a564f76f254cdc2d",
+      "kind": "heading",
+      "offset": 30
+    },
+    {
+      "id": "h-7e7450d6e409eff1a440",
+      "kind": "heading",
+      "offset": 46
+    },
+    {
+      "id": "h-4137c82d35ba56b85ba5",
+      "kind": "heading",
+      "offset": 503
+    },
+    {
+      "id": "h-d39d2211ec8260f163c8",
+      "kind": "heading",
+      "offset": 939
+    },
+    {
+      "id": "h-29c526fc72ca2ba2aed3",
+      "kind": "heading",
+      "offset": 1269
+    },
+    {
+      "id": "h-7e4bccb391dac0eed394",
+      "kind": "heading",
+      "offset": 1748
+    },
+    {
+      "id": "h-875b3b345bf66ce97449",
+      "kind": "heading",
+      "offset": 2220
+    },
+    {
+      "id": "h-0f3b5612d5888bac6d50",
+      "kind": "heading",
+      "offset": 2553
+    },
+    {
+      "id": "h-fe27b9d23bc5f83ab9bb",
+      "kind": "heading",
+      "offset": 2882
+    },
+    {
+      "id": "h-f054ef9438eb192f6a7e",
+      "kind": "heading",
+      "offset": 2899
+    },
+    {
+      "id": "h-4c9d37feb613159b1e85",
+      "kind": "heading",
+      "offset": 3055
+    },
+    {
+      "id": "h-70fe5778dbbd9455a34c",
+      "kind": "heading",
+      "offset": 3237
+    },
+    {
+      "id": "h-2486c5d5781e8753df64",
+      "kind": "heading",
+      "offset": 4040
+    },
+    {
+      "id": "h-8ba7546cdc42f275bc6e",
+      "kind": "heading",
+      "offset": 7172
+    },
+    {
+      "id": "h-cb8c96b961d51827d13e",
+      "kind": "heading",
+      "offset": 7535
+    },
+    {
+      "id": "h-5c7793260484c146554c",
+      "kind": "heading",
+      "offset": 7745
+    },
+    {
+      "id": "h-74429af13aca8b66c209",
+      "kind": "heading",
+      "offset": 8549
+    },
+    {
+      "id": "h-0021169521bfcadef6ea",
+      "kind": "heading",
+      "offset": 8830
+    },
+    {
+      "id": "h-2bebcb1ce33a886fe26a",
+      "kind": "heading",
+      "offset": 9115
+    },
+    {
+      "id": "h-a8f846ca9f475277a95e",
+      "kind": "heading",
+      "offset": 9373
+    }
+  ],
+  "body": "# Android 签名校验与对抗\n\n## APK 签名机制\n\n### 签名的作用与信任模型\n\n\nAPK 打包时，开发者使用私钥对 APK 中受签名保护的数据进行数字签名，并将包含公钥的签名证书一同写入 APK。APK 签名主要解决两个问题：\n1. **验证 APK 完整性**：安装时，Android 会根据 APK 的签名信息验证受保护内容是否发生变化。如果 APK 在签名后被修改，而没有重新生成有效签名，**原签名与修改后的内容不再匹配**，则签名验证失败，系统会拒绝安装。\n2. **确认应用更新前后的签名者身份一致**：在应用升级时，Android 还会检查新 APK 的签名者是否与已安装应用一致——即证书（公钥）是否相同，**只有一致才能够覆盖安装原应用的新版本**。\n\n\n> [!QUESTION] 为什么 Android 在覆盖安装时校验签名\n> 攻击者可以卸载后再安装，覆盖安装时的检查不是很鸡肋？\n> \n> 升级时的签名校验保证只有原签名者能够在保留原应用数据的情况下替换应用代码，从而防止攻击者通过恶意覆盖安装直接继承原应用的私有数据。\n\n#### 与 HTTPS 证书校验的对比\n\nAPK 签名和 HTTPS 都使用公钥密码学，但它们解决的问题不同。\n\nHTTPS 通常建立在 **CA 信任体系**之上：浏览器或操作系统预先信任一组根 CA，因此可以通过证书链判断某个证书是否由受信任机构背书，并进一步验证服务器身份。\n> 相关内容参考：[数字证书与 PKI 体系](/notes/n-b7dbfaffe07f5e839320f3db28bb722b/)\n\n```\n操作系统 / 浏览器信任的根 CA\n        ↓\n     中间 CA\n        ↓\n    网站证书\n        ↓\n验证服务器身份\n```\n\n**核心区别**：Android APK 签名**不依赖公共 CA 信任链**，APK 使用的签名证书可以是自签名证书。APK 签名证明的是“这个 APK 与某个私钥持有者之间的关系，以及更新时签名者身份是否连续”，而不是证明“这个私钥持有者本身值得信任”。\n\n### 签名方案演进（v1 / v2 / v3 / v4）\n\nAndroid APK 目前主要有 v1、v2、v3、v4 四种签名方案，其中：\n\n- **v1 / v2 / v3**：主要用于 APK 安装时的身份和完整性验证；\n- **v4**：主要用于增量安装，需要配合 v2/v3 使用。\n\n最简单的记忆方式：\n\n```\nv1：签文件\nv2：签整个 APK\nv3：在 v2 上支持换密钥\nv4：支持边传输边验证（配合 v2、v3）\n```\n\n它们可以同时存在于同一个 APK 中，用于兼容不同 Android 版本。系统优先使用当前版本支持的高版本签名方案。只有 APK **不存在**高版本签名时才可能使用低版本方案；如果高版本签名存在但验证失败，则直接拒绝安装，不会降级验证。\n\n#### v1：JAR 签名\n\n- **引入版本**：Android 1.0\n- **核心特点**：对 APK 中各 ZIP Entry 分别计算摘要，而不是保护 APK 整体结构。\n- **兼容性**：最高，但验证效率和安全性较低。\n\n签名文件有三个：\n\n- `META-INF/MANIFEST.MF`：记录 APK 各 Entry 的摘要；\n- `META-INF/<signer>.SF`：记录 `MANIFEST.MF` 及其 section 的摘要；\n- `META-INF/<signer>.RSA/.DSA/.EC`：保存对 `.SF` 的数字签名和证书。\n\n验证过程：\n\n```\n证书公钥\n   ↓\n验证 .RSA 中的签名\n   ↓\n验证 .SF\n   ↓\n验证 MANIFEST.MF\n   ↓\n验证 APK Entries\n```\n\nv1 的主要缺陷是只保护 ZIP Entry 内容，没有完整保护 APK 的 ZIP 容器结构和部分元数据，因此历史上曾出现利用不同解析器行为差异的 Master Key、Janus 等漏洞。\n\n#### v2：APK 整体签名\n\n- **引入版本**：Android 7.0（API 24）\n- **核心机制**：引入 `APK Signing Block`，位于 ZIP Central Directory 之前。\n- **解决问题**：从 v1 的 Entry 级保护升级为 APK 整体结构级保护。\n\n大致结构：\n\n```\nZIP Entries\nAPK Signing Block\nCentral Directory\nEOCD\n```\n\nv2 会把 APK 的受保护内容按约 1 MiB 分块计算摘要，再生成最终 Content Digest，并使用私钥签名。\n\n```\nAPK Contents\n   ↓\n1 MiB Chunks\n   ↓\nChunk Digests\n   ↓\nContent Digest\n   ↓\n私钥签名\n```\n\n因此修改 APK 中受保护区域的内容或 ZIP 结构，通常都会导致签名失效。\n\n**核心区别：**\n\n```\nv1：保护各个 Entry\nv2：保护 APK 整体结构\n```\n\n---\n\n#### v3：支持签名密钥轮换\n\n- **引入版本**：Android 9.0（API 28）\n- **核心机制**：在 v2 基础上增加 `Proof-of-Rotation`。\n- **解决问题**：允许应用安全地从旧签名密钥迁移到新密钥。\n\n就是证书链受信机制，例如：\n\n```\nKey A → Key B → Key C\n```\n\n系统根据签名历史确认新密钥是由旧密钥合法授权的，从而继续将新 APK 视为原应用的合法升级：因为 A 可信，可以 B、C 也是可信的。\n\n---\n\n**需要注意**：v3 解决的是主动密钥轮换，不是“旧私钥丢失后的恢复”。\n\n如果旧私钥已经丢失，就无法正常生成：\n\n```\nKey A → Key B\n```\n\n的授权证明。\n\n#### v4：增量安装签名\n\n- **引入版本**：Android 11（API 30）\n- **主要用途**：ADB 增量安装、流式安装。\n- **签名位置**：独立的 `.idsig` 文件。\n\n例如：\n\n```\napp.apk\napp.apk.idsig\n```\n\nv4 基于 APK 内容建立 Merkle Hash Tree，使系统可以按数据块进行完整性验证：\n\n```\nAPK Blocks\n   ↓\nMerkle Tree\n   ↓\nRoot Hash\n   ↓\n.idsig\n```\n\n因此可以实现边传输、边验证，而不必等待完整 APK 下载完成。\n\nv4 **不能替代 v2/v3**，而是作为增量安装的辅助机制与它们配合使用。\n\n---\n\n## 签名校验的两个层面\n\n### 安装时校验（系统执行）\n\nv1/v2/v3/v4 签名方案由系统在安装 APK 时验证，由 `PackageManager` 和系统底层完成，系统验证通过后才会允许安装；验证失败则拒绝安装。\n\n> 核心破解 app 可以去除系统签名校验：修改某 apk 但不重新签名直接安装、降级安装 APP。\n\n### 运行时自校验（应用自行实现）\n\n如果开发者想在运行时检查自身是否被篡改或重签名，需要在应用代码中主动实现“签名自校验”。\n\n程序自校验通常不会完整地重新执行 v1/v2/v3/v4 签名验证，而是借助系统已记录的签名信息，或者自己解析 APK 内的官方签名数据（**主要是证书部分**）与内置值比较，在运行时检测 APK 是否被重签名或篡改。\n\n#### 方式：通过系统 API 获取证书信息\n\n系统将应用的相关信息封装在 `PackageInfo` 中，使用 `PackageManager.getPackageInfo()` 并传入 `GET_SIGNATURES`（旧接口）或 `GET_SIGNING_CERTIFICATES`，获取当前应用的**签名证书信息**，再直接比较证书，或计算证书的 SHA-256/SHA-1 等指纹，与代码中预置的合法证书信息进行比对：\n```java\nprivate boolean SignCheck() {\n    String trueSignMD5 = \"d0add9987c7c84aeb7198c3ff26ca152\";\n    String nowSignMD5 = \"\";\n    try {\n        // 得到签名的MD5\n        PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(),PackageManager.GET_SIGNATURES);\n        Signature[] signs = packageInfo.signatures;\n        String signBase64 = Base64Util.encodeToString(signs[0].toByteArray());\n        nowSignMD5 = MD5Utils.MD5(signBase64);\n    } catch (PackageManager.NameNotFoundException e) {\n        e.printStackTrace();\n    }\n    return trueSignMD5.equals(nowSignMD5);\n}\n```\n\n##### 绕过：PMS 代理思路\n\n**PackageManagerService（简称 PMS）**，是 Android 系统核心服务之一，处理包管理相关的工作，常见的比如安装、卸载应用和获取包信息等。\n\nPMS 可以获取包信息（包括签名），那么我们就可以通过 Hook 它，在有人要读取包签名信息时返回正确的签名信息，从而达到绕过签名校验的目的。\n\n\n> PMS 代理 Hook 思路源自：[Android中Hook 应用签名方法](https://github.com/fourbrother/HookPmsSignature)\n\n\n要 Hook 的两个位置：\n\n1. `ActivityThread` 的静态变量 `sPackageManager`\n2. `ApplicationPackageManager` 对象里面的 `mPM` 变量\n\n```java\npackage com.zj.hookpms;\n\nimport java.lang.reflect.Field;\nimport java.lang.reflect.Method;\nimport java.lang.reflect.Proxy;\n\nimport android.content.Context;\nimport android.content.pm.PackageManager;\nimport android.util.Log;\n\npublic class ServiceManagerWrapper {\n\n    public static final String TAG = \"ZJ595\";\n\n    public static void hookPMS(\n            Context context,\n            String originalSignatureHex,\n            String targetPackageName) {\n\n        try {\n            // 获取当前进程的 ActivityThread\n            Class<?> activityThreadClass =\n                    Class.forName(\"android.app.ActivityThread\");\n\n            Method currentActivityThreadMethod =\n                    activityThreadClass.getDeclaredMethod(\"currentActivityThread\");\n\n            Object currentActivityThread =\n                    currentActivityThreadMethod.invoke(null);\n\n            // 获取当前进程访问 PMS 使用的 IPackageManager 客户端代理\n            Field sPackageManagerField =\n                    activityThreadClass.getDeclaredField(\"sPackageManager\");\n\n            sPackageManagerField.setAccessible(true);\n\n            Object originalPmsProxy =\n                    sPackageManagerField.get(currentActivityThread);\n\n            // 创建 IPackageManager 动态代理，用于拦截包信息查询并伪造签名信息\n            Class<?> iPackageManagerInterface =\n                    Class.forName(\"android.content.pm.IPackageManager\");\n\n            Object hookedPmsProxy = Proxy.newProxyInstance(\n                    iPackageManagerInterface.getClassLoader(),\n                    new Class<?>[]{iPackageManagerInterface},\n                    new PmsHookBinderInvocationHandler(\n                            originalPmsProxy,\n                            originalSignatureHex,\n                            targetPackageName,\n                            0)\n            );\n\n            // 替换 ActivityThread 中缓存的 IPackageManager\n            sPackageManagerField.set(currentActivityThread, hookedPmsProxy);\n\n            // 替换当前 ApplicationPackageManager 中缓存的 IPackageManager\n            PackageManager pm = context.getPackageManager();\n\n            Field mPmField =\n                    pm.getClass().getDeclaredField(\"mPM\");\n\n            mPmField.setAccessible(true);\n            mPmField.set(pm, hookedPmsProxy);\n\n        } catch (Exception e) {\n            Log.d(TAG, \"hook pms error:\" + Log.getStackTraceString(e));\n        }\n    }\n\n    public static void hookPMS(Context context) {\n\n        // 原 APK 签名证书的 DER 字节对应的十六进制字符串，\n        // 即 Signature.toCharsString() 的结果，不是 MD5/SHA 摘要、公钥或 CERT.SF。\n        String originalSignatureHex =\n                \"原 APK 的 Signature.toCharsString()\";\n\n        hookPMS(\n                context,\n                originalSignatureHex,\n                \"com.zj.hookpms\"\n        );\n    }\n}\n```\n\n#### 方式：手动获取证书信息\n\n调用系统 API 的方式虽然简单，但容易被攻击者通过 Hook API 绕过，Java 层 Hook 即可拦截（如 Xposed、Frida）。\n\n**SVC 方式获取签名**：通过 SVC 的方式去获取签名，SVC 直接发起系统调用，绕过了 Java 层的 API 调用链，使得 Xposed/Frida 等常规 Hook 手段无法拦截。（参考 MT 开源的方法）。\n> 相关资料：[SVC的TraceHook沙箱的实现&无痕Hook实现思路](https://bbs.pediy.com/thread-273160.htm)\n\n---\n\n应用也可以直接读取自身 APK 中的证书文件（如 `META-INF` 下的 `.RSA` 或 `.DSA` 文件），将证书文件与内置值对比。\n\n\n#### 方式：关键文件哈希校验\n\n上述方式主要用于检测**签名证书是否被替换**，但在某些情况下，攻击者可能在保留原有证书相关信息的同时修改 APK 内容。因此，还可以进一步对 APK 中的关键文件进行完整性校验。\n\n具体做法是：**运行时计算 APK 内关键文件（如 DEX、SO 等）的哈希值，并与程序预置的期望哈希值进行比对**。若两者不一致，则说明相关文件可能已被修改，从而实现对关键代码或资源的防篡改检测。\n\n#### 校验失败后的执行动作\n\n无论采用哪种方式，核心目的都是：**在应用运行过程中再次确认“当前运行的 APK 是否仍然具有开发者预期的签名和完整性状态”**。一旦检测到签名不一致或关键文件被篡改，应用可以主动采取退出、报错、限制功能等处理措施。\n\nAPP 检测到异常后，常见的终止或限制方式包括：\n\n1. **`Process.killProcess()` / native `kill()`**  \n    直接终止当前进程，进程内的线程和资源都会随之释放。但由于 `ActivityManager` 时刻监听着进程，一旦发现进程被非正常 Kill，它将会试图去重启这个进程，这就是为什么有时候当我们试图这样去结束掉应用时，发现它又自动重新启动的原因。\n2. **`System.exit()`**  \n    结束当前虚拟机进程，本质上也会导致应用进程退出。实际 Android 应用中一般不推荐使用这种方式进行正常生命周期管理，但在某些自校验或反篡改逻辑中可能会看到。\n3. **`Activity.finish()`**  \n    结束当前 `Activity`，将其从 Activity 返回栈中移除，并触发生命周期销毁流程。它**只结束当前 Activity，并不会直接杀死整个应用进程**；如果应用中还有其他 Activity、Service 或组件运行，进程仍可能继续存在。\n\n除了直接退出或崩溃，一些自校验逻辑还会采用更加隐蔽的处理方式：**检测到 APK 被修改后，不立即终止程序，而是悄悄改变部分功能的行为或输出结果**，使程序表面上仍能正常运行，但实际结果已经不再可信。\n\n从逆向视角来看，识别应用使用了哪种退出方式，有助于选择对抗策略：直接闪退通常可以通过 Hook 退出函数阻止；延迟退出需要关注定时器或异步回调；隐蔽篡改行为最难发现，需要对比正常版本与重签名版本的功能输出差异。\n\n### 自校验对抗\n\n自校验逻辑一般是放入 SO、Java 层进行的，签名自校验的对抗方法有：\n\n1. 具体分析签名校验逻辑（手撕签名校验）\n2. IO 重定向——VA & SVC：ptrace + seccomp（[SVC的TraceHook沙箱的实现&无痕Hook实现思路](https://bbs.pediy.com/thread-273160.htm)）：因为签名校验都要读取原来的文件，我们将其重定向到没有被修改的 APK 路径。\n3. 不修改文件，使用Xposed Hook：这种方式不修改文件，通过运行时拦截 API 返回值绕过校验。\n\n#### 判断是否存在自校验\n\n- 在**不修改 APK 内容**的情况下，仅使用自己的证书重新签名并安装。若应用运行后出现闪退、黑屏、卡启动页等异常现象，则**大概率存在针对签名证书是否被替换的自校验逻辑**。\n- 在**已经排除或绕过签名证书校验影响**的前提下，修改 `SO` 等文件后重新安装。若应用运行再次出现异常，则**大概率还存在文件完整性校验，例如 DEX/SO 完整性校验、CRC/Hash 校验等机制**。\n\n> 若自校验只检查**签名证书是否被替换**，在这种情况下即使修改了 APK 内部文件，只要仍保留原有证书信息，就可能绕过应用自身的签名校验。\n\n#### IO 重定向\n\n什么是 IO 重定向？例：进程 A 在读 F1 文件的时候，通过 Hook 等方式让其实际读取到的是 F2 文件。\n\n**达成的效果：**\n\n- 过签名检测（读取原包）\n- 风控对抗（例：一个文件记录 App 启动的次数）\n- 过 Root 检测、Xposed 检测（文件不可读）\n\n**使用步骤：**\n\n1. 将 C 语言实现的重定向代码打包为 SO 文件。\n2. 在 App 调用校验完整性的函数之前，调用 IO 重定向函数完成重定向。\n3. 后续读取文件被重定向到我们指定的地方。\n\n#### 定位校验逻辑\n\n在选择对抗方法之前，需要先定位校验代码的位置：\n\n- **搜索关键字符串和 API 调用特征**：在反编译代码中搜索 `getPackageInfo`、`GET_SIGNATURES`、`PackageInfo`、`MessageDigest`、`META-INF`、`.RSA`、`classes.dex`、`killProcess`、`System.exit` 等\n- **堆栈回溯**：用 Frida Hook `Process.killProcess()`、`System.exit()` 等退出函数，打印调用栈，逆向追溯到校验逻辑\n- **观察硬编码值**：搜索硬编码的十六进制/Base64 字符串，可能是预置的证书指纹或文件哈希",
+  "id": "0c28501e-5cc4-4cd7-bd8e-0d2cecbdb6fc",
+  "metadata": {
+    "tags": [
+      "reverse/android",
+      "os/android",
+      "lang/java"
+    ],
+    "title": "Android 签名校验与对抗"
+  },
+  "resources": [],
+  "url": "/notes/n-0c28501e5cc44cd7bd8e0d2cecbdb6fc/"
+}

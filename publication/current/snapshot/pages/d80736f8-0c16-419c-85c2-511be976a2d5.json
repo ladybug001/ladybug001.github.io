@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6d4691d0fd2b887901bf",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-f4a4e0982622bbc068f6",
+      "kind": "heading",
+      "offset": 105
+    },
+    {
+      "id": "h-20665a47ca35eedb1701",
+      "kind": "heading",
+      "offset": 297
+    },
+    {
+      "id": "h-9696e847691175b3795b",
+      "kind": "heading",
+      "offset": 648
+    },
+    {
+      "id": "h-a3c692b75d1c58bfb0a6",
+      "kind": "heading",
+      "offset": 973
+    }
+  ],
+  "body": "# Java 与 JVM 运行机制 (MOC)\n\n从类文件与运行时内存建立 JVM 模型，再理解类加载、加载器、反射和 Native 接口。Web 框架与 Android 是后续应用。\n\n## 文件与运行时基础\n\n1. [JVM Class 文件格式解析](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/) — 理解编译产物、常量池与文件读取方式。\n2. [JVM 运行时数据区域与垃圾回收机制](/notes/n-d19c7d2e0c794e8eb9b8b186a355d069/) — 建立堆、方法区、线程私有区域与回收模型。\n\n## 类加载与类型身份\n\n1. [JVM 类加载过程](/notes/n-746101753bdd463c83ff1e5b72717daa/) — 理解加载、连接、初始化、使用与卸载，以及阶段交错和延迟解析。\n2. [Java ClassLoader 机制](/notes/n-d06529d6c1464564a52c627bc1a3719a/) — 深入查找、定义、委派、加载器角色与 Java 类的唯一身份。\n3. [Java 反射机制](/notes/n-38eec58951f14599b753a7d7fd662fbd/) — 通过 `Class` 对象查看并操作运行期的类型与成员。\n\n类加载过程提供生命周期总览，`ClassLoader` 展开其中的加载职责。\n\n## Native 接口与 Android 对照\n\n- [JNI 与 NDK&#65306;原生方法注册机制](/notes/n-e10db2f9ffca40938f9bd601a6b14ffd/) — 理解 native 声明与函数绑定，区分运行时接口和开发工具。\n- [Android DEX 文件格式解析](/notes/n-4c20579667134e5a8dcb61db2edc1268/) — 对照 `Class` 与 DEX 指令体系和文件组织。\n- [Android 运行机制与逆向 &#40;MOC&#41;](/notes/n-2b992cf7b1934491bd31a57f0b3266ac/) — Android 类加载、反射与 JNI 的应用。\n\n## 框架应用与语言比较\n\n- [Web 应用开发 &#40;MOC&#41;](/notes/n-7863feb52f9d4d06bb8b3d8589d7fc36/) — 连接 Spring 对象管理、依赖注入和 Web 开发。\n- [编程语言理论 &#40;MOC&#41;](/notes/n-8bc8da2a86db45ccae511bc955e98539/) — 对照虚拟机、解释器与规范／实现分离。\n",
+  "id": "d80736f8-0c16-419c-85c2-511be976a2d5",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "lang/java"
+    ],
+    "title": "Java 与 JVM 运行机制 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-d80736f80c16419c85c2511be976a2d5/"
+}

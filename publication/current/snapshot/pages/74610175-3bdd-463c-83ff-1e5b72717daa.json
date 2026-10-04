@@ -1,0 +1,79 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-d8686dd170ed1248f9d0",
+      "kind": "heading",
+      "offset": 11
+    },
+    {
+      "id": "h-e17d364a43b9499f7dc1",
+      "kind": "heading",
+      "offset": 371
+    },
+    {
+      "id": "h-8f0c0f3e686a28935bbe",
+      "kind": "heading",
+      "offset": 662
+    },
+    {
+      "id": "h-00a33ae94495d36fffd4",
+      "kind": "heading",
+      "offset": 753
+    },
+    {
+      "id": "h-a4bd1d30f0a572bc91ab",
+      "kind": "heading",
+      "offset": 1116
+    },
+    {
+      "id": "h-ffde671e1ac7c864d271",
+      "kind": "heading",
+      "offset": 1525
+    },
+    {
+      "id": "h-1652f02a6c423477fcd4",
+      "kind": "heading",
+      "offset": 2202
+    },
+    {
+      "id": "h-0df459f9d61b28ac1b71",
+      "kind": "heading",
+      "offset": 2810
+    },
+    {
+      "id": "h-d56a97d57ce21c92f3dd",
+      "kind": "heading",
+      "offset": 3299
+    },
+    {
+      "id": "h-5999669530693a027178",
+      "kind": "heading",
+      "offset": 3405
+    },
+    {
+      "id": "h-e7686959a66c897ee2f0",
+      "kind": "heading",
+      "offset": 3683
+    },
+    {
+      "id": "h-1886c902eb313050e5a2",
+      "kind": "heading",
+      "offset": 4216
+    }
+  ],
+  "body": "# JVM 类加载过程\n\n一个类或接口从进入 Java 虚拟机到离开虚拟机，通常会经历以下阶段：\n\n- 加载\n- 连接\n    - 验证\n    - 准备\n    - 解析\n- 初始化\n- 使用\n- 卸载\n\n这 7 个阶段的顺序如下图所示：\n\n![47844118d51287ea16d06b2ee43c9347&#95;MD5&#46;jpg](/notes/n-746101753bdd463c83ff1e5b72717daa/media/b54a4900b31a24963aef56d07dfd65f4eba90517910072df3278cd91fe0e0815.jpg)\n\n其中，加载、验证、准备、初始化和卸载的开始顺序是确定的，但这些阶段并不一定首尾相接。解析既可以在初始化前完成，也可以按照实际使用情况延迟进行。\n\n## 加载\n\n类的加载由类加载器（`ClassLoader`）完成，主要包括三件事：\n\n1. 通过全限定名获取类或接口的二进制字节流，常见来源是 `.class` 文件。\n2. 根据字节流创建虚拟机内部的运行时数据结构（原始的静态结构不支持随机存取）。\n3. 在 Java 堆中生成代表该 Java 类的 `Class` 对象，作为访问这些运行时数据的入口。\n\n`.class` 文件面向 Java 虚拟机规范设计，没有类似 PE 导入表（IAT）或全局偏移表（GOT）的固定物理链接结构。字节码对其他类、字段和方法的引用以运行时常量池中的符号引用表示，具体目标在解析阶段确定。\n\n## 连接\n\n连接把已经加载的类或接口并入虚拟机的运行时状态，包括验证、准备和解析。类在初始化前必须完成验证与准备，但解析可以由虚拟机选择立即执行或延迟到符号引用实际被使用时。\n\n### 验证\n\n验证用于确认类文件的结构和字节码满足 Java 虚拟机规范的约束，避免不合法的类破坏虚拟机的运行安全。\n\n验证通常分为四类检查：\n\n![6b273e9d2d107a0e692071249180c191&#95;MD5&#46;jpg](/notes/n-746101753bdd463c83ff1e5b72717daa/media/ade70513e56d3166233b50c9ed2fd93993481c5663fca00b84b25e3ecf009b24.jpg)\n\n文件格式验证直接针对二进制字节流，检查魔数、版本号、常量池结构等内容，保证字节流能够被正确解析为类的运行时表示。\n\n完成类的运行时数据结构后，后续的元数据验证、字节码验证和符号引用验证都基于该运行时结构进行，不再直接操作原始字节流。\n\n### 准备\n\n准备阶段会创建类或接口的静态字段，并先为它们设置类型对应的默认值。例如：\n\n```java\npublic static int value = 111;\n```\n\n准备完成后，`value` 的值是 `0`；源代码中的显式赋值 `111` 要到初始化阶段才执行。\n\n> 特殊情况是字段带有 `ConstantValue` 属性时，准备阶段会直接赋为该属性指定的值；`public static final int value=111` 这样的编译期常量就是典型例子。\n\n\n从概念上讲，静态变量所使用的内存都应当在**方法区**中进行分配，不过有一点需要注意：\n- JDK 7 之前，HotSpot 使用永久代来实现方法区的时候，实现是完全符合这种逻辑概念的。\n- JDK 7 及之后，HotSpot 已经把原本放在永久代的静态变量、字符串常量池等移动到堆中，这个静态变量是存放在 Java 堆中的。\n\n### 解析\n\n解析是根据运行时常量池中的符号引用，动态确定类、接口、字段、方法、方法类型、方法句柄或动态调用点等具体值的过程。\n\n**比如**：当执行引擎遇到方法调用指令（例如 `invokevirtual #20`）时，起初 `#20` 只是指向常量池中的一个**符号引用**（存放着类似 `com/mysql/Driver.connect` 的字符串描述）。虚拟机必须根据这串文本去元空间搜索，找到目标方法的**实际内存入口地址（直接引用）**，并将这个真实指针回填到常量池缓存中。这个 **‘将文本路标替换为真实内存指针’** 的动作，就是解析。\n\nJava 虚拟机规范允许不同的解析策略：\n\n- **延迟解析**：在符号引用第一次被实际使用时解析。\n- **预先解析**：在验证类时一次解析多个符号引用。\n\nJVM 为了提升启动性能，通常采用**延迟解析（Lazy Resolution）**：在第一次使用时才将常量池里的符号引用替换为真实的内存指针。\n\n\n《深入理解 Java 虚拟机》第三版 7.3.4 节对符号引用和直接引用的解释如下：\n\n![c253f592570e655d758c19421c5c4677&#95;MD5&#46;jpg](/notes/n-746101753bdd463c83ff1e5b72717daa/media/cda58774db457dd37e78a72e00f60c4c58e0626833f8c87e0b7935a09acd971d.jpg)\n\n> 直接引用的内部表示不一定是内存指针或固定偏移量。\n\n## 初始化\n\n初始化用于为类或接口执行 Java 语言层面定义的静态初始化逻辑，在 Java 源代码中，静态字段的显式赋值和静态代码块可以分散出现：\n\n```java\npublic class AppConfig {\n    // 1. 静态变量直接赋值\n    public static int maxConnections = 100;\n    \n    // 2. 静态代码块\n    static {\n        System.out.println(\"执行 <clinit>：类正在初始化...\");\n        maxConnections = 500; // 覆盖前面的赋值\n    }\n}\n```\n\n但当 `javac` 编译器把它编译成 `.class` 文件时，编译器会按照代码在源文件中出现的顺序，将所有静态变量的赋值动作和静态代码块的逻辑，合并成一个名叫 `<clinit>()` 的隐藏方法。因此，上例中的 `maxConnections` 最终会被赋值为 `500`。\n\n> 如果类或接口没有需要在运行期执行的静态初始化逻辑，Class 文件中可以不存在 `<clinit>()`。\n\n\n**执行时机：** 类的初始化阶段发生在其被**首次真正访问或使用**之前。该阶段**仅执行一次**，专门用于完成**非实例数据**（如静态变量赋值和静态代码块）的初始化。\n\n### 触发初始化的场景\n\n1. **特定字节码指令**：遇到以下 4 条指令并且指令引用的类或接口尚未初始化时：\n    - `new`：实例化对象。\n    - `getstatic` / `putstatic`：读写类的静态字段（**注**：被 `final` 修饰且已在编译期放入常量池的静态字段除外）。\n    - `invokestatic`：调用类的静态方法。\n2. **反射调用**：使用 `java.lang.reflect` API 或 `Class.forName()` 等对类进行反射调用时。\n3. **父类优先机制**：初始化当前类时，若发现其父类尚未初始化，必须先触发父类的初始化。\n4. **程序入口**：虚拟机启动时，必须优先初始化包含 `main()` 方法的主类。\n5. **动态方法句柄**：使用 JDK 7 引入的 `MethodHandle` 时，若解析结果为静态或实例化相关操作，需初始化其目标类。\n6. **默认方法接口 (JDK 8+)**：若一个接口定义了 `default` 默认方法，当它的任何实现类被初始化前，该接口必须先被初始化。\n\n## 卸载\n\n类的卸载与定义它的类加载器能否被垃圾回收有关，参考：[JVM 运行时数据区域与垃圾回收机制](/notes/n-d19c7d2e0c794e8eb9b8b186a355d069/)。\n\n## 各阶段的时序关系\n\nJava 虚拟机规范对阶段之间的关键约束是：\n\n- 一个类或接口必须先完成加载，才能进行连接。\n- 初始化开始前必须完成验证和准备。\n- **解析不要求与验证、准备同时完成，可以延迟到初始化之后**。\n- 加载一个类的过程中，虚拟机可能因为父类、接口或符号引用而加载和连接其他 Java 类，因此从整个虚拟机的角度看，不同 Java 类的各个阶段可能交错发生。\n\n在实际调用 API 进行加载时，上述几个阶段不是绝对独立隔绝的，加载阶段尚未结束，连接阶段可能就已经开始了（如验证文件格式）。\n\n### `ClassLoader.loadClass()`\n\n```java\nClassLoader loader = Thread.currentThread().getContextClassLoader();\n// 此时拿到 clazz 对象\nClass<?> clazz = loader.loadClass(\"com.example.MyClass\");\n```\n\n`ClassLoader.loadClass(String)` 使用当前这个 `ClassLoader` 对象查找并加载目标类，这段代码指向后可以确定：\n\n1. 目标类已经完成加载，并且返回对应的 `Class` 对象。    \n2. **连接之 验证与准备（通常已完成）**：在调用底层的 `defineClass()` 生成类的过程中，JVM 通常会顺手把内存分配好，并做完字节码校验。\n3. **连接之 解析（未完成）**：JVM 为了提升启动性能，通常采用**延迟解析（Lazy Resolution）**。此时常量池里的符号引用还没被替换为真实的内存指针。\n4. **初始化（未完成）**：`loadClass()` 本身没有请求初始化，因此不会因为这次调用而执行 `<clinit>()`。\n\n### `Class.forName()`\n\n```java\n// 典型的应用场景：加载数据库驱动\nClass<?> clazz = Class.forName(\"com.mysql.cj.jdbc.Driver\");\n```\n\n`Class.forName(String)` 会使用调用者所属类的定义加载器加载目标类，并在目标类尚未初始化时触发初始化（初始化隐含着该类已经完成必要的连接工作）。\n\n\n需要分别控制加载器和初始化行为时，可以使用：\n\n```java\nClass<?> clazz = Class.forName(className, initialize, loader);\n```\n\n两个 API 的核心差异如下：\n\n| API | 使用的类加载器 | 是否主动请求连接 | 是否初始化 |\n| --- | --- | --- | --- |\n| `loader.loadClass(name)` | 调用该方法的 `loader` | 否，等价于 `loadClass(name, false)` | 否 |\n| `Class.forName(name)` | 调用者所属类的定义加载器 | 初始化前完成必要连接 | 是 |\n| `Class.forName(name, initialize, loader)` | 显式传入的 `loader` | `initialize` 为 `true` 时完成必要连接 | 由 `initialize` 决定 |\n\n> 前置知识参考：[Java ClassLoader 机制](/notes/n-d06529d6c1464564a52c627bc1a3719a/)\n",
+  "id": "74610175-3bdd-463c-83ff-1e5b72717daa",
+  "metadata": {
+    "tags": [
+      "lang/java",
+      "cs/runtime"
+    ],
+    "title": "JVM 类加载过程"
+  },
+  "resources": [
+    "ade70513e56d3166233b50c9ed2fd93993481c5663fca00b84b25e3ecf009b24.jpg",
+    "b54a4900b31a24963aef56d07dfd65f4eba90517910072df3278cd91fe0e0815.jpg",
+    "cda58774db457dd37e78a72e00f60c4c58e0626833f8c87e0b7935a09acd971d.jpg"
+  ],
+  "url": "/notes/n-746101753bdd463c83ff1e5b72717daa/"
+}

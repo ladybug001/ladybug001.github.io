@@ -1,0 +1,50 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-b4e22f7d806cf9ceccc7",
+      "kind": "heading",
+      "offset": 20
+    },
+    {
+      "id": "h-86051f401dbad57be0ff",
+      "kind": "heading",
+      "offset": 85
+    },
+    {
+      "id": "h-a397aef055300c4968d6",
+      "kind": "heading",
+      "offset": 301
+    },
+    {
+      "id": "h-c51a29e7f95a258d5cbd",
+      "kind": "heading",
+      "offset": 609
+    },
+    {
+      "id": "h-6fec21f91e00be4eabd4",
+      "kind": "heading",
+      "offset": 844
+    },
+    {
+      "id": "h-52090134d372bac3dcc0",
+      "kind": "heading",
+      "offset": 1146
+    },
+    {
+      "id": "h-3412382ec9be921769b4",
+      "kind": "heading",
+      "offset": 1802
+    }
+  ],
+  "body": "# Windows 内存管理 (MOC)\n\n虚拟地址区域、物理页、缺页恢复与共享映射的导航。CPU 地址转译与 Windows 页面分配、管理分别阅读。\n\n## 硬件前置\n\n- [x86 保护模式分页机制 &#40;MOC&#41;](/notes/n-2b4685aefa864bad91ae7a1ad1ebbabe/) — 理解 PDE/PTE、PAE、TLB 与页表自映射。\n- [Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/) — 了解进程地址空间与控制块的关系。\n\n## 虚拟空间与区域管理\n\n1. [Windows 虚拟分页机制](/notes/n-31982091f5d4486aa5ae6aff36dca73a/) — 建立进程虚拟空间、物理内存与页面置换模型。\n2. [Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/) — 理解虚拟地址区间的占用、属性和分配策略。\n3. [Windows 用户态虚拟内存管理](/notes/n-b6dc38c9e8914672b696ce8442aaaf5c/) — 结合 VAD 理解 `VirtualAlloc`、reserve/commit、堆栈与映射区域。\n\n## 缺页、物理页与工作集\n\n- [x86 缺页异常与 Windows 缺页处理](/notes/n-85c26c688a7d414f97a72dd67c15f9bb/) — 区分 CPU 报告故障与 Windows 按需分配、调页、写时复制或报告访问违规。\n- [Windows 物理页管理](/notes/n-202a7ab45afc4e0191060e0c6fd24133/) — 理解 PFN 数据库、页面状态链表与进程工作集，并通过 WinDbg 验证。\n\n## 映射、共享与跨进程访问\n\n- [Windows 内存映射文件](/notes/n-a5ced7cc81224d9196b3d65053f02293/) — 文件映射、共享 Section、映射视图与跨进程共享实验。\n- [Windows 内核地址空间与映射](/notes/n-c0009ebda07e410a9ae42e09dc5bdb75/) — 观察经典 x86 系统空间共享与用户页写时复制。\n- [Windows 进程挂靠与跨进程读写机制](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/) — 理解线程临时进入目标进程地址空间；先掌握线程切换。\n\n## 地址空间建立的深入分析\n\n- [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/) — 进程对象创建总览，下面各项展开地址空间与 PEB 的创建。\n- [Windows 进程创建&#65288;03&#45;1&#65289;&#65306;非 PAE 地址空间骨架](/notes/n-715b80e32efa4cada011b9dda96e0bca/) — 分析基础物理页、页目录、HyperSpace 与自映射。\n- [Windows 进程创建&#65288;03&#45;2&#65289;&#65306;PAE 地址空间骨架](/notes/n-4e7a476b48e045eb8201a825f75e5557/) — 对照 PAE 顶层结构与非 PAE 的差异。\n- [Windows 进程创建&#65288;04&#65289;&#65306;地址空间初始化](/notes/n-4e7721abe8c84130a292e886ccb41126/) — 串联 PFN、工作集、VAD、映像映射与地址空间状态。\n- [Windows 进程创建&#65288;05&#65289;&#65306;PEB 创建与初始化](/notes/n-a12e6469a8a648e2a2f0b0c6d1b6abaa/) — 观察用户态进程环境块及相关映射。\n\n非 PAE 与 PAE 分别对应不同分页配置下的地址空间实现。\n\n## 相关入口\n\n- [Windows 进程与线程管理 &#40;MOC&#41;](/notes/n-1909310e1a5e499cb337d28521607edb/) — 进程生命周期、调度与切换。\n- [Windows 驱动开发 &#40;MOC&#41;](/notes/n-0d5d90f7fa004030baa7ded0fecae31b/) — 内核内存访问及开发约束。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 返回 Windows 领域入口。\n",
+  "id": "eaaa660a-abe4-4f52-abf8-65bf51bb3789",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows/mm"
+    ],
+    "title": "Windows 内存管理 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-eaaa660aabe44f52abf865bf51bb3789/"
+}

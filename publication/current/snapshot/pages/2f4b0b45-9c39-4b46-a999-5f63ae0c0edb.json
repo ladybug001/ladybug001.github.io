@@ -1,0 +1,38 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-49782e0ff2e9535acc22",
+      "kind": "heading",
+      "offset": 14
+    },
+    {
+      "id": "h-5cff5d607215da1b6517",
+      "kind": "heading",
+      "offset": 305
+    },
+    {
+      "id": "h-724f2f6d88f72144933d",
+      "kind": "heading",
+      "offset": 2334
+    },
+    {
+      "id": "h-4db67795b6c03733dab1",
+      "kind": "heading",
+      "offset": 2378
+    }
+  ],
+  "body": "# TLS 1.3 握手流程\n>TLS 1.2 是 2008 年发布的协议，已难以满足当前互联网在安全性和性能方面的需求，为此，TLS 1.3 应运而生，同时为了尽量兼容之前使用 TLS1.2 的网站，TLS1.3也做出了一些让步。\n>\n>与TLS1.2相比，简化了握手流程（**只需一次甚至零次往返就可以完成加密协商**），移除不安全算法（RSA 密钥交换算法已不再支持），TLS 1.3 还引入了 **前向安全**（Forward Secrecy）：每次通信都使用不同的密钥对（临时密钥对）协商会话密钥，避免出现TLS1.2中长期证书的私钥被破解导致的\"**今日截获，明日破解**\"攻击。\n\n## 流程解析\nTLS1.3 DHE算法握手流程如下图所示：![](/notes/n-2f4b0b459c394b46a9995f63ae0c0edb/media/e2e66d66f3d6cb0fc96535851078f0fdf6d673efe34dffaba93dd6cb4aa21fc1.jpeg)\n握手流程：\n1. 客户端向服务器发送`ClientHello`请求，携带数据：\n\t- 支持的 TLS 版本（如 TLS 1.3）\n\t- 支持的加密套件列表\n\t- 客户端生成的 key_share：结构为一个列表，其中具有多个 `<密钥组名，通过 a_n 和对应组使用的 p_n 、g_n 生成的 A_n> `数据项（每个`a_n`都不一样，且不同的加密套件对应不同的`g`、`p`参数）。\n\t- 客户端生成的随机数\n\t- 包括 SNI（Server Name Indication）、ALPN（协议协商）等\n2. 服务器接受到`ClientHello`请求后，选择具体使用哪一个加密套件，然后使用相应的`p_n`、`g_n`和自己的`b`生成`B`，再进一步使用`b`和`A_n`生成`K`。服务端发送`ServerHello`请求给客户端，携带数据：\n\t- 确认使用的 TLS 版本（通常是 TLS 1.3）\n\t- 选择的加密套件\n\t- 服务器的 key_share 公钥（也就是`B`）\n\t- 服务器生成的随机数\n>服务端发送`ServerHello`请求后，使用`K`、客户端和服务端随机数，生成三个密钥：`master secret`、客户端握手密钥和服务器端握手密钥。\n>\n>客户端收到`ServerHello`请求得到服务器端随机数和公钥 `B` 后，使用`B`和`a_n`计算出`K`，再进行以上的计算过程，得到三个密钥：：`master secret`、客户端握手密钥和服务器端握手密钥。\n>\n>**之后的握手信息使用对应的握手密钥进行加密和解密**（若未设置 [Wireshark 解密 TLS 流量](/notes/n-6467e0044e4f47bbbf01cd124ac7d1e0/)，**Wireshark 将无法看到后续的握手信息明文**，同时注意这里是握手密钥而不是通信密钥）\n\nWireshark 解密 TLS1.3 握手请求之前（以下是完整的 TLS1.3 握手流程，图片与笔记内容可能并非完全匹配，起辅助理解的作用）：![62eefbd6e33589df31fc8beffc4c144e&#95;MD5&#46;jpeg](/notes/n-2f4b0b459c394b46a9995f63ae0c0edb/media/47e7e3251b713e1b9a7866a1109cbbab1c077e57d156f9ee322462e38cc15730.jpeg)\nWireshark 解密后：![496f11e68f498f9f7a4e899a83c4030b&#95;MD5&#46;jpeg](/notes/n-2f4b0b459c394b46a9995f63ae0c0edb/media/c3c56a7dc2419cacbf24a969dccb1f96d8fdca3d0e234da5122e59b29398b23e.jpeg)\n3. 服务器 → 客户端：`Change Cipher Spec`，**空数据**，用于兼容TLS 1.2，TLS 1.3 不需要显式通知加密切换。\n4. 服务器 → 客户端：`Encrypted Extensions`，携带除 `ServerHello` 外的其它扩展信息（如 ALPN、SNI 状态等）\n5. 服务器 → 客户端：`Certificate`（服务器证书），证书公钥用于验证服务器身份（**只用于身份认证，而非协商密钥**）\n6. 服务器 → 客户端：`Certificate Verify`，服务器**使用其私钥对之前的握手数据签名**，让客户端用公钥验证，以**证明服务器对证书的控制权**——[数字证书与 PKI 体系](/notes/n-b7dbfaffe07f5e839320f3db28bb722b/)\n7. 服务器 → 客户端：`Finished`，使用握手密钥加密的握手摘要消息，验证整个握手流程未被篡改和对方是否拥有正确握手密钥。\n8. 客户端 → 服务器：`Change Cipher Spec`，**空数据**，用于兼容TLS 1.2，TLS 1.3 不需要显式通知加密切换。\n9. 客户端 → 服务器：`Finished`，客户端也发送经过握手密钥加密的握手摘要消息，目的同上。\n10. 双方从 `Master Secret` 生成四个密钥，其中包括通信密钥 `Application Traffic Keys`，之后开始进行加密通信。\n\n## 会话恢复\n采用 **PSK（Pre-Shared Key）机制实现会话恢复**\n\n## 相关链接\n- [TLS 1.0 至 1.3 握手流程详解](https://www.cnblogs.com/enoc/p/tls-handshake.html#_caption_4)\n- [TLS1.3 分析](https://zq99299.github.io/note-book2/http-protocol/05/05.html#%E6%9C%80%E5%A4%A7%E5%8C%96%E5%85%BC%E5%AE%B9%E6%80%A7)\n- [TLS1.3详解与抓包分析](https://blog.csdn.net/SkyChaserYu/article/details/105840504)\n",
+  "id": "2f4b0b45-9c39-4b46-a999-5f63ae0c0edb",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "TLS 1.3 握手流程"
+  },
+  "resources": [
+    "47e7e3251b713e1b9a7866a1109cbbab1c077e57d156f9ee322462e38cc15730.jpeg",
+    "c3c56a7dc2419cacbf24a969dccb1f96d8fdca3d0e234da5122e59b29398b23e.jpeg",
+    "e2e66d66f3d6cb0fc96535851078f0fdf6d673efe34dffaba93dd6cb4aa21fc1.jpeg"
+  ],
+  "url": "/notes/n-2f4b0b459c394b46a9995f63ae0c0edb/"
+}

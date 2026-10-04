@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-0e0f9047d05b63c1a1d5",
+      "kind": "heading",
+      "offset": 22
+    },
+    {
+      "id": "h-7be345f3550ba2f69cb6",
+      "kind": "heading",
+      "offset": 90
+    },
+    {
+      "id": "h-d9c3c2bbd760e9330d00",
+      "kind": "heading",
+      "offset": 392
+    },
+    {
+      "id": "h-f59f6216c358c3f6c12d",
+      "kind": "heading",
+      "offset": 1083
+    },
+    {
+      "id": "h-5c6a1bcc51253f1e0de9",
+      "kind": "heading",
+      "offset": 2084
+    }
+  ],
+  "body": "# Windows 线程创建流程 (MOC)\n\n阅读主线：线程创建入口 -> `ETHREAD/KTHREAD` -> 初始内核栈现场 -> 用户/系统线程启动。\n\n## 阅读前置\n\n- [Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/) — 区分 `ETHREAD`、`KTHREAD` 与进程控制块。\n- [Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/) — 理解启动例程如何安排首次返回用户态的初始化。\n- [Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/) — 理解新线程被调度时如何恢复初始内核栈现场。\n\n## 推荐阅读顺序\n\n编号表示推荐阅读顺序。第 02 篇展开第 01 篇，第 03 篇展开第 02 篇；第 04 篇介绍新线程首次被调度后的启动处理，并非前三篇函数调用的直接延续。\n\n1. [Windows 线程创建&#65288;01&#65289;&#65306;线程创建主流程](/notes/n-928a46ce58c649e289fbf643a9baabe5/)：创建 `ETHREAD`，区分用户线程/系统线程，链入进程并进入 ready 路径。\n2. [Windows 线程创建&#65288;02&#65289;&#65306;KTHREAD 初始化](/notes/n-6592c409b1a640c7848b3d4033762bb0/)：初始化 `KTHREAD`、APC/等待结构、内核栈与初始上下文。\n3. [Windows 线程创建&#65288;03&#65289;&#65306;初始上下文与内核栈现场构造](/notes/n-14e2485f47ec454da3768d361c775ed0/)：根据初始 `CONTEXT` 构造 `TrapFrame`，并布置 `KiThreadStartup` 所需栈现场。\n4. [Windows 线程创建&#65288;04&#65289;&#65306;用户线程与系统线程启动](/notes/n-965b6f66f3814cca8f4d28e41e7d7d47/)：用户线程改写返回目标到位置 3；系统线程直接调用 `StartRoutine`。\n\n## `CreateThread` 后新线程第一次进入用户态会执行哪里？\n\n下文的“位置 1、2、3”表示执行地址，与系列笔记的阅读编号无关。\n\n`CreateThread` 的 `lpStartAddress` 指定最终执行的线程函数，即**位置 1**。线程创建时，用户态封装会先把初始 `CONTEXT` 的 `EIP/RIP` 指向用户态启动桩，也就是**位置 2**，同时把**位置 1** 保存为启动桩后续要调用的目标。进入内核后，内核根据这个 `CONTEXT` 构造线程初始执行环境，原始 `TrapFrame` 的返回目标仍然是**位置 2**。\n\n新线程首次被调度运行后，内核会安排用户态初始化流程，把首次返回用户态的入口改成**位置 3**，也就是 `ntdll!KiUserApcDispatcher`。它会先调用 `LdrInitializeThunk` 完成 loader 相关初始化，然后再恢复到**位置 2**，最后由用户态启动桩调用**位置 1**。\n\n**核心逻辑**：新线程首次进入用户态时，先完成 loader 初始化，再经用户态启动桩调用线程函数。\n\n压缩链路：\n```text\n【线程创建阶段：仍在调用 CreateThread 的原线程中执行】\n\nCreateThread 指定位置 1\n-> BaseInitializeContext 把 CONTEXT 的 EIP/RIP 设为位置 2\n-> NtCreateThread/PspCreateThread 把 CONTEXT 交给内核\n-> KeInitThread/KiInitializeContextThread/KeContextToKframes 构造原始 TrapFrame\n-> 此时新线程还没有真正运行，原始 TrapFrame 的用户态返回目标是位置 2\n\n【新线程第一次被调度后：切换到新线程的内核栈上执行】\n\nKiThreadStartup/PspUserThreadStartup 开始运行\n-> KiInitializeUserApc 改写首次用户态返回目标为位置 3\n-> 从内核态返回用户态时，先进入 KiUserApcDispatcher\n-> KiUserApcDispatcher 调用 LdrInitializeThunk\n-> Loader 初始化完成后恢复到位置 2\n-> 用户态启动桩最终调用位置 1\n```\n\n## 相关 MOC\n\n- [Windows 进程创建流程 &#40;MOC&#41;](/notes/n-2c12b904cddf42c0b7b7304bf5e3ea22/)\n\n- [Windows 进程与线程管理 &#40;MOC&#41;](/notes/n-1909310e1a5e499cb337d28521607edb/) — 返回线程生命周期、调度与切换总览。\n- [Windows 同步与异步执行 &#40;MOC&#41;](/notes/n-fd806559a13b474392ec786d7b239b4b/) — 查阅 APC、等待结构与 IRQL 约束。\n",
+  "id": "1c54138a-1f3c-4b9b-a003-f8b0f18d6ffe",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows"
+    ],
+    "title": "Windows 线程创建流程 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-1c54138a1f3c4b9ba003f8b0f18d6ffe/"
+}

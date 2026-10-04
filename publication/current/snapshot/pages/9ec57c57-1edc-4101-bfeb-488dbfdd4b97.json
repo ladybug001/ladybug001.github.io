@@ -1,0 +1,107 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-35516d24d9524fe8a3e4",
+      "kind": "heading",
+      "offset": 23
+    },
+    {
+      "id": "h-8d187cecbc4ea709626b",
+      "kind": "heading",
+      "offset": 182
+    },
+    {
+      "id": "h-bd2d5582926bd048348e",
+      "kind": "heading",
+      "offset": 560
+    },
+    {
+      "id": "h-0640542c8f591224e0f7",
+      "kind": "heading",
+      "offset": 572
+    },
+    {
+      "id": "h-cb6a1616408cb911e30c",
+      "kind": "heading",
+      "offset": 2096
+    },
+    {
+      "id": "h-f6ebb149673fc8df5c08",
+      "kind": "heading",
+      "offset": 2879
+    },
+    {
+      "id": "h-6c24d08428c36a30f8f8",
+      "kind": "heading",
+      "offset": 3534
+    },
+    {
+      "id": "h-e736d7fab1e8c8c6d05d",
+      "kind": "heading",
+      "offset": 4312
+    },
+    {
+      "id": "h-47693eb21b9d6f90284b",
+      "kind": "heading",
+      "offset": 5888
+    },
+    {
+      "id": "h-8896287fe6318f2b5a00",
+      "kind": "heading",
+      "offset": 6212
+    },
+    {
+      "id": "h-4d44c1762d047762aecf",
+      "kind": "heading",
+      "offset": 6946
+    },
+    {
+      "id": "h-2506b431e845f598f465",
+      "kind": "heading",
+      "offset": 7791
+    },
+    {
+      "id": "h-05f980b0c7b10cc2ba70",
+      "kind": "heading",
+      "offset": 10049
+    },
+    {
+      "id": "h-215edb9733fbf5991669",
+      "kind": "heading",
+      "offset": 10605
+    },
+    {
+      "id": "h-3b303a9764998d97eacf",
+      "kind": "heading",
+      "offset": 10629
+    },
+    {
+      "id": "h-ff271d155c9de05ed8f5",
+      "kind": "heading",
+      "offset": 12309
+    },
+    {
+      "id": "h-65a32d154ccc012709d6",
+      "kind": "heading",
+      "offset": 17008
+    }
+  ],
+  "body": "\n# Windows 应用程序与驱动的通信机制\n\n驱动本身已经是 0 环的逻辑了，你的驱动可以执行各种 0 环操作，关键是如何和驱动交互——如何 3 环和 0 环通信。\n\n本章主要探讨 Ring 3 (用户态) 应用程序如何与 Ring 0 (内核态) 驱动程序进行通信。在具体实现通信前，需先引入“设备对象”与“IRP”的核心概念。\n\n## 通信链路中的核心对象\n\n在开发 Windows GUI 应用程序时，系统产生的消息被封装为 `MSG` 结构体，并由**窗口对象**接收处理。\n\n相似的，在内核驱动开发中，I/O 通信消息被封装为 `IRP`（I/O Request Packet，输入/输出请求包），而能够接收和处理 `IRP` 消息的核心实体则是**设备对象** (`DEVICE_OBJECT`)。\n> 这个类比实际上并不严谨。\n![62ad1176bf67d18f5f52d881ee054d5d&#95;MD5&#46;jpg](/notes/n-9ec57c571edc4101bfeb488dbfdd4b97/media/8fb7c71f56046e3d89dad9c7a646f2f8bf2ecabffe13544c305e4ff15e0d5188.jpg)\n\n## 建立用户态可访问的通信链路\n\n### 创建设备对象\n\n通常，一个设备对象对应一个具体的物理硬件（如鼠标、键盘），相当于对物理硬件的编程抽象，抽象为编程中的一个对象。但在软件驱动开发中，设备对象也可以是一个纯粹的抽象逻辑概念，不与任何底层物理硬件挂钩。\n\n通过 `IoCreateDevice` 函数可创建设备对象：\n\n```c\n// 创建设备名称\nUNICODE_STRING DeviceName;\nRtlInitUnicodeString(&DeviceName, L\"\\\\Device\\\\MyDevice\"); // 设备名称在内核命名空间的路径\n\nPDEVICE_OBJECT pDeviceObj = NULL;\n\n// 创建设备对象\nNTSTATUS ioCreateDevRet = IoCreateDevice(\n    DriverObject,             // 调用方驱动程序对象\n    0,                        // 设备扩展数据大小\n    &DeviceName,              // 设备名称\n    FILE_DEVICE_UNKNOWN,      // 设备类型：当前不与某个具体硬件挂钩，设为 UNKNOWN\n    FILE_DEVICE_SECURE_OPEN,  // 设备属性：大多数驱动指定该属性，确保将相同的安全设置应用到命名空间中的所有打开请求\n    FALSE,                    // 设备是否独占：如果开启独占访问，则一次只能打开该设备的一个句柄\n    &pDeviceObj               // 传出参数：指向新创建的 DEVICE_OBJECT 指针\n);\n\n// 校验 IoCreateDevice 是否执行成功\nif (ioCreateDevRet != STATUS_SUCCESS)\n{\n    DbgPrint(\"IoCreateDevice Error, code: %x\\n\", ioCreateDevRet);\n    return ioCreateDevRet;\n}\n```\n\n驱动对象结构体中的 `DeviceObject` 成员指向该驱动创建的第一个设备对象；同一驱动创建的后续设备对象通过 `DEVICE_OBJECT.NextDevice` 串联，如果创建多个设备对象就会形成一个单向链表：![21438215943a47d93046af785f741413&#95;MD5&#46;jpg](/notes/n-9ec57c571edc4101bfeb488dbfdd4b97/media/6f021c8217be7575998e57032bf696a4ebe032e733c62f01967d68f1c695b1e7.jpg)\n\n> [!NOTE] 设备对象命名规则\n> 调用 `IoCreateDevice` 时，可以通过 `DeviceName` 参数指定名称，也可以传入 `NULL` 创建匿名设备对象。**如果需要在用户态通过路径直接访问，则需要为设备对象命名**。有名称的设备对象通常位于对象管理器的 `\\Device` 目录下，例如：\n> \n> ```text\n> \\Device\\HarddiskVolume1\n> \\Device\\HarddiskVolume2\n> ```\n> \n> 相关内容参考：[Windows 内核路径解析&#65306;对象命名空间与 DeviceMap 机制](/notes/n-fd51c9c5b3534549885452c844b09c8e/)\n\n### 创建设备符号链接\n\n在内核态 (Ring 0) 创建的设备名称，对于用户态 (Ring 3) 程序是不能使用的，原因是用户态的 API 期望接收的是 DOS 路径，而不是 NT 路径，所以要做一个转换。\n\n为使用户态程序能够按固定 DOS 路径定位设备，需要创建**符号链接 (Symbolic Link)**。\n\n通过 `IoCreateSymbolicLink` 函数可创建符号链接对象，为它指定一个名字以及连接的对象——设备对象：\n\n```c\n// 创建符号链接\nUNICODE_STRING SymbolicLinkName;\nRtlInitUnicodeString(&SymbolicLinkName, L\"\\\\??\\\\MyTestDriver\"); // 指定符号链接对象的名称\nIoCreateSymbolicLink(&SymbolicLinkName, &DeviceName); // 创建符号链接对象，并且指定了连接的对象\n```\n\n> **类比**：设备对象名称是文件的真实路径，符号链接是桌面快捷方式。删除符号链接，不会删除设备对象；删除设备对象前，驱动通常应先删除符号链接。\n\n\n**注意路径格式差异**：内核模式下使用的是 NT 路径，用户模式下使用的是 DOS 路径。在内核模式下，符号链接的命名空间约定以 `\\??\\` 开头（例如 `\\??\\MyTestDriver`）；而在用户模式下，前缀必须是 `\\\\.\\`（例如在 C/C++ 代码中，因反斜杠转义规范需要写成 `\\\\\\\\.\\\\MyTestDriver`）。\n> 相关原因参考：[Windows 内核路径解析&#65306;对象命名空间与 DeviceMap 机制](/notes/n-fd51c9c5b3534549885452c844b09c8e/)\n\n### 注册并完成 IRP 派遣\n\n有了办实事的设备对象、连接用户和设备对象的驱动符号链接，接下来实现 0 环与 3 环通信后的业务逻辑。\n\n在开发 Windows GUI 应用程序时，系统产生的消息被封装为 `MSG` 结构体，并由**窗口对象**接收处理，处理的函数叫做窗口过程函数。\n\n相似的，设备对象接收 IRP 并且调用的处理函数，叫做派遣函数。\n![d32c7defb37bf91038d2565d22915c71&#95;MD5&#46;jpg](/notes/n-9ec57c571edc4101bfeb488dbfdd4b97/media/bf4425742fd78c1122dc501aabcbd4a378947ffd843fe5aa4794ce143af80b15.jpg)\n\n设备和符号链接就绪后，必须编写处理各类 `IRP` 的**派遣函数 (Dispatch Function)**。\n\n**注意 MSG 和 IRP 的差异**：窗口消息由线程消息循环取出并分派（参考：[窗口消息循环](/notes/n-5b50f7a485de48dcb0d1e1868933e003/#h-dbc603c4c4b54af2452d)）；IRP 则是当用户触发某个动作导致 IRP 产生时，同步去执行相应的派遣函数，只是 IRP 请求的完成可以同步或异步（比如 IRP 指挥硬件工作，此时 IRP 请求返回 Pending，当硬件完成工作后通过硬件中断进行通知，进而 IRP 请求完成）。\n\n---\n#### 常见 IRP 类型\n\n常见 `IRP` 类型与其对应的用户层触发函数及作用如下：\n\n| `IRP` 类型                | 来源触发函数            | 动作含义          |\n| ----------------------- | ----------------- | ------------- |\n| `IRP_MJ_CREATE`         | `CreateFile`      | **打开设备或建立句柄** |\n| `IRP_MJ_READ`           | `ReadFile`        | **从设备中读取数据**  |\n| `IRP_MJ_WRITE`          | `WriteFile`       | **向设备写入数据**   |\n| `IRP_MJ_CLOSE`          | `CloseHandle`     | **关闭设备句柄**    |\n| `IRP_MJ_DEVICE_CONTROL` | `DeviceIoControl` | **设备控制指令**    |\n| `IRP_MJ_POWER`          | `N/A`             | 操作系统处理电源事件时产生 |\n| `IRP_MJ_SHUTDOWN`       | `N/A`             | 操作系统关闭或重启前产生  |\n当 Ring 3 应用程序调用系统 API（如 `CreateFile`、`ReadFile`）操作设备句柄时，内核 I/O 管理器会生成对应的 `IRP` 消息，并找到驱动的设备对象、调用其对应的派遣函数进行响应处理。\n> 根据 `IRP` 的主要功能号（Major Function）区分调用哪个派遣函数。\n\n\n#### 注册派遣函数\n\n驱动对象的 `MajorFunction` 成员是一个数组，不同下标对应不同的 `IRP` 主功能号：\n![97232102a1a1f71a83d51092ee7a50ed&#95;MD5&#46;jpg](/notes/n-9ec57c571edc4101bfeb488dbfdd4b97/media/71ce495e38d33afd121e93d1c1817ae1f1be02a0e58aad674307ad085472fe05.jpg)\n\n若要注册某个 `IRP` 的派遣函数，一般在 `DriverEntry` 函数中完成注册，格式如下：\n\n```c\nDriverObject->MajorFunction[IRP_MJ_XXX] = 派遣函数指针;\n```\n\n派遣函数必须符合特定的函数签名，且通常以完成 `IRP` 请求作为结尾逻辑：\n\n```c\nNTSTATUS MyDispatchFunction(PDEVICE_OBJECT pDevObj, PIRP pIrp)\n{\n    // ... 执行自定义的底层业务代码 ...\n\n    // 填充完成状态与信息\n    pIrp->IoStatus.Status = STATUS_SUCCESS; // Ring 3 调用 GetLastError() 的依据\n    pIrp->IoStatus.Information = 0;         // 实际返回给 Ring 3 的字节数，无数据则填 0\n    \n    // 结束并完成此次 IRP 请求\n    IoCompleteRequest(pIrp, IO_NO_INCREMENT);\n    return STATUS_SUCCESS;\n}\n```\n\n对于一个功能健全的驱动设备，通常至少需要处理 `IRP_MJ_CREATE` 和 `IRP_MJ_CLOSE` 请求，否则应用层将无法成功获取和释放设备句柄（调用 `CreateFile` 会直接被内核拒绝）。\n\n```c\n// 注册核心派遣函数\nDriverObject->MajorFunction[IRP_MJ_CREATE] = CreateDispatchFunc;\nDriverObject->MajorFunction[IRP_MJ_CLOSE] = CloseDispatchFunc;\n\nNTSTATUS CreateDispatchFunc(PDEVICE_OBJECT pDevObj, PIRP pIrp)\n{\n    DbgPrint(\"CreateDispatchFunc Called. \\n\");\n    pIrp->IoStatus.Status = STATUS_SUCCESS;\n    pIrp->IoStatus.Information = 0; \n    IoCompleteRequest(pIrp, IO_NO_INCREMENT);\n    return STATUS_SUCCESS;\n}\n\nNTSTATUS CloseDispatchFunc(PDEVICE_OBJECT pDevObj, PIRP pIrp)\n{\n    DbgPrint(\"CloseDispatchFunc Called. \\n\");\n    pIrp->IoStatus.Status = STATUS_SUCCESS;\n    pIrp->IoStatus.Information = 0;\n    IoCompleteRequest(pIrp, IO_NO_INCREMENT);\n    return STATUS_SUCCESS;\n}\n```\n#### 特殊的 IRP：`IRP_MJ_DEVICE_CONTROL`\n\n绝大多数 IRP 的含义已经由 Windows 硬性规定好了——固定的动作产生固定的 IRP 执行固定的、要求的逻辑。\n\n但是为了实现自定义的、更复杂的用户和驱动的交互，Windows 提供了一个特殊的 IRP：`IRP_MJ_DEVICE_CONTROL`，以及产生该 IRP 的 `DeviceIoControl` 函数。\n\n该函数允许应用层发送自定义的**控制码 (`CTL_CODE`)** 以及配套的输入/输出缓冲区到内核层。内核层通过提取出匹配的 `CTL_CODE`，便可分支执行对应的高级操作逻辑。\n\n**和窗口消息有硬性规定的编码以及用户可以自定义消息编码相似。**\n\n\n### 配置 R0 与 R3 的 I/O 数据交换方式\n\n用户态（R3）与内核态（R0）常用以下两类函数进行通信：\n1. `WriteFile` 或 `ReadFile` 分别触发 `IRP_MJ_WRITE` 和 `IRP_MJ_READ`\n2. `DeviceIoControl` 触发 `IRP_MJ_DEVICE_CONTROL`，并通过控制码区分具体操作\n> `DeviceIoControl` 同时提供输入缓冲区和输出缓冲区；`ReadFile` 与 `WriteFile` 则各自提供与请求方向对应的数据缓冲区。\n\n在内核中，I/O 缓冲策略通常可归纳为以下三类：\n1. 缓冲区读写 (`BUFFERED`)：操作系统将应用程序提供的缓冲区数据直接**拷贝到内核模式的安全内存中**，读写完毕后再拷贝回用户态。该方式安全性最高，但存在拷贝导致的性能损耗。\n    1. 这种适合小批量的数据。\n2. 直接读写 (`DIRECT`)：操作系统在物理内存层面锁定用户模式的缓冲区，并将其在内核空间重新映射。**用户态与内核态指向同一块物理内存**，省去了拷贝开销，适合大数据传输，但会占用独立的 MDL (Memory Descriptor List) 物理页面。\n    1. 适合较大数据的操作。\n3. 其他读写 (Neither I/O)：若不显式设置上述标志，则默认使用此模式。内核派遣函数会**直接操作应用程序传入的原始虚拟内存地址**。此方式极其危险且不推荐，因为只有当驱动程序与发起请求的应用程序处于完全相同的线程上下文环境时，该地址才有效且安全。\n\n**但这仅仅是缓冲区的分类，实际的传递方式可能有多种，如下所述。**\n\n#### `ReadFile` / `WriteFile` 的三种传递方式\n\n`ReadFile` / `WriteFile` 的缓冲方式有三种——和上面介绍的缓冲区方式分别对应。\n\n因为 `ReadFile` / `WriteFile` 无法在每次调用中单独指定缓冲区方式，所以由设备对象中的标志决定使用哪一种：\n```c\npDeviceObj->Flags |= DO_BUFFERED_IO;\n//pDeviceObj->Flags |= DO_DIRECT_IO;\n```\n> 如果没有上面两行代码，则使用默认方式——`DO_NEITHER_IO`。\n\n\n以下代码，展示三种传递方式下应该如何访问缓冲区：\n\n```c\nPVOID pBuffer = NULL;\n\nif (device->Flags & DO_BUFFERED_IO)\n{\n    // 缓冲 I/O：访问内核系统缓冲区\n    pBuffer = pirp->AssociatedIrp.SystemBuffer;\n}\nelse if (device->Flags & DO_DIRECT_IO)\n{\n    // 直接 I/O：通过 MDL 获取内核映射地址\n    pBuffer = MmGetSystemAddressForMdlSafe(\n        pirp->MdlAddress,\n        NormalPagePriority\n    );\n}\nelse\n{\n    // Neither I/O：原始用户态虚拟地址\n    pBuffer = pirp->UserBuffer;\n}\n```\n\n> 除 `Read`、`Write`，还有一个 `Create`，后者与内核对象句柄的获取有关，参考：[Windows 内核路径解析&#65306;对象命名空间与 DeviceMap 机制](/notes/n-fd51c9c5b3534549885452c844b09c8e/)。\n> 三者的关系待整理\n#### `DeviceIoControl` 的四种传递方式\n\n`DeviceIoControl` 可以通过控制码指定本次使用的数据交换方式：\n```c\n#define IOCTL_GET_INFORMATION CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)\n```\n\n在 `DeviceIoControl` 请求中，输入、输出缓冲区在内核中的传递方式有四种：\n\n| 交换方式                | 第一个缓冲区 `lpInBuffer`                                            | 第二个缓冲区 `lpOutBuffer`          |\n| :------------------ | :------------------------------------------------------------- | :---------------------------- |\n| `METHOD_BUFFERED`   | 复制到 `Irp->AssociatedIrp.SystemBuffer`                          | 与输入共用同一个 `SystemBuffer`       |\n| `METHOD_IN_DIRECT`  | 复制到 `Irp->AssociatedIrp.SystemBuffer`                          | 锁定物理页，并由 `Irp->MdlAddress` 描述 |\n| `METHOD_OUT_DIRECT` | 复制到 `Irp->AssociatedIrp.SystemBuffer`                          | 锁定物理页，并由 `Irp->MdlAddress` 描述 |\n| `METHOD_NEITHER`    | 原始用户地址保存在 `irpSp->Parameters.DeviceIoControl.Type3InputBuffer` | 原始用户地址保存在 `Irp->UserBuffer`   |\n\n可概括为：\n```text\nMETHOD_BUFFERED\n    输入和输出共用一块内核 SystemBuffer。\n\nMETHOD_IN_DIRECT\n    第一个缓冲区使用 Buffered I/O；\n    第二个缓冲区通过 MDL 描述，通常供驱动读取。\n\nMETHOD_OUT_DIRECT\n    第一个缓冲区使用 Buffered I/O；\n    第二个缓冲区通过 MDL 描述，通常供驱动写入。\n\nMETHOD_NEITHER\n    I/O 管理器直接传递用户态虚拟地址。\n```\n\n\n以下代码展示四种方式应该如何访问缓冲区：\n```c\nULONG method =\n    irpSp->Parameters.DeviceIoControl.IoControlCode & 0x3;\n\nswitch (method)\n{\ncase METHOD_BUFFERED:\n    // 输入、输出共用 SystemBuffer\n    inputBuffer  = pirp->AssociatedIrp.SystemBuffer;\n    outputBuffer = pirp->AssociatedIrp.SystemBuffer;\n    break;\n\ncase METHOD_IN_DIRECT:\n    // 第一个缓冲区为 SystemBuffer，第二个缓冲区由 MDL 描述，通常供驱动读取\n    inputBuffer = pirp->AssociatedIrp.SystemBuffer;\n    outputBuffer = MmGetSystemAddressForMdlSafe(\n        pirp->MdlAddress,\n        NormalPagePriority\n    );\n    break;\n\ncase METHOD_OUT_DIRECT:\n    // 第一个缓冲区为 SystemBuffer，第二个缓冲区由 MDL 描述，通常供驱动写入\n    inputBuffer = pirp->AssociatedIrp.SystemBuffer;\n    outputBuffer = MmGetSystemAddressForMdlSafe(\n        pirp->MdlAddress,\n        NormalPagePriority\n    );\n    break;\n\ncase METHOD_NEITHER:\n    // 直接使用用户态虚拟地址\n    inputBuffer =\n        irpSp->Parameters.DeviceIoControl.Type3InputBuffer;\n\n    outputBuffer = pirp->UserBuffer;\n    break;\n}\n```\n> 需要注意，`Irp->MdlAddress` 指向的是 MDL 结构，而不是数据缓冲区本身。驱动通常需要调用 `MmGetSystemAddressForMdlSafe`，取得可访问该缓冲区的内核虚拟地址。\n\n##### 如何选择缓冲方式\n\n| 场景               | 推荐方式                | 原因                                  |\n| :--------------- | :------------------ | :---------------------------------- |\n| 小数据（< 几 KB），控制命令 | `METHOD_BUFFERED`   | I/O 管理器负责复制，实现简单；驱动仍需检查缓冲区长度        |\n| 大数据只读输出（如内存转储）   | `METHOD_OUT_DIRECT` | 输出缓冲区由 MDL 描述，可避免 I/O 管理器的大块系统缓冲区复制 |\n| 大数据只写输入          | `METHOD_IN_DIRECT`  | 输入缓冲区由 MDL 描述，适合调用方向驱动传递较大数据        |\n| 自行管理地址（高性能场景）    | `METHOD_NEITHER`    | 驱动必须自行验证、保护用户地址，并保证访问时的线程上下文有效      |\n\n> `METHOD_NEITHER` 是唯一需要驱动自己验证缓冲区地址的方式，验证不足会直接蓝屏，不建议初学者使用。\n\n## 实践代码\n\n### Ring 3：打开设备并发送控制请求\n\n在应用层，我们首先获取设备句柄，并构造自定义的 `CTL_CODE` 发送缓冲区：\n\n```cpp\n#include <windows.h>\n#include <winioctl.h>\n#include <stdio.h>\n\nHANDLE g_hDevice;\n\nint main(int argc, char* argv[])\n{\n    // 通过用户态格式的符号链接打开设备句柄\n    g_hDevice = ::CreateFile(\"\\\\\\\\.\\\\MyTestDriver\", GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);\n    \n    // 判断 CreateFile 是否成功：失败时返回 INVALID_HANDLE_VALUE，不应依赖 GetLastError 的值\n    if (g_hDevice == INVALID_HANDLE_VALUE)\n    {\n        printf(\"CreateFile Error: %d \\n\", ::GetLastError());\n        return -1;\n    }\n\n    // 准备与驱动进行通信的数据缓冲区\n    DWORD dwInBuffer = 0x11112222;\n    DWORD tcOutBuffer = 0;\n    DWORD dwLength = 0;\n\n    // 发起控制请求\n    BOOL ok = ::DeviceIoControl(\n        g_hDevice, // 打开的设备句柄\n        // 定义并传递操作码 CTL_CODE\n        CTL_CODE(\n            FILE_DEVICE_UNKNOWN, // 设备类型，需与驱动创建时保持一致\n            0x800,               // 自定义功能号范围规范：0x800 - 0xFFF\n            METHOD_BUFFERED,     // I/O 缓冲区数据交换方式\n            FILE_ANY_ACCESS      // 权限访问模式\n        ),\n        &dwInBuffer,           // 输入缓冲区基址\n        sizeof(dwInBuffer),    // 输入缓冲区的字节长度\n        &tcOutBuffer,          // 输出缓冲区基址\n        sizeof(tcOutBuffer),   // 输出缓冲区的字节长度\n        &dwLength,    // 实际从内核返回的字节数\n        NULL          // 异步操作重叠结构，同步请求设为 NULL\n    );\n\n    if (!ok)\n    {\n        printf(\"DeviceIoControl Error: %d \\n\", ::GetLastError());\n        CloseHandle(g_hDevice);\n        return -1;\n    }\n\n    // 打印从内核态读取的数据结果\n    printf(\"Result from Kernel: %x \\n\", tcOutBuffer);\n\n    CloseHandle(g_hDevice);\n    return 0;\n}\n```\n\n> [!warning] 示例访问控制\n> `FILE_ANY_ACCESS` 允许任何能够打开设备句柄的调用方发送该 IOCTL，适合最小实验但不等于生产安全配置。真实驱动还应限制设备对象/设备接口 ACL、按最小权限定义 IOCTL，并验证所有输入长度与值。\n\n### Ring 0：解析控制请求并返回数据\n\n在驱动程序的 `DeviceDispatchFunc` 中，通过解析当前 `IRP` 栈位置信息，提取出 `CTL_CODE` 和共享缓冲区指针，执行对应的分支响应：\n\n```c\n#include <ntddk.h> \n\n// 与应用层保持完全一致的操作码定义\n#define OPER CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)\n\n// 驱动程序卸载函数\nVOID DriverUnload(PDRIVER_OBJECT DriverObject)\n{\n    UNICODE_STRING SymbolicLinkName;\n    PDEVICE_OBJECT deviceObject = DriverObject->DeviceObject;\n    PDEVICE_OBJECT nextDevice;\n\n    RtlInitUnicodeString(&SymbolicLinkName, L\"\\\\??\\\\MyTestDriver\");\n    IoDeleteSymbolicLink(&SymbolicLinkName);\n\n    while (deviceObject != NULL)\n    {\n        nextDevice = deviceObject->NextDevice;\n        IoDeleteDevice(deviceObject);\n        deviceObject = nextDevice;\n    }\n\n    DbgPrint(\"Driver Unloaded. \\n\");\n}\n\n// CREATE 派遣函数\nNTSTATUS CreateDispatchFunc(PDEVICE_OBJECT pDevObj, PIRP pIrp)\n{\n    UNREFERENCED_PARAMETER(pDevObj);\n    pIrp->IoStatus.Status = STATUS_SUCCESS;\n    pIrp->IoStatus.Information = 0; \n    IoCompleteRequest(pIrp, IO_NO_INCREMENT);\n    return STATUS_SUCCESS;\n}\n\n// CLOSE 派遣函数\nNTSTATUS CloseDispatchFunc(PDEVICE_OBJECT pDevObj, PIRP pIrp)\n{\n    UNREFERENCED_PARAMETER(pDevObj);\n    pIrp->IoStatus.Status = STATUS_SUCCESS;\n    pIrp->IoStatus.Information = 0; \n    IoCompleteRequest(pIrp, IO_NO_INCREMENT);\n    return STATUS_SUCCESS;\n}\n\n// DEVICE_CONTROL (IOCTL) 核心派遣函数\nNTSTATUS DeviceDispatchFunc(PDEVICE_OBJECT pDevObj, PIRP pIrp)\n{\n    ULONG uWrite;\n    ULONG uRead;\n    NTSTATUS retStatus = STATUS_UNSUCCESSFUL;\n    PIO_STACK_LOCATION pIrpStack;\n    ULONG uIoControlCode;\n    ULONG uDataInLength;\n    ULONG uDataOutLength;\n    PVOID pIoBuffer;\n\n    UNREFERENCED_PARAMETER(pDevObj);\n    DbgPrint(\"DeviceDispatchFunc Called. \\n\");\n\n    // 获取当前 IRP 栈节点，从中提取参数\n    pIrpStack = IoGetCurrentIrpStackLocation(pIrp);\n\n    // 提取应用层发送过来的 CTL_CODE\n    uIoControlCode = pIrpStack->Parameters.DeviceIoControl.IoControlCode;\n\n    // 获取输入/输出数据的长度限制信息\n    uDataInLength = pIrpStack->Parameters.DeviceIoControl.InputBufferLength;\n    uDataOutLength = pIrpStack->Parameters.DeviceIoControl.OutputBufferLength;\n\n    // 获取操作系统映射好的安全缓冲区地址（因采用 METHOD_BUFFERED，输入和输出共用同一个系统分配的缓冲区）\n    pIoBuffer = pIrp->AssociatedIrp.SystemBuffer;\n    pIrp->IoStatus.Information = 0;\n\n    // 路由控制码\n    switch (uIoControlCode)\n    {\n    case OPER:\n        if (pIoBuffer == NULL ||\n            uDataInLength < sizeof(uRead) ||\n            uDataOutLength < sizeof(uWrite))\n        {\n            retStatus = STATUS_BUFFER_TOO_SMALL;\n            break;\n        }\n\n        // 从共用缓冲区提取应用层下发的数据\n        RtlCopyMemory(&uRead, pIoBuffer, sizeof(uRead));\n        DbgPrint(\"uRead from Ring3: %x \\n\", uRead);\n        \n        // 执行完逻辑后，将需要返回的结果覆盖写入共用缓冲区\n        uWrite = 0x22334455;\n        RtlCopyMemory(pIoBuffer, &uWrite, sizeof(uWrite));\n        \n        // 标记本次返回了多少有效字节数据\n        pIrp->IoStatus.Information = sizeof(uWrite);\n        retStatus = STATUS_SUCCESS;\n        break;\n    default:\n        pIrp->IoStatus.Information = 0;\n        retStatus = STATUS_INVALID_DEVICE_REQUEST;\n        break;\n    }\n\n    // 设置并完成 IRP 状态\n    pIrp->IoStatus.Status = retStatus;\n    IoCompleteRequest(pIrp, IO_NO_INCREMENT);\n    return retStatus;\n}\n\n// 驱动程序入口函数\nNTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)\n{\n    UNICODE_STRING DeviceName;\n    UNICODE_STRING SymbolicLinkName;\n    PDEVICE_OBJECT pDeviceObj = NULL;\n    NTSTATUS status;\n\n    UNREFERENCED_PARAMETER(RegistryPath);\n    RtlInitUnicodeString(&DeviceName, L\"\\\\Device\\\\MyDevice\");\n    \n    // 1. 创建内核设备对象\n    status = IoCreateDevice(\n        DriverObject, 0, &DeviceName, FILE_DEVICE_UNKNOWN, \n        FILE_DEVICE_SECURE_OPEN, FALSE, &pDeviceObj\n    );\n\n    if (!NT_SUCCESS(status))\n    {\n        DbgPrint(\"IoCreateDevice Error, code: %x\\n\", status);\n        return status;\n    }\n    \n    // 2. 配置数据交换方式为安全的缓冲读写\n    pDeviceObj->Flags |= DO_BUFFERED_IO;\n    \n    // 3. 注册面向 Ring3 的符号链接\n    RtlInitUnicodeString(&SymbolicLinkName, L\"\\\\??\\\\MyTestDriver\");\n    status = IoCreateSymbolicLink(&SymbolicLinkName, &DeviceName);\n    if (!NT_SUCCESS(status))\n    {\n        IoDeleteDevice(pDeviceObj);\n        return status;\n    }\n    \n    // 4. 挂载关键事件派遣函数\n    DriverObject->MajorFunction[IRP_MJ_CREATE] = CreateDispatchFunc;\n    DriverObject->MajorFunction[IRP_MJ_CLOSE] = CloseDispatchFunc;\n    DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DeviceDispatchFunc;\n\n    // 5. 挂载卸载回调\n    DriverObject->DriverUnload = DriverUnload;\n    pDeviceObj->Flags &= ~DO_DEVICE_INITIALIZING;\n    return STATUS_SUCCESS;\n}\n```\n\n将两端代码分别编译运行，即可顺畅实现跨越 3 环与 0 环的复杂通信流转：\n\n![01e0c6554de19451d5a45872fe0ef7f5&#95;MD5&#46;jpg](/notes/n-9ec57c571edc4101bfeb488dbfdd4b97/media/6032da84ccc19ae2ecae20900ad41ad577711aafce5726bb2d8727a0439a70b3.jpg)\n\n\n## 资源清理\n\n当要卸载驱动时，要按创建顺序的逆序清理符号链接、设备对象和其他已注册资源。\n\n```c\n{\n\t//删除符号链接\n\tUNICODE_STRING uzSymbolName; //符号链接名字\n\tRtlInitUnicodeString(&uzSymbolName, L\"\\\\??\\\\MyDriver\");\n\tIoDeleteSymbolicLink(&uzSymbolName); // 修正：原代码误写为 &uzSymbol（未声明变量）\n}\n```\n\n```c\n{\n\t// 修正：原代码将 0xffffffff 硬编码为设备指针，会导致蓝屏\n\t// 正确做法：通过驱动对象的 DeviceObject 成员获取设备指针\n\tIoDeleteDevice(pDriver->DeviceObject);\n}\n```\n\n生产代码还需要考虑已有句柄和未完成 IRP 的排空。\n",
+  "id": "9ec57c57-1edc-4101-bfeb-488dbfdd4b97",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "lang/c",
+      "lang/cpp"
+    ],
+    "title": "Windows 应用程序与驱动的通信机制"
+  },
+  "resources": [
+    "6032da84ccc19ae2ecae20900ad41ad577711aafce5726bb2d8727a0439a70b3.jpg",
+    "6f021c8217be7575998e57032bf696a4ebe032e733c62f01967d68f1c695b1e7.jpg",
+    "71ce495e38d33afd121e93d1c1817ae1f1be02a0e58aad674307ad085472fe05.jpg",
+    "8fb7c71f56046e3d89dad9c7a646f2f8bf2ecabffe13544c305e4ff15e0d5188.jpg",
+    "bf4425742fd78c1122dc501aabcbd4a378947ffd843fe5aa4794ce143af80b15.jpg"
+  ],
+  "url": "/notes/n-9ec57c571edc4101bfeb488dbfdd4b97/"
+}

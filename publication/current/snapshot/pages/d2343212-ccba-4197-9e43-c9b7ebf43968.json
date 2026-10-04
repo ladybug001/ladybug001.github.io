@@ -1,0 +1,53 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-d25b7f4a50b0b90d2e54",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-b9584ea5d402ba70a0a9",
+      "kind": "heading",
+      "offset": 73
+    },
+    {
+      "id": "h-aa60ff158f85ce96f011",
+      "kind": "heading",
+      "offset": 485
+    },
+    {
+      "id": "h-179ba8c95e20b4df0afa",
+      "kind": "heading",
+      "offset": 773
+    },
+    {
+      "id": "h-ee1301b5edf1d535746a",
+      "kind": "heading",
+      "offset": 956
+    },
+    {
+      "id": "h-a5cad1ff1f682b9ffbe3",
+      "kind": "heading",
+      "offset": 1065
+    },
+    {
+      "id": "h-3897a5b7328f19fd8d45",
+      "kind": "heading",
+      "offset": 1298
+    }
+  ],
+  "body": "# Web 逆向与爬虫实践 (MOC)\n\nWeb 请求分析、JavaScript 执行、参数与环境、验证码及爬虫工程案例。\n\n## 请求与执行基础\n\n- [计算机网络 &#40;MOC&#41;](/notes/n-20d43d2543664da29a65fb0636aab51e/) — 连接、传输与应用请求基础。\n- [流量抓包与代理原理 &#40;MOC&#41;](/notes/n-89074cb03d004c5f835aac39af5ef5bc/) — 确认请求路径、代理与加密内容的可见性。\n- [JavaScript 语言机制 &#40;MOC&#41;](/notes/n-06ad026c16634c2b9d0b578a0d0a62d0/) — 对象、原型、this、Promise 与协程。\n- [JavaScript 事件循环与 Promise](/notes/n-05362560259140a7ada563abf99d1a7c/#h-4ae20789ab683fcff42f) — 跟踪异步请求和回调的调试入口。\n\n## 环境、转译与代码分析\n\n- [JavaScript Proxy 与逆向补环境](/notes/n-d15ab76c1a1c4d3a9bbab08ab31de2a6/) — 观察属性访问、缺失环境与对象行为。\n- [Babel](/notes/n-3a98fb1d58b64535a2428da160df96ad/) — AST 操作、语法转译与代码处理。\n- [JavaScript 协程机制](/notes/n-5573d8d0bf224186ae2c02ecc04a7a60/#h-ec15e03aa10ddd951c20) — 识别转译后的生成器驱动与状态机。\n\n## 参数、签名与交互案例\n\n- Nike网站分析 — 查看具体网站的请求与代码分析过程。\n- 小红书x&#45;s逆向 — 补环境、签名分析与实际采集需求。\n- changYou Verify Bypass Record — 验证流程的分析记录。\n- 快手滑块逆向 — 参数、日志断点、函数调用与轨迹构造。\n- JS如何生成滑块的移动轨迹 — 独立查阅交互轨迹生成思路。\n\n## 小程序分支\n\n1. [微信小程序解包](/notes/n-5baf166b50c3474b85149d380ca0019b/) — 定位与处理应用包。\n2. 初次接触小程序逆向 — 对照解包后的分析实践。\n\n## 爬虫基础与工程\n\n- 爬虫有关的知识点 — 按需查阅请求、采集与实现知识。\n- 爬虫IP代理相关内容 — 代理选择与请求工程问题。\n- 高效爬虫框架设计 — 爬虫相关库与工具知识点。\n- [Python 语言特性 &#40;MOC&#41;](/notes/n-55594aaf52804fedaae2178afc0581e1/) — 模块、asyncio、协程与打包。\n- 记微博评论群控软件 — 日志、持久化、异步回调、QThread 与打包交付的项目记录。\n\n## 关联应用\n\n- [Android 运行机制与逆向 &#40;MOC&#41;](/notes/n-2b992cf7b1934491bd31a57f0b3266ac/) — 移动应用的运行、Hook 与抓包路线。\n- [深度学习与视觉识别 &#40;MOC&#41;](/notes/n-89595dc39ccb43efa26520659a3b4335/) — 图像分类、序列识别与目标检测的学习分支。\n- 大漠图色识别基础 — 桌面图色识别与自动化操作参考。\n",
+  "id": "d2343212-ccba-4197-9e43-c9b7ebf43968",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "reverse/js",
+      "lang/javascript",
+      "lang/python"
+    ],
+    "title": "Web 逆向与爬虫实践 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-d2343212ccba41979e43c9b7ebf43968/"
+}

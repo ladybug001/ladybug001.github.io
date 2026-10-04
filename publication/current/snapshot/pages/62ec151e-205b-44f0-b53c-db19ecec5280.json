@@ -1,0 +1,113 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-04d46fe2cff9fe2575b4",
+      "kind": "heading",
+      "offset": 286
+    },
+    {
+      "id": "h-397862bf2bc09402c55f",
+      "kind": "heading",
+      "offset": 310
+    },
+    {
+      "id": "h-f74ed608a49887527743",
+      "kind": "heading",
+      "offset": 1397
+    },
+    {
+      "id": "h-89ef7b7821fd9838d6b8",
+      "kind": "heading",
+      "offset": 2304
+    },
+    {
+      "id": "h-2427f503c4d938186e8c",
+      "kind": "heading",
+      "offset": 2576
+    },
+    {
+      "id": "h-93168710dd746cd05825",
+      "kind": "heading",
+      "offset": 4058
+    },
+    {
+      "id": "h-c405e7230048d3a31cdb",
+      "kind": "heading",
+      "offset": 4133
+    },
+    {
+      "id": "h-7f0cfcf193fc9620263b",
+      "kind": "heading",
+      "offset": 5634
+    },
+    {
+      "id": "h-14c6040b881fd94b966c",
+      "kind": "heading",
+      "offset": 6407
+    },
+    {
+      "id": "h-2087f91df5a27972006d",
+      "kind": "heading",
+      "offset": 6507
+    },
+    {
+      "id": "h-399b31b6d96b5fbcea00",
+      "kind": "heading",
+      "offset": 7405
+    },
+    {
+      "id": "h-8d4e2931067aff02b2e9",
+      "kind": "heading",
+      "offset": 8618
+    },
+    {
+      "id": "h-62c1e36ae2bf80b51895",
+      "kind": "heading",
+      "offset": 9499
+    },
+    {
+      "id": "h-ed2f2cb03d7da3bc44a5",
+      "kind": "heading",
+      "offset": 10613
+    },
+    {
+      "id": "h-3dfe1a998f4ba9254730",
+      "kind": "heading",
+      "offset": 10858
+    }
+  ],
+  "body": "> [!abstract] 前置知识与架构声明\n> **架构界定**：本文底层的寄存器状态、堆栈切换机制（如 `FS` 寄存器映射、`_KTRAP_FRAME` 结构等）均基于 **x86 (32位)** 架构。x64 架构在寄存器与特权指令层面（如 `syscall`、`swapgs` 及 MSR 寄存器）存在较大差异，请勿直接平移。\n> **前置知识**：建议先阅读 [Windows 内核控制块与进程&#12289;线程结构体](/notes/n-db80487575cb405fa24ea0ac0e49955c/)。\n\n\n# Windows x86 线程切换机制\n## 线程切换函数：KiSwapContext\n\n线程切换的本质是由当前执行流主动调用调度 API 触发上下文保存与恢复过程。\n\n在 Windows 内核（`Ntoskrnl.exe`）中，实现线程切换的函数是 `KiSwapContext`：\n![bb825ebe4cc736f76023e1593305cbe7&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/7a78cbb94ac50e9d7883ef450a636a145999d948aa1d546e439ab65fdc11aad0.jpg)\n该函数的反汇编执行流主要包含以下核心动作：\n1. **保存非易失性寄存器**\n2. **替换当前线程指针**：从当前 CPU 的 `_KPCR` 中定位到当前的 `_KTHREAD` 结构体，并将通过寄存器 `ECX` 传递进来的**目标线程结构体地址**，覆盖写入到 `_KPCR` 的当前线程指针位置。\n3. 在完成 `KPCR` 的指针替换后，`KiSwapContext` 内部会调用底层的**核心切换函数 `SwapContext`**。\n4. **恢复非易失性寄存器**\n> **注意**：完成线程切换后，要立马恢复非易失性寄存器，因为上层函数预设此类寄存器的内容是正确的直接拿来使用，所以不立马恢复会出问题。实际上完整的上下文恢复，则是在 0 环返回 3 环时，通过 3 环进入 0 环必须构建 **TrapFrame（陷阱帧）** 结构体的机制实现的，相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n> [!info] 目标线程的来源\n> 寄存器 `ECX` 中的目标线程地址通常由上层函数（如 `KiSwapThread`）调用调度函数 `KiFindReadyThread` 获取。`KiFindReadyThread` 负责在就绪链表中寻找到最适合调度的下一个线程，并返回其 `_KTHREAD` 基址。\n> ![5591d842fcceace605eab55922494330&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/850fb21c0eb257c49e700bbfd26bd73b86cf58502d98fe0a854161b0315d5213.jpg)\n\n---\n\n### 核心函数：`SwapContext`\n\n在完成 `KPCR` 的指针替换后，`KiSwapContext` 内部会调用底层的**核心切换函数 `SwapContext`**。\n\n在 `SwapContext` 内部，最核心的动作是**堆栈切换**：将当前的栈顶指针（`ESP`）保存至当前线程的 `_KTHREAD` 结构体中，并提取目标线程记录的内核栈指针（`KernelStack`）覆盖当前的 `ESP`，完成执行流（返回流）的切换，函数返回的过程中逐步完成执行上下文的恢复。\n> 相关内容参考：[C 语言模拟 Windows 线程切换](/notes/n-dc26a1ccb21c475a91f966f52af7ca3a/)\n\n![3ae7d95f916c3129d6a0ea4b27890528&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/5d922d9eb46abd4a5fb5b7f42d0e5aa88a59ae8367787024e5e878b7ce6fe2fa.jpg)\n\n此外，在进行堆栈切换时，若发现目标线程不属于当前进程（对比进程的目录表基址），内核还会一并重载 `Cr3` 寄存器（页目录基址，详见 [Windows 进程挂靠与跨进程读写机制](/notes/n-21eb8fee6a2c4189bedb388ad073c14e/)）。**因此，在 Windows 中，进程的切换本质上是伴随跨进程线程切换顺带完成的。**\n\n---\n\n通过交叉引用（XREF）分析可知，内核中有大量 API 直接/间接调用该线程切换函数。也就是说，**调用这些 API 会导致线程切换**。\n\n![3ab5a215e8a39c26e104528149836389&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/e0e21f9a7eb0a6e4d3a93cd777ae58c423d199ddd0bbc064a7f7e4525bc077aa.jpg)\n\n## 时钟中断详解\n\n即便线程不主动调用任何触发切换的 API，操作系统依旧可以通过硬件时钟中断强制剥夺其执行权并进行切换。\n\n在 Windows 操作系统中，每隔 10~20 毫秒便会触发一次硬件时钟中断（可通过 `GetSystemTimeAdjustment` 函数获取具体的时间间隔）。\n\n| IDT（中断描述符表）编号 | IRQ 硬件中断号 | 描述      |\n| :-----------: | :-------: | :------ |\n|    `0x30`     |  `IRQ0`   | 时钟定时器中断 |\n\n### 核心执行流分析\n\n当时钟中断发生时，内核执行流如下：\n\n1. 触发 IDT 表 `0x30` 号中断对应的处理例程。\n\n![086db461c8953c09c8e043605158ec60&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/442c8ba79e13a1f263ad8ed50b973758c58be0c0db4b4f4b971441265cfe60ed.jpg)\n> `_KiUnexpectedInterruptX` 是内核对 IDT 中 `0x30 ~ 0xFF` 这 208 个表项填写的默认中断处理函数，除非后续有人主动修改，否则一直保持不变。相关内容参考：[x86 中断的分类与触发机制](/notes/n-870bed2e9d0049498ba9ef4e6251c5cc/)\n\n2. 该处理例程又经过多次跳转，最终走到 `_KiUnexpectedInterruptTail` 函数。该函数调用 `HAL.DLL`（硬件抽象层模块）中的 `HalEndSystemInterrupt` 函数结束物理中断。\n![4e5c9723e85888458537888b35041855&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/83d20df45ebec043d8cb5b40e08fc1fc0101073fdd966b59557814daf99ff82d.jpg)\n\n> [!note]- HAL 导入函数说明\n> 查看导入表，发现 `HalBeginSystemInterrupt` 与 `HalEndSystemInterrupt` 来自 `HAL.dll`：\n> ![4847ca66af3956cee7f77bb7915bcfa3&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/5c56ed386764d41279603a3538496cd1e33f2344b6e4993391a4d25dea6ad627.jpg)\n\n3. 在 `HalEndSystemInterrupt` 函数内部，可以看到它有调用内核层 `KiDispatchInterrupt` 函数的逻辑。\n![80c0ac5f5f95082e85f3c56d564ba388&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/7ede29cc8d0f5160084f55a231d9eaa4323297c4112f0de56b499e4f14134008.jpg)\n\n4. 回到内核模块，查看 `KiDispatchInterrupt`，发现它最终回流至 `SwapContext`，因此也就证明了时钟中断也会导致线程切换。\n![9653f04140c9fd1aa429061545b85e90&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/9b4bf16b18df4173c175cdeb84066ff3f0aa03e974b652417d5f8ecd67f820a4.jpg)\n\n\n### 导致线程切换的场景（ `KiDispatchInterrupt` 函数详解）\n\n时钟中断并不是一定会导致线程切换，主要基于两种触发条件：**时间片（Quantum）到期**或**存在备用线程**。\n\n#### 场景：时间片到期\n\n时间片是 CPU 赋予线程单次连续执行的时间额度。若线程在时间片耗尽前主动阻塞（如等待 I/O），CPU 将立即让出；若时间片耗尽时线程仍在运行，则会被内核强制剥夺执行权并重新调度。\n\n1. **初始时间片赋予**：\n   当新线程启动时，内核会从其所属的 `_KPROCESS` 的 `ThreadQuantum` 成员（进程级默认值，通常为 6）中提取数值，赋予该线程 `_KTHREAD` 的 `Quantum` 成员，作为该线程的初始时间片。\n\n![ea4947855ba0481e6035d7b5115c7ef0&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/1406750150f07e61f9e7aff135dcfd5d6fe8eb3f55c41e82d8b61f4b1154046d.jpg)\n\n2. **时钟中断扣除时间片**：\n   系统定时产生时钟中断，中断处理底层会调用 `KeUpdateRunTime` 函数。该函数每次执行会将当前运行线程的 `Quantum` 减去 3 个单位。 一旦减至 0，则将当前 CPU 控制块中的标志位 `_KPCR.PrcbData.QuantumEnd` 设为非 0，标记时间片已耗尽。\n\n![26c00a281435dfcef4477b775fa7f70e&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/7b5dfd9ad0f3c794a922cf081f356665f8affa443ee81b3a9619eadaa3c8a7bc.jpg)\n\n3. **调度器响应机制**：\n   时钟中断处理的后半段会调用 `KiDispatchInterrupt` 进行调度判定：\n\t- 检查 `_KPCR.PrcbData.QuantumEnd` 标志位。若为非 0，则将其清零并触发 `_KiQuantumEnd` 函数。\n\t\t- `_KiQuantumEnd` 会为当前线程重新充值时间片（重置 `Quantum = 6`），随后调用 `KiFindReadyThread` 在全局调度链表中寻找下一个就绪线程（相关机制详见 [Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/)）。\n\t- 最终，`KiDispatchInterrupt` 函数更新 `_KPCR` 的 `CurrentThread`，将原线程重新挂入对应的调度链表，并引发堆栈上下文的物理切换。\n\n![b28a68e835ce73b6808e9a564bea4730&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/fafb5f1682b0e89739ff7e86a4ba078c7e073757eb7e95d4cb651ee8a3057b3e.jpg)\n![a3b32dd0e6b787dcbfd1c9bf4a8af422&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/bc11dc3a5c425c5c724501cf3ab357f959d691642192f764abf4e03a2eff726d.jpg)\n\n\n#### 场景：存在备用线程（高优先级线程）\n\n`KiDispatchInterrupt` 中除检查时间片是否到期外，还存在备用线程检测机制。\n\n即使当前线程时间片未用尽，但只要内核检测到 `_KPCR.PrcbData.NextThread` 有值（即调度器已经提前安排了高优先级的备用线程），也会立刻触发上下文切换，让位给备用线程。\n\n![029d2771da8ae9e3f3cbd5ee8f06fcc9&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/a5ad2d0c3d91df830b05c447c15567442057610de50cda56c671b4fa562f72fa.jpg)\n\n\n**系统时钟中断的完整调度关系如下所示**：\n```text\nKiUnexpectedInterruptXX (stub)\n  │   每个中断向量对应一个独立 stub，该 stub 只完成两件事：\n  │   ① 将中断向量号 XX 压入栈中（或存入寄存器）\n  │   ② 无条件跳转到公共处理函数 KiUnexpectedInterruptTail\n  └─ KiUnexpectedInterruptTail （所有未预期中断共享的公共入口）\n       ├─ HalBeginSystemInterrupt   // 进入硬件抽象层，确认中断、发送EOI\n       └─ HalEndSystemInterrupt     // 结束硬件中断会话\n            └─ KiDispatchInterrupt  // 检查是否需要线程调度\n                 └─ SwapContext     // 执行实际线程切换\n```\n\n\n## 线程切换与 TSS 的更新\n\n`SwapContext` 除了完成物理堆栈的切换外，还肩负着一项极其重要的任务：更新 `TSS`（Task State Segment，任务状态段）以适配新线程。\n\n### 为什么要更新 TSS\n\nIntel 设计 TSS 的初衷是提供硬件级任务切换支持，但 Windows 和 Linux 出于性能考量，均放弃了硬件任务切换，转而使用软件模拟（即基于堆栈切换保护寄存器）。\n\n虽然操作系统未使用 TSS 进行任务切换，但因为一些硬件机制——每个 CPU 核心都绑定一个 TSS，当权限改变时硬件固定通过 TSS 找到权限对应的栈。因此：系统中每个线程拥有独立的内核栈，**当线程发生切换时，必须将新线程的内核栈地址更新到该核心 的 TSS 的 `ESP0` 成员中**。\n\n> 相关内容参考：[x86 硬件任务切换&#65306;TSS 与任务门](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/#h-a9a546738b306c081a72)\n\n\n> [!tip] 权限提升时的堆栈定位\n> 在 x86 架构中，当线程已经在 Ring 3 运行，突然发生了**硬件中断**（如时钟、键盘中断）或**异常**（如缺页）而被迫陷入 Ring 0 时，CPU 硬件会自动通过读取 TSS 的 `ESP0` 成员来获取该线程对应的 Ring 0 初始堆栈基址。\n> \n> **注意**：现代系统常用的快速调用 `sysenter` 陷入内核时，硬件不再依赖 `TSS.ESP0`，而是从 MSR 寄存器 `IA32_SYSENTER_ESP` 中读取栈基址的。尽管没有硬性依赖了，但 Windows 选择将 `IA32_SYSENTER_ESP` 做为临时内核栈，继续使用 `TSS.ESP0` 获取线程自己的 0 环栈，`_KiFastCallEntry` 函数的开端内容如下图所示：![c23fa6c95a6627ce2728976770c46931&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/7395aefeb700d7dd6f09c0b22f5553e9903e6fa346fb44ebb75e3a52148bb628.jpg)\n> \n\n### 线程内核栈详解\n\n当线程通过系统调用从 Ring 3 陷入 Ring 0 时，必须切换至该线程专属的**内核栈**（Ring 0 堆栈）。\n\n线程使用的内核栈，由其 `_KTHREAD` 结构体中的 `InitialStack`、`KernelStack` 和 `StackLimit` 等成员描述：\n![cdb11de19587412358af071cd79569ab&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/f7b3d766e67d96624208f363a0777cdb5cbfe992cf647635a47ca2a8dfb8c7d9.jpg)\n\n这三个成员分别描述了内核栈的上下限，以及当前的栈指针的位置。\n\n需要注意的是，`TSS.ESP0` 并不等于 `InitialStack`，也不等于 `KernelStack` ，`TSS.ESP0` 实际指向：\n> `TSS.ESP0` 用于从 3 环进入 0 环；`KernelStack` 用于线程切换，堆栈切换过程见 [SwapContext 的堆栈切换](/notes/n-62ec151e205b44f0b53cdb19ecec5280/#h-f74ed608a49887527743)。\n![71636e3625cb76262c4a9cf66b83325e&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/a946637a4048779caf1d2a93ff3d693e9dd2749f1524be9ecf47bca0a811e0cc.jpg)\n\n\nWindows 从 `InitialStack` 起始向下占据 `0x210` 字节，用于临时保存线程的浮点数计算结果，这片区域叫做**浮点寄存器保存区**。以及用于兼容虚拟 8086 模式下硬件压栈逻辑的 `0x10` 字节。\n\n\n> [!tip] 总结\n> 修正后的 `TSS.ESP0`，根据 `_Trap_Frame` 的结构， 指向其 `HardwareSegSs` 成员，当实际进入 0 环入口函数时：\n> 1. 若使用普通系统调用（通过中断门），由于 CPU 硬件会自动压入 5 个寄存器，进入到 0 环入口函数内时，栈指针指向 `ErrCode` 成员位置。\n> 2. 若使用快速调用（`sysenter`），不涉及硬件压栈，所以进入到 0 环入口函数处时，栈指针（`ESP`）指向 `HardwareSegSs` 成员；\n> 相关内容参考：[Windows x86 系统调用与 SSDT](/notes/n-a5e29edced624217af32c21baaee2060/)\n\n\n### SwapContext 对 TSS 的修正\n\n在 `SwapContext` 中，关键步骤包括：\n1. 保存当前线程的 `KernelStack`\n2. 提取目标线程 `_KTHREAD` 的 `InitialStack` 成员，并进行必要的偏移修正（跨过虚拟 8086 模式成员及浮点保存区），然后将赋值给当前 CPU 的 `TSS.ESP0`。\n3. 提取目标线程的 `KernelStack`，然后完成堆栈切换\n\n![f067e9e47388944a931da97eaf7a7106&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/c1d1f5854885acbe7b382aeba3895d9d03c9ff64c7884c40604df5d2f254c355.jpg)\n\n\n> **核心逻辑**：堆栈的物理切换导致了函数调用返回路径被重定向。所有待切换线程的内核栈中，都保存着被挂起时/虚构的调用链。当 `SwapContext` 最终执行 `RET` 指令时，它弹出的是目标线程此前被挂起时保存的 `EIP`，从而无缝恢复了目标线程的执行上下文，并最终依据栈中的 `TrapFrame` 结构安全退回 Ring 3。\n\n此外，`SwapContext` 还会更新 TSS 中的其他字段（如 `Cr3`，以及遗留的 IO 权限位图基址）。\n综上所述，虽然 Intel 提供了庞大的 TSS 结构，但在 Windows 实际应用中，仅利用了 TSS 的 `ESP0` 和 `Cr3` 等极少数核心成员来辅助软件级的线程切换。\n\n![669a56ea174430dd31c75716b671a062&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/413b88d27ec6f8fb15147cb46413de503d89d71bd1fb72d3d0a2458dcc677265.jpg)\n\n## 为什么所有线程的 FS 寄存器值都一样？\n\n在 Ring 3 下，`FS:[0]` 固定指向当前线程的 `TEB`，在 Ring 0 下指向当前核心的 KPCR。\n\n一个直观的疑问是：**系统中存在大量线程，且它们在 Ring 3 下的 `FS` 寄存器值（段选择子，通常为 `0x3B`）是完全相同的，那如何保证不同线程通过相同的 `FS` 能够映射到各自独立的 `TEB`？**\n\n答案同样隐藏在 `SwapContext` 内部。\n\n段选择子 `0x3B` 在 GDT（全局描述符表）中索引的第 7 个表项（偏移 `0x38` 处）。当线程切换时，`SwapContext` 会从目标线程对象中提取其专属的 `TEB` 物理基址，并**动态覆写 GDT 第 7 项对应的段描述符（Segment Descriptor）的 `Base Address`（基址字段）**。\n\n![5bf370814950d1e982b44d24c6d46850&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/38ecd78ed3ace455e2df59613d991df9ff796425884a5c1e5d3b329bbbc6e929.jpg)\n![a77823e83712ff5f1e7b848df3e5c69d&#95;MD5&#46;jpg](/notes/n-62ec151e205b44f0b53cdb19ecec5280/media/062f309cb2c7f35330b9700902cb9078af227a2640fc2a93fe7d63166160d01a.jpg)\n\n这解释了 x86 Windows 底层的巧妙设计：**所有线程共享同一个 `FS` 段选择子，但在每次发生线程切换时，内核会悄悄修改该段选择子在 GDT 中映射的物理内存基址。** 因此，不同线程使用相同的 `FS` 段选择子，但是在底层映射出的 `TEB` 是不同的。\n> 相关内容参考：[x86 段寄存器与描述符体系](/notes/n-9865620a6a12491a86ee4494a0e2a392/#h-4ef1dccd611de24b41bf)\n\n\n> [!note] 延伸：x64 架构的演进\n> 到了 64 位的 x64 架构下，微软抛弃了修改 GDT 段描述符基址的做法，而是使用了全新的 MSR 寄存器（`MSR_GS_BASE` 等）配合特殊的 `swapgs` 指令来实现 `TEB` 和 `KPCR` 寻址指针的快速切换，这种设计更加高效安全。\n\n---\n## 线程切换触发机制总结\n\n综合来看，引发线程切换的情况主要分为三类：\n1. **主动调用 API**：线程主动进入等待状态（内部调用 `SwapContext`）。\n2. **硬件时钟中断**：时间片耗尽被调度器强制剥夺。\n3. **异常处理**：如缺页异常、`INT N` 软中断等打断当前执行流。\n\n理论上，如果一个线程既不调用 API，又在 Ring 0 执行了 `CLI` 指令屏蔽了外部硬件中断，且不产生任何异常，那么该线程将永久霸占当前逻辑 CPU 核心（单核占有率 100%）。\n\n\n## 相关链接\n\n[Windows 线程调度与优先级机制](/notes/n-498bf4275ad54e118f3c199952e3257b/)\n",
+  "id": "62ec151e-205b-44f0-b53c-db19ecec5280",
+  "metadata": {
+    "tags": [
+      "os/windows/thread",
+      "arch/x86",
+      "reverse/windows"
+    ],
+    "title": "Windows x86 线程切换机制"
+  },
+  "resources": [
+    "062f309cb2c7f35330b9700902cb9078af227a2640fc2a93fe7d63166160d01a.jpg",
+    "1406750150f07e61f9e7aff135dcfd5d6fe8eb3f55c41e82d8b61f4b1154046d.jpg",
+    "38ecd78ed3ace455e2df59613d991df9ff796425884a5c1e5d3b329bbbc6e929.jpg",
+    "413b88d27ec6f8fb15147cb46413de503d89d71bd1fb72d3d0a2458dcc677265.jpg",
+    "442c8ba79e13a1f263ad8ed50b973758c58be0c0db4b4f4b971441265cfe60ed.jpg",
+    "5c56ed386764d41279603a3538496cd1e33f2344b6e4993391a4d25dea6ad627.jpg",
+    "5d922d9eb46abd4a5fb5b7f42d0e5aa88a59ae8367787024e5e878b7ce6fe2fa.jpg",
+    "7395aefeb700d7dd6f09c0b22f5553e9903e6fa346fb44ebb75e3a52148bb628.jpg",
+    "7a78cbb94ac50e9d7883ef450a636a145999d948aa1d546e439ab65fdc11aad0.jpg",
+    "7b5dfd9ad0f3c794a922cf081f356665f8affa443ee81b3a9619eadaa3c8a7bc.jpg",
+    "7ede29cc8d0f5160084f55a231d9eaa4323297c4112f0de56b499e4f14134008.jpg",
+    "83d20df45ebec043d8cb5b40e08fc1fc0101073fdd966b59557814daf99ff82d.jpg",
+    "850fb21c0eb257c49e700bbfd26bd73b86cf58502d98fe0a854161b0315d5213.jpg",
+    "9b4bf16b18df4173c175cdeb84066ff3f0aa03e974b652417d5f8ecd67f820a4.jpg",
+    "a5ad2d0c3d91df830b05c447c15567442057610de50cda56c671b4fa562f72fa.jpg",
+    "a946637a4048779caf1d2a93ff3d693e9dd2749f1524be9ecf47bca0a811e0cc.jpg",
+    "bc11dc3a5c425c5c724501cf3ab357f959d691642192f764abf4e03a2eff726d.jpg",
+    "c1d1f5854885acbe7b382aeba3895d9d03c9ff64c7884c40604df5d2f254c355.jpg",
+    "e0e21f9a7eb0a6e4d3a93cd777ae58c423d199ddd0bbc064a7f7e4525bc077aa.jpg",
+    "f7b3d766e67d96624208f363a0777cdb5cbfe992cf647635a47ca2a8dfb8c7d9.jpg",
+    "fafb5f1682b0e89739ff7e86a4ba078c7e073757eb7e95d4cb651ee8a3057b3e.jpg"
+  ],
+  "url": "/notes/n-62ec151e205b44f0b53cdb19ecec5280/"
+}

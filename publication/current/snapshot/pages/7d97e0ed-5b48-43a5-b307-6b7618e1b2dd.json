@@ -1,0 +1,137 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c780a3d8461a29a88bfe",
+      "kind": "heading",
+      "offset": 111
+    },
+    {
+      "id": "h-f55a6bf5c072c1c836c6",
+      "kind": "heading",
+      "offset": 610
+    },
+    {
+      "id": "h-82abf2608e885c52bda8",
+      "kind": "heading",
+      "offset": 1909
+    },
+    {
+      "id": "h-d908e87e49b29b881ae4",
+      "kind": "heading",
+      "offset": 2203
+    },
+    {
+      "id": "h-93a37618ca442d4edfc0",
+      "kind": "heading",
+      "offset": 2218
+    },
+    {
+      "id": "h-be29e092d448b50e68fc",
+      "kind": "heading",
+      "offset": 2807
+    },
+    {
+      "id": "h-016ff00bac8394826f54",
+      "kind": "heading",
+      "offset": 3136
+    },
+    {
+      "id": "h-303415890796dc05cc80",
+      "kind": "heading",
+      "offset": 3374
+    },
+    {
+      "id": "h-aa090af938c4d5f9c33a",
+      "kind": "heading",
+      "offset": 3402
+    },
+    {
+      "id": "h-64ebd309cb55559473f8",
+      "kind": "heading",
+      "offset": 3561
+    },
+    {
+      "id": "h-7594df8b9b394d6e7798",
+      "kind": "heading",
+      "offset": 3941
+    },
+    {
+      "id": "h-17eafc1639eb8727b29a",
+      "kind": "heading",
+      "offset": 4168
+    },
+    {
+      "id": "h-39f5ea97cd9eb3506582",
+      "kind": "heading",
+      "offset": 4332
+    },
+    {
+      "id": "h-ef200a1076c65e775f6f",
+      "kind": "heading",
+      "offset": 4810
+    },
+    {
+      "id": "h-527ffd5e4f1782d04336",
+      "kind": "heading",
+      "offset": 4829
+    },
+    {
+      "id": "h-a9f35be8327e90dee541",
+      "kind": "heading",
+      "offset": 4902
+    },
+    {
+      "id": "h-45afc9729e3a6617c09c",
+      "kind": "heading",
+      "offset": 5120
+    },
+    {
+      "id": "h-37585de59341c91af6b1",
+      "kind": "heading",
+      "offset": 5131
+    },
+    {
+      "id": "h-b8dabe36df5b4f9254c9",
+      "kind": "heading",
+      "offset": 5405
+    },
+    {
+      "id": "h-d10e32e0f08bc8ff72f8",
+      "kind": "heading",
+      "offset": 5489
+    },
+    {
+      "id": "h-7577f785beeaab3fa3e5",
+      "kind": "heading",
+      "offset": 5566
+    },
+    {
+      "id": "h-b7700b82bbd3c99d85bc",
+      "kind": "heading",
+      "offset": 5584
+    },
+    {
+      "id": "h-1809f1c114401ad4d8a4",
+      "kind": "heading",
+      "offset": 5880
+    },
+    {
+      "id": "h-c9eeaca9cf8873c85a89",
+      "kind": "heading",
+      "offset": 5951
+    }
+  ],
+  "body": "\n\n打包工具有很多：pyinstaller、Nuitka、pyarmor(本质好像是pyinstaller)\n\n\n最好在新建的虚拟环境中进行打包，可以避免打包一些不必要的包，并且可以提高打包的成功率。\n# Nuitka打包\n\n\n参考链接：\n1. [Python编译exe之nuitka1.0大更新_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1jG4y1x76j/?spm_id_from=333.337.search-card.all.click&vd_source=f4911bc71b2142dab76525fef9cf3d53)\n2. [](/notes/n-7d97e0ed5b4843a5b3076b7618e1b2dd/#h-303415890796dc05cc80)\n\n1. 安装`Nuitka`软件包，`pip install nuitka`\n2. 开始打包，**常用打包命令**\n```shell\nnuitka --msvc=latest  --standalone --show-progress --show-memory   --nofollow-import-to=a,b,c --follow-import-to=e,f,g  --output-dir=out --remove-output main.py\n```\n\n## 1 命令参数\n\n  ```\n–mingw64 默认为已经安装的vs2017去编译，否则就按指定的比如mingw(官方建议)\n–standalone 独立环境，这是必须的(否则拷给别人无法使用)\n–windows-disable-console 没有CMD控制窗口\n–output-dir=out 生成exe到out文件夹下面去\n–show-progress 显示编译的进度，很直观\n–show-memory 显示内存的占用\n–include-qt-plugins=sensible,styles 打包后PyQt的样式就不会变了\n–plugin-enable=qt-plugins 需要加载的PyQt插件\n–plugin-enable=tk-inter 打包tkinter模块的刚需\n–plugin-enable=numpy 打包numpy,pandas,matplotlib模块的刚需\n–plugin-enable=torch 打包pytorch的刚需\n–plugin-enable=tensorflow 打包tensorflow的刚需\n–windows-icon-from-ico=你的.ico 软件的图标\n–windows-company-name=Windows下软件公司信息\n–windows-product-name=Windows下软件名称\n–windows-file-version=Windows下软件的信息\n–windows-product-version=Windows下软件的产品信息\n–windows-file-description=Windows下软件的作用描述\n–windows-uac-admin=Windows下用户可以使用管理员权限来安装\n--windows-disable-console 不显示控制台\n\n–linux-onefile-icon=Linux下的图标位置\n–onefile 像pyinstaller一样打包成单个exe文件(2021年我会再出教程来解释)\n–include-package=复制比如numpy,PyQt5 这些带文件夹的叫包或者轮子\n–include-module=复制比如when.py 这些以.py结尾的叫模块\n–show-memory 显示内存\n–show-progress 显示编译过程\n–follow-imports 全部编译\n–nofollow-imports 不选，第三方包都不编译\n–follow-stdlib 仅选择标准库\n–follow-import-to=MODULE/PACKAGE 仅选择指定模块/包编译\n–nofollow-import-to=MODULE/PACKAGE 选择指定模块/包不进行编译\n————————————————\n版权声明：本文为CSDN博主「ha_lee」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。\n原文链接：https://blog.csdn.net/ha_lee/article/details/124175341\n```\n\n\n## 2 打包流程\n\n1. 第一次打包程序时，先不加`--windows-disable-console`选项\n\t1. 运行第一次打包的程序，依据错误提示补充上缺失的包，确定能正常运行。\n\t2. 把缺失的包复制到打包后的目录\n2. 确定能正常运行后，加上`--windows-disable-console`选项再次打包 。\n\n\n通过`--nofollow-import-to=a,b`选项，可以排除我们不需要编译为C的程序包提高编译速度。\n\n只编译我们自己的代码为C代码，引用的第三方包变成pyd(python字节码,pyc文件可以很容易的反编译成.py文件，加密性差。)来访问。\n\n\n## 3 打包技巧\n### 1 打包为pyd文件\n\n\n参考链接：[Nuitka打包pyd](https://zhuanlan.zhihu.com/p/358733170)\n\n```shell\nnuitka --msvc=latest  --module --show-progress --output-dir=out --remove-output hunman.py\n```\n\n\n> pyd的存放路径在哪？\n\n1. **推荐**是Python的site-packages目录下\n2. 在某种程度是可以放在程序同级目录，比如在某些二次开发的接口中，但那是**绝少数**\n  \n\n> 大型的pyd依赖很多的模块会不会失败？\n\n`import`进去的模块，**都不会打包到pyd里面去，只生成一个路径(python3x/LIB/sit-packages/xxxx)**,因此不要担心会不会文件很多，给别人使用的时候需要给python版本，32/64位说明，比如特殊模块numpy等依赖的版本，这样失败的概率低很多\n\n  \n\n> 为什么pyd放在程序同级目录下会失败？\n\n答案如上，**模块依赖的路径都在python的相对路径下**，不在本地\n\n\n> 多个目录的pyd,该怎么设置？\n\n新建一个文件夹，放入一个空的__init__.py，每个pyd下可以写很多的class,因此大部分情况都不需要的\n\n\n### 2 打包numpy\n\n```shell\nnuitka --msvc=latest  --standalone --show-progress --show-memory   --nofollow-import-to=numpy --follow-import-to=???  --output-dir=out --remove-output main.py\n```\n\n因为携带`--enable-plugin`的`numpy`参数被弃用了，所以没有适用于numpy的插件。\n\n如果要打包numpy，可以通过`--nofollow-import-to`参数指定不打包`numpy`，等打包完毕后，再把python中的numpy包拷贝到打包文件夹中。\n\n### 3 打包pyqt5\n\n```shell\nnuitka --msvc=latest  --standalone --show-progress --show-memory --enable-plugin=pyqt5 --nofollow-import-to=a,b,c   --output-dir=out  --remove-output main.py\n```\n\n尽管新版的Nuitka会提示`pyqt5`插件已经过时，但大多数情况下该插件依然起作用。\n\n## 4 Nuitka打包遇到的问题\n\n### 1 nofollow-imports不起作用\n\n\n~~新版本不能用`nofollow-imports`，换成使用`nofollow-import-to=requests,json`\n来排除不参与编译的包。~~\n\n`--nofollow-imports`选项不能和`--stand-alone`选项一起使用，不然不起作用。\n\n\n### 2 ws2_32.dll缺失\n\n目录不要包含中文，会报错\n\n\n打包的时候发现一直提示找不到`'d:\\\\\\x04\\x04\\x04\\x04web\\x04\\x04\\x04\\x04\\x04\\x04\\x04\\x04\\x04\\x04\\\\dll\\\\ws2_32.dll'`，不明缘由。\n\n~~后来经过多次、反复的排查，我TM发现加上`--windows-disable-console`选项，会导致打包到最后阶段会提示找不到`ws2_32.dll`进而导致打包失败。~~\n\n~~暂时还不确定什么原因~~\n\n**2023-12-12问题解决**：TNND，这一串乱发指向的是我的微信开发者工具路径(PS：我也不知道为什么去这个路径下)，而我的微信开发者工具路径名称是:`微信web开发者工具`。\n\n\n==血的教训，不管什么东西的目录，能不用中文就不用中文！！！==\n\n\n\n\n# Pyinstaller打包\n\n\n\n>时间：20240705\n>**Pyinstaller非常实用，配置好spec文件后，该项目的每次打包都会非常方便**，以后多用Pyinstaller，无加密需求别用Pyarmor(PS:即使有加密需求，可以用Nuitka打包为DLL，再对DLL加密)\n\n\n1. pyinstaller打包实战：changYou Verify Bypass Record\n\n\n常用命令：`pyinstaller -D  myFunc.py`\n## 1 命令参数：\n\n下列是通过命令行打包时，常用的参数：\n```\n-D 创建一个包含可执行文件的单文件夹包(默认情况下)  \n-F 创建一个绑定的可执行文件  \n-p 引用的第三方库模块目录路径\n-C 使用控制台，无窗口  \n-w 使用窗口，无控制台  \n-i 或 -icon 生成icon  \n-n 文件名\n```\n\n\n## 2 Spec文件\n\n通过Spec文件可以指定打包参数等。\n\n\n使用步骤：\n1. 生成Spec文件，执行命令：`pyi-makespec.exe  main.py`\n2. `Pyinstaller main.spec`\n\n\n\nSpec文件中参数详解：[Pyinstaller的Spec文件用法_pyinstaller spec-CSDN博客](https://blog.csdn.net/tangfreeze/article/details/112240342)，示例图：\n![Pasted image 20240705225536&#46;png](/notes/n-7d97e0ed5b4843a5b3076b7618e1b2dd/media/b037bf0f007deb8b9b46fb1f826442b1ef481e28e06e7ac40bdad7acfc0385ef.png)\n\n\n>已解决: ~~pyinstaller打包的文件，在win7下运行会提示缺少DLL(PS：不确定其它方式是不是不会这样)~~\n\n\n\n\n\n## 3 Pyinstaller打包遇到的问题\n\n### 1 Win7环境缺失DLL\n\n在针对天龙八部验证码的单子中，遇到并且解决了这个问题：changYou Verify Bypass Record\n\n\n### 2 打包多个文件\n![Pasted image 202210201711&#46;png](/notes/n-7d97e0ed5b4843a5b3076b7618e1b2dd/media/a053ab1e5dccb9feb71bb7ded485a60eb4f91c614542c960122542db7a0b8b6e.png)\n\n把需要打包的文件与spec放在同一个目录下  \n\n在上图的列表中包含所有需要打包的文件即可\n\n\n# Pyarmor加密打包\n\n## 1 学习链接\n\n官网使用说明：[PyArmor - 加密 Python 脚本 (dashingsoft.com)](http://pyarmor.dashingsoft.com/index-zh.html#quick-start)  \n\nCSDN 使用说明：[(28条消息) Python代码加密-PyArmor_搬砖的Fish的博客-CSDN博客_pyarmor](https://blog.csdn.net/Disany/article/details/124505304)\n\n\n**因为是试用版本，有打包文件大小的限制！**\n\n\n## 2 可视化界面打包\n打开pyarmor可视化页面，可以在终端运行下面这段代码，在本地打开网页版的加密页面，更加的友好\n\n```\npyarmor-webui\n```\n\n## 3 命令行打包\n\n在终端进入到目标目录后，运行下面的代码，可以得到对应的加密后的文件\n\n```\npyarmor pack foo.py\n```\n\n\n\n\n\n\n\n\n# 其它\n\n## 1 如何打包ddddocr\n\n('./onnxruntime_providers_shared.dll','onnxruntime\\\\capi'),('./common.onnx','ddddocr'),('./common_old.onnx','ddddocr')\n\n![Pasted image 202210201711&#46;png](/notes/n-7d97e0ed5b4843a5b3076b7618e1b2dd/media/a053ab1e5dccb9feb71bb7ded485a60eb4f91c614542c960122542db7a0b8b6e.png)\n### 1 Pyinstaller打包\n1. 把上面那句话复制到.spec文件中的datas里面\n2. 把文件夹里面的四个文件放到要打包的文件夹里面\n\n### 2 Nuitka打包\n1. 直接打包目的程序\n2. 运行后提示缺失什么文件就在相应的目录下补上即可\n\n",
+  "id": "7d97e0ed-5b48-43a5-b307-6b7618e1b2dd",
+  "metadata": {
+    "tags": [
+      "lang/python"
+    ],
+    "title": "Python 程序打包"
+  },
+  "resources": [
+    "a053ab1e5dccb9feb71bb7ded485a60eb4f91c614542c960122542db7a0b8b6e.png",
+    "b037bf0f007deb8b9b46fb1f826442b1ef481e28e06e7ac40bdad7acfc0385ef.png"
+  ],
+  "url": "/notes/n-7d97e0ed5b4843a5b3076b7618e1b2dd/"
+}

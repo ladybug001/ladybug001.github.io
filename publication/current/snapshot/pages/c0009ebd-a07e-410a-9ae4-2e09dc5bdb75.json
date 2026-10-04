@@ -1,0 +1,42 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-bb9c7fcc1fa2b467f7d4",
+      "kind": "heading",
+      "offset": 19
+    },
+    {
+      "id": "h-154cb34de873476c704e",
+      "kind": "heading",
+      "offset": 334
+    },
+    {
+      "id": "h-3f930c4b3152af498c0d",
+      "kind": "heading",
+      "offset": 598
+    },
+    {
+      "id": "h-7743d1e072635b36c28a",
+      "kind": "heading",
+      "offset": 1504
+    }
+  ],
+  "body": "# Windows 内核地址空间与映射\n\n![Pasted image 20231002214029&#46;png](/notes/n-c0009ebda07e410a9ae42e09dc5bdb75/media/6750031039b4e1951e1628ced1303cd3daa1b8cb3f63e09ea8ace29d33357193.png)\n\n**核心问题**：Windows 内核空间是如何在进程间共享的？写时复制机制如何保证 DLL Hook 的进程隔离性？\n\n**关键结论**：x86 经典 2 GB / 2 GB 布局下，系统空间映射对所有进程上下文共享；用户空间的写时复制区域在首次写入时生成私有副本。\n\n## 经典 x86 地址空间及适用范围\n\n在经典 32 位 Windows 默认配置中，每个进程拥有 4 GB 虚拟地址空间，通常低 2 GB 为进程私有的用户空间，高 2 GB 为系统空间。所有内核态代码共享系统空间，因此相同的系统空间虚拟地址通常在不同进程上下文中表示同一内核映射。\n\n> [!note] 适用范围\n> 2 GB / 2 GB 是典型的 32 位默认布局，不是所有 Windows 的固定规则。32 位系统可调整用户/系统空间比例，64 位 Windows 的地址布局也不同；分析现代系统时还应考虑具体版本与安全机制。\n\n## 跨进程映射验证实验\n\n首先，在驱动中定义全局变量，并输出其内核虚拟地址：\n\n![96473611c1c5a23e43fc7e2954961a7e&#95;MD5&#46;jpg](/notes/n-c0009ebda07e410a9ae42e09dc5bdb75/media/e64490e187230d18d235f9811bcaf0ddd4cc83739bcd9a3eee1f4bc2b7283eac.jpg)\n\n在虚拟机中加载驱动并取得该地址：\n\n![6557f8e9caa38736d74805ac23157f40&#95;MD5&#46;jpg](/notes/n-c0009ebda07e410a9ae42e09dc5bdb75/media/96b5b7b51997212dec9f445243764dc2dcceffa38ac4d34d6925bd53d6631915.jpg)\n\n假设地址为 `0xBAB63000`，先用 `!process 0 0` 枚举进程并取得目标 `EPROCESS`：\n![c28ea42a49056207571d03631a3216b4&#95;MD5&#46;jpg](/notes/n-c0009ebda07e410a9ae42e09dc5bdb75/media/7047322d67290055683b84dfb40b5f75d8da25fa6a58b2cae3f678b44ba482ec.jpg)\n\n再用 `.process` 切换到普通用户进程（例如 `Dbgview.exe`）后，最后检查同一虚拟地址：\n\n![84bc9a397084f039417509cff7c95236&#95;MD5&#46;jpg](/notes/n-c0009ebda07e410a9ae42e09dc5bdb75/media/eae2d671359c30197711a56fe282684be550213ad4259f47c2d459f86c9364d1.jpg)\n\n可以看到同一高位虚拟地址仍能读到驱动初始化的数据，说明系统空间映射对这些进程上下文是共享的。\n\n## 写时复制的实现机制\n\n**问题**：系统 DLL 是所有进程共享的，我们 Hook 去修改 DLL 里的某些函数时，为什么其它加载该 DLL 的程序不受影响？\n\n**结论**：写时复制，在对其进行写的时候，会拷贝该内存到新的物理页上，在新物理页上修改后再将其挂载到该进程的虚拟地址空间中。\n> 相关内容参考：[Windows VAD 树](/notes/n-1c9b2d6e3bde4d39aa53b2d482b2f573/)\n\n\n\n\n\n",
+  "id": "c0009ebd-a07e-410a-9ae4-2e09dc5bdb75",
+  "metadata": {
+    "tags": [
+      "os/windows/mm",
+      "reverse/windows",
+      "arch/x86"
+    ],
+    "title": "Windows 内核地址空间与映射"
+  },
+  "resources": [
+    "6750031039b4e1951e1628ced1303cd3daa1b8cb3f63e09ea8ace29d33357193.png",
+    "7047322d67290055683b84dfb40b5f75d8da25fa6a58b2cae3f678b44ba482ec.jpg",
+    "96b5b7b51997212dec9f445243764dc2dcceffa38ac4d34d6925bd53d6631915.jpg",
+    "e64490e187230d18d235f9811bcaf0ddd4cc83739bcd9a3eee1f4bc2b7283eac.jpg",
+    "eae2d671359c30197711a56fe282684be550213ad4259f47c2d459f86c9364d1.jpg"
+  ],
+  "url": "/notes/n-c0009ebda07e410a9ae42e09dc5bdb75/"
+}

@@ -1,0 +1,118 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c4a31b6570054a8e753f",
+      "kind": "heading",
+      "offset": 30
+    },
+    {
+      "id": "h-a6ec5e21c29d3256c004",
+      "kind": "heading",
+      "offset": 39
+    },
+    {
+      "id": "h-72d9d14307d0190c04c4",
+      "kind": "heading",
+      "offset": 52
+    },
+    {
+      "id": "h-bda6b4a2535b31e224e1",
+      "kind": "heading",
+      "offset": 677
+    },
+    {
+      "id": "h-17552dd20ba46e0beb38",
+      "kind": "heading",
+      "offset": 1332
+    },
+    {
+      "id": "h-fc89b1af908bf6c6eff9",
+      "kind": "heading",
+      "offset": 1400
+    },
+    {
+      "id": "h-9f737ca421c40e3dd511",
+      "kind": "heading",
+      "offset": 1944
+    },
+    {
+      "id": "h-e0660c0daaa64c1f90ad",
+      "kind": "heading",
+      "offset": 1960
+    },
+    {
+      "id": "h-509286257ad1a3b05456",
+      "kind": "heading",
+      "offset": 2142
+    },
+    {
+      "id": "h-135df3c6807c1dc49998",
+      "kind": "heading",
+      "offset": 2614
+    },
+    {
+      "id": "h-644bcd8a9a0cb229209a",
+      "kind": "heading",
+      "offset": 3361
+    },
+    {
+      "id": "h-670787b818553a934aff",
+      "kind": "heading",
+      "offset": 3875
+    },
+    {
+      "id": "h-8a0c4a4ce8e5ec542039",
+      "kind": "heading",
+      "offset": 4610
+    },
+    {
+      "id": "h-ec6a3bc867245d022312",
+      "kind": "heading",
+      "offset": 4941
+    },
+    {
+      "id": "h-2eb25cc36e07b984b7a0",
+      "kind": "heading",
+      "offset": 6657
+    },
+    {
+      "id": "h-217f0a7db510ea96ad02",
+      "kind": "heading",
+      "offset": 8377
+    },
+    {
+      "id": "h-a1df28abb10207fbfd15",
+      "kind": "heading",
+      "offset": 8420
+    },
+    {
+      "id": "h-0d4a70735dfc707589e8",
+      "kind": "heading",
+      "offset": 9999
+    }
+  ],
+  "body": "# Windows 并发控制（1）：原子操作、自旋锁与临界区\n\n## 基本概念\n\n### 竞态问题的根源\n\n每个线程都拥有独立的栈空间，局部变量存储在栈中，这意味着每个线程都有私有的\"局部副本\"。如果线程仅操作局部变量，则天然不存在线程安全问题。然而，当多个线程共享并尝试修改同一个**全局变量**时，安全问题便随之而来。\n> 多个进程间也会有对同一资源的访问（如共享内存、文件、内核对象），情景类似。\n\n如下所示代码，有一个全局变量 `dwVal`，在线程中执行的代码是对 `dwVal` 的自增：\n\n```c\nDWORD dwVal = 0; // 全局变量\n```\n\n```c\n// 线程执行的代码\ndwVal++;\n```\n\n`dwVal++` 在汇编层面展开为三条指令：\n\n```asm\nmov eax, [0x12345678]\nadd eax, 1\nmov [0x12345678], eax\n```\n\n三条指令不是原子的。设想 A 线程执行到 `ADD` 时发生线程切换，B 线程完整执行自增后 `dwVal=1`，再切回 A，A 将自己保存的旧值加 1 写回，`dwVal` 仍是 1——两次自增只生效了一次。\n\n**单条指令是否安全？** 换成一条指令：\n\n```asm\nINC DWORD PTR DS:[0x12345678]\n```\n\n单核下安全（指令要么执行要么不执行），但多核下不行：多个核心可以同时从内存读到相同的旧值，各自加 1 后写回，最终只增加了一次（联想指令流水线，在写入内存之前被读了）。\n\n### 互斥与临界区\n\n**临界资源**：一次仅允许一个线程/进程访问的共享资源。\n\n**临界资源使用规则**：空闲让进、忙则等待、有限等待、让权等待\n\n**临界区**：访问临界资源的那段程序代码。\n\n**互斥（mutual exclusion）**：确保同一时刻只有一个线程/进程访问资源（解决竞争，但执行顺序不确定）。任意时刻最多只允许一个线程进入临界区，保证对共享资源的独占访问。\n\n**同步（synchronization）**：在互斥的基础上，确保线程/进程按照预定的逻辑顺序执行（互斥 + 有序）。互斥是实现同步的一种手段，但同步的内涵更广（还包括条件等待、事件通知等）。\n\n**死锁**：多个进程对临界资源的不正确访问，导致谁都无法继续执行。**死锁产生的必要条件**：互斥、请求保持、不剥夺、循环等待。\n\n---\n以生产者-消费者为例：初始资源为 0，消费者不能先于生产者消费（同步约束）；两者对仓库的访问不能同时进行（互斥约束，通过临界区 + 锁实现）。\n\n> [!IMPORTANT] 同步和互斥的关系\n> 同步的底层是基于互斥实现的，可以认为两者说的是一回事，即**都指互斥**，后面不再严格对二者进行区分。\n\n  > 另一种安全使用全局变量的方式：`TLS`（Thread Local Storage），即\"线程局部存储\"。参考：[Windows 线程局部存储 &#40;TLS&#41;](/notes/n-55b4927c9ebb593794ba1e9b31a402c0/)\n\n## 硬件原语：原子操作\n\n操作系统底层实现互斥的核心原理，是通过硬件确保\"**读取与修改**\"是**原子操作**：\n\n### LOCK 前缀与 XCHG 指令\n\n- **`LOCK` 指令前缀**：锁住数据的 `Cache Line`（缓存行），相比锁总线性能更优。\n\n`LOCK` 前缀具体保证该指令执行期间对目标内存地址的独占访问，其他核心无法同时读写该地址：\n```asm\nLOCK INC DWORD PTR DS:[0x12345678]\n```\n> 早期 x86 通过锁总线实现；现代多核 CPU（Pentium 4 之后）在缓存命中时通常通过缓存一致性协议（MESI）实现，不一定实际锁总线。\n\n- **`XCHG` 汇编指令**：隐含 `LOCK` 语义，通过锁住总线实现原子性，然后交换两个地址/寄存器中的数据，现代方式是锁住相关的缓存行。\n\n`XCHG` 实现互斥的伪代码（test-and-set 逻辑）：\n```c\nparam = 1;\nXCHG(lockState, param);\n\nif (param == 0) {\n    // 原来是空闲 → 成功获得锁\n} else {\n    // 原来是占用 → 获取失败\n}\n```\n\n这类执行过程不可被其他核心插入的操作称为**原子操作**，通过它可以解决多核环境下的竞态问题。借助于此，再进行封装就得到了一系列实现同步/互斥的对象和 API。\n### 互斥的实现逻辑\n#### 为何纯软件方案不够用\n\n> [!NOTE] 软件互斥算法的局限\n> 在纯软件环境下，只能通过**共享变量**的读写来实现互斥（如单标志法、双标志法、Peterson 算法等）。这相当于通过共享变量解决共享变量本身的读写冲突问题，要么仅适用于双进程互斥难以扩展，要么算法复杂度随进程数增加而急剧上升，局限性极大。**现代操作系统均通过硬件原语解决此问题**。\n\n#### 朴素实现的缺陷\n\n用一个全局变量 `dwFlag`（0=空闲，1=有人）来保护临界区：\n\n![661bce8a2bac67d1d4c6d08bca72ec65&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/1a390a5552610acf00acb82538fef95fcae30c10c4671ac14c56948261aec3e0.jpg)\n\n```c\nDWORD dwFlag = 0;  // 0 = 空闲，1 = 有人\n\nif (dwFlag == 0)   // 判断\n{\n    dwFlag = 1;    // 上锁\n    // ... 临界区 ...\n    dwFlag = 0;    // 解锁\n}\n```\n\n**问题**：判断（`if`）和上锁（`dwFlag=1`）是两步，之间可能插入其他线程——多个线程同时判断为 0，全部进入临界区。**先上锁再判断也不行**：上锁之前的状态已经丢失，不知道临界区是否有人。\n\n#### 原子交换实现互斥\n\n**核心思路**：在一次原子操作内**同时**完成\"上锁\"和\"读取旧状态\"。\n\n![d69b8985dc149915e99827d442d40c83&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/f365681503460cb9c359db9d007006f46b9af52f51ecc94d6223056c8c136ead.jpg)\n\n```asm\n; 全局变量 Flag = 0（0 = 空闲，非0 = 有人）\n\nLab:\n    mov  eax, 1\n    lock xadd [Flag], eax    ; [Flag]+=1，eax=Flag 的旧值（原子完成）\n    cmp  eax, 0\n    jz   endLab              ; 旧值=0 → 本线程抢到锁 → 进入临界区\n    dec  [Flag]              ; 旧值≠0 → 锁已被占，撤销刚才的 +1\n    ; sleep(...)             ; 等待一段时间后重试\n    jmp  Lab\n\nendLab:\n    ; ——— 临界区代码 ———\n    lock dec [Flag]          ; 离开临界区，原子释放锁\n    ret\n```\n\n**关键点**：\n- `lock xadd` 同时完成\"加 1 写入\"和\"读旧值\"，两步不可分割\n- 旧值=0：说明抢锁之前是空闲状态，本线程成功进入\n- 旧值≠0：说明已有线程在临界区，用 `dec` 撤销刚才的 +1（避免 Flag 无限累加），然后等待重试\n\n### Windows 原子操作 API\n\n> [!NOTE] 两类等待策略的权衡\n> 有两种截然不同的「等锁」方式：\n> - **轮询（Polling / 自旋）**：等待线程不放弃 CPU，不停地重新检测锁状态。优点是延迟低（一旦锁释放即可立刻获取），缺点是占用 CPU 时间片，适合**临界区极短**、等待时间可预期的场景。\n> - **唤醒（Blocking）**：线程进入等待状态并**主动让出 CPU**，由内核在锁可用时将其唤醒。优点是不浪费 CPU，适合**等待时间不确定**的场景；代价是涉及内核态切换，延迟相对较高。\n\n\n\n下图为 Windows 提供的部分原子操作 API（主要位于 `Kernel32.dll` 和 `Ntdll.dll`）：\n\n![459a3f834b4be6c2bd61d5986f638b59&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/447df089bcb3142f88050d020396c60feca017c970b4f9cc200987f65e3970c9.jpg)\n\n#### InterlockedIncrement 分析\n\n下图为 IDA 中 `Kernel32.dll` 导出函数 `InterlockedIncrement` 的反汇编，函数体共 5 条有效指令，核心是 `lock xadd [ecx], eax`：\n\n![c62268ddc311fbe7a9a4a9094710c176&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/eae8003894a1c46b50a0d0aa10c97a79409489a729470cdfbbacca7c680ab5d8.jpg)\n\n```asm\nmov   ecx, [esp+4]     ; 1. 取参数 lpAddend（变量地址）\nmov   eax, 1           ; 2. 增量 = 1\nlock xadd [ecx], eax   ; 3. 原子操作：[ecx] = 旧值+1，eax = 旧值\ninc   eax              ; 4. eax = 旧值+1（即自增后的新值，用作返回值）\nretn  4                ; 5. 返回新值，平衡 stdcall 栈\n```\n\n**XADD 语义**：`XADD dst, src` 将 dst 的旧值保存到 src，再把 dst+src 写入 dst。\n本次调用（eax=1）执行后：`[ecx]` 变为原值+1，`eax` 保存原值。\n第 4 条 `inc eax` 再加 1，使 eax 等于自增后的新值，作为函数返回值。\n\n**此类函数的核心**：用 `LOCK` 指令包裹一个原子读-改-写操作，保证多核状态下的线程同步。\n\n\n#### 自旋锁\n\n> [!NOTE] 整型信号量思想\n> 自旋锁体现了**整型信号量**的核心模型：以一个整型变量表示锁状态，P 操作以忙等循环实现（不让出 CPU），违反\"让权等待\"原则。优点是无内核切换开销，适合临界区极短的场景。\n\n**自旋锁**：一种忙等锁。等待线程不进入睡眠，而是不断检测锁状态（\"自旋\"），直到锁被释放。相比需要线程切换的互斥量，自旋锁更轻量，适合**临界区极短**的场景。\n\n**单核下为何低效**：自旋时 CPU 被占满，持锁线程得不到运行时间，只能等时钟中断强制切换，浪费大量 CPU 周期。因此 Windows 针对单核和多核分别提供了不同内核文件（详见附录）。\n\n##### KeAcquireSpinLockAtDpcLevel 的实现\n\n以下分析均基于从多核虚拟机中提取的 `ntoskrnl.exe`（其源文件为多核版 `ntkrnlmp.exe`）。\n\n下图为多核版内核 `SwapContext` 函数开头的反汇编，可以看到多核模式下额外调用了 `KeAcquireQueuedSpinLockAtDpcLevel` 与 `KeReleaseQueuedSpinLockFromDpcLevel`：\n> 相关内容参考：[Windows x86 线程切换机制](/notes/n-62ec151e205b44f0b53cdb19ecec5280/)\n\n![65f6769637110a6fd720ef2bcc7e49a1&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/f2275b3dd4b237c2f7967fa4524f36948b7f91ea82876b1881a2b92e7b6aa9b9.jpg)\n\n下图为 IDA 中 `KeAcquireSpinLockAtDpcLevel` 函数的反汇编：\n\n![ef21ae978e083b18f59189cce1534652&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/5b48a7eb7b8dc17976ad3572332b36c64034a35f1d51b463f7be4ca219eb9031.jpg)\n\n```asm\nmov   ecx, [esp+arg_0]          ; 取参数（自旋锁变量地址）\n\nloc_40BA4F:\nlock bts dword ptr [ecx], 0     ; 原子：将 [ecx] 第 0 位写 1，旧值→CF\njb    short loc_40BA59           ; CF=1（旧值=1，锁已被占）→ 跳入自旋等待\nretn  4                          ; CF=0（旧值=0，锁空闲）→ 成功获锁，返回\n\nloc_40BA59:\ntest  dword ptr [ecx], 1         ; 检测 [ecx] 是否仍为 1（锁是否仍被持有）\njz    short loc_40BA4F           ; 若已释放（[ecx]=0）→ 跳回重新尝试获锁\npause                            ; 若仍被持有 → PAUSE 降低流水线压力，节省功耗\njmp   short loc_40BA59           ; 继续等待\n```\n\n**逐指令说明**：\n\n1. **`lock bts [ecx], 0`**：BTS（Bit Test and Set）将 [ecx] 第 0 位的**原始值**写入 CF，然后将该位置 1。\n\t- 原始值=0（锁空闲）→ CF=0，继续执行 `retn`，**成功获锁**\n\t- 原始值=1（锁已持有）→ CF=1，`jb` 跳转进入自旋等待\n\n2. **`jb loc_40BA59`**：CF=1 时跳转（进入等待循环）；CF=0 时不跳（直接返回，获锁成功）\n\n3. **`test [ecx], 1` + `jz loc_40BA4F`**：等待循环中先用 `test` 检测锁是否已释放，避免频繁执行代价更高的 `lock bts`。锁释放后跳回重新尝试。\n\n4. **`pause`**：向 CPU 提示当前处于自旋等待，降低流水线乱序执行的压力，减少功耗并提升其他核心的内存访问效率（超线程场景下尤为重要）。\n\n**情景举例**：核心 1 的 A 线程调用此函数，BTS 读到旧值=0，CF=0，直接 `retn` 获锁。此后核心 2 的 B 线程调用，BTS 读到旧值=1，CF=1，进入 `test+pause` 自旋循环等待，直到 A 线程释放锁（将 `[ecx]` 清 0）。\n\n#### 临界区对象（CRITICAL_SECTION）\n\n> [!NOTE] 整型信号量 + 记录型信号量混合思想\n> CRITICAL_SECTION 内部融合了两种策略：先以**整型信号量**（自旋）方式短暂忙等，若超过循环次数阈值仍未获锁，则退化为**记录型信号量**方式——阻塞线程并让出 CPU，由内核事件对象在锁可用时唤醒。这正是它\"用户态为主、性能优于纯内核对象\"的原因。\n\n线程锁（即临界区对象）是**用户模式**下的同步机制，效率极高（主要在用户态，无需切换到内核态）。其标准使用流程如下：\n\n1. **创建对象**：定义 `CRITICAL_SECTION cs;`。\n2. **初始化**：调用 `InitializeCriticalSection(&cs);`。\n3. **进入/离开**：在操作共享资源前后分别调用 `EnterCriticalSection(&cs);` 与 `LeaveCriticalSection(&cs);`。\n4. **销毁**：调用 `DeleteCriticalSection(&cs);`。\n\n以下代码模拟了一个多线程售票场景。全局变量 `countNumber` 初始化为 10，多个线程同时对其执行减量操作，在未加锁时可能出现重复售卖甚至余量变为 -1，因此加入 `CRITICAL_SECTION` 实现互斥访问：\n\n```cpp\n#include <windows.h>\n#include <stdio.h>\n\nCRITICAL_SECTION cs; \nint countNumber = 10;\n\nDWORD WINAPI ThreadProc(LPVOID lpParameter) {\n    while (1) {\n        EnterCriticalSection(&cs); // 获取令牌\n\n        if (countNumber > 0) {\n            printf(\"Thread: %d | Sell num: %d\\n\", *(int*)lpParameter, countNumber);\n            countNumber--;\n            printf(\"Count: %d\\n\", countNumber);\n        } else {\n            LeaveCriticalSection(&cs); \n            break;\n        }\n\n        LeaveCriticalSection(&cs); // 归还令牌\n        Sleep(10); // 模拟耗时，触发上下文切换\n    }\n    return 0;\n}\n\nint main(int argc, char* argv[]) {\n    InitializeCriticalSection(&cs);\n\n    int a = 1, b = 2;\n    HANDLE hThread = CreateThread(NULL, NULL, ThreadProc, &a, 0, NULL);\n    HANDLE hThread1 = CreateThread(NULL, NULL, ThreadProc, &b, 0, NULL);\n\n    WaitForMultipleObjects(2, (HANDLE[]){hThread, hThread1}, TRUE, INFINITE);\n    DeleteCriticalSection(&cs); // 销毁临界区对象\n    return 0;\n}\n```\n\n![8df8751626732ef1052e115bb86d398f&#95;MD5&#46;png](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/434dcba5076ea26abadfb67708dab4621a55f92db624a6dbe94fd38f8f767af6.png)\n\n\n\n---\n\n## 附录：多核内核文件分析环境搭建\n\n> [!NOTE]- 展开查看\n> ### Windows 内核文件版本与选择机制\n> \n> 不同配置对应不同内核文件，下图为单核/多核 × PAE/非 PAE 的对应关系：\n> > 不仅是否为 PAE 影响使用的内核文件，单核和多核也会影响。\n> \n> ![9114594fc5c1cf298209c7dafa3c7ca6&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/798149605e750466c330a28464510599f7858a8a8ad5ed24189f390c86820ad8.jpg)\n> \n> UP/MP 和 PAE/非 PAE 两个维度的决策时机不同：\n> \n> | 维度 | 决策时机 | 决策者 | 体现在 |\n> |------|---------|-------|-------|\n> | 单核（UP）vs 多核（MP） | **安装时** | Windows Setup 检测 CPU 数量 | 文件**内容**（同名不同二进制） |\n> | 非 PAE vs PAE | **引导时** | NTLDR 读 `boot.ini` 的 `/PAE` 开关 | 文件**名**（`ntoskrnl.exe` vs `ntkrnlpa.exe`） |\n> \n> 安装介质（I386 目录）上实际存在四个内核源文件，后缀各自表示含义：\n> \n> | 安装介质文件名 | 单/多核 | PAE |\n> |--------------|--------|-----|\n> | `ntoskrnl.exe` | UP（单核） | 非 PAE |\n> | `ntkrnlmp.exe` | MP（多核，`mp`=multiprocessor） | 非 PAE |\n> | `ntkrnlpa.exe` | UP（单核，`pa`=PAE） | PAE |\n> | `ntkrpamp.exe` | MP（多核） | PAE |\n> \n> Setup 根据硬件将对应源文件拷入 System32 后，安装好的系统里只剩两个文件名——这同时也是系统引导时默认查找的固定目标：\n> \n> ```\n> ntoskrnl.exe   ← NTLDR 无 /PAE 时加载（源文件为 ntoskrnl.exe 或 ntkrnlmp.exe，安装时决定内容）\n> ntkrnlpa.exe   ← NTLDR 有 /PAE 时加载（源文件为 ntkrnlpa.exe 或 ntkrpamp.exe，安装时决定内容）\n> ```\n> \n> 使用 IDA 分析多核下的 `ntoskrnl.exe`，弹出的符号加载提示可以证明这一点：\n> \n> ![87eadb4e1a69e3c6c620f88c8da750a4&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/9dcea9d197e4dccbcba8abdf6ad1ecda1b9fbffbb1bc9cb9cc472742bde8a495.jpg)\n> \n> **核心逻辑**：四个安装介质文件在 Setup 完成后全部归并为这两个名字之一，引导阶段只需根据 `boot.ini` 中有无 `/PAE` 开关在两个固定名字间二选一，UP/MP 的区别已在安装时压缩进文件内容，引导时完全不感知。（`boot.ini` 也支持 `kernel=` 手动指定其他文件名，但正常情况下走默认逻辑。）\n> \n> > [!NOTE] 为什么单核和多核要用不同内核文件？共用多核版不行吗？\n> > 可以，分两种是为了性能优化——单核不需要自旋锁等多核同步原语，单独的内核可以去掉这部分开销。\n> \n> ### 获取多核内核文件\n> \n> 1. 首先创建新的虚拟机，在这一步指定核心数，将处理器配置为多核（下图为 VMware 配置示例）：\n>    ![c24dd37ba84005e3b7884943d95e2819&#95;MD5&#46;jpg](/notes/n-f01cae0c138c4ce6ba54e61474da81bc/media/7d62de20044ff216a84a897b00f7fe006eafe7951b707b1fbdcc7925e2014364.jpg)\n> \n> 2. 然后安装操作系统\n> 3. 进入虚拟机，将 `ntoskrnl.exe` 拷出。\n> > **注意**：直接修改某个装好操作系统的虚拟机的核心数，然后重启，这种方式是无效的，必须设置核心数->重新安装操作系统，这样从中拷出的 `ntoskrnl.exe` 才是 MP 版本的内容。\n> \n> 拷出后，可能需要重命名为 `ntkrnlmp.exe`。\n> > **重命名的原因**：虽然 IDA 会使用 PE 结构内的名字去查找 PDB 文件，但 IDA 在加载离线 PDB 时，会按**可执行文件名**去同目录下寻找同名 `.pdb`（即 `ntkrnlmp.pdb`）。不重命名的话，IDA 会去找 `ntoskrnl.pdb`（单核版符号），导致符号加载错误或失败。\n",
+  "id": "f01cae0c-138c-4ce6-ba54-e61474da81bc",
+  "metadata": {
+    "tags": [
+      "os/windows/thread",
+      "arch/x86",
+      "reverse/windows",
+      "cs/concurrency"
+    ],
+    "title": "Windows 并发控制（1）：原子操作、自旋锁与临界区"
+  },
+  "resources": [
+    "1a390a5552610acf00acb82538fef95fcae30c10c4671ac14c56948261aec3e0.jpg",
+    "434dcba5076ea26abadfb67708dab4621a55f92db624a6dbe94fd38f8f767af6.png",
+    "447df089bcb3142f88050d020396c60feca017c970b4f9cc200987f65e3970c9.jpg",
+    "5b48a7eb7b8dc17976ad3572332b36c64034a35f1d51b463f7be4ca219eb9031.jpg",
+    "798149605e750466c330a28464510599f7858a8a8ad5ed24189f390c86820ad8.jpg",
+    "7d62de20044ff216a84a897b00f7fe006eafe7951b707b1fbdcc7925e2014364.jpg",
+    "9dcea9d197e4dccbcba8abdf6ad1ecda1b9fbffbb1bc9cb9cc472742bde8a495.jpg",
+    "eae8003894a1c46b50a0d0aa10c97a79409489a729470cdfbbacca7c680ab5d8.jpg",
+    "f2275b3dd4b237c2f7967fa4524f36948b7f91ea82876b1881a2b92e7b6aa9b9.jpg",
+    "f365681503460cb9c359db9d007006f46b9af52f51ecc94d6223056c8c136ead.jpg"
+  ],
+  "url": "/notes/n-f01cae0c138c4ce6ba54e61474da81bc/"
+}

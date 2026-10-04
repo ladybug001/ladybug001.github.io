@@ -1,0 +1,59 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-3d44a94e5c25e0d65a10",
+      "kind": "heading",
+      "offset": 17
+    },
+    {
+      "id": "h-338789ef248c293b1b96",
+      "kind": "heading",
+      "offset": 24
+    },
+    {
+      "id": "h-e2eae10721525f0ceae5",
+      "kind": "heading",
+      "offset": 72
+    },
+    {
+      "id": "h-bc84c3e2ff7258a82e18",
+      "kind": "heading",
+      "offset": 94
+    },
+    {
+      "id": "h-1a6b35f052f347975419",
+      "kind": "heading",
+      "offset": 720
+    },
+    {
+      "id": "h-bf0c11c6ad57dc8ad0fa",
+      "kind": "heading",
+      "offset": 1312
+    },
+    {
+      "id": "h-7a525f37e6c4c6c6fa3b",
+      "kind": "heading",
+      "offset": 1331
+    },
+    {
+      "id": "h-a890968bb6539c96a9fa",
+      "kind": "heading",
+      "offset": 1936
+    },
+    {
+      "id": "h-f1fee44bcc4ee9ad69c5",
+      "kind": "heading",
+      "offset": 2836
+    }
+  ],
+  "body": "# JavaScript 继承机制\n\n## 前言\n\n和其它语言一样，JS 也有继承机制，同时 JS 中**一切皆对象**。\n\n## 核心属性详解\n\n### prototype (显式原型)\n\n* **宿主**：仅存在于**函数对象**（Function）上（箭头函数除外）。\n* **作用**：定义当该函数被作为构造函数（使用 `new`）调用时，新创建实例的 `[[Prototype]]` 指向何处（注意区分 **`[[Prototype]]` 和 `prototype`**）。\n* **本质**：一个包含 `constructor` 属性的普通对象，用于存储所有实例**共享的**方法和属性（参考：[JavaScript 实例成员与原型共享机制](/notes/n-6bca5d5e734e44f3b46eaf8c2695cff4/)）。 \n\n\n**用法示例**：\n```javascript\nfunction Person(name) {\n    this.name = name; // 实例私有属性\n}\n\n// 在原型上定义共享方法，避免每个实例重复创建函数对象\nPerson.prototype.greet = function() {\n    console.log(\"Hello, my name is \" + this.name);\n};\n\nconst john = new Person(\"John\");\nconst jane = new Person(\"Jane\");\n\njohn.greet(); // \"Hello, my name is John\"\n```\n\n### \\_\\_proto\\_\\_ (隐式原型)\n\n* **宿主**：所有对象。\n* **作用**：指向创建该对象的构造函数的 `prototype`。\n* **标准现状**：`__proto__` 最初是非标准属性，虽然现代浏览器（包括 V8）广泛支持，但在 ES6 中被标准化为 `Object.prototype.__proto__` 的**访问器属性**（参考：[JavaScript 属性描述符与内部槽](/notes/n-9c5a2e1e35ef40b2acd2542046abdd01/#h-6310a2ed519950f145f6)）\n* **最佳实践**：在生产环境中，建议使用标准 API 替代直接访问 `__proto__`：\n    * 读取：`Object.getPrototypeOf(obj)`\n    * 设置：`Object.setPrototypeOf(obj, proto)`\n\n**关系验证**：\n```javascript\nconst obj = {};\n// 字面量对象的构造函数是 Object\nconsole.log(obj.__proto__ === Object.prototype); // true\nconsole.log(Object.getPrototypeOf(obj) === Object.prototype); // true\n```\n\n---\n## 继承机制实现\n\n### ES6 类继承 (语法糖)\n\n`class` 关键字本质上是原型链继承的语法糖，写法更加清晰，符合面向对象编程习惯。\n\n```javascript\nclass Person {\n    constructor(color) {\n        this.color = color;\n    }\n\n    sayHello() {\n        console.log(`I am Person, my color is ${this.color}`);\n    }\n}\n\nclass Teacher extends Person {\n    constructor(name, color) {\n        super(color); // 调用父类的构造函数\n        this.name = name;\n    }\n\n    // 子类覆盖父类方法：子类方法通过原型链查找时，最先被找到\n    sayHello() {\n        super.sayHello(); // 调用父类方法\n        console.log(`I am Teacher, my name is ${this.name}`);\n    }\n}\n\nconst teacher = new Teacher('Buddy', 'White');\nteacher.sayHello();\n```\n\n### ES5 手动继承 (底层实现)\n\n在 ES6 之前，我们需要通过**寄生组合式继承**来模拟类的行为。这有助于理解 `extends` 背后到底发生了什么。\n\n```javascript\nfunction Person(color) {\n    this.color = color;\n}\n\n// 函数才有 prototype，向其中添加共享方法 sayHello\nPerson.prototype.sayHello = function() {\n    console.log(`I am Person, my color is ${this.color}`);\n};\n\nfunction Teacher(name, color) {\n    // 1. 等同于 class 中的 super(color) ，实现继承父类属性\n    Person.call(this, color);\n    this.name = name;\n}\n\n// 2. 原型链继承：继承共享方法\n// 这里创建一个空对象，并令其 __proto__ 属性指向 Person.prototype\nTeacher.prototype = Object.create(Person.prototype);\n\n// 3. 修复 constructor 指向 否则 Teacher.prototype.constructor 会指向 Person\nTeacher.prototype.constructor = Teacher;\n\n// 4. 添加子类特有方法\nTeacher.prototype.sayHello = function() {\n    // 调用父类原型方法\n    Person.prototype.sayHello.call(this);\n    console.log(`I am Teacher, my name is ${this.name}`);\n};\n\nconst teacher = new Teacher('Buddy', 'White');\nteacher.sayHello();\n```\n\n---\n## 总结：三者关系\n\n| 概念                | 宿主   | 指向              | 核心作用             |\n| :---------------- | :--- | :-------------- | :--------------- |\n| **\\_\\_proto\\_\\_** | 对象   | 构造函数的 prototype | 将对象链接到原型链上（具体实现） |\n| **prototype**     | 函数   | 原型对象            | 为实例提供公共属性/方法的模板  |\n| **constructor**   | 原型对象 | 构造函数本身          | 记录对象是由谁创建的       |\n",
+  "id": "7799fc0e-94bd-47d0-9229-2791e1a5ca69",
+  "metadata": {
+    "tags": [
+      "lang/javascript"
+    ],
+    "title": "JavaScript 继承机制"
+  },
+  "resources": [],
+  "url": "/notes/n-7799fc0e94bd47d092292791e1a5ca69/"
+}

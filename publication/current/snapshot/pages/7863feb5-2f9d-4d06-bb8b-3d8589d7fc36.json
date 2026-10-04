@@ -1,0 +1,52 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-75f4648498a5724b05ff",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-e884a6f3268b5fd0cbf8",
+      "kind": "heading",
+      "offset": 70
+    },
+    {
+      "id": "h-629fbf3bfb3fa4d5afa4",
+      "kind": "heading",
+      "offset": 365
+    },
+    {
+      "id": "h-d68a0c950bfe0605daa0",
+      "kind": "heading",
+      "offset": 631
+    },
+    {
+      "id": "h-21bd06d52560e1877bcd",
+      "kind": "heading",
+      "offset": 909
+    },
+    {
+      "id": "h-779164fe5a5b14998060",
+      "kind": "heading",
+      "offset": 1171
+    },
+    {
+      "id": "h-6fdbf50d19b1c23510ff",
+      "kind": "heading",
+      "offset": 1359
+    }
+  ],
+  "body": "# Web 应用开发 (MOC)\n\nVue 前端与 Spring 后端分别建立开发路线，再通过请求、数据、认证与部署连接。\n\n## 前置知识\n\n- [JavaScript 语言机制 &#40;MOC&#41;](/notes/n-06ad026c16634c2b9d0b578a0d0a62d0/) — 补充对象、异步与 Promise。\n- [Java 与 JVM 运行机制 &#40;MOC&#41;](/notes/n-d80736f80c16419c85c2511be976a2d5/) — 按需要补充反射、加载器和运行时基础。\n- [计算机网络 &#40;MOC&#41;](/notes/n-20d43d2543664da29a65fb0636aab51e/) — 补充客户端与服务端连接的基础。\n\n## Vue 前端\n\n1. 01&#45;Vue基础 — 语法、绑定、列表、生命周期与入门示例。\n2. 02&#45;Ajax&#45;Axios用法 — 发送请求、处理响应与在 Vue 中使用 Axios。\n3. 03&#45;Vue工程创建 — 准备工程环境并理解目录与启动方式。\n4. 04&#45;Element&#45;ui的使用 — 组件、布局、表单与插槽。\n5. 05&#45;Vue路由介绍 — 连接 URL 与组件视图。\n6. 06&#45;Vue项目打包部署 — 打包静态资源并部署至 Nginx。\n\n## Spring 后端基础\n\n1. 07&#45;使用Maven管理依赖 — 依赖坐标、仓库与项目构建。\n2. 08&#45;SpringBoot基础 — 创建应用并理解起步依赖。\n3. 09&#45;Web服务器&#45;Tomcat — 理解服务器、部署与内置容器。\n4. 10&#45;SpringWeb&#45;请求与响应 — 参数接收、响应数据与统一结果。\n5. 11&#45;分层解耦&#45;IOC与DI — 分层结构、容器与依赖注入。\n6. 17&#45;Bean&#45;作用域 — 在 IOC/DI 基础上继续理解对象作用域与第三方 Bean。\n\n## 数据访问\n\n- 12&#45;SQL语句操作数据库 — 原课程中的数据库入口，具体内容指向 [MySQL](/notes/n-8725e8de4795456397cc6118952175f3/)。\n- [MySQL](/notes/n-8725e8de4795456397cc6118952175f3/) — SQL、数据库操作与工具用法。\n- 13&#45;Mybatis操作数据库 — JDBC、连接池与 MyBatis 映射。\n- 15&#45;事务管理 — 多个数据操作的原子性、事务属性与传播行为。\n\n## 认证与横切逻辑\n\n- 14&#45;JWT与Filter和Interceptor实现登录校验 — 请求链路、登录校验与拦截器。\n- 16&#45;AOP — 方法级横切逻辑、通知与切入点，并与事务管理关联。\n- [Quartz cron 表达式](/notes/n-6e40f9471b9c45088735327b41c946eb/) — 定时任务表达式的按需速查。\n\n## 部署与工程工具\n\n- Nginx 搭建 HTTPS 网站 — 对照 HTTPS 部署实践。\n- [加密&#12289;认证与安全通信](/notes/n-7cd1017c7a814f29a4852a9adbdcfe79/) — 证书、TLS 与身份认证机制。\n- [Git](/notes/n-185409b7d5e246189e9f7f7b1374c307/) — 项目版本管理。\n- [Web 逆向与爬虫实践 &#40;MOC&#41;](/notes/n-d2343212ccba41979e43c9b7ebf43968/) — 从另一视角理解客户端请求、参数和应用行为。\n",
+  "id": "7863feb5-2f9d-4d06-bb8b-3d8589d7fc36",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "lang/java",
+      "lang/javascript"
+    ],
+    "title": "Web 应用开发 (MOC)",
+    "updated": "2026-10-04T13:41:06+00:00"
+  },
+  "resources": [],
+  "url": "/notes/n-7863feb52f9d4d06bb8b3d8589d7fc36/"
+}

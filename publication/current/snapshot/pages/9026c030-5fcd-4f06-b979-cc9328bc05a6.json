@@ -1,0 +1,120 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-1531ae81a6f322b8658e",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-2815877acba9eb97d8c2",
+      "kind": "heading",
+      "offset": 278
+    },
+    {
+      "id": "h-532cca1a2a3df91ac6d7",
+      "kind": "heading",
+      "offset": 545
+    },
+    {
+      "id": "h-8a753857ae62763855b8",
+      "kind": "heading",
+      "offset": 1620
+    },
+    {
+      "id": "h-2390ad1706b2eb8ef1c0",
+      "kind": "heading",
+      "offset": 2068
+    },
+    {
+      "id": "h-6aec61664717b08a2c34",
+      "kind": "heading",
+      "offset": 3411
+    },
+    {
+      "id": "h-e62b04941a154a866423",
+      "kind": "heading",
+      "offset": 3526
+    },
+    {
+      "id": "h-43aeec648ea20bbb9c17",
+      "kind": "heading",
+      "offset": 3540
+    },
+    {
+      "id": "h-0b621ff940fd966a2ff5",
+      "kind": "heading",
+      "offset": 5171
+    },
+    {
+      "id": "h-a72630c2df0383e1417a",
+      "kind": "heading",
+      "offset": 6426
+    },
+    {
+      "id": "h-616a1d539d02fa389866",
+      "kind": "heading",
+      "offset": 7320
+    },
+    {
+      "id": "h-0dd5f8867807a75f1eeb",
+      "kind": "heading",
+      "offset": 8167
+    },
+    {
+      "id": "h-006e2addabbe80d0214a",
+      "kind": "heading",
+      "offset": 8696
+    },
+    {
+      "id": "h-fa0c6498979bff55e61d",
+      "kind": "heading",
+      "offset": 9306
+    },
+    {
+      "id": "h-187b15a579064e08f8e0",
+      "kind": "heading",
+      "offset": 10665
+    },
+    {
+      "id": "h-741c93367a6c2433a6ab",
+      "kind": "heading",
+      "offset": 11066
+    },
+    {
+      "id": "h-2223b5c4d56d32613129",
+      "kind": "heading",
+      "offset": 12696
+    },
+    {
+      "id": "h-b608e815841ba6e36f11",
+      "kind": "heading",
+      "offset": 13518
+    },
+    {
+      "id": "h-bb974b99d494137af9d3",
+      "kind": "heading",
+      "offset": 14387
+    },
+    {
+      "id": "h-cb729cc37c73215abf00",
+      "kind": "heading",
+      "offset": 15085
+    },
+    {
+      "id": "h-4d9d47bc0cb65bf5e4e5",
+      "kind": "heading",
+      "offset": 16147
+    }
+  ],
+  "body": "# Xposed 模块开发\n\nXposed 模块就是一个的 Android APK，开发 Xposed 模块就是开发 APK。\n> Xposed 框架的原理参考：[Xposed 框架原理](/notes/n-de6265b6e8a74a7c987667457b8da0c3/)\n\n可以使用 JAVA 或者 Kotlin 编写 APK，两者只是源代码层面不同，编译后的结果是类似的（参考：[JVM Class 文件格式解析](/notes/n-e90838dc41aa4ff7a96bb58cb0425ed5/)），下面以 JAVA 为例。\n\n## 项目结构\n\n最小可运行模块，项目结构：\n```text\napp/\n├── build.gradle\n├── libs/\n│   └── api-82.jar              ← 仅备用方案需要\n└── src/main/\n    ├── assets/\n    │   └── xposed_init\n    ├── AndroidManifest.xml\n    └── java/com/example/xposedmodule/\n        └── MainHook.java\n```\n\n### 配置 Xposed API\n\n官方发布的最后一个编译依赖包是 `api:82`，该文件仅约 10 KB，只包含纯粹的接口声明和桩类。尽管此后框架本体版本从 v82 迭代到了 v89，但所有公开 API 均保持不变。\n\n这意味着，开发者只需使用 `api:82` 作为依赖，就能覆盖到 v89 及之前的所有环境，LSPosed 也完全向后兼容这一标准。\n\n**Gradle/Maven 方式**：\n\n```groovy\n// settings.gradle\ndependencyResolutionManagement {\n    repositories {\n        google()\n        mavenCentral()\n        maven { url 'https://api.xposed.info/' }\n    }\n}\n```\n\n```groovy\n// app/build.gradle\ndependencies {\n    compileOnly 'de.robv.android.xposed:api:82'\n}\n```\n\n> 仓库 `https://api.xposed.info/` 可能不稳定。如果解析失败，改用本地 JAR 方式。\n\n**本地 JAR 方式**（备用方案）：\n\n下载 `api-82.jar` 放入 `app/libs/`，右击 JAR，选择 **Add as Library**。\n\n然后配置：\n\n```groovy\n// app/build.gradle\ndependencies {\n    compileOnly files('libs/api-82.jar')\n}\n```\n\n> [!IMPORTANT] 对于 Xposed API 这类依赖，应始终声明为 `compileOnly`\n>  这是因为开发时引入的 API 包（如 `api-82.jar`）本质上只是一套存根（Stub）空壳，仅包含接口规范与空实现，不具备真实逻辑。声明为 `compileOnly` 可以保证编译器能正常读取 API 签名以完成类型检查并生成符号引用，同时**避免将这些空桩类打包进最终的 APK 中**。\n> \n> 相关内容参考：[Android DEX 文件格式解析](/notes/n-4c20579667134e5a8dcb61db2edc1268/)、[Java ClassLoader 机制](/notes/n-d06529d6c1464564a52c627bc1a3719a/)\n\n### 声明模块与入口\n\n`AndroidManifest.xml` 在 `<application>` 内添加三个 `meta-data`：\n\n```xml\n<meta-data\n    android:name=\"xposedmodule\"\n    android:value=\"true\" />\n<meta-data\n    android:name=\"xposeddescription\"\n    android:value=\"模块描述\" />\n<meta-data\n    android:name=\"xposedminversion\"\n    android:value=\"93\" />\n```\n\n> `xposedminversion` 声明模块要求的最低框架版本。`93` 是 LSPosed/EdXposed 面向 Android 9.0 及以上的标准值。编译依赖使用 `api:82`，两个版本号的含义不同：前者是运行时框架版本，后者是编译时 API artifact 版本。\n\n### 编写入口类\n\n模块要创建一个类并且实现 `IXposedHookLoadPackage` 接口，我们的 hook 逻辑就要写在其 `handleLoadPackage` 成员函数中：\n\n```java\npackage com.example.xposedmodule;\n\nimport de.robv.android.xposed.IXposedHookLoadPackage;\nimport de.robv.android.xposed.XposedBridge;\nimport de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;\n\npublic class MainHook implements IXposedHookLoadPackage {\n    private static final String TARGET_PACKAGE = \"com.example.targetapp\";\n\n    @Override\n    public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {\n        if (!TARGET_PACKAGE.equals(lpparam.packageName)) {\n            return;\n        }\n        XposedBridge.log(\"Module loaded in: \" + lpparam.packageName\n                + \", process: \" + lpparam.processName);\n    }\n}\n```\n\n**这个函数在目标应用进程中执行**，模块代码运行在目标进程的上下文中，参数 `lpparam` 包含当前进程的信息，比如：\n\n- `lpparam.packageName`——当前应用包名\n- `lpparam.processName`——当前进程名（同一应用可能有多个进程）\n- `lpparam.classLoader`——目标应用的 ClassLoader，用于查找目标 APK 中的业务类\n\n在该函数中通过 Xposed 提供的 API，配合 `lpparam.classLoader` 定位目标类，实现方法 Hook。\n> 相关内容参考：[Java ClassLoader 机制](/notes/n-d06529d6c1464564a52c627bc1a3719a/)\n\n入口类实现后，在 `app/src/main/assets/` 下创建无扩展名文件 `xposed_init`，每行一个入口类的全限定名告知 Xposed 框架有哪些入口类：\n\n```text\ncom.example.xposedmodule.MainHook\n```\n\n框架会在目标进程初始化阶段，实例化该文件中列出的类并调用 `handleLoadPackage()`（框架会检查被声明的类是否实现了 `IXposedHookLoadPackage` 接口）。\n\n### 模块的安装与启用\n\n1. 构建 APK 并安装到设备\n2. 在 LSPosed Manager 中启用模块，将测试应用加入作用域\n3. 重启目标应用\n4. 在 LSPosed Manager 的日志中查看模块输出\n\n## 常用示例及 API 参考\n\n### 定位类与方法签名\n\n`XposedHelpers.findClass()` 通过全限定名和 ClassLoader 查找目标类：\n\n```java\nClass<?> clazz = XposedHelpers.findClass(\"com.zj.wuaipojie.Demo\", lpparam.classLoader);\n```\n\n**内部类**使用 `$` 分隔外部类和内部类名：\n\n```java\nXposedHelpers.findAndHookMethod(\n        \"com.zj.wuaipojie.Demo$InnerClass\",\n        lpparam.classLoader,\n        \"innerFunc\",\n        String.class,\n        new XC_MethodHook() {\n            @Override\n            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {\n                // param.args[0] 是 String 参数\n            }\n        });\n```\n\n**自定义参数类型**：`findAndHookMethod()` 的参数类型既可以传 `Class<?>` 对象，也可以传全限定名字符串。框架使用目标类的 ClassLoader 解析字符串，因此模块编译期无法引用的应用自定义类型可以直接用字符串指定：\n\n```java\nXposedHelpers.findAndHookMethod(\n        \"com.zj.wuaipojie.Demo\",\n        lpparam.classLoader,\n        \"targetMethod\",\n        \"com.zj.wuaipojie.CustomType\",\n        new XC_MethodHook() {\n            @Override\n            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {\n                // param.args[0] 是 CustomType 实例\n            }\n        });\n```\n\n**方法重载**通过参数类型列表区分。`findAndHookMethod()` 要求精确列出参数类型，从而唯一匹配一个重载：\n\n```java\n// Hook process(int)\nXposedHelpers.findAndHookMethod(\"com.zj.wuaipojie.Demo\", lpparam.classLoader,\n        \"process\", int.class, callback);\n\n// Hook process(String)\nXposedHelpers.findAndHookMethod(\"com.zj.wuaipojie.Demo\", lpparam.classLoader,\n        \"process\", String.class, callback);\n```\n\n`XposedBridge.hookAllMethods(clazz, \"methodName\", callback)` 同时 Hook 指定名称的全部重载。回调中 `param.args` 的布局取决于实际被调用的重载，不同重载的参数个数和类型可能不同。只有在确实需要 Hook 全部重载、或暂时无法确定签名时才使用，并在回调中检查参数布局。\n\n### 注册方法与构造函数 Hook\n\n**方法 Hook** 使用 `XposedHelpers.findAndHookMethod()`，按顺序传入类名（或 `Class` 对象）、ClassLoader、方法名、各参数类型和回调：\n\n```java\nXposedHelpers.findAndHookMethod(\n        \"com.zj.wuaipojie.Demo\",\n        lpparam.classLoader,\n        \"getPublicInt\",\n        new XC_MethodHook() {\n            @Override\n            protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n                param.setResult(999);\n            }\n        });\n```\n\n**构造函数 Hook** 使用 `XposedHelpers.findAndHookConstructor()`，格式与方法 Hook 相同但没有方法名，有参构造函数需要在 `classLoader` 之后、回调之前，按顺序列出每个参数的类型，如 `String.class`：\n\n```java\nXposedHelpers.findAndHookConstructor(\"com.zj.wuaipojie.Demo\", lpparam.classLoader,\n        String.class, new XC_MethodHook() {\n            @Override\n            protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n                // param.thisObject 是刚构造完成的对象\n                // param.args[0] 是 String 参数\n            }\n        });\n```\n\n\n`abstract` 方法没有方法体，无法 Hook。`native` 方法的 Hook 支持取决于框架实现和 Android 版本。\n\n| 回调 | 执行时机 | 常见用途 |\n| --- | --- | --- |\n| `beforeHookedMethod()` | 原方法执行前 | 修改参数、提前设置返回值从而跳过原方法 |\n| `afterHookedMethod()` | 原方法执行后 | 读取或覆盖原方法的返回值 |\n| `replaceHookedMethod()` | 替代原方法（`XC_MethodReplacement`） | 完全替换执行逻辑，原方法不执行 |\n\n### 修改参数与返回值\n\n在 `afterHookedMethod()` 中调用 `param.setResult()` 覆盖原方法已经得到的结果。例如让 `getPublicInt()` 返回 999：\n\n```java\nXposedHelpers.findAndHookMethod(\"com.zj.wuaipojie.Demo\", lpparam.classLoader,\n        \"getPublicInt\", new XC_MethodHook() {\n            @Override\n            protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n                param.setResult(999);\n            }\n        });\n```\n\n在 `beforeHookedMethod()` 中调用 `param.setResult()` 会直接设置返回值**并跳过原方法的执行**。\n\n---\n\n\n在 `beforeHookedMethod()` 中写入 `param.args[index]` 修改参数，原方法收到修改后的值。例如把传入的整数替换为 999：\n\n```java\nXposedHelpers.findAndHookMethod(\"com.zj.wuaipojie.Demo\", lpparam.classLoader,\n        \"setPublicInt\", int.class, new XC_MethodHook() {\n            @Override\n            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {\n                param.args[0] = 999;\n            }\n        });\n```\n\n### 修改字段\n\n修改字段的做法是：通过 `XposedHelpers` 的字段访问方法读取或写入字段值，配合构造函数或方法 Hook 获取目标对象和合适的时机。\n\n**静态字段**——取得目标 `Class` 后直接修改，例如把 VIP 等级改成最高：\n> 每个 `ClassLoader` 对应一份类静态状态。\n\n```java\nClass<?> clazz = XposedHelpers.findClass(\"com.zj.wuaipojie.Demo\", lpparam.classLoader);\nXposedHelpers.setStaticIntField(clazz, \"vipLevel\", 999);\n```\n\n**实例字段**——需要先拿到目标对象。常见做法是 Hook 构造函数，在 `afterHookedMethod()` 中通过 `param.thisObject` 获取刚构造完成的实例：\n\n```java\nClass<?> clazz = XposedHelpers.findClass(\"com.zj.wuaipojie.Demo\", lpparam.classLoader);\nXposedBridge.hookAllConstructors(clazz, new XC_MethodHook() {\n    @Override\n    protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n        XposedHelpers.setIntField(param.thisObject, \"vipLevel\", 9999);\n    }\n});\n```\n\n> 任何 Hook 回调中的 `param.thisObject` 都指向当前实例，这里使用 `hookAllConstructors()` 确保无论调用哪个构造函数重载都会触发字段修改。\n\n### 替换方法\n\n`XC_MethodReplacement` 完全替换原方法的执行逻辑，原方法体不会执行。例如让获取设备 ID 的方法直接返回空字符串：\n\n```java\nXposedHelpers.findAndHookMethod(\"com.zj.wuaipojie.Demo\", lpparam.classLoader,\n        \"getId\", new XC_MethodReplacement() {\n            @Override\n            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {\n                return \"\";\n            }\n        });\n```\n\n> `replaceHookedMethod()` 的返回类型是 `Object`：返回值必须与原方法签名兼容：`void` 方法返回 `null`，基本类型返回对应包装类（如 `int` → `Integer`）。返回类型不匹配会在运行时抛出 `ClassCastException`。\n\n### 主动调用\n\n在 Hook 回调中主动调用目标类的方法，例如调用 `getKey()` 获取解密密钥。\n\n**静态方法**：\n\n```java\nClass<?> clazz = XposedHelpers.findClass(\"com.zj.wuaipojie.Demo\", lpparam.classLoader);\nObject result = XposedHelpers.callStaticMethod(clazz, \"getKey\", arg1, arg2);\n```\n\n**实例方法**：\n\n```java\nObject result = XposedHelpers.callMethod(param.thisObject, \"decrypt\", arg1);\n```\n\n`callMethod()` 的第一个参数必须是目标实例，在 Hook 回调中通常使用 `param.thisObject`。只有确实需要创建全新对象且构造过程满足业务语义时，才使用 `XposedHelpers.newInstance()`。\n\n`XposedHelpers.callMethod()`、`callStaticMethod()`、`getObjectField()`、`setObjectField()` 等方法通过反射和 `setAccessible(true)` 实现**直接访问私有成员**。\n\n### 多 DEX 文件\n\n**场景**：APP 由多个 `.DEX` 文件组成，模块的 `handleLoadPackage()` 执行时，仅加载了主 dex 文件，目标类不在主 dex 中——尚未对 `lpparam.classLoader` 可见，需要在 `Application.attach()` 调用之后再尝试查找目标类。\n\n这段代码把查类和注册 Hook 延后到 `Application.attach()` 执行后：\n```java\nXposedHelpers.findAndHookMethod(Application.class, \"attach\", Context.class,\n        new XC_MethodHook() {\n    @Override\n    protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n        Context context = (Context) param.args[0];\n        ClassLoader cl = context.getClassLoader();\n\n        Class<?> targetClass;\n        try {\n            targetClass = cl.loadClass(\"com.zj.wuaipojie.TargetClass\");\n        } catch (ClassNotFoundException e) {\n            XposedBridge.log(\"Class not found at attach(): \" + e.getMessage());\n            return;\n        }\n\n        XposedHelpers.findAndHookMethod(targetClass, \"targetMethod\",\n                new XC_MethodHook() {\n            @Override\n            protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n                // Hook 逻辑\n            }\n        });\n    }\n});\n```\n\n\n> [!NOTE] Context 的定义与核心作用\n> `Context` 是 Android 框架提供的一套环境配置接口。其设计初衷之一是提供一个统一的应用层约定——例如通过 `getClassLoader` 函数，告知系统在反射 Activity、View 等组件时应使用的类加载器。\n> \n> 除了该逻辑约定，其它的依然遵循 JVM 的类加载规则，参考：[Java ClassLoader 机制](/notes/n-d06529d6c1464564a52c627bc1a3719a/#h-2b315edf6e4fa41c11a4)\n\n#### 旧版 MultiDex\n\nAndroid 5.0（API 21）前后的 MultiDex 处理不同：\n\n**API < 21**：Dalvik 默认只识别 APK 中的主 DEX（`classes.dex`）。\n\n`Application.attach(Context)` 方法本身的作用是把 `Application` 对象与基础 `Context` 关联并完成基础初始化，但它会调用 `Application.attachBaseContext` 函数，开发者通过重写该函数，使其调用 `MultiDex.install(Context)`，将次级 DEX 加入 ClassLoader 的搜索路径。\n\n**API ≥ 21**：ART 原生支持 APK 内多个 DEX，ClassLoader 自动包含所有 DEX 文件路径。\"目标类在 `classes2.dex`\"本身不会导致类加载失败。\n\n### 拦截所有类加载\n\n**场景**：加固方案可能替换或延迟创建加载业务 DEX 的 ClassLoader，导致 `lpparam.classLoader` 和 `Application.attach()` 时获取的 ClassLoader 都找不到真实业务类。\n\n以下示例通过 Hook `ClassLoader.loadClass()` 拦截类加载事件，当发现被加载类是我们的目标类时，对其下所有方法批量注册日志 Hook，用于辅助定位目标逻辑：\n\n```java\nXposedHelpers.findAndHookMethod(ClassLoader.class, \"loadClass\", String.class,\n        new XC_MethodHook() {\n    @Override\n    protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n        if (param.hasThrowable()) {\n            return;\n        }\n\n        Class<?> clazz = (Class<?>) param.getResult();\n        if (clazz == null) {\n            return;\n        }\n\n        String name = clazz.getName();\n        if (!name.startsWith(\"com.zj.wuaipojie\")) {\n            return;\n        }\n        if (XposedHelpers.getAdditionalStaticField(clazz, \"module_hooked\") != null) {\n            return;\n        }\n        XposedHelpers.setAdditionalStaticField(clazz, \"module_hooked\", true);\n\n        for (Method method : clazz.getDeclaredMethods()) {\n            int mod = method.getModifiers();\n            if (Modifier.isAbstract(mod) || Modifier.isNative(mod)) {\n                continue;\n            }\n            try {\n                XposedBridge.hookMethod(method, new XC_MethodHook() {\n                    @Override\n                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {\n                        Log.d(\"HookLog\", method.toString());\n                    }\n                });\n            } catch (Throwable t) {\n                XposedBridge.log(\"Failed to hook: \" + method + \" - \" + t.getMessage());\n            }\n        }\n    }\n});\n```\n\n### 字符串赋值定位\n\n**场景**：界面上看到了\"已过期\"等关键文字，想反查是哪段代码设置了这个字符串，从而定位到核心逻辑。\n\n通过 Hook `TextView.setText()` 拦截界面文字设置，当文本匹配目标字符串时打印调用栈，定位设置该字符串的业务代码：\n\n```java\nXposedHelpers.findAndHookMethod(TextView.class, \"setText\",\n        CharSequence.class, new XC_MethodHook() {\n    @Override\n    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {\n        CharSequence text = (CharSequence) param.args[0];\n        if (text != null && \"已过期\".contentEquals(text)) {\n            Log.d(\"HookLog\", \"setText: \" + text);\n            for (StackTraceElement e : new Throwable().getStackTrace()) {\n                Log.d(\"HookLog\", \"  at \" + e);\n            }\n        }\n    }\n});\n```\n\n> 直接 Hook `TextView.class` 会拦截目标进程中**所有** `TextView` 的 `setText()` 调用，性能开销较高。`setText()` 有多个重载（`CharSequence`、`int` 等），示例只 Hook 了 `CharSequence` 重载。\n\n### 点击事件定位\n\n**场景**：想知道用户点击某个按钮后，实际执行的是哪个类的 `onClick` 回调，用于定位业务逻辑入口。\n\nHook `View.performClick()` 获取点击事件对应的 `OnClickListener` 实现类，定位按钮点击后的业务逻辑入口：\n\n```java\nXposedBridge.hookAllMethods(View.class, \"performClick\", new XC_MethodHook() {\n    @Override\n    protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n        Object listenerInfo = XposedHelpers.getObjectField(param.thisObject, \"mListenerInfo\");\n        if (listenerInfo == null) {\n            return;\n        }\n        Object listener = XposedHelpers.getObjectField(listenerInfo, \"mOnClickListener\");\n        if (listener == null) {\n            return;\n        }\n        Log.d(\"HookLog\", \"onClick: \" + listener.getClass().getName());\n    }\n});\n```\n\n> `mListenerInfo` 和 `mOnClickListener` 是 `View` 的内部实现字段，非公开 API。字段名可能随 Android 版本变化，且 `View` 未设置点击监听器时 `mListenerInfo` 为 `null`。使用前应在目标系统版本上验证字段名。\n\n### 布局改写\n\n**场景**：想在运行时隐藏或修改某个 UI 元素，比如去掉广告图片、隐藏水印。\n\n\nHook 目标 Activity 的 `onCreate()`，在布局加载完成后通过 `findViewById()` 获取 View 并修改属性。例如隐藏广告或水印：\n\n```java\nXposedHelpers.findAndHookMethod(\"com.zj.wuaipojie.ui.ChallengeSixth\", lpparam.classLoader,\n        \"onCreate\", Bundle.class, new XC_MethodHook() {\n    @Override\n    protected void afterHookedMethod(MethodHookParam param) throws Throwable {\n        View img = (View) XposedHelpers.callMethod(param.thisObject,\n                \"findViewById\", 0x7f0800de);\n        if (img != null) {\n            img.setVisibility(View.GONE);\n        }\n    }\n});\n```\n\n> 十六进制资源 ID（如 `0x7f0800de`）在编译时生成，**只对特定 APK 版本有效**。应用更新或重新编译后 ID 会变化。`findViewById()` 可能返回 `null`。\n\n## Java 反射\n\n需要取得明确的 `Method` 或 `Field` 对象、检查注解、处理复杂继承关系或精确控制调用过程时，使用 Java 反射：\n> 相关内容参考：[Java 反射机制](/notes/n-38eec58951f14599b753a7d7fd662fbd/)\n\n```java\nClass<?> clazz = Class.forName(\"com.zj.wuaipojie.Demo\", false, lpparam.classLoader);\nMethod method = clazz.getDeclaredMethod(\"refl\");\nmethod.setAccessible(true);\nmethod.invoke(param.thisObject);\n```\n\n`getDeclaredMethod()` 只查找当前类声明的方法，不包含父类。处理继承关系时需要遍历 `getSuperclass()` 或使用 `getMethod()`（只能获取 `public` 方法）。调用实例方法时，`invoke()` 的第一个参数必须是目标类的实例。\n\n`Class.forName()` 的第二个参数 `false` 表示不立即执行静态初始化块。第三个参数必须使用 `lpparam.classLoader`，不能使用模块自身的 ClassLoader——因为这样查找不到。\n> 相关内容参考：[JVM 类加载过程](/notes/n-746101753bdd463c83ff1e5b72717daa/)、[Java ClassLoader 机制](/notes/n-d06529d6c1464564a52c627bc1a3719a/)\n\n| 维度   | `XposedHelpers` | Java 反射                             |\n| ---- | --------------- | ----------------------------------- |\n| 私有成员 | 直接访问            | 需要 `setAccessible(true)`            |\n| 返回形式 | 直接返回结果值         | 返回 `Method`/`Field` 对象，可进一步检查注解和修饰符 |\n| 适用场景 | 调用方法、读写字段       | 需要 `Method` 对象、检查注解、处理继承、精确控制调用     |\n\n## 实用模块\n\n以下是允许通过配置或脚本快速 Hook 目标应用的 Xposed 模块：\n\n- [SimpleHook](https://github.com/littleWhiteDuck/SimpleHook)\n- [JsHook](https://github.com/Xposed-Modules-Repo/me.jsonet.jshook)\n\n",
+  "id": "9026c030-5fcd-4f06-b979-cc9328bc05a6",
+  "metadata": {
+    "tags": [
+      "reverse/android",
+      "lang/java"
+    ],
+    "title": "Xposed 模块开发"
+  },
+  "resources": [],
+  "url": "/notes/n-9026c0305fcd4f06b979cc9328bc05a6/"
+}

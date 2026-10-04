@@ -1,0 +1,42 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-6c06be5d6f47d1f44735",
+      "kind": "heading",
+      "offset": 13
+    },
+    {
+      "id": "h-729e2ae5c4297c7ce84e",
+      "kind": "heading",
+      "offset": 28
+    },
+    {
+      "id": "h-4ca743481ead99be178f",
+      "kind": "heading",
+      "offset": 261
+    },
+    {
+      "id": "h-888fc3ed955db6cadaad",
+      "kind": "heading",
+      "offset": 338
+    },
+    {
+      "id": "h-b76905a9f6104567ad60",
+      "kind": "heading",
+      "offset": 597
+    }
+  ],
+  "body": "# SSH 协议与身份认证\n\n## 什么是 SSH 协议\n\n**SSH**（Secure Shell，安全外壳协议）发明的初衷是为了解决登录终端时密码明文传输的不安全现象，是一种用于**在不安全网络中提供安全传输的应用层协议**，与 HTTPS 非常相像。\n> SSH 仅仅是一协议标准，其具体的实现有很多，使用范围最广泛的是 OpenSSH。\n\n> [!NOTE] SSH 和 HTTPS 的区别？\n> HTTPS 需要 CA 证书来验证\"服务器\"是否合法，而 SSH 则交由用户自己验证。\n\n\n## SSH 之身份认证\n\nSSH 协议的完整使用逻辑包括：身份认证、对称加密密钥协商、数据传输，**我们只介绍身份认证的内容。**\n\n#### 口令认证 (登录终端使用的方式)\n1. 客户端发送登录请求\n2. 服务器响应公钥（在实际登录时，一般会询问是否信任该公钥）\n3. 客户端使用服务器的公钥加密账号、密码等信息。\n4. 服务器收到密文后用私钥解密并验证。\n5. 返回登录成功与否\n\n如图所示：\n![](/notes/n-eb2493ad6d584117914b1757279ad1aa/media/c4af4e87975dc77bcbd5f7a304df2b061e64a3ab2027a7aa14dd47092bd7ccdc.jpeg)\n\n#### 公钥认证 (GIT 使用的认证方式)\n1. 客户端将自己的公钥放置在服务器（如在 Github 中配置公钥）\n2. 客户端发送登录请求（一般是公钥本身或相关标识，服务器据此将登录请求与对应账号关联）\n3. 服务器使用客户端公钥加密一串随机数，然后发送给客户端\n4. 客户端使用私钥解密，并生成摘要信息后发送给服务器\n5. 服务器验证摘要信息是否正确\n\n如图所示：\n![](/notes/n-eb2493ad6d584117914b1757279ad1aa/media/4cc1d01772f32c118e2d4c6f7bc06f10799bf82a9572d3fe14a1cecb4c30fc06.jpeg)",
+  "id": "eb2493ad-6d58-4117-914b-1757279ad1aa",
+  "metadata": {
+    "tags": [
+      "cs/network"
+    ],
+    "title": "SSH 协议与身份认证"
+  },
+  "resources": [
+    "4cc1d01772f32c118e2d4c6f7bc06f10799bf82a9572d3fe14a1cecb4c30fc06.jpeg",
+    "c4af4e87975dc77bcbd5f7a304df2b061e64a3ab2027a7aa14dd47092bd7ccdc.jpeg"
+  ],
+  "url": "/notes/n-eb2493ad6d584117914b1757279ad1aa/"
+}

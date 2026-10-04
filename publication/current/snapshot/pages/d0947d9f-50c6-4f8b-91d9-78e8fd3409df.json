@@ -1,0 +1,52 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-e923e8d7e175ddd69ad7",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-1f30e814397264a965cf",
+      "kind": "heading",
+      "offset": 28
+    },
+    {
+      "id": "h-6183a36f0857bae3af16",
+      "kind": "heading",
+      "offset": 469
+    },
+    {
+      "id": "h-13055e4ad78635c562bb",
+      "kind": "heading",
+      "offset": 1144
+    },
+    {
+      "id": "h-02bb18b30b773c7e83a7",
+      "kind": "heading",
+      "offset": 1901
+    },
+    {
+      "id": "h-9b4975304af8ac4a7e80",
+      "kind": "heading",
+      "offset": 2210
+    },
+    {
+      "id": "h-014f71d51066f37b16ae",
+      "kind": "heading",
+      "offset": 3816
+    }
+  ],
+  "body": "# Windows DPC 机制\n\n## DPC 是什么\n\nDPC（Deferred Procedure Call，延迟过程调用）是 Windows 内核提供的一种延迟执行机制，它用于将 ISR（Interrupt Service Routine，中断服务例程）中不必立即完成的工作推迟执行，**从而缩短处理器停留在高 IRQL 的时间**，所以常被称为 ISR 的后半部。\n\n设备产生硬件中断后，ISR 应尽快完成确认中断、读取必要的硬件状态以及保存少量上下文等紧急工作。数据解析、I/O 请求完成等相对耗时的操作，可以通过 DPC 延后处理。\n\n以键盘中断为例：ISR 先读取必要的设备状态并确认中断，然后把 DPC 加入队列；等处理器降低到合适的 IRQL 后，再由 DPC 完成后续处理。\n\n```text\n硬件产生中断\n    ↓\n执行 ISR：确认中断、保存状态、请求 DPC\n    ↓\n退出 ISR，处理器 IRQL 降低\n    ↓\n内核处理 DPC 队列\n    ↓\n执行 DPC 回调\n```\n\n## DPC 的使用\n\nDPC 通常被加入某个逻辑处理器维护的 DPC 队列，因此它是处理器相关的延迟执行机制。\n\nDPC 的基本使用流程如下：\n\n1. 调用 `KeInitializeDpc` 初始化 `KDPC` 对象，并指定回调函数和上下文；\n2. 调用 `KeInsertQueueDpc` 把 `KDPC` 对象链入目标处理器的 `KPCR.PrcbData.DpcListHead` 链表中，等待时机执行；\n3. 如有需要，调用 `KeRemoveQueueDpc` 尝试移除尚未开始执行的 DPC。\n\n示例：\n\n```c\nKDPC g_Dpc;\n\nKeInitializeDpc(\n    &g_Dpc,\n    DpcRoutine,\n    DeferredContext\n);\n\nBOOLEAN inserted = KeInsertQueueDpc(\n    &g_Dpc,\n    SystemArgument1,\n    SystemArgument2\n);\n```\n\n调用 `KeInsertQueueDpc` 只表示请求排队，DPC 不一定立即执行。调用者应检查返回值；如果同一个 `KDPC` 已经处于队列中，重复调用通常不会创建第二个独立的队列项。\n\n`KeRemoveQueueDpc` 只能尝试移除仍在队列中、尚未开始执行的 DPC，不能取消已经开始运行的回调。\n\n当目标处理器的 IRQL 降低到允许处理 DPC 的范围时，内核会在适当时机检查并处理 DPC 队列。内核通常会连续执行队列中的待处理项。\n\n## DPC 回调的限制\n\n> `DPC`是在0环运行的，回调函数也是0环地址的函数。`DPC`可以HOOK的\n\nDPC 在 `DISPATCH_LEVEL` 上执行，因此回调函数必须短小、确定且不能阻塞。编写 DPC 回调时需要注意：\n\n- 回调代码及其访问的数据必须位于非分页内存；\n- 不能执行可能阻塞的等待、文件 I/O 或其他要求低 IRQL 的操作；需要在低 IRQL 完成的工作，应继续转交给系统工作线程或专用工作线程。\n- 不应进行长时间循环、大规模计算或长时间持有自旋锁；\n\nDPC 回调的形式如下：\n\n```c\nVOID DpcRoutine(\n    _In_     struct _KDPC *Dpc,\n    _In_opt_ PVOID DeferredContext,\n    _In_opt_ PVOID SystemArgument1,\n    _In_opt_ PVOID SystemArgument2\n);\n```\n\n`DeferredContext` 在调用 `KeInitializeDpc` 时指定；`SystemArgument1` 和 `SystemArgument2` 则在调用 `KeInsertQueueDpc` 时传入。\n\n传递给 DPC 的对象必须在回调实际执行前持续有效。不能把即将失效的局部变量地址传给异步执行的 DPC，否则函数返回后，DPC 可能访问已经失效的栈内存。\n\n这里的关键并不是“只能使用全局变量”，而是正确管理对象生命周期。可以使用设备扩展、非分页池对象或其他生命周期足够长的存储，同时还要处理好并发访问和同步问题。\n\nAPC 也不是 DPC 必须调用的后续机制。只有当任务必须在特定线程上下文中执行时，才需要根据实际场景考虑 APC。\n\n### 执行特性\n\n`DPC` 执行的时候不会响应线程切换软件中断：因为执行`DPC`时的`IRQL` 大于 `DISPATCH_LEVEL`，只有 `IRQL` 大于 2 的中断才能打断 `DPC` 执行，例如时钟中断。\n> 线程切换软件中断会先执行 DPC 再进行线程切换。APC 的一个固定执行执行时机是在线程切换完毕后。\n\n这会导致即使时间片到期了，也不会发生线程切换，即——若该DPC是一个死循环，那么这个核心就百分百被占用/浪费了。\n\n为了防止这种情况，会在时钟中断例程中判断目前处于 `DISPATCH_LEVEL` 多久了，如果时间过长，则会触发蓝屏，所以 DPC 的耗时不要太长。\n\n## DPC 与 APC 的区别\n\n| 对比项   | DPC                                                                                                                             | APC                                                        |\n| ----- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |\n| 关联对象  | 与逻辑处理器相关，存储在 `KPRCB` 上。                                                                                                         | 与特定线程相关，存储在某个线程对象上。                                        |\n| 主要用途  | 延迟处理 ISR 未完成的工作                                                                                                                 | 在特定线程上下文中异步执行代码                                            |\n| 线程上下文 | 不依赖当前线程的业务上下文                                                                                                                   | 必须投递到特定线程                                                  |\n| 阻塞与分页 | 不能阻塞，不能依赖分页内存                                                                                                                   | 取决于 APC 类型和实际执行环境                                          |\n| 使用对象  | DPC 只面向内核层，且执行时机完全依赖中断-响应机制：每当 CPU 的运行级别从`DISPATCH_LEVEL`或以上降低到`DISPATCH_LEVEL`以下时，如果有 DPC 相关的软件中断存在，内核就会扫描 DPC 请求队列并执行 DPC 函数。 | APC 可以给用户层使用，且执行时机不完全依赖中断-响应机制，相关内容参考：[Windows APC 机制](/notes/n-3d7533bad94d40888f2bb35b29d2125e/) |\n\n**核心逻辑**：APC 是线程相关的异步执行机制，DPC 是处理器相关的延迟执行机制。\n\n> 一般是 `KeLowerIrql` 函数导致触发DPC，相关内容参考：[中断请求优先级与 IRQL](/notes/n-d4f651574a52425791b6f0f74f89a06c/)\n\n## `KDPC` 结构\n\nDPC 在内核中由 `KDPC` 对象描述，并通过内部链表节点加入处理器相关的 DPC 队列：\n\n```c\ntypedef struct _KDPC {\n    CSHORT Type;                        // 对象类型，缺省为 DpcObject = 0x13。此外WinXP/2003新增了一种ThreadedDpcObject = 0x18\n    UCHAR Number;                       // 目标处理器编号，决定加入哪个 CPU 的 DPC 队列\n    UCHAR Importance;                   // 重要性：Low / Medium（默认）/ High\n    LIST_ENTRY DpcListEntry;            // 挂入处理器 DPC 队列的链表节点\n    PKDEFERRED_ROUTINE DeferredRoutine; // DPC 回调函数\n    PVOID DeferredContext;              // 初始化 DPC 时绑定的固定上下文\n    PVOID SystemArgument1;              // 传入回调的参数 1\n    PVOID SystemArgument2;              // 传入回调的参数 2\n    PULONG_PTR Lock;                    // 所属 DPC 队列的锁，用于锁定DPC队列，同时也用于判断此DPC对象是否被加入到一个DPC队列中。\n} KDPC, *PKDPC, *RESTRICTED_POINTER PRKDPC;\n```\n\n其中：\n\n- `DpcListEntry` 用于将 `KDPC` 链入 DPC 队列；\n- `DeferredRoutine` 指向 DPC 回调函数；\n- `DeferredContext` 是初始化时绑定的上下文；\n- `SystemArgument1` 和 `SystemArgument2` 是每次入队时传入的参数；\n- `Type`、`Number`、`Importance` 和 `Lock` 等字段的具体含义及布局具有版本依赖性。\n",
+  "id": "d0947d9f-50c6-4f8b-91d9-78e8fd3409df",
+  "metadata": {
+    "tags": [
+      "os/windows",
+      "reverse/windows",
+      "arch/x86",
+      "cs/concurrency"
+    ],
+    "title": "Windows DPC 机制"
+  },
+  "resources": [],
+  "url": "/notes/n-d0947d9f50c64f8b91d978e8fd3409df/"
+}

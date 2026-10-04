@@ -1,0 +1,165 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-531cfd833055211ae69e",
+      "kind": "heading",
+      "offset": 12
+    },
+    {
+      "id": "h-dd8fcc3dfb71869d12ae",
+      "kind": "heading",
+      "offset": 21
+    },
+    {
+      "id": "h-171bd19e0851c11023b7",
+      "kind": "heading",
+      "offset": 34
+    },
+    {
+      "id": "h-2bbeb6496ee545f7d90a",
+      "kind": "heading",
+      "offset": 353
+    },
+    {
+      "id": "h-fd3a73493b6ea3e39f26",
+      "kind": "heading",
+      "offset": 532
+    },
+    {
+      "id": "h-c77d14bc15b50a6b379a",
+      "kind": "heading",
+      "offset": 812
+    },
+    {
+      "id": "h-1245d5bddf065392c001",
+      "kind": "heading",
+      "offset": 830
+    },
+    {
+      "id": "h-cb2ebaeb692a1f47d7de",
+      "kind": "heading",
+      "offset": 1798
+    },
+    {
+      "id": "h-429b9aa2cbf8ca69da46",
+      "kind": "heading",
+      "offset": 2609
+    },
+    {
+      "id": "h-aed7adff5f15755b5b43",
+      "kind": "heading",
+      "offset": 2988
+    },
+    {
+      "id": "h-f0df92a757b095cbe228",
+      "kind": "heading",
+      "offset": 3003
+    },
+    {
+      "id": "h-f3f79aa30209b5679185",
+      "kind": "heading",
+      "offset": 3178
+    },
+    {
+      "id": "h-ec17f1de11b6f3f7803e",
+      "kind": "heading",
+      "offset": 3486
+    },
+    {
+      "id": "h-608e311e294c9843b498",
+      "kind": "heading",
+      "offset": 4186
+    },
+    {
+      "id": "h-9e49b76843ccb9c1ab99",
+      "kind": "heading",
+      "offset": 4376
+    },
+    {
+      "id": "h-cb47a75790ac3220ee52",
+      "kind": "heading",
+      "offset": 4601
+    },
+    {
+      "id": "h-597c23656283beaa2576",
+      "kind": "heading",
+      "offset": 5199
+    },
+    {
+      "id": "h-87c73dc73dcfc23146a1",
+      "kind": "heading",
+      "offset": 5377
+    },
+    {
+      "id": "h-480a37e6edf41e8d8700",
+      "kind": "heading",
+      "offset": 6015
+    },
+    {
+      "id": "h-2a128a9dc7e1de27ffc6",
+      "kind": "heading",
+      "offset": 6391
+    },
+    {
+      "id": "h-4d4500b2ed149986b66d",
+      "kind": "heading",
+      "offset": 6623
+    },
+    {
+      "id": "h-57c27c43cd48b09de6d3",
+      "kind": "heading",
+      "offset": 7520
+    },
+    {
+      "id": "h-e38b008476b170122c18",
+      "kind": "heading",
+      "offset": 7534
+    },
+    {
+      "id": "h-fc88341c186e50424dda",
+      "kind": "heading",
+      "offset": 8175
+    },
+    {
+      "id": "h-939d159bbea8d049ed76",
+      "kind": "heading",
+      "offset": 8485
+    },
+    {
+      "id": "h-4ac94c2005a3e0f05b95",
+      "kind": "heading",
+      "offset": 8894
+    },
+    {
+      "id": "h-3cd9d0065b314939d381",
+      "kind": "heading",
+      "offset": 9336
+    },
+    {
+      "id": "h-7a75d0a6223c44ab2338",
+      "kind": "heading",
+      "offset": 9837
+    },
+    {
+      "id": "h-5478809145666ba871cb",
+      "kind": "heading",
+      "offset": 12006
+    }
+  ],
+  "body": "# COM 组件设计思想\n\n## 设计动机\n\n### 代码复用的演进\n\n1. 直接分发 `.h` + `.cpp`\n   优点是最直接，缺点也最明显：源码和实现细节全暴露了。\n2. 打包到 `DLL`\n   解决了\"源码直接暴露\"的问题，交付也更方便。\n   但它仍然偏\"函数式\"思路：导出的函数越多，调用方越要自己拼装调用顺序、自己维护状态。\n3. 改造成 `COM`\n   COM 使用导出对象的思路，将函数变成某个结构体的成员函数。\n\n但 `COM` 不是简单地把函数塞进对象名下，而是把\"对象长什么样、怎么创建、怎么释放、怎么查询能力\"这些事全部标准化。说白了，`COM` 要解决的问题不是\"能不能导出对象\"，而是\"能不能用一种所有语言都能理解的二进制方式导出对象\"。\n### 从面向函数到面向对象\n\n普通 `DLL` 导出函数时，每个函数通常是彼此独立的。函数一多，调用方就得自己维护上下文：哪些函数要先调，哪些状态要留在内存里，哪个句柄对应哪个实例，这些都得由调用方自己记。\n\n如果换成\"对象\"思路，很多事情就自然了。状态归对象自己管，相关函数也围绕这个对象组织。这样调用方拿到的不是一堆散函数，而是\"这个实例能做什么\"。\n\n### 面向对象的实现方式\n\n关键问题是：怎么把\"函数\"和\"一片状态内存\"绑在一起？\n\n一个很自然的思路，是给这片内存配一张函数表。表里按固定顺序放函数地址，对外再暴露一个指针。这样一来，调用方既拿到了对象的状态入口，也拿到了它能调用的行为入口。\n\n也就是 C++ 的虚函数表概念，但两者目的不完全一样。\n\nC++ 引入虚函数表是为了实现动态多态，而这里是为了实现面向对象导出（其实最后也通过虚函数表实现了 `COM` 多态）。\n> 参考：[C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/)\n\n---\n## 核心架构\n\n### COM 组件、对象与接口\n\n\n**COM 组件**\n\n**可以把 COM 和\"组件\"拆开理解**：COM 是一种二进制组件模型与互操作规范，组件则是对外提供服务的二进制单元，常见形态包括 `DLL`、`EXE` 服务器或控件（就以 DLL 来理解 COM 组件）。\n\n**核心逻辑**：COM 组件使用面向对象的思想导出对象。\n\nCOM 组件的核心设计目标之一，是在二进制级别实现跨语言组件复用。也就是说目标是所有编程语言都可以使用。\n> 这要求对象的创建、使用和释放的方式要统一，不能依赖于特定于某一语言的功能。\n\n能写 COM 组件的语言基本都是非解释型语言，而几乎所有语言都能使用 COM 组件。\n\nCOM 组件使用 GUID 唯一标识，也叫做 `LIBID`（Library ID）\n\n\n**COM 类**\n\n通过前面，我们知道 COM 是面向对象导出的。COM 类对应 C++ 中的类，定义了一组数据与操作的封装体。COM 类实例化后生成的对象就是 COM 对象。\n\n同时也知道，在 COM 模型中，客户代码不直接创建 COM 对象，而是向 COM 发起创建请求，由 COM 库自身创建。\n\n一个 COM 类是通过 `GUID` 唯一标识的，也叫 `CLSID`（Class ID），传给 `DLL` 的导出函数 `DllGetClassObject`，获取该 COM 类对应的工厂类，进而完成对 COM 对象的创建。\n\n> COM 接口也通过 `GUID` 标识。\n\n---\n\n\n**COM 接口**\n\n2. COM 接口：对应 C++ 接口（抽象类），不是具体实现，只是描述一个具体的 COM 类提供了哪些成员函数可供使用。\n\nCOM 接口用于标识 COM 类具有哪些成员函数（功能），一方面告知客户端如何使用 COM 对象，另一方面约束 COM 类必须实现这些功能。\n> 类比 C++ 的抽象接口。\n\nCOM 接口命名上一般以前缀 `I` 开头，并继承 `IUnknown`。\n\n一个 COM 类可以对应多个接口，每个接口负责暴露不同服务。\n\n各个接口也都有自己的 `GUID` 标识，接口标识通常称为 `IID`（Interface ID），COM 对象配合给定的接口 `GUID` 转换为目标 COM 子对象。\n\n### GUID 标识体系\n\n`GUID`（Globally Unique Identifier）长度为 16 字节，即 128 位。它的设计目标是提供极低碰撞概率的全局唯一标识；当它用于标识 COM 类时，通常称为 `CLSID`。\n\nCOM 组件中，`GUID` 的结构定义如下：\n\n```cpp\ntypedef struct _GUID {\n    unsigned long  Data1; // 随机数\n    unsigned short Data2; // 和时间有关\n    unsigned short Data3; // 和时间有关\n    unsigned char  Data4[ 8 ]; // 和网卡MAC有关\n} GUID;\n```\n\n可以看到这个结构还是挺复杂的，如果我们想要手动生成，这将会是一件非常麻烦的事情，不过我们可以通过 VS 自带的功能去生成：\n\n![](/notes/n-23c88c136e7d414f98de5192becb8546/media/9665467e277da8b4368d220c46eeb76a6c99c849d2d697b00beb189c1239f61e.jpg)\n\n一般来说我们选择第三个即可：\n\n![](/notes/n-23c88c136e7d414f98de5192becb8546/media/1358d0258a11e1a6a0d797ee8fbb84027b0623ca8c0799808f7c31c2ed55e592.jpg)\n\n除此之外，也可以借助 `CoCreateGuid` 函数生成 `GUID`：\n\n```cpp\nGUID guid;\nCoCreateGuid(&guid);\n```\n\n严格来说，`GUID` 并不是数学意义上的绝对唯一；更准确的说法是：它的碰撞概率极低，工程上通常可以视为\"足够唯一\"。\n\n### 接口描述机制（IDL / TLB）\n\n\n如何告知使用方，我们的 COM 类支持哪些操作呢？使用 `.h` 文件？但是有些语言不支持解析 `.h` 文件的内容。\n\n所以需要有一个更通用的方法，能描述接口支持的操作，比如像 XML、JSON 那样的组织形式。\n\n这就需要介绍 IDL（Interface Definition Language）文件。IDL 是一种不依赖具体编程语言的接口描述语言，编译后会生成 TLB（Type Library），许多语言都可以使用 TLB。\n\n> 但实际上，解释型语言也可以不依靠 IDL 使用 COM 接口。\n\n\n> IDL 的详细用法和文件结构在 [COM 组件开发框架 ATL](/notes/n-0d0dd184ade2494b8a0530e2cff70449/#h-9db9931f8ea3c94de7a1) 中展开。\n\n---\n\n## 对象生命周期\n\n### 对象创建与工厂模式\n\n如果对象只是\"一片内存 + 一组固定函数入口\"，那创建对象这件事本身也要交给组件内部完成。调用方不能直接假设对象该怎么分配内存、该怎么初始化。\n\n所以这里自然会出现一个专门的创建入口：它负责分配对象、初始化对象，**再把对象指针交给调用方**。\n\n通过这一步，就相当于把 `DLL` 从\"导出函数\"推进到了\"导出对象实例\"。\n\n#### 工厂思想\n\n这个创建入口，本质上就是\"工厂\"。\n\n最简单的形式是工厂函数。它的作用只有一个：创建对象，并把对象返回出去。\n\n这样做的好处在于，后续如果对象实现变了，调用方不必跟着改。比如最开始返回的是实现 A，后面换成实现 B，只要工厂入口不变，外部用法通常也不需要全量改动。\n\n在实际工程里，很多项目不会只停留在\"工厂函数\"这一步，而是继续引入工厂类。原因也不复杂：工厂类本身也可以带状态，可以做实例管理、缓存、统计或者统一配置。\n\nCOM 对象的创建通常通过类工厂完成。可以把类工厂理解为 COM 类的生产入口；对于每一个 COM 类，都会有对应的类工厂负责实例化流程。\n\n#### `IClassFactory` 接口\n\n\n类工厂也是一个 COM 对象，它继承自特殊接口 `IClassFactory`，定义如下：\n\n```cpp\nIClassFactory : public IUnknown\n{\npublic:\n virtual /* [local] */ HRESULT STDMETHODCALLTYPE CreateInstance(\n     /* [unique][in] */ IUnknown *pUnkOuter,\n     /* [in] */ REFIID riid,\n     /* [iid_is][out] */ void **ppvObject) = 0;\n virtual /* [local] */ HRESULT STDMETHODCALLTYPE LockServer(\n     /* [in] */ BOOL fLock) = 0;\n};\n```\n\n可以看到，`IClassFactory` 同样继承自 `IUnknown`，并额外定义了两个核心成员函数：`CreateInstance` 和 `LockServer`。\n\n`CreateInstance` 是最关键的函数，**负责创建目标 COM 对象**，参数 `riid` 是你希望拿到的那个 COM 接口的 `GUID` 或者具体点叫 `IID`。\n\n`LockServer` 用于影响服务器的生存周期，典型作用是在多客户端访问时延迟卸载组件，避免某个客户端退出后把仍在使用中的服务器提前释放。\n\n> COM 组件以 DLL 形式加载时，每个进程加载一份副本，这里的多客户端是指多线程吧\n\n### 对象释放与引用计数\n\n\n**注意**：这里不要直接套 C++ 语言内的直觉。跨二进制边界之后，调用方未必知道对象在组件内部是怎么分配的，也未必适合直接 `delete`。\n\n因此，更稳妥的做法是给对象自己暴露一个\"释放自身\"的入口。调用方只负责表达\"我不用了\"，真正的销毁动作仍然留在对象内部完成。\n\n这一步很重要，因为它把\"谁创建、谁负责销毁\"这条规则重新收回到了组件内部。\n\n#### 引用计数\n\n我们知道得到的 COM 对象是一个指针，而这个指针在被使用方使用的时候，可能会被赋值给 `pa`、`pb`、`pc`。\n\n任意一个人先释放了这个对象，都会导致其余人拿到的内容不安全，如果不释放会占用内存/资源，那要怎么办呢？\n\n引用计数的思想解决了这个问题：每赋值给一个人，就对 COM 对象中的某个成员计数 +1；每有一个人不使用了就 -1；当计数为 0 时才真正释放这个 COM 对象的内存和资源。\n\n#### 核心接口 `IUnknown`\n\n\n`IUnknown` 是 COM 的核心接口，因为其他 COM 接口都**必须**从它继承。它包含三个关键函数：`QueryInterface`、`AddRef` 和 `Release`。\n\n如下代码是 `IUnknown` 的定义。可以看到，它在 C++ 里本质上就是一个只包含纯虚函数的抽象基类：\n\n```cpp\nclass IUnknown\n{\npublic:\n     virtual HRESULT __stdcall QueryInterface(const IID& iid, void** ppv) = 0;\n     virtual ULONG __stdcall AddRef() = 0;\n     virtual ULONG __stdcall Release() = 0;\n};\n```\n\n其中：\n\n1. `QueryInterface` 用于接口查询，允许从一个接口切换到同一对象暴露的其他接口（类比 C++ 的动态类型转换：[C&#43;&#43; RTTI 机制](/notes/n-05b15a525c2c46f5b96d1ac648d63387/)）；\n2. `AddRef` 与 `Release` 用于管理对象生命周期，通过引用计数决定对象何时释放。因此，`IUnknown` 同时承担了接口发现与生命周期控制两项基础职责。\n\n### 属性的间接访问\n\n\n若客户直接访问对象的数据成员，则只要数据成员大小、顺序发生变化，客户程序通常都需要重新编译。\n\n解决方法是客户不直接访问成员属性，所有操作通过成员函数间接完成。而成员函数是通过虚函数表导出的，只要 `DLL` 是新版本，客户使用的就是新版本的函数逻辑。\n\n也就是说，只需要给出类的成员函数即可，不需要给出成员个数和内存布局。\n\n### COM 的多态\n\n\nCOM 既然是面向对象的，COM 类就会有继承，而对于继承，如果能够使用多态可以带来很多方便的地方。\n\n> 继承的内存布局和 C++ 的继承内存布局一致，参考：[C&#43;&#43; 继承与虚继承机制](/notes/n-da561297c8704e938e5625a35698d9eb/)\n\n那 COM 对象如何实现多态呢？\n\n多态一般分为静态多态和动态多态。\n\n对于静态多态，COM 显然不能使用这种方式，因为静态多态依赖于编译器（模板实例化等），而 COM 面向跨语言调用，显然不可取。\n\n> 参考：[C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/#h-d5bb72fe558f3b8f261d)\n\n那就只剩下动态多态了。C++ 的动态多态借助 RTTI + 虚函数表实现，现在虚函数表已经有了，只需要实现动态类型转换就可以了。\n\n> 参考：[C&#43;&#43; 多态](/notes/n-22ed4659baa744f09ec6ab8c4fc3947c/#h-799019a7718651ead8ba)\n\n---\n\n\nCOM 对象通过成员函数 `QueryInterface` 实现动态类型转换。\n\n**核心逻辑是**：`QueryInterface` 查询体内是否有某个基类子对象，若有则转换为目标指针。即一个 COM 对象内含的基类子对象都可以单独调用。\n\n## COM 自动化思想\n\n我们说过，`COM` 组件是遵循 `COM` 二进制接口约定的通用组件，可以被许多编程语言使用，其中也包括一些脚本/解释型语言，如 `JavaScript`、`Python` 等。\n\n在 `Python` 中可能有如下写法：\n\n```python\n# 方法调用\nobj.fun()\n\n# 默认属性或索引访问\nobj[\"arg\"]\n# 或\nobj.arg\n```\n\n对于编译型语言，在导入类型库（`.tlb` 文件）后，编译器通常能够提前确定接口签名与调用方式。\n\n但脚本/解释型语言通常在运行时才解析代码，也就是说，只有执行到这一行代码时，脚本/解释器才知道要使用的属性或方法。**问题在于**：解释器不方便直接操作 `C++` 风格的虚函数表、指针、`HRESULT` 与内存布局。那么，脚本语言如何调用 `COM` 组件？\n\n### 自动化思想\n\n解释器并不知道某个自定义接口的 `vtable` 布局、参数类型与内存表示，因此无法像已导入类型信息的编译型语言那样直接按 `vtable` 调用。自动化的思路是为调用方暴露少量固定入口，让解释器只需要掌握一套稳定的动态分发协议。\n\n**核心逻辑**：固定少量分发函数在虚函数表中的位置，解释器只需要负责调用这些函数；至于成员定位、参数解析和实际调用，则交由对象自身完成。这样一来，脚本语言就不需要理解具体接口的底层布局。\n### `IDispatch` 接口\n\n为了让解释型语言也能使用 COM 组件，`COM` 提供 `IDispatch` 接口，该接口要求派生类实现固定的分发函数，从而让解释器用“名字 + 参数”的方式调用对象方法、读取属性或写入属性。\n\n`IDispatch` 继承自 `IUnknown`，并额外定义了四个核心函数：\n\n| 函数名 | 作用 |\n| --- | --- |\n| `HRESULT GetTypeInfoCount()` | 返回对象是否提供类型信息，通常为 `0` 或 `1` |\n| `HRESULT GetTypeInfo()` | 返回调用者请求的 `ITypeInfo` |\n| `HRESULT GetIDsOfNames()` | 根据成员名取得对应的 `DISPID`，供 `Invoke()` 使用 |\n| `HRESULT Invoke()` | 根据 `DISPID` 执行方法调用、属性读写等操作 |\n**核心逻辑**：让每个被解释型语言使用的 COM 类都实现上述四个函数。\n\n> **注意**\n> `IDispatch` 并没有消除对 `vtable` 的依赖；它只是把调用面收缩到少量固定入口，并在此基础上构建了一套通用的动态调用协议。\n\n自动化调用的流程通常是：脚本语言或宏语言先把成员名与参数交给 `IDispatch`，再由它通过 `GetIDsOfNames()` 和 `Invoke()` 完成分发。\n\n通常会先通过 `IDispatch::GetIDsOfNames()` 获取成员的 `DISPID`，再用 `Invoke()` 根据该编号完成调用：\n\n![09c2b1ee3734fcfe41154e62815cc6a7&#95;MD5&#46;jpg](/notes/n-23c88c136e7d414f98de5192becb8546/media/467aca259656f37eb9519ee6ae6783140f9080ba9d93d93cce17bca00719b6f3.jpg)\n\n但是这种分发路径比直接通过 `vtable` 调用更慢。\n## 组件管理\n\n### COM 与注册表\n\n\n客户端和 COM 组件是相互独立的，组件的重要性质之一就是位置透明性。\n\n\n客户程序调用 COM 对象时，不需要关心组件实际位于何处，用户只需要表示我要使用哪个 COM 类即可。\n\n这一\"位置无关性\"主要依赖注册表来实现。组件通常需要先完成注册，COM 库才能根据给定的 `GUID` 检索注册项并定位目标对象。\n\nCOM 组件对应二进制文件的存放路径：\n\n```text\nHKEY_CLASSES_ROOT\\CLSID\\COM组件的CLSID\\InprocServer32\nHKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\COM组件的CLSID\\InprocServer32\n\nHKEY_CLASSES_ROOT\\Wow6432Node\\CLSID\\COM组件的CLSID\\InprocServer32\nHKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Wow6432Node\\CLSID\\COM组件的CLSID\\InprocServer32\n```\n\n![57d849e08b1b4e9cb9d25e2003594b15&#95;MD5&#46;jpg](/notes/n-23c88c136e7d414f98de5192becb8546/media/4875834ecabd16f96b04251a5037927e400f4a6c5cd52272be8d2692f91ac705.jpg)\n\n### 注册与反注册\n\n为了向注册表中写入或删除定位该组件所需的信息，组件还需要对应的注册与反注册函数。\n\n实现自注册组件**必须导出两个函数**：\n\n```cpp\nSTDAPI DllRegisterServer(void)\nSTDAPI DllUnregisterServer(void)\n```\n\n\n**疑问**：为什么 `DLL` 还要导出注册函数，想要找到它需要它被注册，而注册它的逻辑又由它自己完成，这不是逻辑错误吗？\n\n**回答**：注册是由 `regsvr32.exe` 调用组件导出的 `DllRegisterServer` 完成注册；同理，卸载函数也是由 `regsvr32 /u 组件路径` 调用。\n\n### 卸载管理\n\n前面讨论的 `Release`，解决的是\"某个对象实例什么时候该释放\"。但 COM 组件作为 `DLL` 存在时，还要再回答一个问题：**整个 `DLL` 什么时候可以卸载？**\n\n这个判断通常至少要看两件事：\n\n1. 还有没有对象实例在被使用。组件中对象数为 0；\n2. 类工厂或服务器有没有被显式锁住。类工厂的锁计数为 0。\n\n因此，组件通常需要提供一个\"是否可以卸载\"的判断入口。\n\nCOM 组件通过导出 `DllCanUnloadNow` 来实现 `DLL` 的卸载：当该函数返回 `S_OK` 时，表示当前对象状态允许卸载。\n\n另外，可以调用 `CoFreeUnusedLibraries` 函数检查当前进程里的所有 COM 组件是否可以卸载并进行卸载。\n> 该函数通常由客户端在合适时机调用，例如消息循环空闲或阶段性清理时。本质上也是调用导出函数判断是否可以卸载。\n\n### 总结：COM 组件导出函数\n\n对 COM 本身的要求：\n\n1. 完成自身的注册和反注册\n2. 完成 COM 对象的创建（通过类工厂）\n    - 对 COM 类（包括工厂类）的要求：\n        1. 实现业务逻辑\n        2. COM 对象要负责对自己的释放\n3. 完成自身的卸载\n\n因此，实际上COM 组件的导出函数通常包括：\n\n1. `DllGetClassObject`：返回类工厂对象。\n2. `DllCanUnloadNow`：判断当前 `DLL` 是否可以卸载。\n3. `DllRegisterServer`：注册组件。\n4. `DllUnregisterServer`：反注册组件。\n\n> COM 组件把和对象有关的那些关键动作——接口暴露、实例创建、接口查询、引用计数、组件定位——都改写成了不依赖某一种具体语言语法的形式。这也是为什么 COM 能让不同语言围绕同一套组件协作，而不必共享同一份源码或同一种编译器语义。\n\n\n---\n## C++ 开发的客户端如何使用 COM 组件\n\n如下图就是客户/服务模型：\n\n![113de3afe857cb3e1e174fb82f7e2d95&#95;MD5&#46;jpg](/notes/n-23c88c136e7d414f98de5192becb8546/media/f239af4e4f56e39fa8b0ede622916f94aff432dfbb628a4fd0b540ce20139351.jpg)\n\n客户端引用 COM 库后，就可以使用一些 COM 库函数。\n\n客户端通常通过 COM 库提供的创建函数完成 COM 对象的创建，常见的创建函数有 `CoGetClassObject` 和 `CoCreateInstance`。\n\nCOM 客户端通过拿到接口指针，通常要经过两步：\n\n1. 先获取 `CLSID` 代表的 COM 类所对应的类工厂对象；\n2. 由类工厂对象创建 COM 对象，并把接口指针返回给客户。\n\n客户拿到对象接口指针后，就可以通过该指针调用接口成员函数；同时也可以继续查询其他接口指针，从而访问同一个 COM 对象暴露的其他服务。\n\n---\n\n### 使用 `CoGetClassObject` 创建对象\n\n这个函数背后替我们做的就是定位 COM 组件、加载 DLL、调用 `DllGetClassObject` 获取类工厂，创建类工厂实例并且返回工厂对象的指针。\n\n\n```cpp\n#include <windows.h>\n#include <iostream>\n\n// 包含由 MIDL 工具生成的头文件，该文件定义了具体接口和 GUID\n#include \"MyComComponent_h.h\"\n\nint main()\n{\n    HRESULT hr; // HRESULT 是 COM 操作的标准返回值类型，用于判断函数是否执行成功。\n\n    // 1. 初始化 COM 库：进入 COM Apartment。每个使用 COM 的线程都必须先初始化 COM。\n    // CoInitialize(NULL) 等价于 CoInitializeEx(NULL, COINIT_APARTMENTTHREADED)，即以 STA（Single-Threaded Apartment）模型初始化当前线程。\n    hr = CoInitialize(NULL);\n    if (FAILED(hr))\n    {\n        std::cout << \"COM library initialization failed. HRESULT: \" << std::hex << hr << std::endl;\n        return -1;\n    }\n\n    IClassFactory* pFactory = nullptr; // 声明类厂接口指针，初始化为 nullptr 是良好的编程习惯。\n    IMyInterface* pObj = nullptr;      // 声明业务接口指针，初始化为 nullptr 是良好的编程习惯。\n\n    // 2. 获取类厂对象。类厂是专门负责创建 COM 对象的 COM 对象。\n    hr = CoGetClassObject(\n        CLSID_MyObject,                 // 要创建的 COM 类的 CLSID。\n        CLSCTX_INPROC_SERVER,           // 表示该组件是同一进程内加载的 DLL。\n        NULL,                           // 保留参数，通常传入 NULL。\n        IID_IClassFactory,              // 请求类厂暴露的标准创建接口。\n        reinterpret_cast<void**>(&pFactory) // 接收 IClassFactory 接口指针。\n    );\n\n    if (SUCCEEDED(hr))\n    {\n        // 3. 通过类厂创建具体对象。CreateInstance 会实例化组件对象。\n        hr = pFactory->CreateInstance(\n            NULL,                           // 不使用聚合。\n            IID_IMyInterface,               // 表示希望从新对象上获得的目标接口。\n            reinterpret_cast<void**>(&pObj) // 接收 IMyInterface 接口指针。\n        );\n\n        if (SUCCEEDED(hr))\n        {\n            pObj->DoSomething(); // 4. 调用业务逻辑。\n\n            // 5. 释放对象接口引用。COM 对象生命周期由引用计数管理；调用 Release 后，如果引用计数归零，对象会释放自身。\n            pObj->Release();\n        }\n        else\n        {\n            std::cout << \"CreateInstance failed. HRESULT: \" << std::hex << hr << std::endl;\n        }\n\n        pFactory->Release(); // 6. 释放类厂。类厂本身也是 COM 对象，用完后同样需要调用 Release。\n    }\n    else\n    {\n        std::cout << \"Failed to get Class Factory. HRESULT: \" << std::hex << hr << std::endl;\n    }\n\n    // 7. 反初始化 COM 库。释放当前线程占用的 COM 资源，必须与成功的 CoInitialize / CoInitializeEx 配对。\n    CoUninitialize();\n\n    return 0;\n}\n```\n\n\n### 使用 `CoCreateInstance` 创建对象\n\n`CoCreateInstance` 又进一步帮我们完成了通过类工厂对象创建 COM 对象的步骤，并且返回 COM 对象实例指针。\n\n```cpp\n#include <windows.h>\n#include <iostream>\n\n// 假设这是组件提供的头文件，里面声明 CLSID_MyObject、IID_IMyInterface、IMyInterface\n#include \"MyComComponent_h.h\"\n\nint main()\n{\n    HRESULT hr;\n\n    // 1. 初始化 COM 库。CoInitialize(NULL) 等价于使用 STA 模型初始化当前线程。\n    hr = CoInitialize(NULL);\n    if (FAILED(hr))\n    {\n        std::cout << \"CoInitialize failed\\n\";\n        return -1;\n    }\n\n    IMyInterface* pObj = nullptr;\n\n    // 2. 创建 COM 对象\n    hr = CoCreateInstance(\n        CLSID_MyObject,          // COM 类的 CLSID\n        NULL,                    // 不使用聚合\n        CLSCTX_INPROC_SERVER,    // DLL 形式的进程内 COM 组件\n        IID_IMyInterface,        // 请求的接口 IID\n        reinterpret_cast<void**>(&pObj)\n    );\n\n    if (SUCCEEDED(hr))\n    {\n        // 3. 使用 COM 对象\n        pObj->DoSomething();\n\n        // 4. 释放接口引用\n        pObj->Release();\n    }\n    else\n    {\n        std::cout << \"CoCreateInstance failed, HRESULT = \"\n                  << std::hex << hr << std::endl;\n    }\n\n    // 5. 反初始化 COM 库，必须与当前线程上的 CoInitialize / CoInitializeEx 配对。\n    CoUninitialize();\n\n    return 0;\n}\n```\n\n---\n",
+  "id": "23c88c13-6e7d-414f-98de-5192becb8546",
+  "metadata": {
+    "tags": [
+      "os/windows/com"
+    ],
+    "title": "COM 组件设计思想"
+  },
+  "resources": [
+    "1358d0258a11e1a6a0d797ee8fbb84027b0623ca8c0799808f7c31c2ed55e592.jpg",
+    "467aca259656f37eb9519ee6ae6783140f9080ba9d93d93cce17bca00719b6f3.jpg",
+    "4875834ecabd16f96b04251a5037927e400f4a6c5cd52272be8d2692f91ac705.jpg",
+    "9665467e277da8b4368d220c46eeb76a6c99c849d2d697b00beb189c1239f61e.jpg",
+    "f239af4e4f56e39fa8b0ede622916f94aff432dfbb628a4fd0b540ce20139351.jpg"
+  ],
+  "url": "/notes/n-23c88c136e7d414f98de5192becb8546/"
+}

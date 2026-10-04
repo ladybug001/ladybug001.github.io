@@ -1,0 +1,41 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-43d28baa6177fe8fe322",
+      "kind": "heading",
+      "offset": 16
+    },
+    {
+      "id": "h-4b1ccca9c575a91d4bcd",
+      "kind": "heading",
+      "offset": 85
+    },
+    {
+      "id": "h-ecf42b4d7d27f400625d",
+      "kind": "heading",
+      "offset": 279
+    },
+    {
+      "id": "h-2d67ef3b52f78050249d",
+      "kind": "heading",
+      "offset": 473
+    },
+    {
+      "id": "h-14ae986ce94a9b1ada89",
+      "kind": "heading",
+      "offset": 684
+    }
+  ],
+  "body": "# COM 组件技术 (MOC)\n\n> COM（Component Object Model）组件技术：从设计思想到开发实践，再到 ATL 框架的使用。\n\n## 阅读前置\n\n- [C&#43;&#43; 虚函数与虚函数表](/notes/n-7794ffc3e8894de895729386e783249b/) — 理解接口调用的间接分发。\n- [C&#43;&#43; 多重继承下的虚函数重写](/notes/n-280e5cee71ff44e39a7c81ac3dc78743/) — 理解多个接口对应的对象布局与 `this` 修正。\n\n## 阅读顺序\n\n1. [COM 组件设计思想](/notes/n-23c88c136e7d414f98de5192becb8546/)\n2. [COM 组件开发基础](/notes/n-59332a7e0ef740048875e7c1d3bf71e5/)\n3. [COM 组件开发框架 ATL](/notes/n-0d0dd184ade2494b8a0530e2cff70449/)\n\n## 相关笔记\n\n- [C&#43;&#43; 面向对象编程 &#40;MOC&#41;](/notes/n-0a0112f464fc4c52937fc3acc6f4f4b1/) — 补充虚函数表、多重继承与接口调用的基础。\n- [Windows 系统编程 &#40;MOC&#41;](/notes/n-76a722ab50b149b6a762c4a3ed74d4ce/) — 返回 Windows 系统与开发入口。\n\n## 实际应用\n\n- FPS逆向记录&#65306;CSGO — 对照 Source 引擎接口的获取与调用，观察接口设计思想在引擎中的应用。\n",
+  "id": "2929ad8f-f2e6-4326-bfd4-19aab6791065",
+  "metadata": {
+    "tags": [
+      "MOC",
+      "os/windows/com",
+      "lang/cpp"
+    ],
+    "title": "COM 组件技术 (MOC)"
+  },
+  "resources": [],
+  "url": "/notes/n-2929ad8ff2e64326bfd419aab6791065/"
+}

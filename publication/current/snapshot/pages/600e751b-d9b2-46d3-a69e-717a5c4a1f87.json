@@ -1,0 +1,100 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-4715871b7fc60c47ad8a",
+      "kind": "heading",
+      "offset": 199
+    },
+    {
+      "id": "h-b138af9a6af641669589",
+      "kind": "heading",
+      "offset": 582
+    },
+    {
+      "id": "h-0e0eaa04ad5566c8c8b9",
+      "kind": "heading",
+      "offset": 1309
+    },
+    {
+      "id": "h-a378859debb1e30e8eab",
+      "kind": "heading",
+      "offset": 1830
+    },
+    {
+      "id": "h-f942c29d185d456ab3da",
+      "kind": "heading",
+      "offset": 2433
+    },
+    {
+      "id": "h-98def9adc7372caa29b3",
+      "kind": "heading",
+      "offset": 2862
+    },
+    {
+      "id": "h-a9a546738b306c081a72",
+      "kind": "heading",
+      "offset": 3225
+    },
+    {
+      "id": "h-98a730d7ce9ba63f31e2",
+      "kind": "heading",
+      "offset": 3812
+    },
+    {
+      "id": "h-5f1cf024b3573e309f3a",
+      "kind": "heading",
+      "offset": 4258
+    },
+    {
+      "id": "h-6e55445415fe90b41976",
+      "kind": "heading",
+      "offset": 4757
+    },
+    {
+      "id": "h-563cbede475efe463635",
+      "kind": "heading",
+      "offset": 8133
+    },
+    {
+      "id": "h-09de92ab2feeebc94b6c",
+      "kind": "heading",
+      "offset": 9073
+    },
+    {
+      "id": "h-42c2831612102d0ef73a",
+      "kind": "heading",
+      "offset": 11509
+    },
+    {
+      "id": "h-33bfab8dc66bc01d0ff4",
+      "kind": "heading",
+      "offset": 12101
+    }
+  ],
+  "body": "> [!abstract] 前置知识\n> 阅读本笔记前，建议先了解：[x86 控制转移与特权级切换](/notes/n-9610ebe0eb6f4028a1298ac85264eca7/)（CALL FAR 压栈行为）、[x86 中断门与陷阱门](/notes/n-12e2ce5ea6a84311952dd4ac3d4978c2/)（IRET 返回机制）\n\n# 硬件任务切换机制：TSS 与任务门\n\n\n从 CPU 的视角来看，它并没有\"任务切换\"的概念，有的只是**取指、执行**，周而复始。\n\n\"任务\"是人类视角下的抽象定义：这一批指令属于任务 A，那一批属于任务 B。因此，所谓任务切换，不过是让 CPU 从执行 A 的指令流，转移到执行 B 的指令流。\n\n那么，**谁决定了 CPU 当前在执行哪个任务？**\n\n首先想到的是 **EIP 寄存器**——它始终指向下一条待执行的指令。但由于分页机制的存在，虚拟地址的解析依赖页表，而页表的基地址正是存储在 **CR3 寄存器**中。\n\n因此可以得出一个核心结论：\n\n**对 CPU 而言，任务切换的本质，就是切换 CR3 与 EIP。**\n\n> 当然，其他对任务执行起辅助作用的寄存器（如通用寄存器、标志寄存器等）同样需要随之保存与恢复——但这是机制层面的细节，不影响对本质的理解。\n\n## 任务切换机制演进\n\n\n- **软件切换机制**：早期及现代操作系统普遍采用此方案——由时钟中断（一种可屏蔽的硬件中断，由外设周期性触发）驱动，配合内核调度逻辑，手动保存与恢复各寄存器状态，从而实现线程调度。\n- **硬件切换机制**：为提升切换效率，Intel 在 x86 架构中内建了一套纯硬件驱动的任务切换体系，核心组件包括本章将要探讨的 `TSS`（任务状态段）、`TR`（任务寄存器），以及与之配套的门描述符机制。\n> **注**：现代操作系统（如 Windows / Linux）出于跨平台兼容性与执行效率的考量，并未采用这套重量级的硬件任务切换机制。然而，Intel 的硬件设计规定：在发生跨特权级提权时，CPU 必须通过 TR 寄存器定位 TSS，进而找到内核栈指针 ESP0——这是无法绕过的硬件行为。因此，尽管 Windows / Linux 不依赖 TSS 进行任务切换，却仍须维护它，因为 **TSS 是特权级切换时内核栈指针的唯一硬件来源**。\n\n\n无论采用哪种切换机制，其背后的核心逻辑是一致的：\n\n在现代操作系统中，每个进程的虚拟地址空间被划分为两部分：高地址的**内核空间**由所有进程共享，低地址的**用户空间**则为各进程私有。从内存映射的角度看，一个运行中的\"进程\"，实际上是由共享的内核态映像与该进程专属的用户态二进制映像共同构成的。\n\n进程的上下文切换始终发生在内核空间中。调度器的核心操作十分简洁：**切换用户空间的页表映射**（即写入新的 CR3 值），再恢复目标进程的硬件上下文，最后返回用户态——任务切换至此完成。\n\n\n深入理解这套硬件机制，是掌握 x86 底层原理的必经之路。\n\n## 核心数据结构：TSS（任务状态段）\n\n`TSS` 是 CPU 厂商设计用于配合实现硬件任务切换的内存结构体。32 位下其大小为 `104` 字节：\n![image2022&#45;7&#45;6&#95;9&#45;58&#45;44&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/8a92e8b63c7912a22da42ee16ef02daa3ab50500773407cb98b666e3de54bbe8.png)\n\n除了包含所有通用寄存器、段寄存器以及 `CR3`、`EIP` 外，`TSS` 最核心的设计在于顶部三组堆栈指针：\n- `ESP0` / `SS0`：0 环特权级对应的堆栈\n- `ESP1` / `SS1`：1 环特权级对应的堆栈\n- `ESP2` / `SS2`：2 环特权级对应的堆栈\n\n**为什么需要这些特权级堆栈？**\n我们在探讨调用门、中断门机制时已知：跨特权级跳转必然伴随堆栈的切换（为了安全性）。`CS` 和 `EIP` 的新值由门描述符提供，而**新特权级所需的 `SS` 和 `ESP` 就是由 CPU 自动从当前 `TSS` 中抓取的。**\n\n## TSS 段描述符\n\n`TSS` 段描述符与普通代码段 / 数据段描述符不同，它指向的是一个 `TSS` 结构体，而不是普通意义上的“代码段”或“数据段”。\n\n`TSS` 段描述符是一种系统段描述符（`S=0`）。\n\n通过其 `Type` 域可以判断 `TSS` 段描述符的状态：\n- `Type = 1001` (`0x9`)：Available（可用）`TSS`。\n- `Type = 1011` (`0xB`)：Busy（忙碌）`TSS`。\n![image2022&#45;7&#45;6&#95;10&#45;46&#45;30&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/d5de3eb5a2a1418659516c975759e262fdd95f5af64842a5bff628d293be482f.png)\n\n> [!NOTE] TSS 为何要标记为 Busy？\n>\n> 同一份 TSS 只能可靠地保存一套任务现场。若允许同一 TSS 被重复嵌套使用，其一，任务将被执行两遍；其二，新现场会覆盖旧现场，CPU 将无法确定应恢复哪一层状态。将 TSS 标记为 **Busy** 正是硬件对此的主动防护——一旦某任务的 TSS 处于 Busy 状态，CPU 将拒绝再次切换至该任务，从而避免嵌套混乱。\n\n\n### TR 寄存器与 TSS 的寻址\n\nCPU 是如何知道当前 `TSS` 在哪里的？答案是通过 `TR`（Task Register，任务寄存器）。\n\n与代码段描述符最终装入 `CS` 类似，`TSS` 段描述符最终存储在 `TR`（Task Register）寄存器中。\n\nTR 寄存器缓存了其对应的段描述符，通过 Base 和 Limit，定位到内存中真正的 `TSS` 结构体，逻辑如下图所示：\n\n![image2022&#45;7&#45;6&#95;10&#45;22&#45;27&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/5e49d7e6b2704c8316a399f4ed1c15bf9e5da07d0fec599511befc052ed61c62.png)\n> TSS 段描述符只能存在 GDT 表中。\n\n加载过一次 TR 寄存器后，后续不需要每次都查 GDT 等表，而是有缓存。\n#### 修改 TR\n\n`TR` 不能用 `MOV` 读写，常用的修改方式：\n1. **0 环手动修改（特权指令）**：使用 `LTR` 和 `STR` 指令。\n\t- `LTR` 将选择子装入 `TR`，并将目标描述符状态从 Available 置为 Busy（Type 变为 `0xB`）。此操作**仅修改 TR，不会触发任务切换动作**。\n\t- `STR`：读取 `TR` 的可见部分，也就是 16 位段选择子，看不到隐藏部分。\n2. **3 环隐式修改**：使用 `CALL FAR` 或 `JMP FAR` 跳转向 `TSS` 段描述符时，触发完整的硬件任务切换逻辑，同时 CPU 自动更新 `TR` 寄存器。涉及到目标 TSS 段描述符和原描述符的状态改变（Busy/Available）\n\n## 历史碰撞：硬件机制与现代 OS 的取舍\n\nIntel 的原始设计理念是 **\"一任务一 TSS\"**：每次任务切换时，CPU 自动将当前所有寄存器状态保存至旧 TSS，再从新 TSS 中载入目标状态，TR 寄存器随之切换——一切由硬件自动完成。\n\n然而现代操作系统（如 Windows）的实践却截然不同，采用的是 **\"一核心一 TSS\"** 策略：\n\n1. 系统启动时，为每个 CPU 核心分配唯一的 TSS 并加载至 TR，此后 TR 不再改变；\n2. 发生线程调度时，内核仅动态修改当前核心 TSS 中的 `ESP0` 字段，而非切换 TSS 本身。\n\n**为何产生这种背离？**\n\n**其一**，现代 OS 根本不依赖 TSS 进行任务切换，自然无需\"一任务一 TSS\"。线程上下文的保存与恢复，完全交由软件调度逻辑与专有的 `KTRAP_FRAME` 结构体承担，相当于\"一任务一 `KTRAP_FRAME`\"。\n\n**其二**，硬件层面存在一条无法绕过的约束：每当发生特权级切换，CPU 必须通过 TR 寄存器找到 TSS，从中取出内核栈指针完成栈切换。操作系统必须配合这一机制——TSS 无法被彻底废弃。因此，内核在每次线程切换时，都需同步更新当前核心 TSS 中的 `ESP0` 与 `SS0` 字段，以确保下一次特权级提升时能找到正确的内核栈。\n\n---\n\n### 多核环境下 TSS 的独立性\n\n在多核架构下，**每个 CPU 核心拥有独立的 GDT 与 IDT**。各核心的 GDT 内容大体相同，唯一的差异在于 **TSS 描述符**——每个核心的 TSS 描述符指向不同的 TSS 结构体。\n\n**为何各核心必须拥有独立的 TSS？**\n\n根本原因在于内核栈的隔离性。以 Windows 32 位系统为例：低 2 GB 为各进程私有的用户空间，高 2 GB 内核空间则由所有进程共享。当不同核心上的线程同时发生特权级提升（Ring 3 → Ring 0）时，CPU 需从各自的 TSS 中取出 `ESP0` 作为内核栈基址。\n\n若多个核心共享同一个 TSS，则所有核心将使用相同的 `ESP0`，向同一片物理内存并发压栈——这必然引发栈数据的相互覆盖与系统崩溃。\n\n因此，每个核心必须维护独立的 TSS，指向各自线程的内核栈。每当调度器切换线程时，都会将新线程的 `ESP0` 写入当前核心的 TSS，确保下一次特权级切换时能正确定位该线程的内核栈顶。\n\n## 硬件任务切换实验\n\n虽然现代操作系统不使用硬件任务切换机制，但我们可以通过手动构造 `TSS` 和其描述符来验证其底层逻辑。\n\n**触发条件差异：CALL vs JMP**\n向 `TSS` 段描述符发起跨段转移时，`CALL` 和 `JMP` 存在显著的系统级差异：\n- `CALL FAR`（嵌套调用）：\n\t- 会将当前旧任务的选择子填入新目标 `TSS` 的 `Previous Task Link` 字段。\n\t- 将 `EFLAGS` 寄存器的 `NT`（Nested Task）位置 `1`。\n\t- 由于建立了嵌套链，任务完成后可通过 `IRETD` 按照链接反向返回旧任务。`IRETD` 执行时会检查 `NT` 位：若为 `1`，则从当前 TSS 的 `Previous Task Link` 中取出前驱任务选择子并切回；若为 `0`，则执行标准的中断返回流程。\n\t- 同理，`INT N` 指令也可以通过 TSS 段描述符或任务门触发硬件任务切换。\n- `JMP FAR`（单向跳转）：属于平级移交，不产生任务嵌套，不修改 `NT` 位和返回链接，没有返回路径。\n\n\n### 构造 TSS 与触发切换\n\n完整代码：\n```c\n#include <stdio.h>\n#include <windows.h>\n\nint o_eax, n_esp;\nshort n_cs, n_ss;\n\nvoid __declspec(naked) GetValue() {\n    // 将寄存器保存到全局变量中\n    _asm {\n        mov o_eax, eax\n        mov n_esp, esp\n        mov ax, cs\n        mov n_cs, ax\n        mov ax, ss\n        mov n_ss, ax\n        mov eax, o_eax\n        iret // 返回到原任务\n    }\n}\n\nvoid main()\n{\n    char stack[100] = {0}; // 栈\n    char buffer[6] = {0x0, 0x0, 0x0, 0x0, 0x4B, 0x0}; // 选择子\n    int iCr3 = 0;\n\n    printf(\"Input CR3: \");\n    scanf(\"%x\", &iCr3);//通过WinDbg指令进行获取：!process 0 0\n    getchar();\n\n    DWORD tss[0x68] = {\n\t    0, 0, 0, 0, 0, 0, 0,   // 前置链接与各级 ESP/SS\n\t    (DWORD)iCr3,           // 必须提供当前进程有效的 CR3\n\t    0x00401020,            // EIP：新任务起点 (GetValue 函数)\n\t    0, 0, 0, 0, 0,         // EFLAGS, EAX, ECX, EDX, EBX\n\t    (DWORD)stack,          // ESP：分配的新堆栈\n\t    0, 0, 0,               // EBP, ESI, EDI\n\t    0x23, 0x08, 0x10, 0x23, 0x30, 0, 0, 0x20ac0000 // 各段寄存器等\n\t};\n\n    _asm {\n        call far fword ptr[buffer] // 长调用\n    }\n\n    // 输出寄存器的值，证明完成了任务切换\n    printf(\"ESP: %x, CS: %x, SS: %x \\n\", n_esp, n_cs, n_ss);\n\n    getchar();\n}\n\n```\n\n> 这里的 `GetValue` 函数，就是 `CALL FAR` 切换到目标任务后实际开始执行的入口。\n\n**1. 准备自定义 TSS 结构**\n在 C 语言中构造一个与 TSS 完全对齐的数组，内部填充预期的各寄存器状态：\n```cpp\nDWORD tss[0x68] = {\n    0, 0, 0, 0, 0, 0, 0,   // 前置链接与各级 ESP/SS\n    (DWORD)iCr3,           // 必须提供当前进程有效的 CR3\n    0x00401020,            // EIP：新任务起点 (GetValue 函数)\n    0, 0, 0, 0, 0,         // EFLAGS, EAX, ECX, EDX, EBX\n    (DWORD)stack,          // ESP：分配的新堆栈\n    0, 0, 0,               // EBP, ESI, EDI\n    0x23, 0x08, 0x10, 0x23, 0x30, 0, 0, 0x20ac0000 // 各段寄存器等\n};\n```\n\n**2. 部署 TSS 段描述符**\n\n获取上述 `tss` 数组在内存中的基址为 `0x0012fd70`：\n![image2022&#45;7&#45;6&#95;16&#45;36&#45;42&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/0d64e180f25a32f46d6851eab40ff082b17673e6d742247bb1e13c8cccb4da29.png)\n\n\n构造 `Base=0x0012fd70`, `Limit=0x68`, `DPL=3`, `Type=0x9` (Available TSS) 的描述符：\n```text\n0000e912`fd700068\n```\n\n\n利用 `WinDbg` 写入 `GDT` 中：\n\n![image2022&#45;7&#45;6&#95;16&#45;43&#45;24&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/afb096428463dedd292d135cdd64a0719ea5ba5757923a830e9296bbdfce2702.png)\n\n在用户代码中构造 6 字节指针，选择子指向刚才写入的 TSS 描述符（例如 `0x4B`，对应 Index=9, RPL=3）：\n```cpp\nchar buffer[6] = {0x0, 0x0, 0x0, 0x0, 0x4B, 0x0};\n_asm { call far fword ptr[buffer] }\n```\n\n**3. 用户态跨段调用及验证**\n\n接下来需要获取当前进程使用的 `CR3`。\n\n首先要下载 WinXP SP2 离线符号环境\n```\nhttps://pan.baidu.com/s/1j0oDzGHVviMvilWgWhdoxg\n提取码：keey\n```\n\n然后在 `Windbg` 中按图示方式加载符号目录：\n\n![image2022&#45;7&#45;7&#95;15&#45;21&#45;28&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/cde2daddf7334f0c3a25e76e98e0da04365e4d364727c35b76dc32f4655fdca5.png)\n\n加载符号后，通过 `WinDbg` 的 `!process 0 0` 命令获取当前进程的 `CR3`，再输入到程序中：\n\n![image2022&#45;7&#45;7&#95;15&#45;29&#45;37&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/1e492c80b4c271ac1b0abb6a7cbb8d6f465fbc517e7398e1ea0f9416539c6697.png)\n\n![image2022&#45;7&#45;7&#95;15&#45;30&#45;25&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/87039fb13efd461a88af12d33281089281ae95d51f86a6bbe3e20813d3269a88.png)\n\n\n执行后，CPU 会依据 `CALL FAR` 的语义自动保存全套上下文至旧 TSS，从数组 `tss` 加载全套新上下文，程序成功切入我们指定的 0 环 `GetValue` 函数。\n\n函数内通过 `IRETD` 返回后，打印内容，证明底层发生过硬件级的任务切换。\n![image2022&#45;7&#45;7&#95;15&#45;33&#45;16&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/c5cfadb1dee96c2125066de216a25e04fcd3ab559504e21991524cc22c1184cd.png)\n\n## 任务门（Task Gate）\n\n任务门是一种特殊的门描述符，其 `Type=0101` (`0x5`)。\n\n结构如下图所示：\n![image2022&#45;7&#45;8&#95;10&#45;17&#45;59&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/ee90ce19707da0e3cb3344950aac91b9c32d6af5892aa3e98ccf76abfde24483.png)\n图中 `Reserved` 部分为 `0`，真正关键的是其中保存的 `TSS` 段选择子，它（只能）指向 `GDT` 中的某个 `TSS` 段描述符。\n\n\n**核心执行链路**：\n执行 `CALL/JMP/INT` -> 命中任务门描述符 -> 提取其中的 `TSS` 选择子 -> 查询 `GDT` 命中 `TSS` 段描述符 -> 读取 `TSS` 结构体进行硬件任务切换。\n![image2022&#45;7&#45;8&#95;10&#45;24&#45;54&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/dbe4d6a003c8971e193f64e66e09d3972fc1405acca3d0f4a02d1f66cc833299.png)\n\n\n> [!NOTE] 为什么还需要任务门？\n> 既然任务门最后还是要找到 `TSS` 段描述符，那为什么不直接使用 `TSS` 段描述符，而要多绕一层任务门？\n> 任务门提供了一层间接引用。`IDT` 里的表项结构必须是门描述符，不能直接塞一个 `TSS` 段描述符；任务门正好解决了这一层结构适配问题。**任务门可以位于 `GDT`、`LDT`，也可以位于 `IDT`**；而 `TSS` 段描述符只能位于 `GDT`。正因为任务门可以放进 `IDT`，所以中断或异常发生时就有机会直接切换到独立任务处理。\n\n\n> *注：通过任务门使用 `CALL/INT` 转移时，产生嵌套链和设置 `EFLAGS.NT` 的行为与直接调用 `TSS` 描述符完全一致。*\n\n### 实验：利用任务门（配合 IDT）实现提权\n\n**核心逻辑**：只要任务门的 `DPL` 允许 3 环访问，那么 3 环程序就可以引发一次合法的任务切换，从而装载配置 0 环权限的合法 `TSS` 上下文完成提权。\n\n**1. 构造高权限 TSS 与 TSS 段描述符**\n\n`TSS` 使用与上一实验类似的代码数组。\n\n但这次构造 `TSS` 描述符时将 `DPL` 设为 0（`Type=9`）：\n```text\n00008912`fd780068\n```\n利用 `WinDbg` 写入 `GDT` 表槽位（如 `0x48`）：\n![image2022&#45;7&#45;8&#95;10&#45;49&#45;18&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/0eeabbfe5457e452d334c542eafd77c40cd3daa5f033b307412092011a969e68.png)\n\n**2. 构造任务门并写入 IDT**\n构造任务门，其内部存有上述 `TSS` 描述符的选择子 `0x4B`，同时向用户态开放 `DPL=3`。拼装后：\n```text\n0000e500`004b0000\n```\n将其写入 `IDT` 的某个空闲索引处，例如 `0x20` 号槽位：\n![image2022&#45;7&#45;8&#95;10&#45;54&#45;2&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/c415a2521e72c78e8d0f06518029d9dda993cf7eddcad87a794abc5b11edd342.png)\n\n**3. 用户态软件中断触发**\n在应用层直接抛出对应中断号即可触发任务门：\n```cpp\n_asm {\n    int 0x20\n}\n```\n\n完整代码如下：\n\n```cpp\n#include <stdio.h>\n#include <windows.h>\n\nint o_eax, n_esp;\nshort n_cs, n_ss;\n\nvoid __declspec(naked) GetValue() {\n    _asm {\n        mov o_eax, eax\n        mov n_esp, esp\n        mov ax, cs\n        mov n_cs, ax\n        mov ax, ss\n        mov n_ss, ax\n        mov eax, o_eax\n        iret\n    }\n}\n\nvoid main()\n{\n    char stack[100] = {0}; // 堆栈\n    int iCr3 = 0;\n    printf(\"Input: \");\n    scanf(\"%x\", &iCr3);\n    getchar();\n    \n\tDWORD tss[0x68] = {\n\t    0,0,0,0,0,0,0,              // LINK, ESP0~SS2\n\t    (DWORD)iCr3,                // CR3\n\t    0x00401020,                 // EIP 任务切换后，要执行的第一条指令\n\t    0,0,0,0,0,                  // EFLAGS, EAX~EBX\n\t    (DWORD)stack,               // ESP\n\t    0,0,0,                      // EBP, ESI, EDI\n\t    0x23,                       // ES\n\t    0x08,                       // CS\n\t    0x10,                       // SS\n\t    0x23,                       // DS\n\t    0x30,                       // FS\n\t    0,                          // GS\n\t    0,                          // LDT\n\t    0x20ac0000                  // IO_MAP 没啥用 默认值就行\n\t};\n\n    _asm {\n        int 0x20\n    }\n\n    // 输出寄存器的值，证明完成了任务切换\n    printf(\"ESP: %x, CS: %x, SS: %x \\n\", n_esp, n_cs, n_ss);\n\n    getchar();\n}\n```\n\n编译运行后，同样在 `Windbg` 中执行 `!process 0 0` 获取 `CR3`，再输入到程序中。最终可以看到，打印出来的寄存器值确实与我们构造的 `TSS` 一致：\n\n![image2022&#45;7&#45;8&#95;11&#45;3&#45;28&#46;png](/notes/n-600e751bd9b246d3a69e717a5c4a1f87/media/ca93d99aa20a5233d8cf8da5e479efaba1e0ffe1c5cee61fc50ea06d23632bb6.png)\n执行结果打印证明，通过 `IDT` 中的任务门中转，CPU 从目标 `TSS` 中装载新的执行上下文。实现了全套上下文的替换和提权，返回机制同样由 `IRETD` 正常接管。\n\n\n\n## 任务嵌套与硬件任务返回机制（`EFLAGS.NT` 与 `TSS.Back-Link`）\n\n`CALL FAR`、`JMP FAR` 与 `INT N` 均可通过任务门或 TSS 段描述符触发硬件任务切换。但硬件不仅支持任务切换，还内建了**任务返回（任务嵌套）** 机制，其核心由两个要素协同实现：TSS 中的 `Back-Link` 字段与 `EFLAGS.NT`（嵌套任务标志位）。\n\n三条指令在这一机制上的行为并不统一：\n\n- **`CALL FAR` 与 `INT N`**：触发任务切换时，会自动置位 `EFLAGS.NT = 1`，并在新任务的 TSS `Back-Link` 中记录源任务的选择子，**支持通过 `IRET` 嵌套返回**。在 Busy 位的处理上：目标任务 TSS **置为 Busy**，源任务 TSS **保持 Busy 不变**——因为源任务仍悬挂于调用链中，随时可能被返回，不得被重入。\n- **`JMP FAR`**：同样可触发硬件任务切换，但属于\"非嵌套跳转\"，**不会置位 `EFLAGS.NT`，也不会填写 `Back-Link`**，因此无法利用 `IRET` 自动返回源任务。在 Busy 位的处理上：目标任务 TSS **置为 Busy**，源任务 TSS **Busy 位被清除**——因为源任务已彻底退出执行，不再位于任何调用链上。\n\n---\n\n### `IRET` 的双重语义：由 `EFLAGS.NT` 决定\n\n执行 `IRET` / `IRETD` 时，CPU 首先检查 `EFLAGS.NT` 的状态，并据此选择截然不同的执行路径：\n\n- **`EFLAGS.NT = 0`（标准中断返回）**\n  CPU 从当前栈中依次弹出并恢复 `EIP`、`CS`、`EFLAGS`，并视特权级切换情况决定是否同步恢复 `ESP` 与 `SS`。这是普通中断/异常的标准返回流程。\n\n- **`EFLAGS.NT = 1`（嵌套任务返回）**\n  CPU 判定当前处于嵌套任务中，**不再从堆栈恢复数据**，转而读取当前 TSS 的 `Back-Link` 字段，获取前驱任务的 TSS 选择子，并完整恢复前驱任务的寄存器上下文，从而完成硬件层面的任务切换返回。\n\n---\n\n> [!WARNING] 调试保护与边界细节\n>\n> **① `INT 3` 对 `NT` 位的处理**\n> 触发 `INT 3`（`0xCC`）断点异常进入处理例程时，硬件会自动将 `EFLAGS.NT` 清零。这是一项主动保护：防止断点调试意外触发嵌套任务回溯，引发不可控的任务自锁或连锁异常。\n>\n> **② `RETF` 与任务门不兼容**\n> `RETF` 是纯粹基于堆栈的远返回指令，**不检查 `EFLAGS.NT`，也不访问 `TSS.Back-Link`**。因此，若 `CALL FAR` 通过任务门或 TSS 描述符完成了硬件任务切换，则返回时**必须使用 `IRET`** 而非 `RETF`——后者对任务嵌套机制一无所知。\n>\n> **③ `JMP FAR` 的单向性**\n> `JMP FAR` 虽可指向任务门并完成硬件任务切换，但切换后 `EFLAGS.NT` 保持为 0，`Back-Link` 也不会被填写。这使得 `JMP FAR` 的任务切换是**单向、不可自动返回**的，与 `CALL FAR` 建立双向回链的语义形成鲜明对比。\n\n---\n\n> [!seealso] 相关笔记\n> - [x86 保护模式分段机制 &#40;MOC&#41;](/notes/n-591f04ba95784267982ebc62f2b0c04d/) — 系列总索引\n> - [x86 控制转移与特权级切换](/notes/n-9610ebe0eb6f4028a1298ac85264eca7/) — 调用门与 CALL FAR 的压栈模型\n> - [x86 中断门与陷阱门](/notes/n-12e2ce5ea6a84311952dd4ac3d4978c2/) — IRET 返回与 NT 位的物理行为\n",
+  "id": "600e751b-d9b2-46d3-a69e-717a5c4a1f87",
+  "metadata": {
+    "tags": [
+      "arch/x86",
+      "os/windows"
+    ],
+    "title": "x86 硬件任务切换：TSS 与任务门"
+  },
+  "resources": [
+    "0d64e180f25a32f46d6851eab40ff082b17673e6d742247bb1e13c8cccb4da29.png",
+    "0eeabbfe5457e452d334c542eafd77c40cd3daa5f033b307412092011a969e68.png",
+    "1e492c80b4c271ac1b0abb6a7cbb8d6f465fbc517e7398e1ea0f9416539c6697.png",
+    "5e49d7e6b2704c8316a399f4ed1c15bf9e5da07d0fec599511befc052ed61c62.png",
+    "87039fb13efd461a88af12d33281089281ae95d51f86a6bbe3e20813d3269a88.png",
+    "8a92e8b63c7912a22da42ee16ef02daa3ab50500773407cb98b666e3de54bbe8.png",
+    "afb096428463dedd292d135cdd64a0719ea5ba5757923a830e9296bbdfce2702.png",
+    "c415a2521e72c78e8d0f06518029d9dda993cf7eddcad87a794abc5b11edd342.png",
+    "c5cfadb1dee96c2125066de216a25e04fcd3ab559504e21991524cc22c1184cd.png",
+    "ca93d99aa20a5233d8cf8da5e479efaba1e0ffe1c5cee61fc50ea06d23632bb6.png",
+    "cde2daddf7334f0c3a25e76e98e0da04365e4d364727c35b76dc32f4655fdca5.png",
+    "d5de3eb5a2a1418659516c975759e262fdd95f5af64842a5bff628d293be482f.png",
+    "dbe4d6a003c8971e193f64e66e09d3972fc1405acca3d0f4a02d1f66cc833299.png",
+    "ee90ce19707da0e3cb3344950aac91b9c32d6af5892aa3e98ccf76abfde24483.png"
+  ],
+  "url": "/notes/n-600e751bd9b246d3a69e717a5c4a1f87/"
+}

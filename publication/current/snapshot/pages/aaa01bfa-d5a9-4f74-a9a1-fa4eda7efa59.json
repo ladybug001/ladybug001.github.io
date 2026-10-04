@@ -1,0 +1,76 @@
+{
+  "anchor_insertions": [
+    {
+      "id": "h-c95cc2c143a713726aa4",
+      "kind": "heading",
+      "offset": 11
+    },
+    {
+      "id": "h-d326ac97fd2d79356d69",
+      "kind": "heading",
+      "offset": 98
+    },
+    {
+      "id": "h-209b4aa817b433cd2752",
+      "kind": "heading",
+      "offset": 191
+    },
+    {
+      "id": "h-d21722a84896c615be34",
+      "kind": "heading",
+      "offset": 208
+    },
+    {
+      "id": "h-1d6c7582fcce9fb367a7",
+      "kind": "heading",
+      "offset": 531
+    },
+    {
+      "id": "h-a321597b0bec800e6ce2",
+      "kind": "heading",
+      "offset": 1256
+    },
+    {
+      "id": "h-aa98e4a9d040e4b03492",
+      "kind": "heading",
+      "offset": 1273
+    },
+    {
+      "id": "h-089420492eec20a28fd0",
+      "kind": "heading",
+      "offset": 1614
+    },
+    {
+      "id": "h-bc63fad44c90f8add313",
+      "kind": "heading",
+      "offset": 2243
+    },
+    {
+      "id": "h-c419c1e3f39ca431dc6e",
+      "kind": "heading",
+      "offset": 2269
+    },
+    {
+      "id": "h-f3ceed8853d8a2ba86b4",
+      "kind": "heading",
+      "offset": 2488
+    }
+  ],
+  "body": "# STL 容器适配器\n\n上级：[C&#43;&#43; STL &#40;MOC&#41;](/notes/n-eddccc74380b440bb9b832f9812d84b7/)\n\n## 说明\n\n容器适配器不是完整意义上的“新容器”，而是基于底层容器封装出特定访问语义的接口。常见的有 `stack`、`queue`、`priority_queue`。\n\n## Stack 容器\n\n### 什么是 `stack`\n\n`stack` 是典型的**后进先出**（LIFO）容器适配器。它只暴露栈顶相关操作，底层通常基于 `deque` 容器。\n\n常用操作如下：\n\n1. `push`：压栈。\n2. `top`：返回栈顶元素引用，但不移除。\n3. `pop`：移除栈顶元素，但不返回该元素。\n\n![1f17beccb470aeb6dabc5e251075ceff&#95;MD5&#46;jpg](/notes/n-aaa01bfad5a94f74a9a1fa4eda7efa59/media/c955b2e3329a057a5fc6b076dd35c101a78d7123f13ddac3222ac9cf7a3807a0.jpg)\n\n### 使用 `stack`\n\n```cpp\n#include <stack>\nusing namespace std;\n```\n\n```cpp\nstack<int> s1;\ns1.push(1);\ns1.push(2);\ns1.push(3);\n\ncout << \"S1 size: \" << s1.size() << endl;\ns1.pop();\ncout << \"S1 size: \" << s1.size() << endl;\n\nint a = s1.top();\ncout << \"S1 top value: \" << a << endl;\n\nwhile (!s1.empty()) {\n    s1.pop();\n}\n\ns1.swap(stack<int>());\ncout << \"S1 size: \" << s1.size() << endl;\n```\n\n![ac6998875433f73d1fd7c790a37a4912&#95;MD5&#46;jpg](/notes/n-aaa01bfad5a94f74a9a1fa4eda7efa59/media/266ce852a3f5e7ab82acf1a62b487a2b7b2af71113fffeda7e7ae8e6a48c3463.jpg)\n![19db513ae28ca9ad223b29cacec87abe&#95;MD5&#46;jpg](/notes/n-aaa01bfad5a94f74a9a1fa4eda7efa59/media/487cd16d760b883c631a72d6844d01359f79fcaea6a0522765daf9726f242323.jpg)\n\n## Queue 容器\n\n### 什么是 `queue`\n\n`queue` 是典型的**先进先出**（FIFO）容器适配器，底层通常基于 `deque` 容器。\n\n常用操作如下：\n\n1. `push`：把元素加入队尾。\n2. `front`：返回队头元素引用，但不移除。\n3. `back`：返回队尾元素引用，但不移除。\n4. `pop`：移除队头元素，但不返回。\n\n![48d977298f31d293021153ff90b0842c&#95;MD5&#46;jpg](/notes/n-aaa01bfad5a94f74a9a1fa4eda7efa59/media/8b5f007d49d18d1f1ab04c04c2c93528e4a4f2538ee0d321f21f061d939c9ad4.jpg)\n\n### 使用 `queue`\n\n```cpp\n#include <queue>\nusing namespace std;\n```\n\n```cpp\nqueue<int> q1;\n\nq1.push(1);\nq1.push(2);\nq1.push(3);\ncout << \"Q1 size: \" << q1.size() << endl;\n\nint a = q1.front();\ncout << \"Q1 front value: \" << a << endl;\n\nint b = q1.back();\ncout << \"Q1 back value: \" << b << endl;\n\nq1.pop();\ncout << \"Q1 size: \" << q1.size() << endl;\n\nq1.swap(queue<int>());\n\nwhile (!q1.empty()) {\n    q1.pop();\n}\ncout << \"Q1 size: \" << q1.size() << endl;\n```\n\n![3fd5c94adc28fdeb1775c8bf6c6d36cd&#95;MD5&#46;jpg](/notes/n-aaa01bfad5a94f74a9a1fa4eda7efa59/media/33c2dc46a089b0208dfa97f96142a8ce76dea3af7d15d95b012c5d5f4f3beba6.jpg)\n\n## Priority Queue 容器\n\n### 什么是 `priority_queue`\n\n`priority_queue` 是优先队列容器适配器。它会按照比较规则维护队首元素优先级，底层通常基于 `vector` + 堆算法。\n\n常用操作如下：\n\n1. `push`：插入元素并按优先级调整。\n2. `top`：返回当前优先级最高的元素引用。\n3. `pop`：删除当前优先级最高的元素。\n\n默认情况下，它使用 `less<T>` 作为比较器，因此默认表现为**大顶堆**。\n\n### 使用 `priority_queue`\n\n```cpp\n#include <queue>\n#include <functional>\n#include <vector>\nusing namespace std;\n```\n\n```cpp\npriority_queue<int, vector<int>> q;                      // 默认 less<int>，大顶堆\npriority_queue<int, vector<int>, less<int>> q1;         // 显式大顶堆\npriority_queue<int, vector<int>, greater<int>> q2;      // 小顶堆\n\nq.push(100);\nq.push(200);\nq.push(300);\n\ncout << \"Q size: \" << q.size() << endl;\n\nwhile (!q.empty()) {\n    cout << q.top() << endl;\n    q.pop();\n}\n```\n\n![293b07d8c0feed408780998efaadc2ac&#95;MD5&#46;jpg](/notes/n-aaa01bfad5a94f74a9a1fa4eda7efa59/media/466adbb15619a76e692dd8dc0480045cdb5cc4c9bf286a3bb3fa170381b88001.jpg)\n",
+  "id": "aaa01bfa-d5a9-4f74-a9a1-fa4eda7efa59",
+  "metadata": {
+    "tags": [
+      "lang/cpp/stl"
+    ],
+    "title": "C++ STL 容器适配器"
+  },
+  "resources": [
+    "266ce852a3f5e7ab82acf1a62b487a2b7b2af71113fffeda7e7ae8e6a48c3463.jpg",
+    "33c2dc46a089b0208dfa97f96142a8ce76dea3af7d15d95b012c5d5f4f3beba6.jpg",
+    "466adbb15619a76e692dd8dc0480045cdb5cc4c9bf286a3bb3fa170381b88001.jpg",
+    "487cd16d760b883c631a72d6844d01359f79fcaea6a0522765daf9726f242323.jpg",
+    "8b5f007d49d18d1f1ab04c04c2c93528e4a4f2538ee0d321f21f061d939c9ad4.jpg",
+    "c955b2e3329a057a5fc6b076dd35c101a78d7123f13ddac3222ac9cf7a3807a0.jpg"
+  ],
+  "url": "/notes/n-aaa01bfad5a94f74a9a1fa4eda7efa59/"
+}
